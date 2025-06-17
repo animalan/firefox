@@ -91,10 +91,11 @@ hw-a55-aarch64-shippable-startup-fenix-newssite-applink-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-a55-14-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -109,7 +110,8 @@ hw-a55-aarch64-shippable-startup-fenix-newssite-applink-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/cvne-newssite.sh
 
 hw-p6-aarch64-shippable-startup-fenix-newssite-applink-startup-simpleperf:
     worker-type: t-bitbar-gw-perf-p6
@@ -129,10 +131,11 @@ hw-p6-aarch64-shippable-startup-fenix-newssite-applink-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-p6-13-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -147,7 +150,8 @@ hw-p6-aarch64-shippable-startup-fenix-newssite-applink-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/cvne-newssite.sh
 
 hw-s24-aarch64-shippable-startup-fenix-newssite-applink-startup-simpleperf:
     worker-type: t-bitbar-gw-perf-s24
@@ -167,10 +171,11 @@ hw-s24-aarch64-shippable-startup-fenix-newssite-applink-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-s24-14-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -185,8 +190,8 @@ hw-s24-aarch64-shippable-startup-fenix-newssite-applink-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
-
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/cvne-newssite.sh
 
 hw-p6-aarch64-shippable-startup-chrome-m-newssite-applink-startup:
     worker-type: t-bitbar-gw-perf-p6
@@ -352,10 +357,11 @@ hw-a55-aarch64-shippable-startup-fenix-shopify-applink-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-a55-14-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -370,7 +376,8 @@ hw-a55-aarch64-shippable-startup-fenix-shopify-applink-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/cvne-shopify.sh
 
 hw-p6-aarch64-shippable-startup-fenix-shopify-applink-startup-simpleperf:
     worker-type: t-bitbar-gw-perf-p6
@@ -390,10 +397,11 @@ hw-p6-aarch64-shippable-startup-fenix-shopify-applink-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-p6-13-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -408,7 +416,8 @@ hw-p6-aarch64-shippable-startup-fenix-shopify-applink-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/cvne-shopify.sh
 
 hw-s24-aarch64-shippable-startup-fenix-shopify-applink-startup-simpleperf:
     worker-type: t-bitbar-gw-perf-s24
@@ -428,10 +437,11 @@ hw-s24-aarch64-shippable-startup-fenix-shopify-applink-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-s24-14-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -446,7 +456,8 @@ hw-s24-aarch64-shippable-startup-fenix-shopify-applink-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/cvne-shopify.sh
 
 hw-a55-aarch64-shippable-startup-chrome-m-tab-restore-shopify:
     worker-type: t-bitbar-gw-perf-a55
@@ -613,10 +624,11 @@ hw-a55-aarch64-shippable-startup-fenix-tab-restore-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
-            - linux64-samply
             - linux64-android-simpleperf-linux-repack
+            - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-a55-14-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -631,7 +643,8 @@ hw-a55-aarch64-shippable-startup-fenix-tab-restore-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/restore.sh
 
 hw-p6-aarch64-shippable-startup-fenix-tab-restore-simpleperf:
     worker-type: t-bitbar-gw-perf-p6
@@ -651,10 +664,11 @@ hw-p6-aarch64-shippable-startup-fenix-tab-restore-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
-            - linux64-samply
             - linux64-android-simpleperf-linux-repack
+            - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-p6-13-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -669,7 +683,8 @@ hw-p6-aarch64-shippable-startup-fenix-tab-restore-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/restore.sh
 
 hw-s24-aarch64-shippable-startup-fenix-tab-restore-simpleperf:
     worker-type: t-bitbar-gw-perf-s24
@@ -689,10 +704,11 @@ hw-s24-aarch64-shippable-startup-fenix-tab-restore-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
-            - linux64-samply
             - linux64-android-simpleperf-linux-repack
+            - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-s24-14-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -707,7 +723,8 @@ hw-s24-aarch64-shippable-startup-fenix-tab-restore-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/restore.sh
 
 hw-a55-aarch64-shippable-startup-chrome-m-homeview-startup:
     worker-type: t-bitbar-gw-perf-a55
@@ -775,10 +792,11 @@ hw-a55-aarch64-shippable-startup-fenix-homeview-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-a55-14-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -793,7 +811,8 @@ hw-a55-aarch64-shippable-startup-fenix-homeview-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/homeview.sh
 
 hw-p6-aarch64-shippable-startup-fenix-homeview-startup-simpleperf:
     worker-type: t-bitbar-gw-perf-p6
@@ -813,10 +832,11 @@ hw-p6-aarch64-shippable-startup-fenix-homeview-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-p6-13-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -831,7 +851,8 @@ hw-p6-aarch64-shippable-startup-fenix-homeview-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/homeview.sh
 
 hw-s24-aarch64-shippable-startup-fenix-homeview-startup-simpleperf:
     worker-type: t-bitbar-gw-perf-s24
@@ -851,10 +872,11 @@ hw-s24-aarch64-shippable-startup-fenix-homeview-startup-simpleperf:
               extract: false
         android-aarch64-shippable:
             - artifact: target.crashreporter-symbols.zip
-              extract: true
+              extract: false
         toolchain:
             - linux64-android-simpleperf-linux-repack
             - linux64-samply
+            - symbolicator-cli
     require-build:
         android-hw-s24-14-0-aarch64-shippable/opt: signing-apk-fenix-nightly-simulation
     run:
@@ -869,8 +891,8 @@ hw-s24-aarch64-shippable-startup-fenix-homeview-startup-simpleperf:
             --android-install-apk $MOZ_FETCHES_DIR/target.arm64-v8a.apk
             --output $MOZ_FETCHES_DIR/../artifacts
             --simpleperf
-            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf
-
+            --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf &&
+            taskcluster/scripts/misc/symbolicate-simpleperf.sh testing/performance/mobile-startup/homeview.sh
 
 hw-a55-aarch64:
     worker-type: t-bitbar-gw-perf-a55
