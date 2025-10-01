@@ -43,7 +43,7 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
             # Trace-level logging (verbose)
             "enableTracing": 0,
             # Fallback server if symbol is not found locally
-            "remoteSymbolServer": "https://symbolication.services.mozilla.com/symbolicate/v4",
+            "remoteSymbolServer": "https://symbolication.services.mozilla.com/symbolicate/v5",
             # Maximum number of symbol files to keep in memory
             "maxCacheEntries": 2000000,
             # Frequency of checking for recent symbols to

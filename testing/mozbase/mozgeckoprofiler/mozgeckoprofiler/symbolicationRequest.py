@@ -164,16 +164,18 @@ class SymbolicationRequest:
         LOG.debug("Forwarding " + str(len(stack)) + " PCs for symbolication")
 
         try:
+            # Map indices
             url = self.symFileManager.sOptions["remoteSymbolServer"]
             rawModules = []
             moduleToIndex = {}
             newIndexToOldIndex = {}
-            for moduleIndex, m in modules:
-                l = [m.libName, m.breakpadId]
-                newModuleIndex = len(rawModules)
-                rawModules.append(l)
+            v5_map = {}
+            for newModuleIndex, (moduleIndex, m) in enumerate(modules):
+                moduleList = [m.libName, m.breakpadId]
+                rawModules.append(moduleList)
                 moduleToIndex[m] = newModuleIndex
                 newIndexToOldIndex[newModuleIndex] = moduleIndex
+                v5_map[f"{m.libName}/{m.breakpadId}"] = newModuleIndex
 
             rawStack = []
             for entry in stack:
@@ -185,29 +187,54 @@ class SymbolicationRequest:
                 newIndex = moduleToIndex[module]
                 rawStack.append([newIndex, offset])
 
-            requestVersion = 4
-            while True:
-                requestObj = {
-                    "symbolSources": self.symbolSources,
-                    "stacks": [rawStack],
-                    "memoryMap": rawModules,
-                    "forwarded": self.forwardCount + 1,
-                    "version": requestVersion,
-                }
+            # Check endpoint version from url
+            endpointVersionString = url.split("/")[-1]
+            if (
+                endpointVersionString.startswith("v")
+                and endpointVersionString[1:].isdigit()
+            ):
+                endpointVersion = int(endpointVersionString[1:])
+            else:
+                # Fallback to version 5
+                endpointVersion = 5
+
+            # Oldest request version to try is 4
+            requestVersions = range(endpointVersion, 3, -1)
+            for requestVersion in requestVersions:
+
+                if requestVersion == 5:
+                    requestObj = {
+                        "jobs": [{"stacks": [rawStack], "memoryMap": rawModules}],
+                        "symbolSources": self.symbolSources,
+                        "forwarded": self.forwardCount + 1,
+                        "version": requestVersion,
+                    }
+                else:
+                    requestObj = {
+                        "symbolSources": self.symbolSources,
+                        "stacks": [rawStack],
+                        "memoryMap": rawModules,
+                        "forwarded": self.forwardCount + 1,
+                        "version": requestVersion,
+                    }
                 requestJson = json.dumps(requestObj).encode()
                 headers = {
                     "Content-Type": "application/json",
                     "User-Agent": "FirefoxCiProfileSymbolication (testing/mozbase/mozgeckoprofiler/mozgeckoprofiler/symbolicationRequest.py)",
                 }
+
                 requestHandle = Request(url, requestJson, headers)
+
                 try:
+
                     response = urlopen(requestHandle)
+
                 except Exception as e:
-                    if requestVersion == 4:
-                        # Try again with version 3
-                        requestVersion = 3
+                    if requestVersion == requestVersions[-1]:
+                        raise e
+                    else:
                         continue
-                    raise e
+
                 succeededVersion = requestVersion
                 break
 
@@ -215,6 +242,7 @@ class SymbolicationRequest:
             LOG.error("Exception while forwarding request: " + str(e))
             return
 
+        # Test server response
         try:
             responseJson = json.loads(response.read())
         except Exception as e:
@@ -225,7 +253,25 @@ class SymbolicationRequest:
             return
 
         try:
-            if succeededVersion == 4:
+            # The endpoint version (not the request version) appears to determine the response schema.
+            # A v4-schema request sent to the v5 endpoint, returns a v5-schema response.
+            if endpointVersion == 5:
+
+                result = responseJson["results"][0]
+
+                responseKnownModules = result["found_modules"]
+
+                for response_module, found in responseKnownModules.items():
+                    if found:
+                        self.knownModules[
+                            newIndexToOldIndex[v5_map[response_module]]
+                        ] = True
+
+                responseSymbols = [
+                    frame["function"] for stack in result["stacks"] for frame in stack
+                ]
+
+            elif endpointVersion == 4:
                 responseKnownModules = responseJson["knownModules"]
                 for newIndex, known in enumerate(responseKnownModules):
                     if known and newIndex in newIndexToOldIndex:
@@ -234,6 +280,8 @@ class SymbolicationRequest:
                 responseSymbols = responseJson["symbolicatedStacks"][0]
             else:
                 responseSymbols = responseJson[0]
+
+            # Check for misalignment response symbols and request PCs
             if len(responseSymbols) != len(stack):
                 LOG.error(
                     str(len(responseSymbols))
@@ -247,7 +295,9 @@ class SymbolicationRequest:
                 symbol = responseSymbols[index]
                 originalIndex = indexes[index]
                 symbolicatedStack[originalIndex] = symbol
+
         except Exception as e:
+
             LOG.error(
                 "Exception while parsing server response to forwarded"
                 " request: " + str(e)
