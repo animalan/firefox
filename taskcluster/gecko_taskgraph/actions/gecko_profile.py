@@ -226,6 +226,7 @@ def geckoprofile_action(parameters, graph_config, input, task_group_id, task_id)
                 task.task["extra"]["treeherder"]["groupName"] += " (profiling)"
                 return task
 
+            # Add symbolication dependencies for simpleperf profiling
             if any(test in label for test in SIMPLEPERF_COMPATIBLE_TESTS):
                 full_task_graph = full_task_graph.to_json()
                 for key, value in dependencies_to_add_dict.items():
@@ -244,6 +245,64 @@ def geckoprofile_action(parameters, graph_config, input, task_group_id, task_id)
                 task_reference_full_taskgraph.extend(
                     DEPENDANCY_TO_ADD_FOR_TASK_REFERENCE
                 )
+                full_task_graph.tasks[label].task["payload"]["env"]["MOZ_FETCHES"][
+                    "task-reference"
+                ] = json.dumps(task_reference_full_taskgraph)
+            # Add symbolication dependencies for performance profiles
+            else:
+                test_platform = full_task_graph.tasks[label].attributes.get(
+                    "test_platform", ""
+                )
+                if "macosx" in test_platform and "aarch64" in test_platform:
+                    samply_toolchain = "toolchain-macosx64-aarch64-samply"
+                    node_toolchain = "toolchain-macosx64-aarch64-node-22"
+                elif "macosx" in test_platform:
+                    samply_toolchain = "toolchain-macosx64-samply"
+                    node_toolchain = "toolchain-macosx64-node-22"
+                elif "win" in test_platform:
+                    samply_toolchain = "toolchain-win64-samply"
+                    node_toolchain = "toolchain-win64-node-22"
+                else:
+                    samply_toolchain = "toolchain-linux64-samply"
+                    node_toolchain = "toolchain-linux64-node-22"
+
+                samply_dependency = {
+                    "artifact": "public/build/samply.tar.zst",
+                    "extract": True,
+                    "task": f"<{samply_toolchain}>",
+                }
+
+                full_task_graph = full_task_graph.to_json()
+                dependencies = full_task_graph[label]["dependencies"]
+
+                dependencies["toolchain-symbolicator-cli"] = (
+                    "toolchain-symbolicator-cli"
+                )
+                dependencies[samply_toolchain] = samply_toolchain
+
+                has_node = any("node" in dep for dep in dependencies)
+                if not has_node:
+                    dependencies[node_toolchain] = node_toolchain
+
+                full_task_graph = TaskGraph.from_json(full_task_graph)[1]
+
+                task_reference_full_taskgraph = json.loads(
+                    full_task_graph.tasks[label].task["payload"]["env"]["MOZ_FETCHES"][
+                        "task-reference"
+                    ]
+                )
+
+                if not has_node:
+                    task_reference_full_taskgraph.append({
+                        "artifact": "public/build/node.tar.zst",
+                        "extract": True,
+                        "task": f"<{node_toolchain}>",
+                    })
+
+                task_reference_full_taskgraph.extend([
+                    SYMBOLICATOR_DEPENDENCY,
+                    samply_dependency,
+                ])
                 full_task_graph.tasks[label].task["payload"]["env"]["MOZ_FETCHES"][
                     "task-reference"
                 ] = json.dumps(task_reference_full_taskgraph)
