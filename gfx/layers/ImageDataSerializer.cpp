@@ -301,6 +301,18 @@ uint8_t* GetCrChannel(uint8_t* aBuffer, const YCbCrDescriptor& aDescriptor) {
   return aBuffer + aDescriptor.crOffset();
 }
 
+uint16_t* GetYChannel(uint16_t* aBuffer, const YCbCrDescriptor& aDescriptor) {
+  return aBuffer + aDescriptor.yOffset() / 2;
+}
+
+uint16_t* GetCbChannel(uint16_t* aBuffer, const YCbCrDescriptor& aDescriptor) {
+  return aBuffer + aDescriptor.cbOffset() / 2;
+}
+
+uint16_t* GetCrChannel(uint16_t* aBuffer, const YCbCrDescriptor& aDescriptor) {
+  return aBuffer + aDescriptor.crOffset() / 2;
+}
+
 already_AddRefed<DataSourceSurface> DataSourceSurfaceFromYCbCrDescriptor(
     uint8_t* aBuffer, const YCbCrDescriptor& aDescriptor,
     gfx::DataSourceSurface* aSurface) {
