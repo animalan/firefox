@@ -4143,6 +4143,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "lockstore_rs"
+version = "0.1.0"
+dependencies = [
+ "base64 0.21.999",
+ "kvstore",
+ "nserror",
+ "nss-gk-api",
+ "nsstring",
+ "rusqlite 0.31.999",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 1.999.999",
+ "xpcom",
+]
+
+[[package]]
 name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
