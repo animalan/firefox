@@ -11467,13 +11467,6 @@
   value: @IS_EARLY_BETA_OR_EARLIER@
   mirror: always
 
-# Whether to enable character and glyph level mirroring for operators when
-# the writing mode is right to left.
-- name: mathml.rtl_operator_mirroring.enabled
-  type: bool
-  value: true
-  mirror: always
-
 # Whether to disable fallback for mathvariant=italic/bold/bold-italic via
 # styling when lacking proper fonts for Mathematical Alphanumeric Symbols.
 # We expect all OSes to have relevant fonts, except Android, see bug 1789083.

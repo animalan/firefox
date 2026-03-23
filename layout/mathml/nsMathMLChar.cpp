@@ -782,8 +782,7 @@ bool nsMathMLChar::StretchEnumContext::TryVariants(
 
   // start at size = 1 (size = 0 is the char at its normal size), except for
   // rtlm fonts since they might have a character there.
-  int32_t size =
-      (StaticPrefs::mathml_rtl_operator_mirroring_enabled() && aRtl) ? 0 : 1;
+  int32_t size = aRtl ? 0 : 1;
   nsGlyphCode ch;
   nscoord displayOperatorMinHeight = 0;
   if (largeopOnly) {
@@ -1473,9 +1472,6 @@ nsresult nsMathMLChar::Stretch(nsIFrame* aForFrame, DrawTarget* aDrawTarget,
   mMirroringMethod = [&] {
     if (!aRTL || !nsMathMLOperators::IsMirrorableOperator(mData)) {
       return MirroringMethod::None;
-    }
-    if (!StaticPrefs::mathml_rtl_operator_mirroring_enabled()) {
-      return MirroringMethod::ScaleFallback;
     }
     // Character level mirroring (always supported)
     if (nsMathMLOperators::GetMirroredOperator(mData) != mData) {
