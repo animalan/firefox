@@ -126,7 +126,7 @@ index 5b52d9760d..293660c855 100644
              "Generated during 'gn gen' by //BUILD.gn.",
              "",
 diff --git a/api/BUILD.gn b/api/BUILD.gn
-index bf5e7bca89..08913db4ca 100644
+index 818948a148..26fb8451c0 100644
 --- a/api/BUILD.gn
 +++ b/api/BUILD.gn
 @@ -8,8 +8,8 @@
@@ -139,7 +139,7 @@ index bf5e7bca89..08913db4ca 100644
 +  import("//chromium/build/config/android/rules.gni")
  }
  
- # TODO: https://issues.webrtc.org/issues/463418937 - delete, seems useless
+ rtc_source_set("call_api") {
 diff --git a/api/audio/test/BUILD.gn b/api/audio/test/BUILD.gn
 index b1060faae3..c567b6b0f3 100644
 --- a/api/audio/test/BUILD.gn
