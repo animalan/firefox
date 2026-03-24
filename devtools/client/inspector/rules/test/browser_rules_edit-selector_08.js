@@ -26,10 +26,28 @@ add_task(async function () {
 
   let idRuleEditor = getRuleViewRuleEditorAt(view, 1);
 
-  await editSelectorForRuleEditor(view, idRuleEditor, "pre");
+  info("Focusing an existing selector name in the rule-view");
+  let editor = await focusEditableField(view, idRuleEditor.selectorText);
+
+  is(
+    inplaceEditor(idRuleEditor.selectorText),
+    editor,
+    "The selector editor got focused"
+  );
+
+  info("Entering a new selector name and committing");
+  editor.input.value = "pre";
+
+  info("Waiting for rule view to update");
+  let onRuleViewChanged = once(view, "ruleview-changed");
+
+  info("Entering the commit key");
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   info("Re-focusing the selector name in the rule-view");
   idRuleEditor = getRuleViewRuleEditorAt(view, 1);
+  editor = await focusEditableField(view, idRuleEditor.selectorText);
 
   assertDisplayedRulesCount(view, 2);
   ok(getRuleViewRule(view, "pre"), "Rule with pre selector exists.");
@@ -40,7 +58,15 @@ add_task(async function () {
   );
 
   // Now change it back.
-  await editSelectorForRuleEditor(view, idRuleEditor, "span");
+  info("Re-entering original selector name and committing");
+  editor.input.value = "span";
+
+  info("Waiting for rule view to update");
+  onRuleViewChanged = once(view, "ruleview-changed");
+
+  info("Entering the commit key");
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   assertDisplayedRulesCount(view, 2);
   ok(getRuleViewRule(view, "span"), "Rule with span selector exists.");

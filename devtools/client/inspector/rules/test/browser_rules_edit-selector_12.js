@@ -15,7 +15,13 @@ add_task(async function () {
 
   info("Focus the selector in the rule-view");
   let ruleEditor = getRuleViewRuleEditorAt(view, 1);
-  await editSelectorForRuleEditor(view, ruleEditor, "div");
+  const editor = await focusEditableField(view, ruleEditor.selectorText);
+
+  info("Change the selector to something else");
+  editor.input.value = "div";
+  const onRuleViewChanged = once(view, "ruleview-changed");
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   info("Check the rules are still displayed correctly");
   assertDisplayedRulesCount(view, 3);

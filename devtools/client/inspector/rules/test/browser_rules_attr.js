@@ -30,7 +30,22 @@ add_task(async function () {
   const withAttrNodeFront = await getNodeFront("#with-attr", inspector);
   await selectNode(withAttrNodeFront, inspector);
 
-  expandPseudoElementContainer(view);
+  info("Expand pseudo elements section");
+  const pseudoElementToggle = view.styleDocument.querySelector(
+    `[aria-controls="pseudo-elements-container"]`
+  );
+  // sanity check
+  is(
+    pseudoElementToggle.ariaExpanded,
+    "false",
+    "pseudo element section is collapsed at first"
+  );
+  pseudoElementToggle.click();
+  is(
+    pseudoElementToggle.ariaExpanded,
+    "true",
+    "pseudo element section is now expanded"
+  );
 
   info(
     "Check that the declarations using `attr()` are properly rendered and that the preview tooltip works as expected"

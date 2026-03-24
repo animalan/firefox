@@ -334,8 +334,8 @@ class CssRuleView extends EventEmitter {
   // Used for cancelling timeouts in the style filter.
   #filterChangedTimeout = null;
 
-  // Empty, unconnected element of the same type as this selected node,
-  // used to figure out how shorthand properties will be parsed.
+  // Empty, unconnected element of the same type as this node, used
+  // to figure out how shorthand properties will be parsed.
   #dummyElement = null;
 
   #popup;
@@ -375,32 +375,6 @@ class CssRuleView extends EventEmitter {
   // Get the dummy element.
   get dummyElement() {
     return this.#dummyElement;
-  }
-
-  #refreshDummyElement() {
-    // Only update the dummy element if the selected element's tag is different.
-    if (
-      !this.viewedElement ||
-      this.#dummyElement?.tagName === this.viewedElement.tagName
-    ) {
-      return;
-    }
-
-    // To figure out how shorthand properties are interpreted by the
-    // engine, we will set properties on a dummy element and observe
-    // how their .style attribute reflects them as computed values.
-    try {
-      // ::before and ::after do not have a namespaceURI
-      const namespaceURI =
-        this.viewedElement.namespaceURI ||
-        this.styleDocument.documentElement.namespaceURI;
-      this.#dummyElement = this.styleDocument.createElementNS(
-        namespaceURI,
-        this.viewedElement.tagName
-      );
-    } catch (e) {
-      console.error("Error while creating dummy element", e);
-    }
   }
 
   // Get the highlighters overlay from the Inspector.
@@ -1148,7 +1122,6 @@ class CssRuleView extends EventEmitter {
 
     this.#clearPseudoClassPanel();
     this.#refreshAddRuleButtonState();
-    this.#refreshDummyElement();
 
     if (!this.viewedElement) {
       this.#stopSelectingElement();
@@ -1167,6 +1140,22 @@ class CssRuleView extends EventEmitter {
 
     this.pageStyle = element.inspectorFront.pageStyle;
     this.pageStyle.on("stylesheet-updated", this.refreshPanel);
+
+    // To figure out how shorthand properties are interpreted by the
+    // engine, we will set properties on a dummy element and observe
+    // how their .style attribute reflects them as computed values.
+    try {
+      // ::before and ::after do not have a namespaceURI
+      const namespaceURI =
+        this.element.namespaceURI ||
+        this.styleDocument.documentElement.namespaceURI;
+      this.#dummyElement = this.styleDocument.createElementNS(
+        namespaceURI,
+        this.element.tagName
+      );
+    } catch (e) {
+      console.error("Error while creating dummy element", e);
+    }
 
     const elementStyle = new ElementStyle(
       element,

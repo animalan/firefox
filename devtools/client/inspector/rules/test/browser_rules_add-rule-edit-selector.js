@@ -29,19 +29,26 @@ add_task(async function () {
   await checkModifiedElement(view, "span");
 });
 
-async function testEditSelector(view, newSelector) {
+async function testEditSelector(view, name) {
   info("Test editing existing selector field");
   const idRuleEditor = getRuleViewRuleEditorAt(view, 1);
-  await editSelectorForRuleEditor(view, idRuleEditor, newSelector);
+  const editor = idRuleEditor.selectorText.ownerDocument.activeElement;
+
+  info("Entering a new selector name and committing");
+  editor.value = name;
+
+  info("Waiting for rule view to update");
+  const onRuleViewChanged = once(view, "ruleview-changed");
+
+  info("Entering the commit key");
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   assertDisplayedRulesCount(view, 3);
-  ok(
-    getRuleViewRule(view, newSelector),
-    `Rule with ${newSelector} selector exists.`
-  );
+  ok(getRuleViewRule(view, name), "Rule with " + name + " selector exists.");
 }
 
-function checkModifiedElement(view, selector) {
+function checkModifiedElement(view, name) {
   assertDisplayedRulesCount(view, 2);
-  ok(getRuleViewRule(view, selector), `Rule with ${selector} selector exists.`);
+  ok(getRuleViewRule(view, name), "Rule with " + name + " selector exists.");
 }

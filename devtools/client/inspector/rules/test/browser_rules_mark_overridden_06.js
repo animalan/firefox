@@ -30,7 +30,15 @@ async function testMarkOverridden(inspector, view) {
 
   const ruleEditor = getRuleViewRuleEditorAt(view, 1);
   info("Focusing an existing selector name in the rule-view");
-  await editSelectorForRuleEditor(view, ruleEditor, "div[class]");
+  const editor = await focusEditableField(view, ruleEditor.selectorText);
+
+  info("Entering a new selector name and committing");
+  editor.input.value = "div[class]";
+
+  const onRuleViewChanged = once(view, "ruleview-changed");
+  info("Entering the commit key");
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   view.searchField.focus();
   checkProperties(rule);

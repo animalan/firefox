@@ -25,12 +25,31 @@ add_task(async function test_inline_sheet() {
   info("Check that we can edit the selectors in the pseudo elements section");
   await selectNode("h1", inspector);
 
-  expandPseudoElementContainer(view);
+  info("Expand pseudo elements section");
+  const pseudoElementToggle = view.styleDocument.querySelector(
+    `[aria-controls="pseudo-elements-container"]`
+  );
+  // sanity check
+  is(
+    pseudoElementToggle.ariaExpanded,
+    "false",
+    "pseudo element section is collapsed at first"
+  );
+  pseudoElementToggle.click();
+  is(
+    pseudoElementToggle.ariaExpanded,
+    "true",
+    "pseudo element section is now expanded"
+  );
 
   info(`Modify "h1::before" into ".foo::before"`);
   let ruleEditor = getRuleViewRuleEditorAt(view, 0);
   is(ruleEditor.selectorText.textContent, "h1::before");
-  await editSelectorForRuleEditor(view, ruleEditor, ".foo::before");
+  let editor = await focusEditableField(view, ruleEditor.selectorText);
+  let onRuleViewChanged = view.once("ruleview-changed");
+  editor.input.value = ".foo::before";
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   // Get the new rule editor reference
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
@@ -43,7 +62,11 @@ add_task(async function test_inline_sheet() {
 
   info(`Modify ".foo::before" into ".foo::after"`);
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
-  await editSelectorForRuleEditor(view, ruleEditor, ".foo::after");
+  editor = await focusEditableField(view, ruleEditor.selectorText);
+  onRuleViewChanged = view.once("ruleview-changed");
+  editor.input.value = ".foo::after";
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   // Get the new rule editor reference
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
@@ -56,7 +79,11 @@ add_task(async function test_inline_sheet() {
 
   info(`Modify ".foo::after" into unmatching "h2::after"`);
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
-  await editSelectorForRuleEditor(view, ruleEditor, "h2::after");
+  editor = await focusEditableField(view, ruleEditor.selectorText);
+  onRuleViewChanged = view.once("ruleview-changed");
+  editor.input.value = "h2::after";
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   // Get the new rule editor reference
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
@@ -69,7 +96,11 @@ add_task(async function test_inline_sheet() {
 
   info(`Modify "h2::after" back into matching "h1::after"`);
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
-  await editSelectorForRuleEditor(view, ruleEditor, "h1::after");
+  editor = await focusEditableField(view, ruleEditor.selectorText);
+  onRuleViewChanged = view.once("ruleview-changed");
+  editor.input.value = "h1::after";
+  EventUtils.synthesizeKey("KEY_Enter");
+  await onRuleViewChanged;
 
   // Get the new rule editor reference
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
@@ -96,7 +127,12 @@ add_task(async function test_inline_sheet() {
 
   info(`Modify "h1::after" into ".foo::after"`);
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
-  await editSelectorForRuleEditor(view, ruleEditor, ".foo::after");
+  editor = await focusEditableField(view, ruleEditor.selectorText);
+  onRuleViewChanged = view.once("ruleview-changed");
+  editor.input.value = ".foo::after";
+  EventUtils.synthesizeKey("KEY_Enter");
+  info("waiting for <onRuleViewChanged>");
+  await onRuleViewChanged;
 
   // Get the new rule editor reference
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
@@ -109,8 +145,10 @@ add_task(async function test_inline_sheet() {
 
   info(`Modify ".foo::after" into "h2::after"`);
   ruleEditor = getRuleViewRuleEditorAt(view, 0);
+  editor = await focusEditableField(view, ruleEditor.selectorText);
   const onSelection = inspector.selection.once("new-node-front");
-  await editSelectorForRuleEditor(view, ruleEditor, "h2::after");
+  editor.input.value = "h2::after";
+  EventUtils.synthesizeKey("KEY_Enter");
   await onSelection;
   is(
     inspector.selection.nodeFront,
