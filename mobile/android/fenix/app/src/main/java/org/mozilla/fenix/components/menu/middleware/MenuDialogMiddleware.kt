@@ -12,8 +12,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.appservices.places.BookmarkRoot
 import mozilla.components.browser.state.ext.getUrl
+import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.concept.engine.webextension.InstallationMethod
 import mozilla.components.concept.storage.BookmarksStorage
 import mozilla.components.feature.addons.Addon
@@ -40,6 +42,7 @@ import org.mozilla.fenix.components.menu.store.MenuAction
 import org.mozilla.fenix.components.menu.store.MenuState
 import org.mozilla.fenix.components.menu.store.SummarizationMenuState
 import org.mozilla.fenix.components.metrics.MetricsUtils
+import org.mozilla.fenix.summarization.eligibility.SummarizationEligibilityChecker
 import org.mozilla.fenix.summarization.onboarding.SummarizationFeatureDiscoveryConfiguration
 import org.mozilla.fenix.summarization.onboarding.SummarizeDiscoveryEvent
 import org.mozilla.fenix.tabstray.ext.isNormalTab
@@ -56,7 +59,7 @@ import org.mozilla.fenix.utils.Settings
  * properties.
  * @param summarizeMenuSettings An instance of [SummarizationFeatureDiscoveryConfiguration] to manage the feature's
  * settings in the menu.
- * @param evaluateEligibilityForSummarization Callback to check whether a page is eligibile for summarization.
+ * @param summarizationEligibilityChecker Callback to check whether a page is eligibile for summarization.
  * @param bookmarksStorage An instance of the [BookmarksStorage] used
  * to query matching bookmarks.
  * @param pinnedSiteStorage An instance of the [PinnedSiteStorage] used
@@ -86,7 +89,7 @@ class MenuDialogMiddleware(
     private val addonManager: AddonManager,
     private val settings: Settings,
     private val summarizeMenuSettings: SummarizationFeatureDiscoveryConfiguration,
-    private val evaluateEligibilityForSummarization: suspend () -> Boolean,
+    private val summarizationEligibilityChecker: SummarizationEligibilityChecker,
     private val bookmarksStorage: BookmarksStorage,
     private val pinnedSiteStorage: PinnedSiteStorage,
     private val appLinksUseCases: AppLinksUseCases,
@@ -164,7 +167,7 @@ class MenuDialogMiddleware(
             enabled = summarizeMenuSettings.showMenuItem &&
                     isNormalTab &&
                     !isLoading &&
-                    evaluateEligibilityForSummarization(),
+                    store.state.browserMenuState?.selectedTab.checkSummarizationEligibility(),
         )
         store.dispatch(
             MenuAction.InitializeSummarizationMenuState(summarizationState),
@@ -174,6 +177,12 @@ class MenuDialogMiddleware(
             // so we want to cache that interaction for normal tabs.
             summarizeMenuSettings.cacheDiscoveryEvent(SummarizeDiscoveryEvent.ToolbarOverflowInteraction)
         }
+    }
+
+    private suspend fun TabSessionState?.checkSummarizationEligibility(): Boolean = withContext(Dispatchers.Default) {
+        this@checkSummarizationEligibility?.engineState?.engineSession?.let { session ->
+            summarizationEligibilityChecker.checkLanguage(session).getOrDefault(false)
+        } ?: false
     }
 
     private suspend fun setupBookmarkState(

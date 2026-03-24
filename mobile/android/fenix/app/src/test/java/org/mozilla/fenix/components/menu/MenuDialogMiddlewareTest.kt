@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import mozilla.appservices.places.BookmarkRoot
 import mozilla.components.browser.state.state.createTab
+import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.webextension.InstallationMethod
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.AddonManager
@@ -29,6 +30,7 @@ import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.feature.top.sites.PinnedSiteStorage
 import mozilla.components.feature.top.sites.TopSite
 import mozilla.components.feature.top.sites.TopSitesUseCases
+import mozilla.components.support.test.fakes.engine.TestEngineSession
 import mozilla.components.support.test.middleware.CaptureActionsMiddleware
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
@@ -53,6 +55,7 @@ import org.mozilla.fenix.components.menu.store.MenuAction
 import org.mozilla.fenix.components.menu.store.MenuState
 import org.mozilla.fenix.components.menu.store.MenuStore
 import org.mozilla.fenix.settings.summarize.FakeSummarizationFeatureConfiguration
+import org.mozilla.fenix.summarization.eligibility.SummarizationEligibilityChecker
 import org.mozilla.fenix.utils.LastSavedFolderCache
 import org.mozilla.fenix.utils.Settings
 import org.robolectric.RobolectricTestRunner
@@ -1004,17 +1007,19 @@ class MenuDialogMiddlewareTest {
         }
 
     @Test
-    fun `GIVEN summarization feature is gated by evaluation, WHEN menu is initialized, THEN the menu item is not visible`() =
+    fun `GIVEN the selected tab is not eligible for summarization by language, WHEN menu is initialized, THEN the menu item is not enabled`() =
         runTest(testDispatcher) {
             summarizeFeatureSettings.showMenuItem = true
 
-            val store = createStore(evaluateEligibilityForSummarization = { false })
+            val store = createStore(
+                summarizationEligibilityChecker = TestSummarizationEligibilityChecker(isEligibleByLanguage = false),
+            )
             store.dispatch(MenuAction.InitAction)
 
             testScheduler.advanceUntilIdle()
 
             assertFalse(
-                "Expected the menu item is not enabled because evaluation of the page indicated that it should not be visible",
+                "Expected the menu item is not enabled because the page is not eligible for summarization",
                 store.state.summarizationMenuState.enabled,
             )
         }
@@ -1160,6 +1165,7 @@ class MenuDialogMiddlewareTest {
         runTest(testDispatcher) {
             val store = createStore()
             store.dispatch(MenuAction.InitAction)
+            testScheduler.advanceUntilIdle()
             store.dispatch(MenuAction.OnMoreMenuClicked)
             testScheduler.advanceUntilIdle()
 
@@ -1190,11 +1196,12 @@ class MenuDialogMiddlewareTest {
     private fun createStore(
         appStore: AppStore = AppStore(),
         isTabLoading: Boolean = false,
-        evaluateEligibilityForSummarization: suspend () -> Boolean = { true },
+        summarizationEligibilityChecker: SummarizationEligibilityChecker = TestSummarizationEligibilityChecker(),
         menuState: MenuState = MenuState(
             browserMenuState = BrowserMenuState(
                 selectedTab = createTab(
                     url = "https://mozilla.org",
+                    engineSession = TestEngineSession(),
                 ),
                 isLoading = isTabLoading,
             ),
@@ -1209,7 +1216,7 @@ class MenuDialogMiddlewareTest {
                 addonManager = addonManager,
                 settings = settings,
                 summarizeMenuSettings = summarizeFeatureSettings,
-                evaluateEligibilityForSummarization = evaluateEligibilityForSummarization,
+                summarizationEligibilityChecker = summarizationEligibilityChecker,
                 bookmarksStorage = bookmarksStorage,
                 pinnedSiteStorage = pinnedSiteStorage,
                 appLinksUseCases = appLinksUseCases,
@@ -1227,4 +1234,15 @@ class MenuDialogMiddlewareTest {
             ),
         ),
     )
+
+    private class TestSummarizationEligibilityChecker(
+        private val isEligible: Boolean = false,
+        private val isEligibleByLanguage: Boolean = true,
+    ) : SummarizationEligibilityChecker {
+        override suspend fun check(session: EngineSession): Result<Boolean> =
+            Result.success(isEligible)
+
+        override suspend fun checkLanguage(session: EngineSession): Result<Boolean> =
+            Result.success(isEligibleByLanguage)
+    }
 }
