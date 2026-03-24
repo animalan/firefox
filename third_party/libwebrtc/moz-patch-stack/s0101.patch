@@ -216,7 +216,7 @@ index a3ee0d4e0c..322c52ac64 100644
  
  rtc_source_set("audio_encoder_g722_config") {
 diff --git a/api/audio_codecs/opus/BUILD.gn b/api/audio_codecs/opus/BUILD.gn
-index 6df8361dbb..a86f34a973 100644
+index 31b3383edc..66cf8caf9f 100644
 --- a/api/audio_codecs/opus/BUILD.gn
 +++ b/api/audio_codecs/opus/BUILD.gn
 @@ -8,8 +8,8 @@
