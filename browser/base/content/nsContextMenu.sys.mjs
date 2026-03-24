@@ -516,9 +516,14 @@ export class nsContextMenu {
       lazy.LinkPreview.shouldShowContextMenu(this)
     );
     let isHiddenTab = !!window.gBrowser?.getTabForBrowser(this.browser)?.hidden;
+    let isPinnedTab = !!window.gBrowser?.getTabForBrowser(this.browser)?.pinned;
     this.showItem(
       "context-openlinkinsplitview",
-      shouldShow && showSplitViews && !currentTabInSplitView && !isHiddenTab
+      shouldShow &&
+        showSplitViews &&
+        !currentTabInSplitView &&
+        !isHiddenTab &&
+        !isPinnedTab
     );
   }
 
