@@ -4,6 +4,7 @@
 
 package mozilla.components.lib.llm.mlpa.service
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -24,9 +25,47 @@ class VerificationServiceFailed(reason: String) : Exception("Verification Servic
 /**
  * Thrown when the MLPA chat/completion service fails to process a request.
  *
- * @param reason A human-readable explanation of the failure.
+ * @param error the [ChatServiceError] that was raised.
  */
-class ChatServiceFailed(reason: String) : Exception("Chat Service Failed: $reason")
+class ChatServiceException(val error: ChatServiceError) : Exception(error.toString())
+
+/**
+ * Sealed interface for describing the type of error a [ChatService] can return.
+ */
+sealed interface ChatServiceError {
+    /** Token expired or invalid. Re-authenticate via [AuthenticationService.verify]. */
+    data object InvalidToken : ChatServiceError
+
+    /** The user has been blocked from accessing the service. */
+    data object UserBlocked : ChatServiceError
+
+    /** The request body exceeded the 10MB limit. */
+    data object RequestTooLarge : ChatServiceError
+
+    /**
+     * The user's total budget has been exhausted.
+     *
+     * @property retryAfter Duration in seconds before the budget resets (typically 86400s).
+     */
+    data class BudgetExceeded(val retryAfter: Long?) : ChatServiceError
+
+    /**
+     * Requests per minute or tokens per minute limit reached.
+     *
+     * @property retryAfter Duration in seconds before the limit resets (typically 60s).
+     */
+    data class RateLimited(val retryAfter: Long?) : ChatServiceError
+
+    /** The upstream LLM was unreachable or returned an error (502). */
+    data class UpstreamError(val reason: String) : ChatServiceError
+
+    /**
+     * An unexpected server-side error occurred.
+     *
+     * @property statusCode The HTTP status code returned.
+     */
+    data class ServerError(val statusCode: Int) : ChatServiceError
+}
 
 /**
  * Configuration for connecting to MLPA services.
@@ -161,10 +200,26 @@ fun interface ChatService {
      * @param request The completion request payload.
      * @return A [Result] containing a [Response] on success, or a failure otherwise.
      */
-    suspend fun completion(
+    fun completion(
         authorizationToken: AuthorizationToken,
         request: Request,
-    ): Result<Response>
+    ): Flow<String>
+
+    /**
+     * Body of an error response with a code.
+     *
+     * @property error the error number the [ChatService] returned.
+     */
+    @Serializable
+    data class ResponseErrorCode(val error: Int)
+
+    /**
+     * Body of an error response with a reason.
+     *
+     * @property error the error reason the [ChatService] returned.
+     */
+    @Serializable
+    data class ResponseErrorReason(val error: String)
 
     /**
      * Response returned from a completion request.
@@ -206,6 +261,7 @@ fun interface ChatService {
     data class Request(
         val model: ModelID,
         val messages: List<Message>,
+        val stream: Boolean = true,
     ) {
         /**
          * Identifier of a model supported by MLPA.
