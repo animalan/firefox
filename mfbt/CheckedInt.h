@@ -148,39 +148,11 @@ constexpr bool IsDivValid(T aX, T aY) {
                       aX == std::numeric_limits<T>::min() && aY == T(-1));
 }
 
-template <typename T, bool IsTSigned = std::is_signed_v<T>>
-struct IsModValidImpl;
-
 template <typename T>
 constexpr bool IsModValid(T aX, T aY) {
-  return IsModValidImpl<T>::run(aX, aY);
+  // Mod is valid iff Div is valid (since C++11).
+  return IsDivValid(aX, aY);
 }
-
-/*
- * Mod is pretty simple.
- * For now, let's just use the ANSI C definition:
- * If aX or aY are negative, the results are implementation defined.
- *   Consider these invalid.
- * Undefined for aY=0.
- * The result will never exceed either aX or aY.
- *
- * Checking that aX>=0 is a warning when T is unsigned.
- */
-
-template <typename T>
-struct IsModValidImpl<T, false> {
-  static constexpr bool run(T aX, T aY) { return aY >= 1; }
-};
-
-template <typename T>
-struct IsModValidImpl<T, true> {
-  static constexpr bool run(T aX, T aY) {
-    if (aX < 0) {
-      return false;
-    }
-    return aY >= 1;
-  }
-};
 
 template <typename T, bool IsSigned = std::is_signed_v<T>>
 struct NegateImpl;
