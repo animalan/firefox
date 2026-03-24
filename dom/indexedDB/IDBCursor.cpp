@@ -347,7 +347,7 @@ void IDBTypedCursor<CursorType>::Continue(JSContext* const aCx,
   }
 
   Key key;
-  auto result = key.SetFromJSVal(aCx, aKey, mTransaction);
+  auto result = key.SetFromJSVal(aCx, aKey);
   if (result.isErr()) {
     aRv = result.unwrapErr().ExtractErrorResult(
         InvalidMapsTo<NS_ERROR_DOM_INDEXEDDB_DATA_ERR>);
@@ -450,7 +450,7 @@ void IDBTypedCursor<CursorType>::ContinuePrimaryKey(
     }
 
     Key key;
-    auto result = key.SetFromJSVal(aCx, aKey, mTransaction);
+    auto result = key.SetFromJSVal(aCx, aKey);
     if (result.isErr()) {
       aRv = result.unwrapErr().ExtractErrorResult(
           InvalidMapsTo<NS_ERROR_DOM_INDEXEDDB_DATA_ERR>);
@@ -472,7 +472,7 @@ void IDBTypedCursor<CursorType>::ContinuePrimaryKey(
     }
 
     Key primaryKey;
-    result = primaryKey.SetFromJSVal(aCx, aPrimaryKey, mTransaction);
+    result = primaryKey.SetFromJSVal(aCx, aPrimaryKey);
     if (result.isErr()) {
       aRv = result.unwrapErr().ExtractErrorResult(
           InvalidMapsTo<NS_ERROR_DOM_INDEXEDDB_DATA_ERR>);
@@ -616,7 +616,7 @@ RefPtr<IDBRequest> IDBTypedCursor<CursorType>::Update(
 
     IDBObjectStore& objectStore = GetSourceObjectStoreRef();
     if (objectStore.HasValidKeyPath()) {
-      if (!valueWrapper.Clone(aCx, mTransaction)) {
+      if (!valueWrapper.Clone(aCx)) {
         aRv.Throw(NS_ERROR_DOM_DATA_CLONE_ERR);
         return nullptr;
       }

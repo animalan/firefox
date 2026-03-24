@@ -4,7 +4,6 @@
 
 #include "IDBKeyRange.h"
 
-#include "IDBTransaction.h"
 #include "Key.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/HoldDropJSObjects.h"
@@ -19,8 +18,8 @@ using namespace mozilla::dom::indexedDB;
 namespace {
 
 void GetKeyFromJSVal(JSContext* aCx, JS::Handle<JS::Value> aVal, Key& aKey,
-                     ErrorResult& aRv, IDBTransaction* aTransaction = nullptr) {
-  auto result = aKey.SetFromJSVal(aCx, aVal, aTransaction);
+                     ErrorResult& aRv) {
+  auto result = aKey.SetFromJSVal(aCx, aVal);
   if (result.isErr()) {
     aRv = result.unwrapErr().ExtractErrorResult(
         InvalidMapsTo<NS_ERROR_DOM_INDEXEDDB_DATA_ERR>);
@@ -50,8 +49,7 @@ IDBKeyRange::~IDBKeyRange() { DropJSObjects(); }
 
 // static
 void IDBKeyRange::FromJSVal(JSContext* aCx, JS::Handle<JS::Value> aVal,
-                            RefPtr<IDBKeyRange>* aKeyRange, ErrorResult& aRv,
-                            IDBTransaction* aTransaction) {
+                            RefPtr<IDBKeyRange>* aKeyRange, ErrorResult& aRv) {
   MOZ_ASSERT_IF(!aCx, aVal.isUndefined());
   MOZ_ASSERT(aKeyRange);
 
@@ -74,7 +72,7 @@ void IDBKeyRange::FromJSVal(JSContext* aCx, JS::Handle<JS::Value> aVal,
 
   // A valid key returns an 'only' IDBKeyRange.
   keyRange = new IDBKeyRange(false, false, true);
-  GetKeyFromJSVal(aCx, aVal, keyRange->Lower(), aRv, aTransaction);
+  GetKeyFromJSVal(aCx, aVal, keyRange->Lower(), aRv);
   if (!aRv.Failed()) {
     *aKeyRange = std::move(keyRange);
   }
