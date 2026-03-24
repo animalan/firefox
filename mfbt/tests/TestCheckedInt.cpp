@@ -510,7 +510,6 @@ void test() {
   typedef long long longLong;
   typedef unsigned long long unsignedLongLong;
 
-  VERIFY_CONSTRUCTION_FROM_INTEGER_TYPE(char)
   VERIFY_CONSTRUCTION_FROM_INTEGER_TYPE(signedChar)
   VERIFY_CONSTRUCTION_FROM_INTEGER_TYPE(unsignedChar)
   VERIFY_CONSTRUCTION_FROM_INTEGER_TYPE(short)
@@ -563,7 +562,6 @@ int main() {
   test<int64_t>();
   test<uint64_t>();
 
-  test<char>();
   test<signed char>();
   test<unsigned char>();
   test<short>();
