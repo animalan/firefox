@@ -57,6 +57,9 @@ export class SyncedTabsTabList extends FxviewTabListBase {
         .url=${tabItem.url}
         .searchQuery=${ifDefined(this.searchQuery)}
         .hasPopup=${this.hasPopup}
+        .time=${ifDefined(tabItem.time)}
+        .timeMsPref=${ifDefined(this.timeMsPref)}
+        .dateTimeFormat=${ifDefined(this.dateTimeFormat)}
       ></fxview-tab-row>
     `;
   };
