@@ -71,6 +71,8 @@ pub extern "C" fn happy_eyeballs_create(
         ..Default::default()
     };
 
+    let profiler = profiler::Profiler::new(0, &origin_str, &network_config);
+
     let raw_ptr = match happy_eyeballs::HappyEyeballs::new_with_network_config(
         origin_str.as_str(),
         port,
@@ -80,7 +82,7 @@ pub extern "C" fn happy_eyeballs_create(
             let mut boxed = Box::new(HappyEyeballs {
                 refcnt: unsafe { AtomicRefcnt::new() },
                 inner: he,
-                profiler: profiler::Profiler::new(0, origin_str),
+                profiler,
             });
             boxed
                 .profiler
@@ -213,7 +215,7 @@ impl HappyEyeballs {
             addrs.push(ipv4);
         }
 
-        self.profiler.dns_response_a(id, &addrs);
+        self.profiler.dns_response(id, &addrs);
 
         let result = happy_eyeballs::DnsResult::A(Ok(addrs));
         let input = happy_eyeballs::Input::DnsResult { id, result };
@@ -238,7 +240,7 @@ impl HappyEyeballs {
             addrs.push(ipv6);
         }
 
-        self.profiler.dns_response_aaaa(id, &addrs);
+        self.profiler.dns_response(id, &addrs);
 
         let result = happy_eyeballs::DnsResult::Aaaa(Ok(addrs));
         let input = happy_eyeballs::Input::DnsResult { id, result };
@@ -354,7 +356,7 @@ impl HappyEyeballs {
                 hostname: _hostname,
                 record_type,
             }) => {
-                self.profiler.dns_query_started(id);
+                self.profiler.dns_query_started(id, record_type);
                 *ret_event = Output::SendDnsQuery {
                     id: id.into(),
                     record_type: record_type.into(),
@@ -383,6 +385,7 @@ impl HappyEyeballs {
                 };
             }
             Some(happy_eyeballs::Output::CancelConnection { id }) => {
+                self.profiler.connection_cancelled(id);
                 *ret_event = Output::CancelConnection { id: id.into() };
             }
             Some(happy_eyeballs::Output::Succeeded) => {
