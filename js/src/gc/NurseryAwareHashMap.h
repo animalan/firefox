@@ -33,26 +33,26 @@ class UnsafeBareWeakHeapPtr : public ReadBarriered<T> {
       : ReadBarriered<T>(std::move(v)) {}
 
   UnsafeBareWeakHeapPtr& operator=(const UnsafeBareWeakHeapPtr& v) {
-    this->value = v.value;
+    this->unbarrieredSet(v.unbarrieredGet());
     return *this;
   }
 
   UnsafeBareWeakHeapPtr& operator=(const T& v) {
-    this->value = v;
+    this->unbarrieredSet(v);
     return *this;
   }
 
   const T get() const {
-    if (!InternalBarrierMethods<T>::isMarkable(this->value)) {
+    if (!InternalBarrierMethods<T>::isMarkable(this->unbarrieredGet())) {
       return JS::SafelyInitialized<T>::create();
     }
     this->read();
-    return this->value;
+    return this->unbarrieredGet();
   }
 
-  explicit operator bool() const { return bool(this->value); }
+  using ReadBarriered<T>::unbarrieredGet;
 
-  const T unbarrieredGet() const { return this->value; }
+  explicit operator bool() const { return bool(this->unbarrieredGet()); }
 };
 }  // namespace detail
 
