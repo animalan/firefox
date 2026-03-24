@@ -680,12 +680,6 @@ skip script test262/staging/top-level-await/tla-hang-entry.js
 # Missing localizations for Before Hijri era: <https://unicode-org.atlassian.net/browse/CLDR-19320>
 skip script test262/intl402/DateTimeFormat/prototype/formatToParts/era.js
 
-# Align NonISOMonthDayToISOReferenceDate with latest spec changes, see
-# <https://github.com/tc39/proposal-intl-era-monthcode/issues/113> and follow-up issues.
-skip script test262/intl402/Temporal/PlainMonthDay/from/chinese-dangi-leap-month-with-year-from-plaindate-overflow-reject.js
-skip script test262/intl402/Temporal/PlainMonthDay/from/chinese-dangi-leap-month-with-year-from-options-bag-overflow-reject.js
-skip script test262/intl402/Temporal/PlainMonthDay/from/chinese-dangi-leap-month-with-year-from-options-bag.js
-
 
 ###########################################################
 # Tests disabled due to issues in test262 importer script #
