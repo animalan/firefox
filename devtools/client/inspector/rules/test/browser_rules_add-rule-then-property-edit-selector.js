@@ -50,34 +50,17 @@ add_task(async function () {
   await checkModifiedElement(view, "span", 1);
 });
 
-async function testEditSelector(view, name) {
+async function testEditSelector(view, newSelector) {
   const idRuleEditor = getRuleViewRuleEditorAt(view, 1);
 
-  info("Focusing an existing selector name in the rule-view");
-  const editor = await focusEditableField(view, idRuleEditor.selectorText);
-
-  is(
-    inplaceEditor(idRuleEditor.selectorText),
-    editor,
-    "The selector editor got focused"
-  );
-
-  info("Entering a new selector name: " + name);
-  editor.input.value = name;
-
-  info("Waiting for rule view to update");
-  const onRuleViewChanged = once(view, "ruleview-changed");
-
-  info("Entering the commit key");
-  EventUtils.synthesizeKey("KEY_Enter");
-  await onRuleViewChanged;
+  await editSelectorForRuleEditor(view, idRuleEditor, newSelector);
 
   assertDisplayedRulesCount(view, 3);
 }
 
-function checkModifiedElement(view, name, index) {
+function checkModifiedElement(view, selector, index) {
   assertDisplayedRulesCount(view, 2);
-  ok(getRuleViewRule(view, name), "Rule with " + name + " selector exists.");
+  ok(getRuleViewRule(view, selector), `Rule with ${selector} selector exists.`);
 
   const idRuleEditor = getRuleViewRuleEditorAt(view, index);
   const textProps = idRuleEditor.rule.textProps;
