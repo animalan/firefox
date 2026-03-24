@@ -27,6 +27,7 @@ import mozilla.components.browser.state.action.AwesomeBarAction.EngagementFinish
 import mozilla.components.browser.state.search.SearchEngine
 import mozilla.components.browser.state.search.SearchEngine.Type.APPLICATION
 import mozilla.components.browser.state.search.SearchEngine.Type.CUSTOM
+import mozilla.components.browser.state.selector.findTab
 import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.compose.browser.toolbar.BrowserToolbar
@@ -316,7 +317,10 @@ class BrowserToolbarSearchMiddleware(
         val newTab = if (settings.enableHomepageAsNewTab) {
             false
         } else {
-            appStore.state.searchState.sourceTabId == null
+            // Create a new tab if the source for where the search originated is not available.
+            appStore.state.searchState.sourceTabId?.run {
+                browserStore.state.findTab(this) == null
+            } ?: true
         }
 
         navController.navigate(
