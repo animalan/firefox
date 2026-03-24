@@ -62,6 +62,21 @@ from gecko_taskgraph.util.taskgraph import (
                     "type": "string",
                 },
             },
+            "limit_product": {
+                "type": "string",
+                "description": "Limit the products being built",
+                "enum": ["desktop", "android", ""],
+                "default": "",
+            },
+            "limit_platform": {
+                # ideally we'd take an array of strings. in practice this is
+                # difficult because we can only set one target tasks method,
+                # and none exist that support limiting by arbitrary platforms
+                "type": "string",
+                "description": "Limit the platforms being built",
+                "enum": ["linux", "macosx", "win32", "win64", "win64_aarch64", ""],
+                "default": "",
+            },
         },
     },
 )
@@ -103,13 +118,26 @@ def run_nightly_builds_action(parameters, graph_config, input, task_group_id, ta
         combined_full_task_graph, previous_graph_ids, rebuild_kinds
     )
     parameters["do_not_optimize"] = do_not_optimize
-    parameters["target_tasks_method"] = "nightly_all"
-    parameters["release_history"] = populate_release_history(
-        "Firefox", "mozilla-central"
-    )
     # When doing staging releases on try, we still want to re-use tasks from
     # previous graphs.
     parameters["optimize_target_tasks"] = True
+
+    limit_product = input.get("limit_product")
+    if limit_product or limit_product == "desktop":
+        parameters["release_history"] = populate_release_history(
+            "Firefox", "mozilla-central"
+        )
+    # choose the right target tasks method
+    if limit_product:
+        if limit_product == "desktop":
+            if limit_platform := input.get("limit_platform"):
+                parameters["target_tasks_method"] = f"nightly_{limit_platform}"
+            else:
+                parameters["target_tasks_method"] = "nightly_desktop"
+        elif limit_product == "android":
+            parameters["target_tasks_method"] = "nightly-android"
+    else:
+        parameters["target_tasks_method"] = "nightly_all"
 
     # make parameters read-only
     parameters = Parameters(**parameters)
