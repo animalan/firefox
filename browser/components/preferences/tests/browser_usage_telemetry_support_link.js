@@ -42,9 +42,7 @@ async function createSettingWithSupportLink(doc, win, settingId, config) {
   testGroup.setAttribute("data-category", "paneGeneral");
   testGroup.config = { items: [config] };
   testGroup.getSetting = win.Preferences.getSetting.bind(win.Preferences);
-  // doc.body.append(testGroup);
-  doc.getElementById("mainPrefPane").append(testGroup);
-  testGroup.scrollIntoView();
+  doc.body.append(testGroup);
 
   await testGroup.updateComplete;
   await new Promise(r => win.requestAnimationFrame(r));
