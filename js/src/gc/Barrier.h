@@ -268,7 +268,7 @@
  *
  * BarrieredBase             base class of all barriers
  *  |  |
- *  | WriteBarriered         base class which provides common write operations
+ *  | BarrieredPtrImpl       template class conditionally implementing barriers
  *  |  |  |  |  |
  *  |  |  |  | PreBarriered  provides pre-barriers only
  *  |  |  |  |
@@ -277,12 +277,11 @@
  *  |  | HeapPtr             provides pre- and post-barriers; is relocatable
  *  |  |                     and deletable for use inside C++ managed memory
  *  |  |
- *  | HeapSlot               similar to GCPtr, but tailored to slots storage
+ *  | WeakHeapPtr            provides read barriers only
  *  |
- * ReadBarriered             base class which provides common read operations
+ * WriteBarriered            base class which provides common write operations
  *  |
- * WeakHeapPtr               provides read barriers only
- *
+ * HeapSlot                  similar to GCPtr, but tailored to slots storage
  *
  * The implementation of the barrier logic is implemented in the
  * Cell/TenuredCell base classes, which are called via:
@@ -491,8 +490,6 @@ class MOZ_NON_MEMMOVABLE BarrieredBase {
  protected:
   // BarrieredBase is not directly instantiable.
   explicit BarrieredBase(const T& v) : value(v) {}
-
-  // BarrieredBase subclasses cannot be copy constructed by default.
   BarrieredBase(const BarrieredBase<T>& other) = default;
 
   // Accessors without barriers, protected by default. Subclasses implement
@@ -510,7 +507,6 @@ class MOZ_NON_MEMMOVABLE BarrieredBase {
   T* unbarrieredAddress() const { return const_cast<T*>(&value); }
 };
 
-// Base class for barriered pointer types that intercept only writes.
 namespace gc {
 
 // Bitfield of options for BarrieredPtrImpl.
@@ -712,11 +708,18 @@ class WriteBarriered : public BarrieredBase<T>,
   }
 };
 
-#define DECLARE_POINTER_ASSIGN_AND_MOVE_OPS(Wrapper, T) \
-  DECLARE_POINTER_ASSIGN_OPS(Wrapper, T)                \
-  Wrapper<T>& operator=(Wrapper<T>&& other) noexcept {  \
-    setUnchecked(other.release());                      \
-    return *this;                                       \
+// Declare a barriered pointer template.
+//
+// This is done by inheritance rather than a using declaration so that the name
+// shows up error messages and in the debugger.
+#define DEFINE_BARRIERED_PTR(Name, Options)              \
+  template <typename T>                                  \
+  class Name : public gc::BarrieredPtrImpl<T, Options> { \
+    using Base = gc::BarrieredPtrImpl<T, Options>;       \
+                                                         \
+   public:                                               \
+    using Base::Base;                                    \
+    using Base::operator=;                               \
   }
 
 /*
@@ -728,47 +731,7 @@ class WriteBarriered : public BarrieredBase<T>,
  * This class is useful for example for HashMap keys where automatically
  * updating a moved nursery pointer would break the hash table.
  */
-template <class T>
-class PreBarriered : public WriteBarriered<T> {
- public:
-  PreBarriered() : WriteBarriered<T>(JS::SafelyInitialized<T>::create()) {}
-  /*
-   * Allow implicit construction for use in generic contexts.
-   */
-  MOZ_IMPLICIT PreBarriered(const T& v) : WriteBarriered<T>(v) {}
-
-  explicit PreBarriered(const PreBarriered<T>& other)
-      : WriteBarriered<T>(other.unbarrieredGet()) {}
-
-  PreBarriered(PreBarriered<T>&& other) noexcept
-      : WriteBarriered<T>(other.release()) {}
-
-  ~PreBarriered() { this->pre(); }
-
-  void init(const T& v) { this->unbarrieredSet(v); }
-
-  /* Use to set the pointer to nullptr. */
-  void clear() { set(JS::SafelyInitialized<T>::create()); }
-
-  DECLARE_POINTER_ASSIGN_AND_MOVE_OPS(PreBarriered, T);
-
-  void set(const T& v) {
-    AssertTargetIsNotGray(v);
-    setUnchecked(v);
-  }
-
- private:
-  void setUnchecked(const T& v) {
-    this->pre();
-    this->unbarrieredSet(v);
-  }
-
-  T release() {
-    T tmp = this->unbarrieredGet();
-    this->unbarrieredSet(JS::SafelyInitialized<T>::create());
-    return tmp;
-  }
-};
+DEFINE_BARRIERED_PTR(PreBarriered, gc::BarrierOption_PreWriteBarrier);
 
 }  // namespace js
 
@@ -792,65 +755,9 @@ namespace js {
  * implemented by js::HeapPtr<T> or JS::Heap<T> at the cost of not
  * automatically handling deletion or movement.
  */
-template <class T>
-class GCPtr : public WriteBarriered<T> {
- public:
-  GCPtr() : WriteBarriered<T>(JS::SafelyInitialized<T>::create()) {}
-
-  explicit GCPtr(const T& v) : WriteBarriered<T>(v) {
-    this->post(JS::SafelyInitialized<T>::create(), v);
-  }
-
-  explicit GCPtr(const GCPtr<T>& v) : WriteBarriered<T>(v) {
-    this->post(JS::SafelyInitialized<T>::create(), v);
-  }
-
-#ifdef DEBUG
-  ~GCPtr() {
-    // No barriers are necessary as this only happens when the GC is sweeping or
-    // before this has been initialized (see above comment).
-    //
-    // If this assertion fails you may need to make the containing object use a
-    // HeapPtr instead, as this can be deleted from outside of GC.
-    MOZ_ASSERT(CurrentThreadIsGCSweeping() || CurrentThreadIsGCFinalizing() ||
-               this->unbarrieredGet() == JS::SafelyInitialized<T>::create());
-
-    Poison(this, JS_FREED_HEAP_PTR_PATTERN, sizeof(*this),
-           MemCheckKind::MakeNoAccess);
-  }
-#endif
-
-  /*
-   * Unlike HeapPtr<T>, GCPtr<T> must be managed with GC lifetimes.
-   * Specifically, the memory used by the pointer itself must be live until
-   * at least the next minor GC. For that reason, move semantics are invalid
-   * and are deleted here. Please note that not all containers support move
-   * semantics, so this does not completely prevent invalid uses.
-   */
-  GCPtr(GCPtr<T>&&) = delete;
-  GCPtr<T>& operator=(GCPtr<T>&&) = delete;
-
-  void init(const T& v) {
-    AssertTargetIsNotGray(v);
-    this->unbarrieredSet(v);
-    this->post(JS::SafelyInitialized<T>::create(), v);
-  }
-
-  DECLARE_POINTER_ASSIGN_OPS(GCPtr, T);
-
-  void set(const T& v) {
-    AssertTargetIsNotGray(v);
-    setUnchecked(v);
-  }
-
- private:
-  void setUnchecked(const T& v) {
-    this->pre();
-    T tmp = this->unbarrieredGet();
-    this->unbarrieredSet(v);
-    this->post(tmp, this->unbarrieredGet());
-  }
-};
+DEFINE_BARRIERED_PTR(GCPtr, gc::BarrierOption_PreWriteBarrier |
+                                gc::BarrierOption_PostWriteBarrier |
+                                gc::BarrierOption_HasGCLifetime);
 
 }  // namespace js
 
@@ -884,66 +791,8 @@ namespace js {
  * internal pointers to those pointers itself. HeapPtr is only necessary
  * when the relocation would otherwise occur without the GC's knowledge.
  */
-template <class T>
-class HeapPtr : public WriteBarriered<T> {
- public:
-  HeapPtr() : WriteBarriered<T>(JS::SafelyInitialized<T>::create()) {}
-
-  // Implicitly adding barriers is a reasonable default.
-  MOZ_IMPLICIT HeapPtr(const T& v) : WriteBarriered<T>(v) {
-    this->post(JS::SafelyInitialized<T>::create(), this->unbarrieredGet());
-  }
-
-  MOZ_IMPLICIT HeapPtr(const HeapPtr<T>& other) : WriteBarriered<T>(other) {
-    this->post(JS::SafelyInitialized<T>::create(), this->unbarrieredGet());
-  }
-
-  HeapPtr(HeapPtr<T>&& other) noexcept : WriteBarriered<T>(other.release()) {
-    this->post(JS::SafelyInitialized<T>::create(), this->unbarrieredGet());
-  }
-
-  ~HeapPtr() {
-    this->pre();
-    this->post(this->unbarrieredGet(), JS::SafelyInitialized<T>::create());
-  }
-
-  void init(const T& v) {
-    MOZ_ASSERT(this->unbarrieredGet() == JS::SafelyInitialized<T>::create());
-    AssertTargetIsNotGray(v);
-    this->unbarrieredSet(v);
-    this->post(JS::SafelyInitialized<T>::create(), this->unbarrieredGet());
-  }
-
-  DECLARE_POINTER_ASSIGN_AND_MOVE_OPS(HeapPtr, T);
-
-  void set(const T& v) {
-    AssertTargetIsNotGray(v);
-    setUnchecked(v);
-  }
-
-  /* Make this friend so it can access pre() and post(). */
-  template <class T1, class T2>
-  friend inline void BarrieredSetPair(Zone* zone, HeapPtr<T1*>& v1, T1* val1,
-                                      HeapPtr<T2*>& v2, T2* val2);
-
- protected:
-  void setUnchecked(const T& v) {
-    this->pre();
-    postBarrieredSet(v);
-  }
-
-  void postBarrieredSet(const T& v) {
-    T tmp = this->unbarrieredGet();
-    this->unbarrieredSet(v);
-    this->post(tmp, this->unbarrieredGet());
-  }
-
-  T release() {
-    T tmp = this->unbarrieredGet();
-    postBarrieredSet(JS::SafelyInitialized<T>::create());
-    return tmp;
-  }
-};
+DEFINE_BARRIERED_PTR(HeapPtr, gc::BarrierOption_PreWriteBarrier |
+                                  gc::BarrierOption_PostWriteBarrier);
 
 /*
  * A pre-barriered heap pointer, for use inside the JS engine.
@@ -1012,22 +861,6 @@ struct DefineComparisonOps<js::HeapPtr<T>> : std::true_type {
 
 namespace js {
 
-// Base class for barriered pointer types that intercept reads and writes.
-template <typename T>
-class ReadBarriered : public BarrieredBase<T> {
- protected:
-  // ReadBarriered is not directly instantiable.
-  explicit ReadBarriered(const T& v) : BarrieredBase<T>(v) {}
-
-  void read() const {
-    InternalBarrierMethods<T>::readBarrier(this->unbarrieredGet());
-  }
-  void post(const T& prev, const T& next) {
-    InternalBarrierMethods<T>::postBarrier(this->unbarrieredAddress(), prev,
-                                           next);
-  }
-};
-
 // Incremental GC requires that weak pointers have read barriers. See the block
 // comment at the top of Barrier.h for a complete discussion of why.
 //
@@ -1035,94 +868,15 @@ class ReadBarriered : public BarrieredBase<T> {
 // pointers. However, when used as a hashtable key, care must still be taken to
 // insert manual post-barriers on the table for rekeying if the key is based in
 // any way on the address of the object.
-template <typename T>
-class WeakHeapPtr : public ReadBarriered<T>,
-                    public WrappedPtrOperations<T, WeakHeapPtr<T>> {
- public:
-  WeakHeapPtr() : ReadBarriered<T>(JS::SafelyInitialized<T>::create()) {}
 
-  // It is okay to add barriers implicitly.
-  MOZ_IMPLICIT WeakHeapPtr(const T& v) : ReadBarriered<T>(v) {
-    this->post(JS::SafelyInitialized<T>::create(), v);
-  }
-
-  // The copy constructor creates a new weak edge but the wrapped pointer does
-  // not escape, so no read barrier is necessary.
-  explicit WeakHeapPtr(const WeakHeapPtr& other) : ReadBarriered<T>(other) {
-    this->post(JS::SafelyInitialized<T>::create(), this->unbarrieredGet());
-  }
-
-  // Move retains the lifetime status of the source edge, so does not fire
-  // the read barrier of the defunct edge.
-  WeakHeapPtr(WeakHeapPtr&& other) noexcept
-      : ReadBarriered<T>(other.release()) {
-    this->post(JS::SafelyInitialized<T>::create(), this->unbarrieredGet());
-  }
-
-  ~WeakHeapPtr() {
-    this->post(this->unbarrieredGet(), JS::SafelyInitialized<T>::create());
-  }
-
-  WeakHeapPtr& operator=(const WeakHeapPtr& v) {
-    AssertTargetIsNotGray(v.unbarrieredGet());
-    T prior = this->unbarrieredGet();
-    this->unbarrieredSet(v.unbarrieredGet());
-    this->post(prior, v.unbarrieredGet());
-    return *this;
-  }
-
-  const T& get() const {
-    if (InternalBarrierMethods<T>::isMarkable(this->unbarrieredGet())) {
-      this->read();
-    }
-    return this->unbarrieredGet();
-  }
-
-  using BarrieredBase<T>::unbarrieredGet;
-
-  explicit operator bool() const { return bool(this->unbarrieredGet()); }
-
-  operator const T&() const { return get(); }
-
-  const T& operator->() const { return get(); }
-
-  void set(const T& v) {
-    AssertTargetIsNotGray(v);
-    setUnchecked(v);
-  }
-
-  void unbarrieredSet(const T& v) {
-    AssertTargetIsNotGray(v);
-    ReadBarriered<T>::unbarrieredSet(v);
-  }
-
- private:
-  void setUnchecked(const T& v) {
-    T tmp = this->unbarrieredGet();
-    this->unbarrieredSet(v);
-    this->post(tmp, v);
-  }
-
-  T release() {
-    T tmp = this->unbarrieredGet();
-    set(JS::SafelyInitialized<T>::create());
-    return tmp;
-  }
-};
+DEFINE_BARRIERED_PTR(WeakHeapPtr, gc::BarrierOption_ReadBarrier |
+                                      gc::BarrierOption_PostWriteBarrier);
 
 // A wrapper for a bare pointer, with no barriers.
 //
 // This should only be necessary in a limited number of cases. Please don't add
 // more uses of this if at all possible.
-template <typename T>
-class UnsafeBarePtr : public BarrieredBase<T> {
- public:
-  UnsafeBarePtr() : BarrieredBase<T>(JS::SafelyInitialized<T>::create()) {}
-  MOZ_IMPLICIT UnsafeBarePtr(T v) : BarrieredBase<T>(v) {}
-  const T& get() const { return this->unbarrieredGet(); }
-  void set(T newValue) { this->unbarrieredSet(newValue); }
-  DECLARE_POINTER_CONSTREF_OPS(T);
-};
+DEFINE_BARRIERED_PTR(UnsafeBarePtr, gc::BarrierOption_None);
 
 }  // namespace js
 
