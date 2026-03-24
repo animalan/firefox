@@ -1151,6 +1151,7 @@ var SidebarController = {
       );
       this._box.toggleAttribute("sidebar-ongoing-animations", false);
       tabbox.toggleAttribute("sidebar-ongoing-animations", false);
+      this.sidebarMain.toggleAttribute("sidebar-ongoing-animations", false);
     };
     if (this._ongoingAnimations.length) {
       this._ongoingAnimations.forEach(a => a.cancel());
