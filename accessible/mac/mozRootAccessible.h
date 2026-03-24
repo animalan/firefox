@@ -38,12 +38,6 @@
 #pragma mark - MOXAccessible
 
 // override
-- (NSNumber*)moxMain;
-
-// override
-- (NSNumber*)moxMinimized;
-
-// override
 - (id)moxUnignoredParent;
 
 #pragma mark - mozAccessible/widget
