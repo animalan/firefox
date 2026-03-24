@@ -65,6 +65,7 @@ import mozilla.components.feature.customtabs.isCustomTabIntent
 import mozilla.components.feature.media.ext.findActiveMediaTab
 import mozilla.components.feature.privatemode.notification.PrivateNotificationFeature
 import mozilla.components.feature.search.BrowserStoreSearchAdapter
+import mozilla.components.lib.crash.store.CrashAction
 import mozilla.components.service.fxa.sync.SyncReason
 import mozilla.components.support.base.feature.ActivityResultHandler
 import mozilla.components.support.base.feature.UserInteractionHandler
@@ -105,6 +106,7 @@ import org.mozilla.fenix.components.metrics.BreadcrumbsRecorder
 import org.mozilla.fenix.components.metrics.GrowthDataWorker
 import org.mozilla.fenix.components.metrics.MarketingAttributionService
 import org.mozilla.fenix.components.metrics.fonts.FontEnumerationWorker
+import org.mozilla.fenix.crashes.CrashActionDispatcher
 import org.mozilla.fenix.crashes.CrashReporterBinding
 import org.mozilla.fenix.crashes.UnsubmittedCrashDialog
 import org.mozilla.fenix.customtabs.ExternalAppBrowserActivity
@@ -179,7 +181,7 @@ import mozilla.components.ui.icons.R as iconsR
  * - browser screen
  */
 @SuppressWarnings("TooManyFunctions", "LargeClass", "LongMethod")
-open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
+open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, CrashActionDispatcher {
     @VisibleForTesting
     internal lateinit var binding: ActivityHomeBinding
     lateinit var themeManager: ThemeManager
@@ -250,7 +252,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
     private val crashReporterBinding by lazy {
         CrashReporterBinding(
-            context = this,
             store = components.appStore,
             onReporting = ::showCrashReporter,
         )
@@ -1485,19 +1486,20 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         messaging.onMessageDisplayed(nextMessage, currentBootUniqueIdentifier)
     }
 
-    @VisibleForTesting
-    internal fun showCrashReporter(crashIDs: List<String>?, ctxt: Context) {
+    /**
+     * Dispatches the received [CrashAction] from [UnsubmittedCrashDialog]
+     */
+    override fun dispatchCrashAction(action: CrashAction) {
+        components.appStore.dispatch(AppAction.CrashActionWrapper(action))
+    }
+
+    private fun showCrashReporter(crashIDs: List<String>?) {
         if (!settings().useNewCrashReporterFlow) {
             return
         }
 
-        UnsubmittedCrashDialog(
-            dispatcher = { action ->
-                components.appStore.dispatch(AppAction.CrashActionWrapper(action))
-            },
-            crashIDs = crashIDs,
-            localContext = ctxt,
-        ).show(supportFragmentManager, UnsubmittedCrashDialog.TAG)
+        UnsubmittedCrashDialog.create(crashIDs = crashIDs)
+            .show(supportFragmentManager, UnsubmittedCrashDialog.TAG)
     }
 
     companion object {
