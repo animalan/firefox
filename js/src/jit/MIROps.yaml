@@ -4936,13 +4936,4 @@
     environment: Object
   result_type: Value
   generate_lir: true
-
-- name: CreateSuppressedError
-  operands:
-    error: Value
-    suppressed: Value
-  result_type: Object
-  alias_set: none
-  possibly_calls: true
-  generate_lir: true
 #endif
