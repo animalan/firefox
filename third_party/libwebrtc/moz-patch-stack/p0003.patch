@@ -1,81 +1,101 @@
 From: Michael Froman <mfroman@mozilla.com>
-Date: Tue, 24 Mar 2026 13:58:03 -0500
-Subject: (tmp-cherry-pick) Revert "Wayland screencast: add getter for all
- enumerated devices" (de81c0c45f)
+Date: Tue, 24 Mar 2026 13:56:09 -0500
+Subject: (tmp-cherry-pick) Revert "Wayland screencast: add support for
+ preferred device" (14b7e26275)
 
-This reverts commit 15d74a5b976c914762b9bf8e45e0d151e5bb31d9.
+This reverts commit 0436eecd8a193d3c4911cc445c3cfc8b67d439d2.
 
 Reason for revert: Parent CL causes crashes
 
 Original change's description:
-> Wayland screencast: add getter for all enumerated devices
+> Wayland screencast: add support for preferred device
+>
+> Setting a preferred device allows to pick a device that will be used
+> for rendering.
 >
 > Bug: webrtc:461543454
-> Change-Id: I629deaf5e8abc8876789b018f1f01651a5125e91
-> Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/428541
+> Change-Id: I87d08f3637db1a97e9ef5ee3e4e9fd8577713dbe
+> Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/428540
 > Reviewed-by: Alexander Cooper <alcooper@chromium.org>
 > Commit-Queue: Jan Grulich <grulja@gmail.com>
-> Cr-Commit-Position: refs/heads/main@{#46558}
+> Cr-Commit-Position: refs/heads/main@{#46557}
 
 Bug: webrtc:461543454
-Change-Id: Icbfa38df6d62135820e2a780b97b8f19cb6df7f5
-Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/440421
+Change-Id: I6e19822c873928dd7ee8423e5a236f232270a628
+Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/440422
 Reviewed-by: Danil Chapovalov <danilchap@webrtc.org>
 Bot-Commit: Rubber Stamper <rubber-stamper@appspot.gserviceaccount.com>
 Reviewed-by: Alexander Cooper <alcooper@chromium.org>
-Commit-Queue: Ilya Nikolaevskiy <ilnik@webrtc.org>
 Owners-Override: Danil Chapovalov <danilchap@webrtc.org>
-Cr-Commit-Position: refs/heads/main@{#46574}
+Reviewed-by: Jeremy Leconte <jleconte@google.com>
+Commit-Queue: Jan Grulich <grulja@gmail.com>
+Cr-Commit-Position: refs/heads/main@{#46577}
 ---
- .../desktop_capture/linux/wayland/egl_dmabuf.cc | 17 -----------------
- .../desktop_capture/linux/wayland/egl_dmabuf.h  |  4 ----
- 2 files changed, 21 deletions(-)
+ .../linux/wayland/egl_dmabuf.cc               | 25 -------------------
+ .../linux/wayland/egl_dmabuf.h                |  3 ---
+ 2 files changed, 28 deletions(-)
 
 diff --git a/modules/desktop_capture/linux/wayland/egl_dmabuf.cc b/modules/desktop_capture/linux/wayland/egl_dmabuf.cc
-index 3cab6458e0..a60402e716 100644
+index a60402e716..29a70f4bad 100644
 --- a/modules/desktop_capture/linux/wayland/egl_dmabuf.cc
 +++ b/modules/desktop_capture/linux/wayland/egl_dmabuf.cc
-@@ -865,14 +865,6 @@ EglDrmDevice* EglDmaBuf::GetRenderDevice() {
-   return nullptr;
+@@ -849,11 +849,6 @@ void EglDmaBuf::EnumerateDrmDevices() {
  }
  
--EglDrmDevice* EglDmaBuf::GetRenderDevice(dev_t id) {
--  if (auto it = devices_.find(id); it != devices_.end()) {
+ EglDrmDevice* EglDmaBuf::GetRenderDevice() {
+-  if (auto it = devices_.find(preferred_render_device_id_);
+-      it != devices_.end()) {
 -    return it->second.get();
 -  }
 -
--  return nullptr;
--}
+   if (default_platform_device_) {
+     return default_platform_device_.get();
+   }
+@@ -861,27 +856,7 @@ EglDrmDevice* EglDmaBuf::GetRenderDevice() {
+   if (!devices_.empty()) {
+     return devices_.begin()->second.get();
+   }
 -
- bool EglDmaBuf::SetPreferredRenderDevice(dev_t device_id) {
-   if (device_id == DEVICE_ID_INVALID) {
-     RTC_LOG(LS_ERROR) << "Cannot set invalid device ID as render device";
-@@ -892,13 +884,4 @@ bool EglDmaBuf::SetPreferredRenderDevice(dev_t device_id) {
-   return true;
+   return nullptr;
  }
  
--std::vector<dev_t> EglDmaBuf::GetDevices() const {
--  std::vector<dev_t> device_ids;
--  device_ids.reserve(devices_.size());
--  for (const auto& [device_id, device] : devices_) {
--    device_ids.push_back(device_id);
+-bool EglDmaBuf::SetPreferredRenderDevice(dev_t device_id) {
+-  if (device_id == DEVICE_ID_INVALID) {
+-    RTC_LOG(LS_ERROR) << "Cannot set invalid device ID as render device";
+-    return false;
 -  }
--  return device_ids;
+-
+-  auto it = devices_.find(device_id);
+-  if (it == devices_.end()) {
+-    RTC_LOG(LS_ERROR) << "Device ID " << device_id << " not found";
+-    return false;
+-  }
+-
+-  preferred_render_device_id_ = device_id;
+-  RTC_LOG(LS_INFO) << "Render device set to device ID: " << major(device_id)
+-                   << ":" << minor(device_id);
+-
+-  return true;
 -}
 -
  }  // namespace webrtc
 diff --git a/modules/desktop_capture/linux/wayland/egl_dmabuf.h b/modules/desktop_capture/linux/wayland/egl_dmabuf.h
-index 97ca0b3fc0..f70f5bb017 100644
+index f70f5bb017..ee32f96b52 100644
 --- a/modules/desktop_capture/linux/wayland/egl_dmabuf.h
 +++ b/modules/desktop_capture/linux/wayland/egl_dmabuf.h
-@@ -96,10 +96,6 @@ class EglDmaBuf {
-   //    uses EGL device enumeration to discover available DRM devices
+@@ -97,15 +97,12 @@ class EglDmaBuf {
    // 3. nullptr - if no devices are available
    EglDrmDevice* GetRenderDevice();
--  // Returns the DRM device given the id or nullptr in case the device is not
--  // found
--  EglDrmDevice* GetRenderDevice(dev_t id);
--  std::vector<dev_t> GetDevices() const;
  
-   bool SetPreferredRenderDevice(dev_t device_id);
+-  bool SetPreferredRenderDevice(dev_t device_id);
+-
+  private:
+   bool CreatePlatformDevice();
+   void EnumerateDrmDevices();
  
+   std::map<dev_t, std::unique_ptr<EglDrmDevice>> devices_;
+   std::unique_ptr<EglDrmDevice> default_platform_device_;
+-  dev_t preferred_render_device_id_ = DEVICE_ID_INVALID;
+ };
+ 
+ }  // namespace webrtc
