@@ -96,11 +96,6 @@ add_task(async function test_smartbar_commit_telemetry() {
       conversationId,
       "smartbar commit event includes the conversation id"
     );
-    Assert.equal(
-      events[0].extra.location,
-      "fullpage",
-      "smartbar commit event includes the location"
-    );
   } finally {
     if (win) {
       await BrowserTestUtils.closeWindow(win);
@@ -172,11 +167,6 @@ add_task(async function test_memories_toggle_telemetry() {
       events[0].extra.memories,
       "2",
       "memories toggle event includes memories count"
-    );
-    Assert.equal(
-      events[0].extra.location,
-      "fullpage",
-      "memories toggle event includes the location"
     );
   } finally {
     if (MemoryStore) {
@@ -297,11 +287,6 @@ add_task(async function test_prompt_selected_telemetry() {
       events[0].extra.chat_id,
       conversationId,
       "prompt selected event includes the conversation id"
-    );
-    Assert.equal(
-      events[0].extra.location,
-      "fullpage",
-      "prompt selected event includes the location"
     );
   } finally {
     await SpecialPowers.popPrefEnv();

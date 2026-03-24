@@ -7,7 +7,6 @@ import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 /**
  * @import {BrowserSearchTelemetry} from "moz-src:///browser/components/search/BrowserSearchTelemetry.sys.mjs"
  * @import {ProvidersManager} from "moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs"
- * @import {SapLocation} from "moz-src:///browser/components/urlbar/content/SmartbarInput.mjs"
  * @import {UrlbarView} from "moz-src:///browser/components/urlbar/UrlbarView.sys.mjs"
  */
 
@@ -890,9 +889,6 @@ class TelemetryEvent {
    *   One of "unknown", "autofill", "visiturl", "bookmark", "help", "history",
    *   "keyword", "searchengine", "searchsuggestion", "switchtab", "remotetab",
    *   "extension", "oneoff", "dismiss".
-   * @property {SapLocation} [location]
-   *   The location where the interaction occurred.
-   *   Required when sap is "smartbar".
    */
 
   /**
@@ -1033,7 +1029,6 @@ class TelemetryEvent {
       searchMode: internalDetails.searchMode,
       selIndex: internalDetails.selIndex,
       selType: internalDetails.selType,
-      location: internalDetails.location,
     });
 
     if (!internalDetails.isSessionOngoing) {
@@ -1075,7 +1070,7 @@ class TelemetryEvent {
    *
    * @param {string} searchSource
    *   The search source string to convert.
-   * @returns {null|"urlbar"|"searchbar"|"smartbar"|"handoff"|"urlbar_newtab"|"urlbar_addonpage"}
+   * @returns {null|"urlbar"|"searchbar"|"handoff"|"urlbar_newtab"|"urlbar_addonpage"}
    *   The sap value for urlbar.* telemetry or null if the browser window
    *   already started closing. In that case, no telemetry should be recorded.
    */
@@ -1084,12 +1079,8 @@ class TelemetryEvent {
     if (searchSource === "urlbar_handoff") {
       return "handoff";
     }
-    // TODO (bug 2024630): Ideally, we would not add every new SAP here.
     if (searchSource === "searchbar") {
       return "searchbar";
-    }
-    if (searchSource === "smartbar") {
-      return "smartbar";
     }
     if (browserWindow.closed) {
       // If the browser window has already started closing, then we bail-out.
@@ -1138,9 +1129,6 @@ class TelemetryEvent {
    *   "extension", "oneoff", "dismiss".
    * @param {number} [details.viewTime]
    *   The length of the view time in milliseconds.
-   * @param {SapLocation} [details.location]
-   *   The location where the interaction occurred.
-   *   Required when sap is "smartbar".
    */
   #recordSearchEngagementTelemetry(
     method,
@@ -1156,19 +1144,11 @@ class TelemetryEvent {
       selIndex,
       selType,
       viewTime = 0,
-      location = null,
     }
   ) {
     let sap = this.#searchSourceToSap(searchSource);
     if (!sap) {
       return;
-    }
-    // The extra_key `location` is optional, but required for the smartbar.
-    // TODO (bug 2024631): Support location for all SAPs.
-    if (this._controller.input.sapName === "smartbar" && !location) {
-      throw new Error(
-        "Telemetry extra_key `location` is required for smartbar"
-      );
     }
     searchMode = searchMode ?? this._controller.input.searchMode;
 
@@ -1244,7 +1224,6 @@ class TelemetryEvent {
           results,
           actions,
           available_semantic_sources,
-          ...(location ? { location } : {}),
         };
         lazy.logger.info(`engagement event:`, eventInfo);
         Glean.urlbar.engagement.record(eventInfo);
@@ -1264,7 +1243,6 @@ class TelemetryEvent {
           results,
           actions,
           available_semantic_sources,
-          ...(location ? { location } : {}),
         };
         lazy.logger.info(`abandonment event:`, eventInfo);
         Glean.urlbar.abandonment.record(eventInfo);
@@ -1293,7 +1271,6 @@ class TelemetryEvent {
           selected_result,
           results,
           feature: "suggest",
-          ...(location ? { location } : {}),
         };
         lazy.logger.info(`disable event:`, eventInfo);
         Glean.urlbar.disable.record(eventInfo);
@@ -1322,7 +1299,6 @@ class TelemetryEvent {
           threshold: lazy.UrlbarPrefs.get(
             "events.bounce.maxSecondsFromLastSearch"
           ),
-          ...(location ? { location } : {}),
         };
         lazy.logger.info(`bounce event:`, eventInfo);
         Glean.urlbar.bounce.record(eventInfo);

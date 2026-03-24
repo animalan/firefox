@@ -880,10 +880,7 @@ export class AIWindow extends MozLitElement {
    * @private
    */
   #handleSmartbarCommit = event => {
-    Glean.smartWindow.chatSubmit.record({
-      chat_id: this.conversationId,
-      location: this.mode,
-    });
+    Glean.smartWindow.chatSubmit.record({ chat_id: this.conversationId });
 
     lazy.log.debug(
       "chatId[%s]: %s",

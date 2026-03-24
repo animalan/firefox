@@ -17,7 +17,6 @@ smart_window:
       Recorded when the user submits a chat entry
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=2015626
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=2009615
     data_reviews:
       - https://phabricator.services.mozilla.com/D282873
     data_sensitivity:
@@ -30,10 +29,6 @@ smart_window:
         type: string
         description: >
           UUID for this smart window session. Unique identifier for each chat conversation
-      location: &location
-        type: string
-        description: >
-          Which input was used: fullpage, sidebar, or urlbar
 
   # Chat Assistant
   chat_previous_session:
@@ -70,7 +65,10 @@ smart_window:
       - npodgurski@mozilla.com
     expires: never
     extra_keys:
-      location: *location
+      location: &location
+        type: string
+        description: >
+          Which input was used to request history: fullpage, sidebar, or urlbar
       chat_id: *chat_id
       message_seq: &message_seq
         type: quantity

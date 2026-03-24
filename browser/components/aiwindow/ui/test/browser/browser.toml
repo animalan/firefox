@@ -63,8 +63,6 @@ support-files = [
 
 ["browser_aiwindow_smartbar.js"]
 
-["browser_aiwindow_smartbar_telemetry.js"]
-
 ["browser_aiwindow_smartbar_ask.js"]
 
 ["browser_aiwindow_smartbar_focus.js"]
