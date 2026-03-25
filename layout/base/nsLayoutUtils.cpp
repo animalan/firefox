@@ -8261,12 +8261,12 @@ nsMargin nsLayoutUtils::ScrollbarAreaToExcludeFromCompositionBoundsFor(
   if (!isRootContentDocRootScrollFrame) {
     return nsMargin();
   }
-  if (presContext->UseOverlayScrollbars()) {
-    return nsMargin();
-  }
   ScrollContainerFrame* scrollContainerFrame =
       aScrollFrame->GetScrollTargetFrame();
   if (!scrollContainerFrame) {
+    return nsMargin();
+  }
+  if (scrollContainerFrame->UseOverlayScrollbars()) {
     return nsMargin();
   }
   return scrollContainerFrame->GetActualScrollbarSizes(
