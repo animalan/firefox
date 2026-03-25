@@ -2470,6 +2470,17 @@ describe("DiscoveryStreamFeed", () => {
     });
   });
 
+  describe("#onAction: DISCOVERY_STREAM_DEV_REFRESH_CACHE", () => {
+    it("should clear the cache with DISCOVERY_STREAM_DEV_REFRESH_CACHE", async () => {
+      sandbox.stub(feed.cache, "set").returns(Promise.resolve());
+
+      sandbox.stub(feed, "resetCache").returns(Promise.resolve());
+      await feed.onAction({ type: at.DISCOVERY_STREAM_DEV_REFRESH_CACHE });
+
+      assert.calledOnce(feed.resetCache);
+    });
+  });
+
   describe("#onAction: DISCOVERY_STREAM_DEV_SYSTEM_TICK", () => {
     it("should refresh if DiscoveryStream has been loaded at least once and a cache has expired", async () => {
       sandbox.stub(feed.cache, "set").resolves();
