@@ -518,6 +518,7 @@
         let panel = tab.linkedPanel;
         const panelEl = document.getElementById(panel);
         panelEl?.classList.remove("split-view-panel");
+        panelEl?.classList.remove("split-view-panel-active");
         panelEl?.removeAttribute("column");
         const browser = panelEl?.querySelector("browser");
         const browserContainer = panelEl?.querySelector(".browserContainer");
