@@ -733,8 +733,28 @@ already_AddRefed<gfx::DataSourceSurface> BufferTextureHost::GetAsSurface(
     if (stride.isNothing()) {
       return nullptr;
     }
+
+    struct Closure {
+      RefPtr<nsISerialEventTarget> mEventTarget;
+      RefPtr<Runnable> mRunnable;
+    };
+
+    RefPtr<nsISerialEventTarget> eventTarget = CompositorThread();
+    RefPtr<Runnable> runnable =
+        NS_NewRunnableFunction("BufferTextureHost::GetAsSurface::Runnable",
+                               [self = RefPtr{this}]() {});
+
+    Closure* closure = new Closure{eventTarget.forget(), runnable.forget()};
+
+    auto destroyedCallback = [](void* aClosure) mutable {
+      auto* closure = static_cast<Closure*>(aClosure);
+      closure->mEventTarget->Dispatch(closure->mRunnable.forget());
+      delete closure;
+    };
+
     result = gfx::Factory::CreateWrappingDataSourceSurface(
-        GetBuffer(), stride.value(), mSize, mFormat);
+        GetBuffer(), stride.value(), mSize, mFormat, destroyedCallback,
+        closure);
   }
   return result.forget();
 }

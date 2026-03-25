@@ -1567,11 +1567,21 @@ CanvasTranslator::MaybeRecycleDataSurfaceForSurfaceDescriptor(
   if (usedDescriptor.isSome() && usedDescriptor.ref() == aSurfaceDescriptor) {
     MOZ_ASSERT(usedSurf);
     MOZ_ASSERT(usedWrapper);
-    MOZ_ASSERT(aTextureHost->GetSize() == usedSurf->GetSize());
 
-    // Since the data is the same as before, the DataSourceSurfaceWrapper can be
-    // reused.
-    return do_AddRef(usedWrapper);
+    auto* bufferTextureHost = aTextureHost->AsBufferTextureHost();
+    if (bufferTextureHost) {
+      if (bufferTextureHost->GetBuffer() &&
+          bufferTextureHost->GetBuffer() == usedSurf->GetData() &&
+          aTextureHost->GetSize() == usedSurf->GetSize() &&
+          aTextureHost->GetFormat() == usedSurf->GetFormat()) {
+        // Since the data is the same as before, the DataSourceSurfaceWrapper
+        // can be reused.
+        return do_AddRef(usedWrapper);
+      }
+      mUsedDataSurfaceForSurfaceDescriptor = nullptr;
+      mUsedWrapperForSurfaceDescriptor = nullptr;
+      mUsedSurfaceDescriptorForSurfaceDescriptor = Nothing();
+    }
   }
 
   bool isYuvVideo = false;
