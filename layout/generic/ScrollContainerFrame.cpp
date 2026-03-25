@@ -1130,20 +1130,19 @@ void ScrollContainerFrame::PlaceScrollArea(ScrollReflowInput& aState,
   // Set the x,y of the scrolled frame to the correct value
   mScrolledFrame->SetPosition(ScrollPort().TopLeft() - aScrollPosition);
 
-  // Recompute our scrollable overflow, taking perspective children into
-  // account. Note that this only recomputes the overflow areas stored on the
-  // helper (which are used to compute scrollable length and scrollbar thumb
-  // sizes) but not the overflow areas stored on the frame. This seems to work
-  // for now, but it's possible that we may need to update both in the future.
-  AdjustForPerspective(aState.mContentsOverflowAreas.ScrollableOverflow());
-
+  if (ChildrenHavePerspective()) {
+    // Recompute our scrollable overflow, taking perspective children into
+    // account.
+    if (RecomputePerspectiveChildrenOverflow(this)) {
+      aState.mContentsOverflowAreas = mScrolledFrame->GetOverflowAreas();
+    }
+    AdjustForPerspective(aState.mContentsOverflowAreas.ScrollableOverflow());
+  }
   // Preserve the width or height of empty rects
   const nsSize portSize = ScrollPort().Size();
   nsRect scrolledRect = GetUnsnappedScrolledRectInternal(
       aState.mContentsOverflowAreas.ScrollableOverflow(), portSize);
-  nsRect scrolledArea =
-      scrolledRect.UnionEdges(nsRect(nsPoint(0, 0), portSize));
-
+  nsRect scrolledArea = scrolledRect.UnionEdges(nsRect(nsPoint(), portSize));
   // Store the new overflow area. Note that this changes where an outline
   // of the scrolled frame would be painted, but scrolled frames can't have
   // outlines (the outline would go on this scrollframe instead).
@@ -1445,9 +1444,7 @@ void ScrollContainerFrame::AdjustForPerspective(nsRect& aScrollableOverflow) {
   // If we have perspective that is being applied to our children, then
   // the effective transform on the child depends on the relative position
   // of the child to us and changes during scrolling.
-  if (!ChildrenHavePerspective()) {
-    return;
-  }
+  MOZ_ASSERT(ChildrenHavePerspective());
   aScrollableOverflow.SetEmpty();
   GetScrollableOverflowForPerspective(mScrolledFrame, mScrolledFrame,
                                       ScrollPort(), nsPoint(),
@@ -3252,19 +3249,12 @@ void ScrollContainerFrame::ScrollToImpl(
     }
   }
 
-  if (ChildrenHavePerspective()) {
+  if (ChildrenHavePerspective() && RecomputePerspectiveChildrenOverflow(this)) {
     // The overflow areas of descendants may depend on the scroll position,
     // so ensure they get updated.
-
     // First we recompute the overflow areas of the transformed children
     // that use the perspective. FinishAndStoreOverflow only calls this
     // if the size changes, so we need to do it manually.
-    RecomputePerspectiveChildrenOverflow(this);
-
-    // Update the overflow for the scrolled frame to take any changes from the
-    // children into account.
-    mScrolledFrame->UpdateOverflow();
-
     // Update the overflow for the outer so that we recompute scrollbars.
     UpdateOverflow();
   }

@@ -2217,7 +2217,7 @@ class nsIFrame : public nsQueryFrame {
   void ComputePreserve3DChildrenOverflow(
       mozilla::OverflowAreas& aOverflowAreas);
 
-  void RecomputePerspectiveChildrenOverflow(const nsIFrame* aStartFrame);
+  bool RecomputePerspectiveChildrenOverflow(const nsIFrame* aStartFrame);
 
   /**
    * Returns whether z-index applies to this frame.
