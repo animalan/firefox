@@ -10383,7 +10383,7 @@
 # Is support for GeometryUtils.convert*FromNode enabled?
 - name: layout.css.convertFromNode.enabled
   type: bool
-  value: @IS_NOT_RELEASE_OR_BETA@
+  value: false
   mirror: always
 
 - name: layout.css.cross-fade.enabled
@@ -10462,7 +10462,7 @@
 # Is support for GeometryUtils.getBoxQuads enabled?
 - name: layout.css.getBoxQuads.enabled
   type: bool
-  value: @IS_NOT_RELEASE_OR_BETA@
+  value: false
   mirror: always
 
 # Is support for (linear|radial|conic)-gradient color interpolation methods enabled?
