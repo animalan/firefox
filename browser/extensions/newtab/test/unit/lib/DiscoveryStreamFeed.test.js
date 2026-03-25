@@ -162,11 +162,6 @@ describe("DiscoveryStreamFeed", () => {
 
   describe("#fetchFromEndpoint", () => {
     beforeEach(() => {
-      feed._prefCache = {
-        config: {
-          api_key_pref: "",
-        },
-      };
       fetchStub.resolves({
         json: () => Promise.resolve("hi"),
         ok: true,
@@ -443,16 +438,6 @@ describe("DiscoveryStreamFeed", () => {
         DEFAULT_ROW_COUNT * DEFAULT_COLUMN_COUNT
       );
     });
-    it("should use new spocs endpoint if in the config", async () => {
-      feed.config.spocs_endpoint = "https://spocs.getpocket.com/spocs2";
-
-      await feed.loadLayout(feed.store.dispatch);
-
-      assert.equal(
-        feed.store.getState().DiscoveryStream.spocs.spocs_endpoint,
-        "https://spocs.getpocket.com/spocs2"
-      );
-    });
     it("should use local basic layout with FF pref hardcoded_basic_layout", async () => {
       feed.store = createStore(combineReducers(reducers), {
         Prefs: {
@@ -692,11 +677,6 @@ describe("DiscoveryStreamFeed", () => {
     it("should send feed update events with new feed data", async () => {
       sandbox.stub(feed.cache, "get").returns(Promise.resolve(fakeCache));
       sandbox.spy(feed.store, "dispatch");
-      feed._prefCache = {
-        config: {
-          api_key_pref: "",
-        },
-      };
 
       await feed.loadComponentFeeds(feed.store.dispatch);
 
@@ -789,12 +769,6 @@ describe("DiscoveryStreamFeed", () => {
 
   describe("#loadSpocs", () => {
     beforeEach(() => {
-      feed._prefCache = {
-        config: {
-          api_key_pref: "",
-        },
-      };
-
       sandbox.stub(feed, "getPlacements").returns([{ name: "spocs" }]);
       Object.defineProperty(feed, "showSponsoredStories", { get: () => true });
     });
