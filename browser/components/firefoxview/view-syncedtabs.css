@@ -48,11 +48,8 @@ h3.device-header:not([slot="header"]) {
   margin-inline: 0.5em 0;
 }
 
-/* hairline separators between synced tabs device lists */
 h3.device-header:not([slot="header"]):not(:first-child) {
-  margin-block-start: var(--space-medium);
-  padding-block-start: var(--space-medium);
-  border-top: 2px solid var(--card-border-color);
+  margin-block-start: 1.6em;
 }
 
 .notabs {
