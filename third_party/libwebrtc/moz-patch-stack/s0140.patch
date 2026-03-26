@@ -8,8 +8,8 @@ Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/537537c3174e46999
 ---
  modules/video_capture/video_capture.h       |  5 +---
  modules/video_capture/video_capture_impl.cc | 28 ++++++---------------
- modules/video_capture/video_capture_impl.h  |  8 +++---
- 3 files changed, 11 insertions(+), 30 deletions(-)
+ modules/video_capture/video_capture_impl.h  |  6 ++---
+ 3 files changed, 10 insertions(+), 29 deletions(-)
 
 diff --git a/modules/video_capture/video_capture.h b/modules/video_capture/video_capture.h
 index 8a91ca2f83..d88b63466e 100644
@@ -95,15 +95,12 @@ index 6fd29f36db..f4f9827ef5 100644
  
    return 0;
 diff --git a/modules/video_capture/video_capture_impl.h b/modules/video_capture/video_capture_impl.h
-index afcca41386..ec404f098d 100644
+index f42fc4296a..ec404f098d 100644
 --- a/modules/video_capture/video_capture_impl.h
 +++ b/modules/video_capture/video_capture_impl.h
-@@ -63,12 +63,10 @@ class RTC_EXPORT VideoCaptureImpl : public VideoCaptureModule {
-   // Call backs
-   void RegisterCaptureDataCallback(
+@@ -65,10 +65,8 @@ class RTC_EXPORT VideoCaptureImpl : public VideoCaptureModule {
        VideoSinkInterface<VideoFrame>* dataCallback) override;
--  virtual void RegisterCaptureDataCallback(
-+  void RegisterCaptureDataCallback(
+   void RegisterCaptureDataCallback(
        RawVideoSinkInterface* dataCallback) override;
 -  void DeRegisterCaptureDataCallback(
 -      webrtc::VideoSinkInterface<VideoFrame>* dataCallback) override;

@@ -110,7 +110,7 @@ index 185f3e9975..5a2c547673 100644
    // Within this list, the sender-source SSRC pair is unique and per-pair the
    // ReportBlockData represents the latest Report Block that was received for
 diff --git a/call/audio_send_stream.h b/call/audio_send_stream.h
-index eafd892c59..79b8125202 100644
+index 46be3bcc47..0b6b924377 100644
 --- a/call/audio_send_stream.h
 +++ b/call/audio_send_stream.h
 @@ -31,6 +31,7 @@

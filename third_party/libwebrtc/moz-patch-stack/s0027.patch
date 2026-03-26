@@ -491,7 +491,7 @@ index ecda5a73aa..8e38dff076 100644
      "../api:transport_api",
      "../api/adaptation:resource_adaptation_api",
 diff --git a/call/audio_send_stream.h b/call/audio_send_stream.h
-index 86d2f8dc86..eafd892c59 100644
+index 40bfd812a4..46be3bcc47 100644
 --- a/call/audio_send_stream.h
 +++ b/call/audio_send_stream.h
 @@ -26,7 +26,7 @@
@@ -690,7 +690,7 @@ index 3951cbd321..4539bc894d 100644
  
  rtc_library("rtc_audio_video") {
 diff --git a/media/base/media_channel.h b/media/base/media_channel.h
-index 94516a76cc..d8e436cd53 100644
+index d9e9c1423d..bb025fbb1e 100644
 --- a/media/base/media_channel.h
 +++ b/media/base/media_channel.h
 @@ -68,9 +68,6 @@ namespace webrtc {
@@ -872,10 +872,10 @@ index 075e2a8110..1f3a66667a 100644
      } else {
        cflags = [
 diff --git a/modules/desktop_capture/BUILD.gn b/modules/desktop_capture/BUILD.gn
-index 96a5835647..8096ac6309 100644
+index 767fd50915..4eed7dcc92 100644
 --- a/modules/desktop_capture/BUILD.gn
 +++ b/modules/desktop_capture/BUILD.gn
-@@ -347,37 +347,12 @@ rtc_library("desktop_capture") {
+@@ -348,37 +348,12 @@ rtc_library("desktop_capture") {
      ]
      deps += [ ":desktop_capture_objc" ]
    }
@@ -913,7 +913,7 @@ index 96a5835647..8096ac6309 100644
    }
  
    if (rtc_use_x11_extensions) {
-@@ -540,9 +515,7 @@ rtc_library("desktop_capture") {
+@@ -541,9 +516,7 @@ rtc_library("desktop_capture") {
      deps += [ "../../rtc_base:sanitizer" ]
    }
  
