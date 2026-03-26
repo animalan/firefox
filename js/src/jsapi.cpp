@@ -1814,6 +1814,15 @@ JS::RealmBehaviors& JS::RealmBehaviors::setTimeZoneOverride(
   return *this;
 }
 
+void JS::RealmBehaviors::copyOverrideStrings() {
+  if (localeOverride_) {
+    setLocaleOverride(localeOverride_->chars());
+  }
+  if (timeZoneOverride_) {
+    setTimeZoneOverride(timeZoneOverride_->chars());
+  }
+}
+
 const JS::RealmBehaviors& JS::RealmBehaviorsRef(JS::Realm* realm) {
   return realm->behaviors();
 }
