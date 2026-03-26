@@ -29,9 +29,10 @@ class AnimationToolbar extends PureComponent {
     return {
       addAnimationsCurrentTimeListener: PropTypes.func.isRequired,
       animations: PropTypes.arrayOf(PropTypes.object).isRequired,
+      playBackRateMultiplier: PropTypes.number.isRequired,
       removeAnimationsCurrentTimeListener: PropTypes.func.isRequired,
       rewindAnimationsCurrentTime: PropTypes.func.isRequired,
-      setAnimationsPlaybackRate: PropTypes.func.isRequired,
+      setAnimationsPlaybackRateMultiplier: PropTypes.func.isRequired,
       setAnimationsPlayState: PropTypes.func.isRequired,
       timeScale: PropTypes.object.isRequired,
     };
@@ -41,9 +42,10 @@ class AnimationToolbar extends PureComponent {
     const {
       addAnimationsCurrentTimeListener,
       animations,
+      playBackRateMultiplier,
       removeAnimationsCurrentTimeListener,
       rewindAnimationsCurrentTime,
-      setAnimationsPlaybackRate,
+      setAnimationsPlaybackRateMultiplier,
       setAnimationsPlayState,
       timeScale,
     } = this.props;
@@ -60,8 +62,8 @@ class AnimationToolbar extends PureComponent {
         setAnimationsPlayState,
       }),
       PlaybackRateSelector({
-        animations,
-        setAnimationsPlaybackRate,
+        playBackRateMultiplier,
+        setAnimationsPlaybackRateMultiplier,
       }),
       CurrentTimeLabel({
         addAnimationsCurrentTimeListener,
