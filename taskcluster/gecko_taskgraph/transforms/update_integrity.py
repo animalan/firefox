@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import shlex
+
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.schema import resolve_keyed_by
 
@@ -74,7 +76,10 @@ def add_additional_fetches_and_command(config, jobs):
         # ideally, this attribute would be set on en-US jobs as well...but it's not, so we have to assume
         locale = job["attributes"].get("locale", "en-US")
 
-        job["run"]["command"] = [
+        cmd = [
+            # add dmg tool location to the $PATH. this is not strictly necessary
+            # for non-mac tests, but it's harmless
+            "export PATH=$MOZ_FETCHES_DIR/dmg:$PATH &&",
             # test runner
             "/builds/worker/fetches/marannon/marannon",
             # script that actually runs the tests - eventually to be replaced
@@ -100,7 +105,7 @@ def add_additional_fetches_and_command(config, jobs):
 
         cert_overrides = job.pop("cert-overrides")
         if cert_overrides:
-            job["run"]["command"].extend([
+            cmd.extend([
                 # script that does certificate replacements in the updater
                 "--cert-replace-script",
                 "tools/update-verify/release/replace-updater-certs.py",
@@ -112,7 +117,7 @@ def add_additional_fetches_and_command(config, jobs):
                 "tools/update-verify/release/mar_certs",
             ])
             for override in cert_overrides:
-                job["run"]["command"].extend(["--cert-override", override])
+                cmd.extend(["--cert-override", shlex.quote(override)])
 
         fetches = []
         for mar, info in config.params["release_history"][build_target][locale].items():
@@ -132,11 +137,14 @@ def add_additional_fetches_and_command(config, jobs):
             )
             # installers and updaters are fetched from URLs (not upstream tasks); we simply
             # inject these into the task for the payload to deal with
-            job["run"]["command"].append("--from")
-            job["run"]["command"].append(
-                f"{buildid}|{base_url}.{installer_suffix}|{linux64_installer}|{mar}"
+            cmd.append("--from")
+            cmd.append(
+                shlex.quote(
+                    f"{buildid}|{base_url}.{installer_suffix}|{linux64_installer}|{mar}"
+                )
             )
 
         job["fetches"]["partials-signing"] = fetches
+        job["run"]["command"] = " ".join(cmd)
 
         yield job
