@@ -207,7 +207,7 @@ void nsMathMLmfracFrame::Place(DrawTarget* aDrawTarget,
   if (!StaticPrefs::
           mathml_lspace_rspace_for_child_spacing_during_mrow_layout_enabled() &&
       outermostEmbellished) {
-    const bool isRTL = StyleVisibility()->mDirection == StyleDirection::Rtl;
+    const bool isRTL = GetWritingMode().IsBidiRTL();
     nsEmbellishData coreData;
     GetEmbellishDataFrom(mEmbellishData.coreFrame, coreData);
     leftSpace += isRTL ? coreData.trailingSpace : coreData.leadingSpace;

@@ -232,8 +232,7 @@ void nsMathMLmrootFrame::Place(DrawTarget* aDrawTarget,
   } else {
     mSqrChar.Stretch(this, aDrawTarget, fontSizeInflation,
                      StretchDirection::Vertical, contSize, radicalSize,
-                     MathMLStretchFlag::Larger,
-                     StyleVisibility()->mDirection == StyleDirection::Rtl);
+                     MathMLStretchFlag::Larger, GetWritingMode().IsBidiRTL());
     // radicalSize have changed at this point, and should match with
     // the bounding metrics of the char
     mSqrChar.GetBoundingMetrics(bmSqr);
@@ -322,7 +321,7 @@ void nsMathMLmrootFrame::Place(DrawTarget* aDrawTarget,
 
   if (!aFlags.contains(PlaceFlag::MeasureOnly)) {
     nsPresContext* presContext = PresContext();
-    const bool isRTL = StyleVisibility()->mDirection == StyleDirection::Rtl;
+    const bool isRTL = GetWritingMode().IsBidiRTL();
     nscoord borderPaddingInlineStart =
         isRTL ? borderPadding.right : borderPadding.left;
     nscoord dx, dy;

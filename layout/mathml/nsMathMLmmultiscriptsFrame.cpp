@@ -584,8 +584,7 @@ void nsMathMLmmultiscriptsFrame::PlaceMultiScript(
   // We go over the list in a circular manner, starting at <prescripts/>
 
   if (!aFlags.contains(PlaceFlag::MeasureOnly)) {
-    const bool isRTL =
-        aFrame->StyleVisibility()->mDirection == StyleDirection::Rtl;
+    const bool isRTL = aFrame->GetWritingMode().IsBidiRTL();
     nscoord dx = isRTL ? borderPadding.right : borderPadding.left;
     nscoord dy = 0;
 
