@@ -600,9 +600,7 @@ extensions.counters:
       expires: never
       description: |
         Number of times an event page hit the idle timeout and results in one of the labels.
-      # Keep these labels in sync with the ones in WEBEXT_BROWSERACTION_POPUP_PRELOAD_RESULT_COUNT
-      # as defined in Histograms.json
-      labels:
+      labels: &browser_action_preload_result_labels
         - popupShown
         - clearAfterHover
         - clearAfterMousedown
@@ -621,13 +619,15 @@ extensions.counters:
         - https://bugzilla.mozilla.org/1811155
         - https://bugzilla.mozilla.org/1861303
         - https://bugzilla.mozilla.org/1820158
+        - https://bugzilla.mozilla.org/1912170
+        - https://bugzilla.mozilla.org/1958168
+        - https://bugzilla.mozilla.org/1994581
+        - https://bugzilla.mozilla.org/2018311/
       data_reviews:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1820158#c8
+        - https://bugzilla.mozilla.org/2018311/
       data_sensitivity:
         - technical
-      telemetry_mirror: h#WEBEXT_BROWSERACTION_POPUP_PRELOAD_RESULT_COUNT
-      no_lint:
-        - GIFFT_NON_PING_LIFETIME
 
     browser_action_preload_result_by_addonid:
       type: dual_labeled_counter
@@ -642,12 +642,8 @@ extensions.counters:
         key:
           description: addon id.
         category:
-          labels:
-            - popupShown
-            - clearAfterHover
-            - clearAfterMousedown
-          description: Labels of the keyed categorical legacy telemetry histogram
-            WEBEXT_BROWSERACTION_POPUP_PRELOAD_RESULT_COUNT_BY_ADDONID.
+          labels: *browser_action_preload_result_labels
+          description: Labels for the expected popup preload results.
       bugs:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1483002
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1513556
@@ -661,8 +657,10 @@ extensions.counters:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1861303
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1912170
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1958168
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1994581
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1960567
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1994599
+        - https://bugzilla.mozilla.org/2018311/
       data_reviews:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1483002
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1513556
@@ -676,11 +674,11 @@ extensions.counters:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1861303
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1912170
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1958168
+        - https://bugzilla.mozilla.org/2018311/
       notification_emails:
         - addons-dev-internal@mozilla.com
         - lgreco@mozilla.com
       expires: 154
-      telemetry_mirror: WEBEXT_BROWSERACTION_POPUP_PRELOAD_RESULT_COUNT_BY_ADDONID
 
     event_page_idle_result:
       type: labeled_counter
@@ -839,11 +837,15 @@ extensions.timing:
         - https://bugzilla.mozilla.org/1811155
         - https://bugzilla.mozilla.org/1861303
         - https://bugzilla.mozilla.org/1820158
+        - https://bugzilla.mozilla.org/1912170
+        - https://bugzilla.mozilla.org/1958168
+        - https://bugzilla.mozilla.org/1994581
+        - https://bugzilla.mozilla.org/2018311/
       data_reviews:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1820158#c8
+        - https://bugzilla.mozilla.org/2018311/
       data_sensitivity:
         - technical
-      telemetry_mirror: WEBEXT_BROWSERACTION_POPUP_OPEN_MS
 
     browser_action_popup_open_by_addonid:
       type: labeled_timing_distribution
@@ -867,7 +869,9 @@ extensions.timing:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1861303
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1912170
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1958154
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1994581
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1994599
+        - https://bugzilla.mozilla.org/2018311/
       data_reviews:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1483002
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1513556
@@ -880,11 +884,11 @@ extensions.timing:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1811155
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1861303
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1912170
+        - https://bugzilla.mozilla.org/2018311/
       notification_emails:
         - addons-dev-internal@mozilla.com
         - lgreco@mozilla.com
       expires: 154
-      telemetry_mirror: WEBEXT_BROWSERACTION_POPUP_OPEN_MS_BY_ADDONID
 
     content_script_injection:
       type: timing_distribution
@@ -1084,11 +1088,15 @@ extensions.timing:
         - https://bugzilla.mozilla.org/1811155
         - https://bugzilla.mozilla.org/1861303
         - https://bugzilla.mozilla.org/1820158
+        - https://bugzilla.mozilla.org/1912170
+        - https://bugzilla.mozilla.org/1958168
+        - https://bugzilla.mozilla.org/1994581
+        - https://bugzilla.mozilla.org/2018311/
       data_reviews:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1820158#c8
+        - https://bugzilla.mozilla.org/2018311/
       data_sensitivity:
         - technical
-      telemetry_mirror: WEBEXT_PAGEACTION_POPUP_OPEN_MS
 
     page_action_popup_open_by_addonid:
       type: labeled_timing_distribution
@@ -1112,7 +1120,9 @@ extensions.timing:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1861303
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1912170
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1958154
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1994581
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1994599
+        - https://bugzilla.mozilla.org/2018311/
       data_reviews:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1483002
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1513556
@@ -1125,11 +1135,11 @@ extensions.timing:
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1811155
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1861303
         - https://bugzilla.mozilla.org/show_bug.cgi?id=1912170
+        - https://bugzilla.mozilla.org/2018311/
       notification_emails:
         - addons-dev-internal@mozilla.com
         - lgreco@mozilla.com
       expires: 154
-      telemetry_mirror: WEBEXT_PAGEACTION_POPUP_OPEN_MS_BY_ADDONID
 
     storage_local_get_idb:
       type: timing_distribution
