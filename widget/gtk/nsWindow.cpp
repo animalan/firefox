@@ -4494,6 +4494,10 @@ void nsWindow::OnMotionNotifyEvent(GdkEventMotion* aEvent) {
         xx_pip_v1_move(mPipResources.mPipSurface,
                        gdk_wayland_device_get_wl_seat(GdkGetPointer()),
                        nsWaylandDisplay::GetLastEventSerial());
+        // The ungrab is needed because the compositor won't send a button
+        // release event. GDK may get stuck thinking that the implicit grab is
+        // still active.
+        GdkSeatUngrab(GdkDeviceGetSeat(GdkGetPointer()));
         return;
       }
 #endif
@@ -4817,6 +4821,10 @@ void nsWindow::OnButtonPressEvent(GdkEventButton* aEvent) {
       xx_pip_v1_resize(mPipResources.mPipSurface,
                        gdk_wayland_device_get_wl_seat(GdkGetPointer()),
                        nsWaylandDisplay::GetLastEventSerial(), pipEdges);
+      // The ungrab is needed because the compositor won't send a button release
+      // event. GDK may get stuck thinking that the implicit grab is still
+      // active.
+      GdkSeatUngrab(GdkDeviceGetSeat(GdkGetPointer()));
       return;
     }
 #endif
