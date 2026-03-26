@@ -2110,7 +2110,8 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleUIReset {
   mozilla::StyleImeMode mIMEMode;
   mozilla::StyleWindowDragging mWindowDragging;
   mozilla::StyleWindowShadow mWindowShadow;
-  float mWindowOpacity;
+  mozilla::StyleFieldSizing mFieldSizing;
+
   // The margin of the window region that should be transparent to events.
   mozilla::StyleLength mMozWindowInputRegionMargin;
   mozilla::StyleTransform mMozWindowTransform;
@@ -2123,6 +2124,7 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleUIReset {
   uint32_t mTransitionDelayCount;
   uint32_t mTransitionPropertyCount;
   uint32_t mTransitionBehaviorCount;
+  float mWindowOpacity;
   nsStyleAutoArray<mozilla::StyleAnimation> mAnimations;
   // The number of elements in mAnimations that are not from repeating
   // a list due to another property being longer.
@@ -2147,8 +2149,6 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleUIReset {
   uint32_t mViewTimelineNameCount;
   uint32_t mViewTimelineAxisCount;
   uint32_t mViewTimelineInsetCount;
-
-  mozilla::StyleFieldSizing mFieldSizing;
 
   bool HasViewTransitionName() const {
     return !mViewTransitionName.value.IsNone();
