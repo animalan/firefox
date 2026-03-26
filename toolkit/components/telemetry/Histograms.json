@@ -9861,34 +9861,6 @@
     "description": "The amount of time it takes for content scripts from a WebExtension to be injected into a window, keyed by addon id.",
     "keyed": true
   },
-  "WEBEXT_EXTENSION_STARTUP_MS": {
-    "record_in_processes": ["main"],
-    "products": ["firefox", "fennec"],
-    "alert_emails": ["addons-dev-internal@mozilla.com", "lgreco@mozilla.com"],
-    "bug_numbers": [1353171, 1489524],
-    "expires_in_version": "never",
-    "kind": "exponential",
-    "releaseChannelCollection": "opt-out",
-    "high": 50000,
-    "n_buckets": 100,
-    "description": "The amount of time it takes for a WebExtension to start up, from when the startup function is called to when the startup promise resolves."
-  },
-  "WEBEXT_EXTENSION_STARTUP_MS_BY_ADDONID": {
-    "record_in_processes": ["main"],
-    "products": ["firefox", "fennec"],
-    "alert_emails": ["addons-dev-internal@mozilla.com", "lgreco@mozilla.com"],
-    "bug_numbers": [
-      1483002, 1513556, 1578225, 1623315, 1666980, 1706839, 1745271, 1777402,
-      1811155, 1861303, 1912170, 1958154, 1994581
-    ],
-    "expires_in_version": "154",
-    "kind": "exponential",
-    "releaseChannelCollection": "opt-out",
-    "high": 50000,
-    "n_buckets": 100,
-    "description": "The amount of time it takes for a WebExtension to start up, from when the startup function is called to when the startup promise resolves, keyed by addon id.",
-    "keyed": true
-  },
   "WEBEXT_PAGEACTION_POPUP_OPEN_MS": {
     "record_in_processes": ["main"],
     "products": ["firefox", "fennec"],
