@@ -129,7 +129,6 @@ for (const type of [
   "DISCOVERY_STREAM_DEV_EXPIRE_CACHE",
   "DISCOVERY_STREAM_DEV_IDLE_DAILY",
   "DISCOVERY_STREAM_DEV_IMPRESSIONS",
-  "DISCOVERY_STREAM_DEV_REFRESH_CACHE",
   "DISCOVERY_STREAM_DEV_SHOW_PLACEHOLDER",
   "DISCOVERY_STREAM_DEV_SYNC_RS",
   "DISCOVERY_STREAM_DEV_SYSTEM_TICK",
@@ -684,6 +683,8 @@ class TogglePrefCheckbox extends (external_React_default()).PureComponent {
 class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
   constructor(props) {
     super(props);
+    this.restorePrefDefaults = this.restorePrefDefaults.bind(this);
+    this.setConfigValue = this.setConfigValue.bind(this);
     this.expireCache = this.expireCache.bind(this);
     this.refreshCache = this.refreshCache.bind(this);
     this.showPlaceholder = this.showPlaceholder.bind(this);
@@ -715,9 +716,27 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
   componentDidMount() {
     this.requestDebugFeatures();
   }
-  refreshCache() {
+  setConfigValue(configName, configValue) {
     this.props.dispatch(actionCreators.OnlyToMain({
-      type: actionTypes.DISCOVERY_STREAM_DEV_REFRESH_CACHE
+      type: actionTypes.DISCOVERY_STREAM_CONFIG_SET_VALUE,
+      data: {
+        name: configName,
+        value: configValue
+      }
+    }));
+  }
+  restorePrefDefaults() {
+    this.props.dispatch(actionCreators.OnlyToMain({
+      type: actionTypes.DISCOVERY_STREAM_CONFIG_RESET_DEFAULTS
+    }));
+  }
+  refreshCache() {
+    const {
+      config
+    } = this.props.state.DiscoveryStream;
+    this.props.dispatch(actionCreators.OnlyToMain({
+      type: actionTypes.DISCOVERY_STREAM_CONFIG_CHANGE,
+      data: config
     }));
   }
   refreshInferredPersonalization() {
@@ -1264,7 +1283,9 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
     }, "Data last fetched"), /*#__PURE__*/external_React_default().createElement("td", null, relativeTime(feeds.data[feed.url] ? feeds.data[feed.url].lastUpdated : null) || "(no data)")));
   }
   render() {
+    const prefToggles = "enabled collapsible".split(" ");
     const {
+      config,
       layout
     } = this.props.state.DiscoveryStream;
     const sectionsEnabled = this.props.otherPrefs[PREF_SECTIONS_ENABLED];
@@ -1278,6 +1299,9 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
     const billboardPressed = billboardsEnabled && spocPlacements.includes("newtab_billboard");
     const leaderboardPressed = leaderboardEnabled && spocPlacements.includes("newtab_leaderboard");
     return /*#__PURE__*/external_React_default().createElement("div", null, /*#__PURE__*/external_React_default().createElement("button", {
+      className: "button",
+      onClick: this.restorePrefDefaults
+    }, "Restore Pref Defaults"), " ", /*#__PURE__*/external_React_default().createElement("button", {
       className: "button",
       onClick: this.refreshCache
     }, "Refresh Cache"), /*#__PURE__*/external_React_default().createElement("br", null), /*#__PURE__*/external_React_default().createElement("button", {
@@ -1331,7 +1355,13 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
     }))), /*#__PURE__*/external_React_default().createElement("button", {
       className: "button",
       onClick: this.sendConversionEvent
-    }, "Send conversion event"), /*#__PURE__*/external_React_default().createElement("h3", null, "Layout"), layout.map((row, rowIndex) => /*#__PURE__*/external_React_default().createElement("div", {
+    }, "Send conversion event"), /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, prefToggles.map(pref => /*#__PURE__*/external_React_default().createElement(Row, {
+      key: pref
+    }, /*#__PURE__*/external_React_default().createElement("td", null, /*#__PURE__*/external_React_default().createElement(TogglePrefCheckbox, {
+      checked: config[pref],
+      pref: pref,
+      onChange: this.setConfigValue
+    })))))), /*#__PURE__*/external_React_default().createElement("h3", null, "Layout"), layout.map((row, rowIndex) => /*#__PURE__*/external_React_default().createElement("div", {
       key: `row-${rowIndex}`
     }, row.components.map((component, componentIndex) => /*#__PURE__*/external_React_default().createElement("div", {
       key: `component-${componentIndex}`,

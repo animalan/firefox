@@ -92,6 +92,8 @@ export class TogglePrefCheckbox extends React.PureComponent {
 export class DiscoveryStreamAdminUI extends React.PureComponent {
   constructor(props) {
     super(props);
+    this.restorePrefDefaults = this.restorePrefDefaults.bind(this);
+    this.setConfigValue = this.setConfigValue.bind(this);
     this.expireCache = this.expireCache.bind(this);
     this.refreshCache = this.refreshCache.bind(this);
     this.showPlaceholder = this.showPlaceholder.bind(this);
@@ -129,10 +131,29 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     this.requestDebugFeatures();
   }
 
-  refreshCache() {
+  setConfigValue(configName, configValue) {
     this.props.dispatch(
       ac.OnlyToMain({
-        type: at.DISCOVERY_STREAM_DEV_REFRESH_CACHE,
+        type: at.DISCOVERY_STREAM_CONFIG_SET_VALUE,
+        data: { name: configName, value: configValue },
+      })
+    );
+  }
+
+  restorePrefDefaults() {
+    this.props.dispatch(
+      ac.OnlyToMain({
+        type: at.DISCOVERY_STREAM_CONFIG_RESET_DEFAULTS,
+      })
+    );
+  }
+
+  refreshCache() {
+    const { config } = this.props.state.DiscoveryStream;
+    this.props.dispatch(
+      ac.OnlyToMain({
+        type: at.DISCOVERY_STREAM_CONFIG_CHANGE,
+        data: config,
       })
     );
   }
@@ -868,7 +889,8 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
   }
 
   render() {
-    const { layout } = this.props.state.DiscoveryStream;
+    const prefToggles = "enabled collapsible".split(" ");
+    const { config, layout } = this.props.state.DiscoveryStream;
     const sectionsEnabled = this.props.otherPrefs[PREF_SECTIONS_ENABLED];
 
     // Prefs for IAB Banners
@@ -886,6 +908,9 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
 
     return (
       <div>
+        <button className="button" onClick={this.restorePrefDefaults}>
+          Restore Pref Defaults
+        </button>{" "}
         <button className="button" onClick={this.refreshCache}>
           Refresh Cache
         </button>
@@ -949,6 +974,21 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
         <button className="button" onClick={this.sendConversionEvent}>
           Send conversion event
         </button>
+        <table>
+          <tbody>
+            {prefToggles.map(pref => (
+              <Row key={pref}>
+                <td>
+                  <TogglePrefCheckbox
+                    checked={config[pref]}
+                    pref={pref}
+                    onChange={this.setConfigValue}
+                  />
+                </td>
+              </Row>
+            ))}
+          </tbody>
+        </table>
         <h3>Layout</h3>
         {layout.map((row, rowIndex) => (
           <div key={`row-${rowIndex}`}>

@@ -102,6 +102,11 @@ describe("DiscoveryStreamFeed", () => {
       PersistentCache,
     });
 
+    sandbox
+      .stub(global.Services.prefs, "getBoolPref")
+      .withArgs("browser.newtabpage.activity-stream.discoverystream.enabled")
+      .returns(true);
+
     // Feed
     feed = new DiscoveryStreamFeed();
     feed.store = createStore(combineReducers(reducers), {
@@ -111,6 +116,7 @@ describe("DiscoveryStreamFeed", () => {
             enabled: false,
           }),
           [ENDPOINTS_PREF_NAME]: DUMMY_ENDPOINT,
+          "discoverystream.enabled": true,
           "feeds.section.topstories": true,
           "feeds.system.topstories": true,
           "system.showSponsored": false,
@@ -156,6 +162,11 @@ describe("DiscoveryStreamFeed", () => {
 
   describe("#fetchFromEndpoint", () => {
     beforeEach(() => {
+      feed._prefCache = {
+        config: {
+          api_key_pref: "",
+        },
+      };
       fetchStub.resolves({
         json: () => Promise.resolve("hi"),
         ok: true,
@@ -394,6 +405,7 @@ describe("DiscoveryStreamFeed", () => {
               enabled: true,
             }),
             [ENDPOINTS_PREF_NAME]: DUMMY_ENDPOINT,
+            "discoverystream.enabled": true,
             "discoverystream.region-basic-layout": true,
             "system.showSponsored": false,
           },
@@ -416,6 +428,7 @@ describe("DiscoveryStreamFeed", () => {
               enabled: true,
             }),
             [ENDPOINTS_PREF_NAME]: DUMMY_ENDPOINT,
+            "discoverystream.enabled": true,
             "discoverystream.region-basic-layout": false,
             "system.showSponsored": false,
           },
@@ -430,6 +443,16 @@ describe("DiscoveryStreamFeed", () => {
         DEFAULT_ROW_COUNT * DEFAULT_COLUMN_COUNT
       );
     });
+    it("should use new spocs endpoint if in the config", async () => {
+      feed.config.spocs_endpoint = "https://spocs.getpocket.com/spocs2";
+
+      await feed.loadLayout(feed.store.dispatch);
+
+      assert.equal(
+        feed.store.getState().DiscoveryStream.spocs.spocs_endpoint,
+        "https://spocs.getpocket.com/spocs2"
+      );
+    });
     it("should use local basic layout with FF pref hardcoded_basic_layout", async () => {
       feed.store = createStore(combineReducers(reducers), {
         Prefs: {
@@ -438,6 +461,7 @@ describe("DiscoveryStreamFeed", () => {
               enabled: false,
             }),
             [ENDPOINTS_PREF_NAME]: DUMMY_ENDPOINT,
+            "discoverystream.enabled": true,
             "discoverystream.hardcoded-basic-layout": true,
             "system.showSponsored": false,
           },
@@ -464,6 +488,7 @@ describe("DiscoveryStreamFeed", () => {
               enabled: false,
             }),
             [ENDPOINTS_PREF_NAME]: DUMMY_ENDPOINT,
+            "discoverystream.enabled": true,
             "discoverystream.spocs-endpoint":
               "https://spocs.getpocket.com/spocs2",
             "system.showSponsored": false,
@@ -667,6 +692,11 @@ describe("DiscoveryStreamFeed", () => {
     it("should send feed update events with new feed data", async () => {
       sandbox.stub(feed.cache, "get").returns(Promise.resolve(fakeCache));
       sandbox.spy(feed.store, "dispatch");
+      feed._prefCache = {
+        config: {
+          api_key_pref: "",
+        },
+      };
 
       await feed.loadComponentFeeds(feed.store.dispatch);
 
@@ -759,6 +789,12 @@ describe("DiscoveryStreamFeed", () => {
 
   describe("#loadSpocs", () => {
     beforeEach(() => {
+      feed._prefCache = {
+        config: {
+          api_key_pref: "",
+        },
+      };
+
       sandbox.stub(feed, "getPlacements").returns([{ name: "spocs" }]);
       Object.defineProperty(feed, "showSponsoredStories", { get: () => true });
     });
@@ -2189,6 +2225,24 @@ describe("DiscoveryStreamFeed", () => {
   });
 
   describe("#onAction: DISCOVERY_STREAM_CONFIG_CHANGE", () => {
+    it("should call this.loadLayout if config.enabled changes to true ", async () => {
+      sandbox.stub(feed.cache, "set").returns(Promise.resolve());
+      // First initialize
+      await feed.onAction({ type: at.INIT });
+      assert.isFalse(feed.loaded);
+
+      // force clear cached pref value
+      feed._prefCache = {};
+      setPref(CONFIG_PREF_NAME, { enabled: true });
+
+      sandbox.stub(feed, "resetCache").returns(Promise.resolve());
+      sandbox.stub(feed, "loadLayout").returns(Promise.resolve());
+      await feed.onAction({ type: at.DISCOVERY_STREAM_CONFIG_CHANGE });
+
+      assert.calledOnce(feed.loadLayout);
+      assert.calledOnce(feed.resetCache);
+      assert.isTrue(feed.loaded);
+    });
     it("should clear the cache if a config change happens and config.enabled is true", async () => {
       sandbox.stub(feed.cache, "set").returns(Promise.resolve());
       // force clear cached pref value
@@ -2212,6 +2266,25 @@ describe("DiscoveryStreamFeed", () => {
       assert.calledWithMatch(feed.store.dispatch, {
         type: at.DISCOVERY_STREAM_LAYOUT_RESET,
       });
+    });
+    it("should not call this.loadLayout if config.enabled changes to false", async () => {
+      sandbox.stub(feed.cache, "set").returns(Promise.resolve());
+      // force clear cached pref value
+      feed._prefCache = {};
+      setPref(CONFIG_PREF_NAME, { enabled: true });
+
+      await feed.onAction({ type: at.INIT });
+      assert.isTrue(feed.loaded);
+
+      feed._prefCache = {};
+      setPref(CONFIG_PREF_NAME, { enabled: false });
+      sandbox.stub(feed, "resetCache").returns(Promise.resolve());
+      sandbox.stub(feed, "loadLayout").returns(Promise.resolve());
+      await feed.onAction({ type: at.DISCOVERY_STREAM_CONFIG_CHANGE });
+
+      assert.notCalled(feed.loadLayout);
+      assert.calledOnce(feed.resetCache);
+      assert.isFalse(feed.loaded);
     });
   });
 
@@ -2394,17 +2467,6 @@ describe("DiscoveryStreamFeed", () => {
         type: at.DISCOVERY_STREAM_DEV_SYNC_RS,
       });
       assert.calledOnce(global.RemoteSettings.pollChanges);
-    });
-  });
-
-  describe("#onAction: DISCOVERY_STREAM_DEV_REFRESH_CACHE", () => {
-    it("should clear the cache with DISCOVERY_STREAM_DEV_REFRESH_CACHE", async () => {
-      sandbox.stub(feed.cache, "set").returns(Promise.resolve());
-
-      sandbox.stub(feed, "resetCache").returns(Promise.resolve());
-      await feed.onAction({ type: at.DISCOVERY_STREAM_DEV_REFRESH_CACHE });
-
-      assert.calledOnce(feed.resetCache);
     });
   });
 

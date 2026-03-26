@@ -67,6 +67,7 @@ const PREF_SPOC_COUNTS = "discoverystream.placements.spocs.counts";
 const PREF_SPOC_POSITIONS = "discoverystream.spoc-positions";
 const PREF_MERINO_FEED_EXPERIMENT =
   "browser.newtabpage.activity-stream.discoverystream.merino-feed-experiment";
+const PREF_ENABLED = "discoverystream.enabled";
 const PREF_HARDCODED_BASIC_LAYOUT = "discoverystream.hardcoded-basic-layout";
 const PREF_SPOCS_ENDPOINT = "discoverystream.spocs-endpoint";
 const PREF_SPOCS_ENDPOINT_QUERY = "discoverystream.spocs-endpoint-query";
@@ -120,7 +121,6 @@ const PREF_PRIVATE_PING_ENABLED = "telemetry.privatePing.enabled";
 const PREF_SURFACE_ID = "telemetry.surfaceId";
 const PREF_CLIENT_LAYOUT_ENABLED =
   "discoverystream.sections.clientLayout.enabled";
-const DISCOVERY_STREAM_ENABLED = true;
 
 let getHardcodedLayout;
 
@@ -169,7 +169,9 @@ export class DiscoveryStreamFeed {
         e
       );
     }
-    this._prefCache.config.enabled = DISCOVERY_STREAM_ENABLED;
+    this._prefCache.config.enabled =
+      this._prefCache.config.enabled &&
+      this.store.getState().Prefs.values[PREF_ENABLED];
 
     return this._prefCache.config;
   }
@@ -777,6 +779,7 @@ export class DiscoveryStreamFeed {
     if (layoutData.spocs) {
       url =
         this.store.getState().Prefs.values[PREF_SPOCS_ENDPOINT] ||
+        this.config.spocs_endpoint ||
         layoutData.spocs.url;
 
       const spocsEndpointQuery =
@@ -1180,11 +1183,14 @@ export class DiscoveryStreamFeed {
       if (placements?.length) {
         const headers = new Headers();
         headers.append("content-type", "application/json");
+        const apiKeyPref = this.config.api_key_pref;
+        const apiKey = Services.prefs.getCharPref(apiKeyPref, "");
         const state = this.store.getState();
         let endpoint = state.DiscoveryStream.spocs.spocs_endpoint;
         let body = {
           pocket_id: this._impressionId,
           version: 2,
+          consumer_key: apiKey,
           ...(placements.length ? { placements } : {}),
         };
 
@@ -2445,6 +2451,7 @@ export class DiscoveryStreamFeed {
   async onPrefChangedAction(action) {
     switch (action.data.name) {
       case PREF_CONFIG:
+      case PREF_ENABLED:
       case PREF_HARDCODED_BASIC_LAYOUT:
       case PREF_SPOCS_ENDPOINT:
       case PREF_SPOCS_ENDPOINT_QUERY:
@@ -2615,7 +2622,6 @@ export class DiscoveryStreamFeed {
         this.retryFeed(action.data.feed);
         break;
       case at.DISCOVERY_STREAM_CONFIG_CHANGE:
-      case at.DISCOVERY_STREAM_DEV_REFRESH_CACHE:
         // When the config pref changes, load or unload data as needed.
         await this.onPrefChange();
         break;

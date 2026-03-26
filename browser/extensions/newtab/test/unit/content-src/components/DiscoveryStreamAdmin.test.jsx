@@ -149,17 +149,27 @@ describe("DiscoveryStreamAdmin", () => {
       const spocText = pre.text();
       assert.equal(spocText, '{\n  "id": 12345\n}');
     });
-    it("should fire refresh cache with DISCOVERY_STREAM_DEV_REFRESH_CACHE", () => {
+    it("should fire restorePrefDefaults with DISCOVERY_STREAM_CONFIG_RESET_DEFAULTS", () => {
       wrapper.find("button").at(0).simulate("click");
       assert.calledWith(
         dispatch,
         ac.OnlyToMain({
-          type: at.DISCOVERY_STREAM_DEV_REFRESH_CACHE,
+          type: at.DISCOVERY_STREAM_CONFIG_RESET_DEFAULTS,
+        })
+      );
+    });
+    it("should fire config change with DISCOVERY_STREAM_CONFIG_CHANGE", () => {
+      wrapper.find("button").at(1).simulate("click");
+      assert.calledWith(
+        dispatch,
+        ac.OnlyToMain({
+          type: at.DISCOVERY_STREAM_CONFIG_CHANGE,
+          data: { enabled: true },
         })
       );
     });
     it("should fire expireCache with DISCOVERY_STREAM_DEV_EXPIRE_CACHE", () => {
-      wrapper.find("button").at(1).simulate("click");
+      wrapper.find("button").at(2).simulate("click");
       assert.calledWith(
         dispatch,
         ac.OnlyToMain({
@@ -168,7 +178,7 @@ describe("DiscoveryStreamAdmin", () => {
       );
     });
     it("should fire systemTick with DISCOVERY_STREAM_DEV_SYSTEM_TICK", () => {
-      wrapper.find("button").at(2).simulate("click");
+      wrapper.find("button").at(3).simulate("click");
       assert.calledWith(
         dispatch,
         ac.OnlyToMain({
@@ -177,7 +187,7 @@ describe("DiscoveryStreamAdmin", () => {
       );
     });
     it("should fire idleDaily with DISCOVERY_STREAM_DEV_IDLE_DAILY", () => {
-      wrapper.find("button").at(3).simulate("click");
+      wrapper.find("button").at(4).simulate("click");
       assert.calledWith(
         dispatch,
         ac.OnlyToMain({
@@ -194,6 +204,19 @@ describe("DiscoveryStreamAdmin", () => {
         })
       );
     });
+    it("should fire setConfigValue with DISCOVERY_STREAM_CONFIG_SET_VALUE", () => {
+      const configName = "name";
+      const configValue = "value";
+      wrapper.instance().setConfigValue(configName, configValue);
+      assert.calledWith(
+        dispatch,
+        ac.OnlyToMain({
+          type: at.DISCOVERY_STREAM_CONFIG_SET_VALUE,
+          data: { name: configName, value: configValue },
+        })
+      );
+    });
+
     describe("inferred personalization overrides controls", () => {
       beforeEach(() => {
         wrapper = shallow(
@@ -252,7 +275,8 @@ describe("DiscoveryStreamAdmin", () => {
         assert.calledWith(
           dispatch,
           ac.OnlyToMain({
-            type: at.DISCOVERY_STREAM_DEV_REFRESH_CACHE,
+            type: at.DISCOVERY_STREAM_CONFIG_CHANGE,
+            data: { enabled: true },
           })
         );
       });
