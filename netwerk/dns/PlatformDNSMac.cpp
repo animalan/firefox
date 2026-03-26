@@ -9,7 +9,7 @@
 #include "mozilla/StaticPrefs_network.h"
 
 #include <dns_sd.h>
-#include <unistd.h>
+#include <poll.h>
 #include <arpa/inet.h>
 
 namespace mozilla::net {
@@ -134,28 +134,23 @@ nsresult ResolveHTTPSRecordImpl(const nsACString& aHost,
     return NS_ERROR_UNKNOWN_HOST;
   }
 
-  int fd = DNSServiceRefSockFD(sdRef);
-  fd_set readfds;
-  FD_ZERO(&readfds);
-  FD_SET(fd, &readfds);
+  struct pollfd pfd = {
+      .fd = DNSServiceRefSockFD(sdRef),
+      .events = POLLIN,
+  };
 
   // If the domain queried results in NXDOMAIN, then QueryCallback will
-  // never get called, and select will hang forever. We need to use a
-  // timeout so that select() eventually returns.
-  struct timeval timeout;
-  timeout.tv_sec =
-      StaticPrefs::network_dns_native_https_timeout_mac_msec() / 1000;
-  timeout.tv_usec =
-      (StaticPrefs::network_dns_native_https_timeout_mac_msec() % 1000) * 1000;
-
-  int result = select(fd + 1, &readfds, NULL, NULL, &timeout);
-  if (result > 0 && FD_ISSET(fd, &readfds)) {
+  // never get called, and poll will hang forever. We need to use a
+  // timeout so that poll() eventually returns.
+  int result = poll(&pfd, 1,
+                    StaticPrefs::network_dns_native_https_timeout_mac_msec());
+  if (result > 0 && (pfd.revents & POLLIN)) {
     // Process the result
     DNSServiceProcessResult(sdRef);
   } else if (result < 0) {
-    LOG("select() failed");
+    LOG("poll() failed");
   } else if (result == 0) {
-    LOG("select timed out");
+    LOG("poll timed out");
   }
 
   // Cleanup
