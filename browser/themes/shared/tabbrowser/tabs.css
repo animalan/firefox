@@ -1422,9 +1422,12 @@ tab-group > tab-split-view-wrapper {
 
   /* Allow close button to overflow the split view wrapper */
   .tabbrowser-tab {
+    min-width: 0;
     overflow: visible;
 
     .tab-background {
+      width: 100%;
+      max-width: none;
       margin-inline: 0;
       margin-block: 0;
     }
