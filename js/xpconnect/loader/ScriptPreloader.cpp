@@ -61,7 +61,7 @@
 #endif
 
 #define STARTUP_COMPLETE_TOPIC "browser-delayed-startup-finished"
-#define DOC_ELEM_INSERTED_TOPIC "document-element-inserted"
+#define START_LOADING_UNTRUSTED_TOPIC "start-loading-untrusted"
 #define CONTENT_DOCUMENT_LOADED_TOPIC "content-document-loaded"
 #define CACHE_WRITE_TOPIC "browser-idle-startup-tasks-finished"
 #define XPCOM_SHUTDOWN_TOPIC "xpcom-shutdown"
@@ -562,10 +562,8 @@ Result<Ok, nsresult> ScriptPreloader::InitCache(
     mContentStartupFinishedTopic.AssignLiteral(CONTENT_DOCUMENT_LOADED_TOPIC);
   } else {
     // In the child process, we need to freeze the script cache before any
-    // untrusted code has been executed. The insertion of the first DOM
-    // document element may sometimes be earlier than is ideal, but at
-    // least it should always be safe.
-    mContentStartupFinishedTopic.AssignLiteral(DOC_ELEM_INSERTED_TOPIC);
+    // untrusted data has been processed.
+    mContentStartupFinishedTopic.AssignLiteral(START_LOADING_UNTRUSTED_TOPIC);
   }
   obs->AddObserver(this, mContentStartupFinishedTopic.get(), false);
 
