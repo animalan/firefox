@@ -204,4 +204,4 @@ if CONFIG["MOZ_ENABLE_DBUS"]:
     ]
     CXXFLAGS += CONFIG["MOZ_DBUS_CFLAGS"]
 
-CXXFLAGS += ["-Werror=switch"]
+COMPILE_FLAGS["WARNINGS_CXXFLAGS"] += ["-Werror=switch"]
