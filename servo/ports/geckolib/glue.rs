@@ -5300,10 +5300,10 @@ pub enum PropertyTypedValue {
 #[no_mangle]
 pub unsafe extern "C" fn Servo_DeclarationBlock_GetPropertyTypedValue(
     declarations: &LockedDeclarationBlock,
-    property: &nsACString,
+    property_id: &structs::CSSPropertyId,
     result: *mut PropertyTypedValue,
 ) -> bool {
-    let property_id = get_property_id_from_property!(property, false);
+    let property_id = get_property_id_from_csspropertyid!(property_id, false);
 
     *result = read_locked_arc(declarations, |decls: &PropertyDeclarationBlock| {
         let typed_value = decls.property_value_to_typed_value(&property_id);
@@ -8461,12 +8461,12 @@ pub unsafe extern "C" fn Servo_GetResolvedValue(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn Servo_GetComputedTypedValue(
+pub unsafe extern "C" fn Servo_ComputedValues_GetPropertyTypedValue(
     style: &ComputedValues,
-    property: &nsACString,
+    property_id: &structs::CSSPropertyId,
     result: *mut PropertyTypedValue,
 ) -> bool {
-    let property_id = get_property_id_from_property!(property, false);
+    let property_id = get_property_id_from_csspropertyid!(property_id, false);
 
     let non_custom_property_id = match property_id.non_custom_id() {
         Some(id) => id,
