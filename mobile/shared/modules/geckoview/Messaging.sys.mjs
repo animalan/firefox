@@ -51,26 +51,23 @@ DispatcherDelegate.prototype = {
   /**
    * Sends a request to Java.
    *
-   * @param aMsg      Message to send; must be an object with a "type" property
+   * @param aType     Type of message to send
+   * @param aMsg      Message to send
    * @param aCallback Optional callback implementing nsIGeckoViewEventCallback.
    */
-  sendRequest(aMsg, aCallback) {
-    const type = aMsg.type;
-    aMsg.type = undefined;
-    this.dispatch(type, aMsg, aCallback);
+  sendRequest(aType, aMsg, aCallback) {
+    this.dispatch(aType, aMsg, aCallback);
   },
 
   /**
    * Sends a request to Java, returning a Promise that resolves to the response.
    *
-   * @param aMsg Message to send; must be an object with a "type" property
+   * @param aType Type of message to send
+   * @param aMsg Message to send
    * @return A Promise resolving to the response
    */
-  sendRequestForResult(aMsg) {
+  sendRequestForResult(aType, aMsg) {
     return new Promise((resolve, reject) => {
-      const type = aMsg.type;
-      aMsg.type = undefined;
-
       // Manually release the resolve/reject functions after one callback is
       // received, so the JS GC is not tied up with the Java GC.
       const onCallback = (callback, ...args) => {
@@ -85,7 +82,7 @@ DispatcherDelegate.prototype = {
         onError: error => onCallback(reject, error),
         onFinalize: _ => onCallback(reject),
       };
-      this.dispatch(type, aMsg, callback, callback);
+      this.dispatch(aType, aMsg, callback, callback);
     });
   },
 };
