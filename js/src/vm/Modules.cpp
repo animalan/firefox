@@ -1118,16 +1118,14 @@ static bool IsResolvedBinding(JSContext* cx, Handle<Value> resolution) {
   return resolution.isObject();
 }
 
-static void InitNamespaceBinding(JSContext* cx,
-                                 Handle<ModuleEnvironmentObject*> env,
-                                 Handle<JSAtom*> name,
-                                 Handle<ModuleNamespaceObject*> ns) {
+static void InitNamespaceOrSourceBinding(JSContext* cx,
+                                         ModuleEnvironmentObject* env,
+                                         JSAtom* name, const Value& obj) {
   // The property already exists in the evironment but is not writable, so set
   // the slot directly.
-  RootedId id(cx, AtomToId(name));
-  mozilla::Maybe<PropertyInfo> prop = env->lookup(cx, id);
+  mozilla::Maybe<PropertyInfo> prop = env->lookup(cx, AtomToId(name));
   MOZ_ASSERT(prop.isSome());
-  env->setSlot(prop->slot(), ObjectValue(*ns));
+  env->setSlot(prop->slot(), obj);
 }
 
 struct AtomComparator {
@@ -1195,9 +1193,9 @@ static ModuleNamespaceObject* ModuleNamespaceCreate(
       // The spec uses an immutable binding here but we have already generated
       // bytecode for an indirect binding. Instead, use an indirect binding to
       // "*namespace*" slot of the target environment.
-      Rooted<ModuleEnvironmentObject*> env(
-          cx, &importedModule->initialEnvironment());
-      InitNamespaceBinding(cx, env, bindingName, importedNamespace);
+      InitNamespaceOrSourceBinding(cx, &importedModule->initialEnvironment(),
+                                   bindingName,
+                                   ObjectValue(*importedNamespace));
     }
 
     if (!ns->addBinding(cx, name, importedModule, bindingName)) {
@@ -1303,6 +1301,7 @@ static void ThrowResolutionError(JSContext* cx, Handle<ModuleObject*> module,
 }
 
 // https://tc39.es/ecma262/#sec-source-text-module-record-initialize-environment
+// https://tc39.es/proposal-source-phase-imports/#sec-source-text-module-record-initialize-environment
 // ES2023 16.2.1.6.4 InitializeEnvironment
 static bool ModuleInitializeEnvironment(JSContext* cx,
                                         Handle<ModuleObject*> module) {
@@ -1351,27 +1350,57 @@ static bool ModuleInitializeEnvironment(JSContext* cx,
     if (!importedModule) {
       return false;
     }
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+    MOZ_ASSERT(importedModule->status() >= ModuleStatus::Linking ||
+               moduleRequest->phase() == ImportPhase::Source);
+#else
     MOZ_ASSERT(importedModule->status() >= ModuleStatus::Linking);
+#endif
 
     localName = in.localName();
     importName = in.importName();
 
-    // Step 7.c. If in.[[ImportName]] is namespace-object, then:
-    if (!importName) {
-      // Step 7.c.i. Let namespace be ? GetModuleNamespace(importedModule).
-      Rooted<ModuleNamespaceObject*> ns(
-          cx, GetOrCreateModuleNamespace(cx, importedModule));
+    // Step 7.b. If in.[[ImportName]] is namespace-object, then:
+    if (!importName && moduleRequest->phase() == ImportPhase::Evaluation) {
+      // Step 7.b.i. Let namespace be ? GetModuleNamespace(importedModule).
+      ModuleNamespaceObject* ns =
+          GetOrCreateModuleNamespace(cx, importedModule);
       if (!ns) {
         return false;
       }
 
-      // Step 7.c.ii. Perform ! env.CreateImmutableBinding(in.[[LocalName]],
+      // Step 7.b.ii. Perform ! env.CreateImmutableBinding(in.[[LocalName]],
       // true). This happens when the environment is created.
 
-      // Step 7.c.iii. Perform ! env.InitializeBinding(in.[[LocalName]],
+      // Step 7.b.iii. Perform ! env.InitializeBinding(in.[[LocalName]],
       // namespace).
-      InitNamespaceBinding(cx, env, localName, ns);
-    } else {
+      InitNamespaceOrSourceBinding(cx, env, localName, ObjectValue(*ns));
+    }
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+    else if (moduleRequest->phase() == ImportPhase::Source) {
+      // https://tc39.es/ecma262/#sec-source-text-module-record-initialize-environment
+      // Step 7.c. Else if in.[[ImportName]] is source, then
+      // Step 7.c.i. Let moduleSourceObject be importedModule.[[ModuleSource]].
+      ModuleSourceObject* moduleSourceObject = importedModule->moduleSource();
+
+      // Step 7.c.ii. If moduleSourceObject is empty, throw a SyntaxError
+      //              exception.
+      if (!moduleSourceObject) {
+        JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                                  JSMSG_MODULE_SOURCE_NOT_AVAILABLE);
+        return false;
+      }
+
+      // Step 7.c.iii. Perform ! env.CreateImmutableBinding(in.[[LocalName]],
+      //               true). This happens when the environment is created.
+
+      // Step 7.c.iv. Perform ! env.InitializeBinding(in.[[LocalName]],
+      //              moduleSourceObject).
+      InitNamespaceOrSourceBinding(cx, env, localName,
+                                   ObjectValue(*moduleSourceObject));
+    }
+#endif
+    else {
       // Step 7.d. Else:
       // Step 7.d.i. Let resolution be ?
       // importedModule.ResolveExport(in.[[ImportName]]).
@@ -1411,9 +1440,8 @@ static bool ModuleInitializeEnvironment(JSContext* cx,
         // bytecode assuming an indirect binding. Instead, ensure a special
         // "*namespace*"" binding exists on the target module's environment. We
         // then generate an indirect binding to this synthetic binding.
-        Rooted<ModuleEnvironmentObject*> sourceEnv(
-            cx, &sourceModule->initialEnvironment());
-        InitNamespaceBinding(cx, sourceEnv, bindingName, ns);
+        InitNamespaceOrSourceBinding(cx, &sourceModule->initialEnvironment(),
+                                     bindingName, ObjectValue(*ns));
         if (!env->createImportBinding(cx, localName, sourceModule,
                                       bindingName)) {
           return false;
