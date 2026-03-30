@@ -7621,6 +7621,23 @@ static bool GetMaxArgs(JSContext* cx, unsigned argc, Value* vp) {
   return true;
 }
 
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+static bool GetAbstractModuleSource(JSContext* cx, unsigned argc, Value* vp) {
+  CallArgs args = CallArgsFromVp(argc, vp);
+  if (JS::Prefs::experimental_source_phase_imports()) {
+    JSObject* obj =
+        GlobalObject::getOrCreateConstructor(cx, JSProto_AbstractModuleSource);
+    if (!obj) {
+      return false;
+    }
+    args.rval().setObject(*obj);
+  } else {
+    args.rval().setUndefined();
+  }
+  return true;
+}
+#endif
+
 static bool IsHTMLDDA_Call(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
@@ -10455,6 +10472,12 @@ JS_FN_HELP("createUserArrayBuffer", CreateUserArrayBuffer, 1, 0,
     JS_FN_HELP("getMaxArgs", GetMaxArgs, 0, 0,
 "getMaxArgs()",
 "  Return the maximum number of supported args for a call."),
+
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+    JS_FN_HELP("getAbstractModuleSource", GetAbstractModuleSource, 0, 0,
+"getAbstractModuleSource()",
+"  Return the %AbstractModuleSource% intrinsic constructor."),
+#endif
 
     JS_FN_HELP("createIsHTMLDDA", CreateIsHTMLDDA, 0, 0,
 "createIsHTMLDDA()",
