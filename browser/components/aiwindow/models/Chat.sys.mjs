@@ -128,6 +128,7 @@ Object.assign(Chat, {
       return engineInstance.runWithGenerator({
         streamOptions: { enabled: true },
         fxAccountToken,
+        chatId: conversation.id,
         tool_choice: "auto",
         tools: chatToolsConfig,
         args: compactedMessages,
