@@ -146,6 +146,7 @@ internal fun Homepage(
                         onPrivateModeTapped = { browsingModeChanged(BrowsingMode.Private) },
                         onStoriesTapped = { interactor.onDiscoverMoreClicked() },
                         onNewsAnimationShown = { components.settings.recordNewsButtonAnimationShown() },
+                        onLogoClicked = interactor::onLogoClicked,
                     )
                 }
 
@@ -161,6 +162,7 @@ internal fun Homepage(
                         privateBrowsingButtonColor = headerState.privateBrowsingButtonColor,
                         browsingMode = state.browsingMode,
                         browsingModeChanged = browsingModeChanged,
+                        onLogoClicked = interactor::onLogoClicked,
                     )
                 }
             }

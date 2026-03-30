@@ -13,20 +13,29 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 
 /**
- * Initialises Long Fox 🟧🟧🟧🟧🦊
- *
- * Adds a compose view with the game to whichever view is passed in.
- * When back is pressed, gets rid of this game ComposeView.
- *
+ * Defines the api for using Long Fox.
  */
-@Suppress("unused")
-class LongFoxFeature {
+interface LongFoxFeatureApi {
 
     /**
      * If you want to include the game somewhere, call this with a view you want to attach it to.
      * @param container the view that you want to put the game in
      */
-    fun start(container: ViewGroup) {
+    fun start(container: ViewGroup)
+}
+
+/**
+ * Initialises Long Fox feature 🟧🟧🟧🟧🦊
+ *
+ */
+class LongFoxFeature : LongFoxFeatureApi {
+
+    /**
+     *  Adds a compose view with the game to whichever view is passed in.
+     *  When back is pressed, gets rid of this game ComposeView.
+     *  @param container the view that you want to put the game in.
+     */
+    override fun start(container: ViewGroup) {
         val context = container.context ?: return
         container.addView(
             ComposeView(context).apply {

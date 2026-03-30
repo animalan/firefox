@@ -108,6 +108,7 @@ import org.mozilla.fenix.databinding.FragmentHomeBinding
 import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.getBottomToolbarHeight
+import org.mozilla.fenix.ext.getRootView
 import org.mozilla.fenix.ext.getTopToolbarHeight
 import org.mozilla.fenix.ext.hideToolbar
 import org.mozilla.fenix.ext.isToolbarAtBottom
@@ -121,6 +122,7 @@ import org.mozilla.fenix.ext.updateMicrosurveyPromptForConfigurationChange
 import org.mozilla.fenix.home.bookmarks.BookmarksFeature
 import org.mozilla.fenix.home.bookmarks.controller.DefaultBookmarksController
 import org.mozilla.fenix.home.ext.showWallpaperOnboardingDialog
+import org.mozilla.fenix.home.logo.LogoController
 import org.mozilla.fenix.home.pocket.controller.DefaultPocketStoriesController
 import org.mozilla.fenix.home.privatebrowsing.controller.DefaultPrivateBrowsingController
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTabFeature
@@ -661,6 +663,10 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
             ),
             privacyNoticeBannerController = DefaultPrivacyNoticeBannerController(
                 privacyNoticeBannerStore = privacyNoticeBannerStore,
+            ),
+            logoController = LogoController(
+                longFoxFeature = components.core.longFoxFeature,
+                container = activity.getRootView() as? ViewGroup,
             ),
         )
 

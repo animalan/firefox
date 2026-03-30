@@ -58,6 +58,7 @@ private const val NEWS_BUTTON_ANIMATION_DELAY = 500L
  * @param onPrivateModeTapped callback for when the private mode button is tapped.
  * @param onStoriesTapped callback for when the stories button is tapped.
  * @param onNewsAnimationShown callback invoked when the news button animation starts playing.
+ * @param onLogoClicked callback for when the logo is clicked
  */
 @Composable
 fun ExperimentalHomepageHeader(
@@ -66,6 +67,7 @@ fun ExperimentalHomepageHeader(
     onPrivateModeTapped: () -> Unit,
     onStoriesTapped: () -> Unit,
     onNewsAnimationShown: () -> Unit,
+    onLogoClicked: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -79,7 +81,10 @@ fun ExperimentalHomepageHeader(
 
         Column {
             Spacer(modifier = Modifier.height(28.dp))
-            WordmarkAndLogo(wordmarkTextColor)
+            WordmarkAndLogo(
+                wordmarkTextColor = wordmarkTextColor,
+                onLogoClicked = onLogoClicked,
+            )
         }
 
         StoriesButton(
@@ -113,12 +118,13 @@ fun ExperimentalPrivateHomepageHeader(onHomeTapped: () -> Unit) {
 private fun WordmarkAndLogo(
     wordmarkTextColor: Color?,
     modifier: Modifier = Modifier,
+    onLogoClicked: () -> Unit,
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        WordmarkLogo()
+        WordmarkLogo(onLogoClicked)
         WordmarkText(wordmarkTextColor)
     }
 }
@@ -208,6 +214,7 @@ private fun HomepageHeaderPreview(
                 onPrivateModeTapped = {},
                 onStoriesTapped = {},
                 onNewsAnimationShown = {},
+                onLogoClicked = {},
             )
         }
     }
