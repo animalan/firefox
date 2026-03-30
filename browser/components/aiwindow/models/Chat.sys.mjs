@@ -37,6 +37,7 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   AIWindow:
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindow.sys.mjs",
+  SearchService: "moz-src:///toolkit/components/search/SearchService.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "console", () =>
@@ -275,6 +276,14 @@ Object.assign(Chat, {
             }
             searchHandoffBrowser = context.browsingContext.embedderElement;
             result = await toolFunc(params ?? {}, context, secProps);
+            const engine = await lazy.SearchService.getDefault();
+            Glean.smartWindow.searchHandoff.record({
+              location: context.telemetry.location,
+              chat_id: conversation.id,
+              message_seq: conversation.messageCount,
+              provider: engine.name ?? "unknown",
+              model: engineInstance?.model,
+            });
             conversation._searchExecutedTurn = currentTurn;
           } else if (toolName === GET_PAGE_CONTENT) {
             const startTime = new Date();

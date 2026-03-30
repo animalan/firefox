@@ -210,16 +210,12 @@ smart_window:
     extra_keys:
       location: *location
       chat_id: *chat_id
-      num_messages: &num_messages
-        type: quantity
-        unit: count
-        description: >
-          Number of messages in that chat.
+      message_seq: *message_seq
       time_delta:
         type: quantity
-        unit: minutes
+        unit: ms
         description: >
-          Elapsed time in minutes between chat session completion and retrieval
+          Elapsed time in milliseconds between last updated chat session completion and retrieval
 
   quick_prompt_displayed:
     type: event
@@ -416,6 +412,32 @@ smart_window:
         type: boolean
         description: >
           Whether the memories feature is enabled or not. True for turning on and false for turning off
+
+  search_handoff:
+    type: event
+    description: |
+      A search toolcall is made due to assistant requiring more information to respond to a prompt
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2024869
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D287975
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - npodgurski@mozilla.com
+    expires: never
+    extra_keys:
+      location: *location
+      chat_id: *chat_id
+      message_seq: *message_seq
+      provider:
+        type: string
+        description: >
+          The provider used for the search handoff, for example "google" or "bing"
+      model:
+        type: string
+        description: >
+          Model selected by the user
 
   model_request:
     type: event

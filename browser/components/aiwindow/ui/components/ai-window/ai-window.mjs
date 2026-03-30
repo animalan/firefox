@@ -585,6 +585,15 @@ export class AIWindow extends MozLitElement {
       ? this.openConversation(conversation)
       : this.#resetConversationState();
 
+    if (conversation) {
+      Glean.smartWindow.chatRetrieved.record({
+        location: this.mode,
+        chat_id: conversation.id,
+        message_seq: this.#conversation?.messageCount ?? 0,
+        time_delta: Date.now() - conversation.updatedDate,
+      });
+    }
+
     if (this.#hostBrowser?.hasAttribute("data-continue-streaming")) {
       this.#hostBrowser.removeAttribute("data-continue-streaming");
       this.#continueAfterToolResult();
