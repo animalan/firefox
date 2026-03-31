@@ -164,10 +164,7 @@ private fun StoriesButton(
     }
 
     RightChevronPillButton(onClick = onClick) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(FirefoxTheme.layout.space.static50),
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 painter = painterResource(iconsR.drawable.mozac_ic_reading_list_24),
                 contentDescription = stringResource(R.string.homepage_all_stories),
