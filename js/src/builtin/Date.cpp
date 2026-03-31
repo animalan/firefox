@@ -1643,6 +1643,29 @@ static bool ParseDate(JSContext* cx, DateTimeInfo* dtInfo, const CharT* s,
     return true;
   }
 
+  auto isAnyOf = [](std::string_view sv, CharT ch) {
+    // Intentionally doesn't use std::string_view::find, std::find, std::any_of,
+    // or any other built-in function, because the compiler tries to be "smart"
+    // and turns it into a `memchr` call. Whereas this loop gets compiled into
+    // smaller and faster assembly. For example when |sv| is " ,.-/", Clang
+    // compiles it to:
+    //
+    // mov     ecx, edi
+    // cmp     cl, 48
+    // setb    dl
+    // movabs  rax, 263887085633536
+    // shr     rax, cl
+    // and     al, dl
+    //
+    // That assembly surely beats calling `memchr`.
+    for (auto v : sv) {
+      if (v == ch) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   // Collect telemetry on how often Date.parse enters implementation defined
   // code. This can be removed in the future, see Bug 1944630.
   cx->runtime()->setUseCounter(cx->global(), JSUseCounter::DATEPARSE_IMPL_DEF);
@@ -1656,7 +1679,7 @@ static bool ParseDate(JSContext* cx, DateTimeInfo* dtInfo, const CharT* s,
   for (; index < length; index++) {
     int c = s[index];
 
-    if (strchr(" ,.-/", c)) {
+    if (isAnyOf(" ,.-/", c)) {
       continue;
     }
     if (!IsAsciiAlpha(c)) {
@@ -1682,7 +1705,9 @@ static bool ParseDate(JSContext* cx, DateTimeInfo* dtInfo, const CharT* s,
       if (IsAsciiDigit(s[index])) {
         break;
       }
-    } else if (!strchr(" ,.-/", s[index])) {
+      // Any other (single) character after the month name is ignored. (Not sure
+      // if this is intentional.)
+    } else if (!isAnyOf(" ,.-/", s[index])) {
       // We're only allowing the above delimiters after the day of
       // week to prevent things such as "foo_1" from being parsed
       // as a date, which may break software which uses this function
@@ -1719,7 +1744,7 @@ static bool ParseDate(JSContext* cx, DateTimeInfo* dtInfo, const CharT* s,
       TryParseDashedDatePrefix(s, length, &index, &year, &mon, &mday) ||
       TryParseDashedNumericDatePrefix(s, length, &index, &year, &mon, &mday);
 
-  if (isDashedDate && index < length && strchr("T:+", s[index])) {
+  if (isDashedDate && index < length && isAnyOf("T:+", s[index])) {
     return false;
   }
 
@@ -1882,11 +1907,11 @@ static bool ParseDate(JSContext* cx, DateTimeInfo* dtInfo, const CharT* s,
                  (c != '.' || sec != -1) &&
                  // Allow zulu time e.g. "09/26/1995 16:00Z", or
                  // '+' directly after time e.g. 00:00+0500
-                 !(hour != -1 && strchr("Zz+", c)) &&
+                 !(hour != -1 && isAnyOf("Zz+", c)) &&
                  // Allow month or AM/PM directly after a number
                  (!IsAsciiAlpha(c) ||
-                  (mon != -1 && !(strchr("AaPp", c) && index < length - 1 &&
-                                  strchr("Mm", s[index + 1]))))) {
+                  (mon != -1 && !(isAnyOf("AaPp", c) && index < length - 1 &&
+                                  isAnyOf("Mm", s[index + 1]))))) {
         return false;
       } else if (seenPlusMinus && n < 60) { /* handle GMT-3:30 */
         if (tzOffset < 0) {
