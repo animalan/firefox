@@ -226,18 +226,19 @@ export const AboutNewTab = {
   },
 
   _subscribeToActivityStream() {
-    const store = this.activityStream.store;
-    let unsubscribe = store.subscribe(() => {
+    let unsubscribe = this.activityStream.store.subscribe(() => {
       // If the top sites changed, broadcast "newtab-top-sites-changed". We
       // ignore changes to the `screenshot` property in each site because
       // screenshots are generated at times that are hard to predict and it ends
       // up interfering with tests that rely on "newtab-top-sites-changed".
       // Observers likely don't care about screenshots anyway.
-      let topSites = store.getState().TopSites.rows.map(site => {
-        site = { ...site };
-        delete site.screenshot;
-        return site;
-      });
+      let topSites = this.activityStream.store
+        .getState()
+        .TopSites.rows.map(site => {
+          site = { ...site };
+          delete site.screenshot;
+          return site;
+        });
       if (!lazy.ObjectUtils.deepEqual(topSites, this._cachedTopSites)) {
         this._cachedTopSites = topSites;
         Services.obs.notifyObservers(null, "newtab-top-sites-changed");

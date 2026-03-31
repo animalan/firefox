@@ -815,7 +815,7 @@ export const PREFS_CONFIG = new Map([
     "discoverystream.shortcuts.personalization.enabled",
     {
       title: "Boolean flag to enable shortcuts personalization",
-      value: true,
+      value: false,
     },
   ],
   [

@@ -43,12 +43,9 @@ async function newtabWithSponsoredTopsites(callback = () => {}) {
       ),
     "Should find sponsored topsites after pref re-broadcast"
   );
+  await SpecialPowers.spawn(browser, [], callback);
 
-  try {
-    await SpecialPowers.spawn(browser, [], callback);
-  } finally {
-    BrowserTestUtils.removeTab(tab);
-  }
+  BrowserTestUtils.removeTab(tab);
 }
 
 add_setup(async function () {
@@ -83,10 +80,6 @@ add_setup(async function () {
     "browser.newtabpage.activity-stream.showSponsoredTopSites",
     true,
   ]);
-  let topSitesFeed = AboutNewTab.activityStream.store.feeds.get(
-    "feeds.system.topsites"
-  );
-  await topSitesFeed.refresh({ broadcast: true });
 
   registerCleanupFunction(async () => {
     lazy.DEFAULT_TOP_SITES.length = 0;
