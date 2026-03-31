@@ -222,7 +222,7 @@ export class LoginManagerStorage_json {
 
   // Synchronuously stores encrypted login, returns login clone with upserted
   // uuid and updated timestamps
-  #addLogin(login) {
+  async #addLogin(login) {
     this._store.ensureDataReady();
 
     // Throws if there are bogus values.
@@ -298,7 +298,7 @@ export class LoginManagerStorage_json {
     });
     this._store.saveSoon();
 
-    Glean.pwmgr.numSavedPasswords.set(this.countLogins("", "", ""));
+    Glean.pwmgr.numSavedPasswords.set(await this.countLoginsAsync("", "", ""));
     return loginClone;
   }
 
@@ -330,7 +330,7 @@ export class LoginManagerStorage_json {
         }
       }
 
-      const resultLogin = this.#addLogin(encryptedLogin);
+      const resultLogin = await this.#addLogin(encryptedLogin);
 
       // restore unencrypted username and password for use in `addLogin` event
       // and return value
