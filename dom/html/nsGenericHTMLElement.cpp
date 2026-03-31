@@ -711,18 +711,7 @@ void nsGenericHTMLElement::AfterSetPopoverAttr() {
     }
 
     if (newState == PopoverAttributeState::None) {
-      auto* popoverData = GetPopoverData();
-      if (popoverData) {
-        // We have to keep track of the toggle event task, if, for example,
-        // the popover attribute is removed as part of the popover focusing
-        // steps in https://html.spec.whatwg.org/#show-popover. So we can't
-        // clear the popover data in that case.
-        if (popoverData->IsShowingOrHiding()) {
-          popoverData->SetPopoverAttributeState(newState);
-        } else {
-          ClearPopoverData();
-        }
-      }
+      ClearPopoverData();
       RemoveStates(ElementState::POPOVER_OPEN);
     } else {
       // Re-apply the state in case event handlers changed it
@@ -3484,9 +3473,6 @@ bool nsGenericHTMLElement::FireToggleEvent(const nsAString& aOldState,
 // https://html.spec.whatwg.org/#queue-a-popover-toggle-event-task
 void nsGenericHTMLElement::QueuePopoverEventTask(
     PopoverVisibilityState aOldState, Element* aSource) {
-  PopoverVisibilityState newState = aOldState == PopoverVisibilityState::Hidden
-                                        ? PopoverVisibilityState::Showing
-                                        : PopoverVisibilityState::Hidden;
   auto* data = GetPopoverData();
   MOZ_ASSERT(data, "Should have popover data");
 
@@ -3494,15 +3480,15 @@ void nsGenericHTMLElement::QueuePopoverEventTask(
     aOldState = queuedToggleEventTask->GetOldState();
   }
 
-  auto task = MakeRefPtr<PopoverToggleEventTask>(do_GetWeakReference(this),
-                                                 do_GetWeakReference(aSource),
-                                                 aOldState, newState);
+  auto task = MakeRefPtr<PopoverToggleEventTask>(
+      do_GetWeakReference(this), do_GetWeakReference(aSource), aOldState);
   data->SetToggleEventTask(task);
   OwnerDoc()->Dispatch(task.forget());
 }
 
 void nsGenericHTMLElement::RunPopoverToggleEventTask(
-    PopoverToggleEventTask* aTask, Element* aSource) {
+    PopoverToggleEventTask* aTask, PopoverVisibilityState aOldState,
+    Element* aSource) {
   auto* data = GetPopoverData();
   if (!data) {
     return;
@@ -3512,15 +3498,14 @@ void nsGenericHTMLElement::RunPopoverToggleEventTask(
   if (!popoverToggleEventTask || aTask != popoverToggleEventTask) {
     return;
   }
-  auto oldState = aTask->GetOldState();
-  auto newState = aTask->GetNewState();
   data->ClearToggleEventTask();
   // Intentionally ignore the return value here as only on open event the
   // cancelable attribute is initialized to true for beforetoggle event.
   auto stringForState = [](PopoverVisibilityState state) {
     return state == PopoverVisibilityState::Hidden ? u"closed"_ns : u"open"_ns;
   };
-  FireToggleEvent(stringForState(oldState), stringForState(newState),
+  FireToggleEvent(stringForState(aOldState),
+                  stringForState(data->GetPopoverVisibilityState()),
                   u"toggle"_ns, aSource);
 }
 

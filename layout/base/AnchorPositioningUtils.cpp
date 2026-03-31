@@ -925,9 +925,8 @@ Maybe<ScopedNameRef> AnchorPositioningUtils::GetUsedAnchorName(
   }
 
   if (const nsIContent* content = aPositioned->GetContent()) {
-    if (const auto* element = nsGenericHTMLElement::FromNode(content)) {
-      if (element->GetPopoverAttributeState() !=
-          dom::PopoverAttributeState::None) {
+    if (const auto* element = content->AsElement()) {
+      if (element->GetPopoverData()) {
         return Some(ScopedNameRef(nsGkAtoms::AnchorPosImplicitAnchor,
                                   StyleCascadeLevel::Default()));
       }
