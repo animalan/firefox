@@ -265,14 +265,12 @@ void AbsoluteContainingBlock::SanityCheckChildListsBeforeReflow(
   // TODO(TYLin): This is potentially O(N^2), where N is the number of
   // continuations that an abspos frame gets. Consider putting this behind an
   // about:config pref if it turns out to slow down debug builds too much.
-  for (const nsFrameList* list : {&mAbsoluteFrames, &mPushedAbsoluteFrames}) {
-    for (const nsIFrame* child : *list) {
-      for (nsIFrame* prev = child->GetPrevInFlow(); prev;
-           prev = prev->GetPrevInFlow()) {
-        MOZ_ASSERT(!list->ContainsFrame(prev),
-                   "It is wrong that both a child and its prev-in-flow are in "
-                   "the same child list!");
-      }
+  for (const nsIFrame* child : mAbsoluteFrames) {
+    for (nsIFrame* prev = child->GetPrevInFlow(); prev;
+         prev = prev->GetPrevInFlow()) {
+      MOZ_ASSERT(!GetChildList().ContainsFrame(prev),
+                 "It is wrong that both a child and its prev-in-flow are in "
+                 "our child list!");
     }
   }
 
