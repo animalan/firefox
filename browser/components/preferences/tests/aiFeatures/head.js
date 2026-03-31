@@ -19,3 +19,17 @@ async function withPrefsPane(pane, testFn) {
     BrowserTestUtils.removeTab(gBrowser.selectedTab);
   }
 }
+
+/**
+ * Navigates to the AI features pane in the preferences window.
+ *
+ * @param {Document} doc - The preferences document
+ * @param {Window} win - The preferences window
+ */
+async function openAiFeaturePanel(doc, win) {
+  const paneLoaded = waitForPaneChange("ai");
+  const categoryButton = doc.getElementById("category-ai-features");
+  categoryButton.scrollIntoView();
+  EventUtils.synthesizeMouseAtCenter(categoryButton, {}, win);
+  await paneLoaded;
+}
