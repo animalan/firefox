@@ -3652,12 +3652,6 @@ bool GeneralParser<ParseHandler, Unit>::functionFormalParametersAndBody(
     }
 
     setFunctionEndFromCurrentToken(funbox);
-
-    if (kind == FunctionSyntaxKind::Statement) {
-      if (!matchOrInsertSemicolon()) {
-        return false;
-      }
-    }
   }
 
   if (IsMethodDefinitionKind(kind) && pc_->superScopeNeedsHomeObject()) {
