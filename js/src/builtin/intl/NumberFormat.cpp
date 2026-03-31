@@ -2438,8 +2438,8 @@ static bool NumberFormatFunction(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
   // Steps 1-2.
-  auto* compare = &args.callee().as<JSFunction>();
-  auto nfValue = compare->getExtendedSlot(NumberFormatFunction_NumberFormat);
+  auto* format = &args.callee().as<JSFunction>();
+  auto nfValue = format->getExtendedSlot(NumberFormatFunction_NumberFormat);
   Rooted<NumberFormatObject*> numberFormat(
       cx, &nfValue.toObject().as<NumberFormatObject>());
 
