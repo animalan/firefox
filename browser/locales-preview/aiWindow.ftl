@@ -68,6 +68,7 @@ smartbar-placeholder =
 
 ## Mentions
 
+smartbar-mention-typing-placeholder = Tag a tab or site
 smartbar-mentions-list-no-results-label = No results found
 smartbar-mentions-list-recent-tabs-label = Recent tabs
 
