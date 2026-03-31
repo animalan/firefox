@@ -59,7 +59,8 @@ const IS_PRIVILEGED_PROCESS =
 const PREF_ACTIVITY_STREAM_DEBUG = "browser.newtabpage.activity-stream.debug";
 const PREF_NEWTAB_SELF_LOADING =
   "browser.newtabpage.activity-stream.selfLoading.enabled";
-
+const PREF_NEWTAB_REMOTE_RENDERER =
+  "browser.newtabpage.activity-stream.remote-renderer.enabled";
 /**
  * The AboutHomeStartupCacheChild is responsible for connecting the
  * AboutNewTabRedirectorChild with a cached document and script for about:home
@@ -407,6 +408,13 @@ class BaseAboutNewTabRedirector {
       PREF_NEWTAB_SELF_LOADING,
       false
     );
+
+    XPCOMUtils.defineLazyPreferenceGetter(
+      this,
+      "remoteRendererEnabled",
+      PREF_NEWTAB_REMOTE_RENDERER,
+      false
+    );
   }
 
   /**
@@ -416,6 +424,10 @@ class BaseAboutNewTabRedirector {
    * the newtab page has no effect on the result of this function.
    */
   get defaultURL() {
+    if (this.remoteRendererEnabled) {
+      return "resource://newtab/data/content/remote-renderer-host.html";
+    }
+
     // Generate the desired activity stream resource depending on state, e.g.,
     // "resource://newtab/prerendered/activity-stream.html"
     // "resource://newtab/prerendered/activity-stream-debug.html"
