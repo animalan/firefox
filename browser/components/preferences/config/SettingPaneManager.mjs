@@ -46,7 +46,6 @@ export const SettingPaneManager = {
     let settingPane = /** @type {SettingPane} */ (
       document.createElement("setting-pane")
     );
-    settingPane.id = id;
     settingPane.name = subPane;
     settingPane.config = config;
     settingPane.isSubPane = !!config.parent;

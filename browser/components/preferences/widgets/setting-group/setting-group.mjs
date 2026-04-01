@@ -114,14 +114,8 @@ export class SettingGroup extends SettingElement {
     if (!this.srdEnabled) {
       this.classList.toggle("subcategory", this.config?.headingLevel == 1);
     }
-    // Only set/remove attributes when explicitly defined in config
-    // This allows handleVisibilityChange to manage visibility independently
-    if (this.config?.hiddenFromSearch !== undefined) {
-      this.toggleAttribute(HiddenAttr.Search, !!this.config.hiddenFromSearch);
-    }
-    if (this.config?.hidden !== undefined) {
-      this.toggleAttribute(HiddenAttr.Self, this.config.hidden);
-    }
+    this.toggleAttribute(HiddenAttr.Search, !!this.config?.hiddenFromSearch);
+    this.toggleAttribute(HiddenAttr.Self, !!this.config?.hidden);
   }
 
   async handleVisibilityChange() {

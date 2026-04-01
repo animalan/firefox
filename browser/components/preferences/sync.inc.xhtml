@@ -7,10 +7,9 @@
 <script src="chrome://browser/content/preferences/sync.js"/>
 <html:template id="template-paneSync">
 <hbox id="firefoxAccountCategory"
-    class="subcategory"
-    hidden="true"
-    data-category="paneSync"
-    data-srd-groupid="sync">
+      class="subcategory"
+      hidden="true"
+      data-category="paneSync">
   <html:h1 data-l10n-id="pane-sync-title3"/>
 </hbox>
 
@@ -247,8 +246,15 @@
 </vbox>
 </deck>
 
+<!-- Default browser -->
+<html:setting-group groupid="defaultBrowserSync" data-category="paneSync" hidden="true" />
+
+<!-- Mozilla account -->
+<html:setting-group groupid="account" hidden="true" data-category="paneSync"/>
+
+<!-- Sync -->
+<html:setting-group groupid="sync" hidden="true" data-category="paneSync"/>
 
 <!-- Firefox Backup -->
-<html:setting-group groupid="backup" hidden="true" data-category="paneSync" data-subcategory="backup" data-srd-migrated="" />
-
+<html:setting-group groupid="backup" hidden="true" data-category="paneSync" data-subcategory="backup"/>
 </html:template>

@@ -2,7 +2,6 @@
 import {
   AboutPreferences,
   PREFERENCES_LOADED_EVENT,
-  PREFERENCES_LOADED_EVENT_SUBPANE,
 } from "lib/AboutPreferences.sys.mjs";
 import { actionTypes as at, actionCreators as ac } from "common/Actions.mjs";
 import { GlobalOverrider } from "test/unit/utils";
@@ -93,16 +92,11 @@ describe("AboutPreferences Feed", () => {
 
       instance.init();
 
-      assert.calledTwice(Services.obs.addObserver);
+      assert.calledOnce(Services.obs.addObserver);
       assert.calledWith(
         Services.obs.addObserver,
         instance,
         PREFERENCES_LOADED_EVENT
-      );
-      assert.calledWith(
-        Services.obs.addObserver,
-        instance,
-        PREFERENCES_LOADED_EVENT_SUBPANE
       );
     });
     it("should stop watching on uninit", () => {
@@ -110,16 +104,11 @@ describe("AboutPreferences Feed", () => {
 
       instance.uninit();
 
-      assert.calledTwice(Services.obs.removeObserver);
+      assert.calledOnce(Services.obs.removeObserver);
       assert.calledWith(
         Services.obs.removeObserver,
         instance,
         PREFERENCES_LOADED_EVENT
-      );
-      assert.calledWith(
-        Services.obs.removeObserver,
-        instance,
-        PREFERENCES_LOADED_EVENT_SUBPANE
       );
     });
     it("should try to render on event", async () => {

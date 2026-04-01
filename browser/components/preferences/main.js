@@ -22,6 +22,8 @@ ChromeUtils.defineESModuleGetters(this, {
   UpdateListener: "resource://gre/modules/UpdateListener.sys.mjs",
   LinkPreview: "moz-src:///browser/components/genai/LinkPreview.sys.mjs",
   MigrationUtils: "resource:///modules/MigrationUtils.sys.mjs",
+  SelectableProfileService:
+    "resource:///modules/profiles/SelectableProfileService.sys.mjs",
   TranslationsParent: "resource://gre/actors/TranslationsParent.sys.mjs",
   TranslationsUtils:
     "chrome://global/content/translations/TranslationsUtils.mjs",
@@ -1099,6 +1101,18 @@ Preferences.addSetting({
 });
 
 Preferences.addSetting({
+  id: "data-migration",
+  visible: () =>
+    !Services.policies || Services.policies.isAllowed("profileImport"),
+  onUserClick() {
+    const browserWindow = window.browsingContext.topChromeWindow;
+    MigrationUtils.showMigrationWizard(browserWindow, {
+      entrypoint: MigrationUtils.MIGRATION_ENTRYPOINTS.PREFERENCES,
+    });
+  },
+});
+
+Preferences.addSetting({
   id: "connectionSettings",
   onUserClick: () => gMainPane.showConnections(),
   controllingExtensionInfo: {
@@ -1106,6 +1120,122 @@ Preferences.addSetting({
     l10nId: "extension-controlling-proxy-config",
     allowControl: true,
   },
+});
+
+Preferences.addSetting({
+  id: "profilesPane",
+  onUserClick(e) {
+    e.preventDefault();
+    gotoPref("paneProfiles");
+  },
+});
+Preferences.addSetting({
+  id: "profilesSettings",
+  visible() {
+    return SelectableProfileService.isEnabled;
+  },
+  onUserClick: e => {
+    e.preventDefault();
+    gotoPref("profiles");
+  },
+});
+Preferences.addSetting({
+  id: "manageProfiles",
+  onUserClick: e => {
+    e.preventDefault();
+    // Using the existing function for now, since privacy.js also calls it
+    gMainPane.manageProfiles();
+  },
+});
+Preferences.addSetting({
+  id: "copyProfile",
+  deps: ["copyProfileSelect"],
+  disabled: ({ copyProfileSelect }) => !copyProfileSelect.value,
+  onUserClick: (e, { copyProfileSelect }) => {
+    e.preventDefault();
+    SelectableProfileService.getProfile(copyProfileSelect.value).then(
+      profile => {
+        profile?.copyProfile();
+        copyProfileSelect.config.set("");
+      }
+    );
+  },
+});
+Preferences.addSetting({
+  id: "copyProfileBox",
+  visible: () => SelectableProfileService.initialized,
+});
+Preferences.addSetting({
+  id: "copyProfileError",
+  _hasError: false,
+  setup(emitChange) {
+    this.emitChange = emitChange;
+  },
+  visible() {
+    return this._hasError;
+  },
+  setError(value) {
+    this._hasError = !!value;
+    this.emitChange();
+  },
+});
+Preferences.addSetting(
+  class ProfileList extends Preferences.AsyncSetting {
+    static id = "profileList";
+    static PROFILE_UPDATED_OBS = "sps-profiles-updated";
+    setup() {
+      Services.obs.addObserver(
+        this.emitChange,
+        ProfileList.PROFILE_UPDATED_OBS
+      );
+      return () => {
+        Services.obs.removeObserver(
+          this.emitChange,
+          ProfileList.PROFILE_UPDATED_OBS
+        );
+      };
+    }
+
+    async get() {
+      let profiles = await SelectableProfileService.getAllProfiles();
+      return profiles;
+    }
+  }
+);
+Preferences.addSetting({
+  id: "copyProfileSelect",
+  deps: ["profileList"],
+  _selectedProfile: null,
+  setup(emitChange) {
+    this.emitChange = emitChange;
+    document.l10n
+      .formatValue("preferences-copy-profile-select")
+      .then(result => (this.placeholderString = result));
+  },
+  get() {
+    return this._selectedProfile;
+  },
+  set(inputVal) {
+    this._selectedProfile = inputVal;
+    this.emitChange();
+  },
+  getControlConfig(config, { profileList }) {
+    config.options = profileList.value.map(profile => {
+      return { controlAttrs: { label: profile.name }, value: profile.id };
+    });
+
+    // Put the placeholder at the front of the list.
+    config.options.unshift({
+      controlAttrs: { label: this.placeholderString },
+      value: "",
+    });
+
+    return config;
+  },
+});
+Preferences.addSetting({
+  id: "copyProfileHeader",
+  visible: () => SelectableProfileService.initialized,
 });
 
 // Downloads
@@ -2567,10 +2697,77 @@ function createStartupConfig(hidden = false) {
 }
 
 SettingGroupManager.registerGroups({
+  profilePane: {
+    headingLevel: 2,
+    id: "browserProfilesGroupPane",
+    l10nId: "preferences-profiles-subpane-description",
+    supportPage: "profile-management",
+    items: [
+      {
+        id: "manageProfiles",
+        control: "moz-box-button",
+        l10nId: "preferences-manage-profiles-button",
+      },
+      {
+        id: "copyProfileHeader",
+        l10nId: "preferences-copy-profile-header",
+        headingLevel: 2,
+        supportPage: "profile-management",
+        control: "moz-fieldset",
+        items: [
+          {
+            id: "copyProfileBox",
+            l10nId: "preferences-profile-to-copy",
+            control: "moz-box-item",
+            items: [
+              {
+                id: "copyProfileSelect",
+                control: "moz-select",
+                slot: "actions",
+              },
+              {
+                id: "copyProfile",
+                l10nId: "preferences-copy-profile-button",
+                control: "moz-button",
+                slot: "actions",
+                controlAttrs: {
+                  type: "primary",
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  profiles: {
+    id: "profilesGroup",
+    l10nId: "preferences-profiles-section-header",
+    headingLevel: 2,
+    supportPage: "profile-management",
+    items: [
+      {
+        id: "profilesSettings",
+        control: "moz-box-button",
+        l10nId: "preferences-profiles-settings-button",
+      },
+    ],
+  },
   defaultBrowser: createDefaultBrowserConfig(),
   startup: createStartupConfig(
     Services.prefs.getBoolPref("browser.settings-redesign.enabled", false)
   ),
+  importBrowserData: {
+    l10nId: "preferences-data-migration-group",
+    headingLevel: 2,
+    items: [
+      {
+        id: "data-migration",
+        l10nId: "preferences-data-migration-button",
+        control: "moz-box-button",
+      },
+    ],
+  },
   zoom: {
     l10nId: "preferences-zoom-header2",
     headingLevel: 2,
@@ -4543,6 +4740,222 @@ SettingGroupManager.registerGroups({
       },
     ],
   },
+  defaultBrowserSync: createDefaultBrowserConfig({
+    includeIsDefaultPane: false,
+    inProgress: true,
+    hiddenFromSearch: true,
+  }),
+  sync: {
+    inProgress: true,
+    l10nId: "sync-group-label",
+    headingLevel: 2,
+    items: [
+      {
+        id: "syncNoFxaSignIn",
+        l10nId: "sync-signedout-account-signin-4",
+        control: "moz-box-link",
+        iconSrc: "chrome://global/skin/icons/warning.svg",
+        controlAttrs: {
+          id: "noFxaSignIn",
+        },
+      },
+      {
+        id: "syncConfigured",
+        control: "moz-box-group",
+        items: [
+          {
+            id: "syncStatus",
+            l10nId: "prefs-syncing-on-2",
+            control: "moz-box-item",
+            iconSrc: "chrome://global/skin/icons/check-filled.svg",
+            items: [
+              {
+                id: "syncNow",
+                control: "moz-button",
+                l10nId: "prefs-sync-now-button-2",
+                slot: "actions",
+              },
+              {
+                id: "syncing",
+                control: "moz-button",
+                l10nId: "prefs-syncing-button-2",
+                slot: "actions",
+              },
+            ],
+          },
+          {
+            id: "syncEnginesList",
+            control: "sync-engines-list",
+          },
+          {
+            id: "syncChangeOptions",
+            control: "moz-box-button",
+            l10nId: "sync-manage-options-2",
+          },
+        ],
+      },
+      {
+        id: "syncNotConfigured",
+        l10nId: "prefs-syncing-off-2",
+        control: "moz-box-item",
+        iconSrc: "chrome://global/skin/icons/warning.svg",
+        items: [
+          {
+            id: "syncSetup",
+            control: "moz-button",
+            l10nId: "prefs-sync-turn-on-syncing-2",
+            slot: "actions",
+          },
+        ],
+      },
+      {
+        id: "fxaDeviceNameSection",
+        l10nId: "sync-device-name-header-2",
+        control: "moz-fieldset",
+        controlAttrs: {
+          ".headingLevel": 3,
+        },
+        items: [
+          {
+            id: "fxaDeviceNameGroup",
+            control: "moz-box-group",
+            items: [
+              {
+                id: "fxaDeviceName",
+                control: "sync-device-name",
+              },
+              {
+                id: "fxaConnectAnotherDevice",
+                l10nId: "sync-connect-another-device-2",
+                control: "moz-box-link",
+                iconSrc: "chrome://browser/skin/device-phone.svg",
+                controlAttrs: {
+                  id: "connect-another-device",
+                  href: "https://accounts.firefox.com/pair",
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  account: {
+    inProgress: true,
+    l10nId: "account-group-label",
+    headingLevel: 2,
+    items: [
+      {
+        id: "noFxaAccountGroup",
+        control: "moz-box-group",
+        items: [
+          {
+            id: "noFxaAccount",
+            control: "placeholder-message",
+            l10nId: "account-placeholder",
+            controlAttrs: {
+              imagesrc: "chrome://global/skin/illustrations/security-error.svg",
+            },
+          },
+          {
+            id: "noFxaSignIn",
+            control: "moz-box-link",
+            l10nId: "sync-signedout-account-short",
+          },
+        ],
+      },
+      {
+        id: "fxaSignedInGroup",
+        control: "moz-box-group",
+        items: [
+          {
+            id: "fxaLoginVerified",
+            control: "moz-box-item",
+            l10nId: "sync-account-signed-in",
+            l10nArgs: { email: "" },
+            iconSrc: "chrome://browser/skin/fxa/avatar-color.svg",
+            controlAttrs: {
+              layout: "large-icon",
+            },
+          },
+          {
+            id: "verifiedManage",
+            control: "moz-box-link",
+            l10nId: "sync-manage-account2",
+            controlAttrs: {
+              href: "https://accounts.firefox.com/settings",
+            },
+          },
+          {
+            id: "fxaUnlinkButton",
+            control: "moz-box-button",
+            l10nId: "sync-sign-out2",
+          },
+        ],
+      },
+      {
+        id: "fxaUnverifiedGroup",
+        control: "moz-box-group",
+        items: [
+          {
+            id: "fxaLoginUnverified",
+            control: "placeholder-message",
+            l10nId: "sync-signedin-unverified2",
+            l10nArgs: { email: "" },
+            controlAttrs: {
+              imagesrc: "chrome://global/skin/illustrations/security-error.svg",
+            },
+          },
+          {
+            id: "verifyFxaAccount",
+            control: "moz-box-link",
+            l10nId: "sync-verify-account",
+          },
+          {
+            id: "unverifiedUnlinkFxaAccount",
+            control: "moz-box-button",
+            l10nId: "sync-remove-account",
+          },
+        ],
+      },
+      {
+        id: "fxaLoginRejectedGroup",
+        control: "moz-box-group",
+        items: [
+          {
+            id: "fxaLoginRejected",
+            control: "placeholder-message",
+            l10nId: "sync-signedin-login-failure2",
+            l10nArgs: { email: "" },
+            controlAttrs: {
+              imagesrc: "chrome://global/skin/illustrations/security-error.svg",
+            },
+          },
+          {
+            id: "rejectReSignIn",
+            control: "moz-box-link",
+            l10nId: "sync-sign-in",
+          },
+          {
+            id: "rejectUnlinkFxaAccount",
+            control: "moz-box-button",
+            l10nId: "sync-remove-account",
+          },
+        ],
+      },
+    ],
+  },
+  backup: {
+    l10nId: "settings-data-backup-header2",
+    headingLevel: 2,
+    supportPage: "firefox-backup",
+    items: [
+      {
+        id: "backupSettings",
+        control: "backup-settings",
+      },
+    ],
+  },
   translationsAutomaticTranslation: {
     inProgress: true,
     headingLevel: 2,
@@ -4823,34 +5236,24 @@ SettingGroupManager.registerGroups({
  * @param {string} id - ID of {@link SettingGroup} custom element.
  */
 function initSettingGroup(id) {
-  /** @type {SettingGroup[]} */
-  let groups = document.querySelectorAll(`setting-group[groupid=${id}]`);
+  /** @type {SettingGroup} */
+  let group = document.querySelector(`setting-group[groupid=${id}]`);
   const config = SettingGroupManager.get(id);
-  for (let group of groups) {
-    if (group && config) {
-      let sectionEnabled = srdSectionEnabled(id);
-
-      if (
-        (sectionEnabled && group.hasAttribute("data-srd-migrated")) ||
-        (config.inProgress && !sectionEnabled)
-      ) {
-        group.remove();
-      }
-
-      let legacySections = document.querySelectorAll(
-        `[data-srd-groupid=${id}]`
-      );
-      for (let section of legacySections) {
-        if (sectionEnabled) {
-          section.hidden = true;
-          section.removeAttribute("data-category");
-          section.setAttribute("data-hidden-from-search", "true");
-        }
-      }
-      group.config = config;
-      group.getSetting = Preferences.getSetting.bind(Preferences);
-      group.srdEnabled = srdSectionPrefs.all;
+  if (group && config) {
+    if (config.inProgress && !srdSectionEnabled(id)) {
+      group.remove();
+      return;
     }
+
+    let legacySections = document.querySelectorAll(`[data-srd-groupid=${id}]`);
+    for (let section of legacySections) {
+      section.hidden = true;
+      section.removeAttribute("data-category");
+      section.setAttribute("data-hidden-from-search", "true");
+    }
+    group.config = config;
+    group.getSetting = Preferences.getSetting.bind(Preferences);
+    group.srdEnabled = srdSectionPrefs.all;
   }
 }
 

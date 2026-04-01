@@ -248,7 +248,7 @@ const CONFIG_PANES = Object.freeze({
     iconSrc: "chrome://browser/skin/payment-methods-16.svg",
   },
   paneProfiles: {
-    parent: srdSectionEnabled("sync") ? "sync" : "general",
+    parent: "general",
     l10nId: "preferences-profiles-group-header",
     groupIds: ["profilePane"],
   },
@@ -259,20 +259,6 @@ const CONFIG_PANES = Object.freeze({
     badge: "beta",
     groupIds: ["assistantModelGroup", "memoriesGroup"],
     module: "chrome://browser/content/preferences/config/aiFeatures.mjs",
-  },
-  sync: {
-    l10nId: "account-sync-section",
-    iconSrc: "chrome://browser/skin/fxa/avatar-empty.svg",
-    groupIds: [
-      "defaultBrowserSync",
-      "account",
-      "sync",
-      "importBrowserData",
-      "profiles",
-      "backup",
-    ],
-    module: "chrome://browser/content/preferences/config/account-sync.mjs",
-    replaces: "sync",
   },
   translations: {
     parent: "general",
@@ -337,6 +323,27 @@ function init_all() {
   register_module("panePrivacy", gPrivacyPane);
   register_module("paneContainers", gContainersPane);
 
+  let redesignEnabled = Services.prefs.getBoolPref(
+    "browser.settings-redesign.enabled"
+  );
+  for (let [id, config] of Object.entries(CONFIG_PANES)) {
+    if (!redesignEnabled && config.replaces) {
+      continue;
+    }
+    SettingPaneManager.registerPane(id, config);
+  }
+
+  // customHomepage is registered separately because its groups are set up by
+  // AboutPreferences.observe(), which only fires in the redesign path.
+  if (redesignEnabled) {
+    SettingPaneManager.registerPane("customHomepage", {
+      parent: "home",
+      l10nId: "home-custom-homepage-subpage",
+      groupIds: ["customHomepage"],
+      module: "chrome://browser/content/preferences/config/home-startup.mjs",
+    });
+  }
+
   if (ExperimentAPI.labsEnabled) {
     // Set hidden based on previous load's hidden value or if Nimbus is
     // disabled.
@@ -365,28 +372,6 @@ function init_all() {
     register_module("paneSync", gSyncPane);
   }
   register_module("paneSearchResults", gSearchResultsPane);
-
-  let redesignEnabled = Services.prefs.getBoolPref(
-    "browser.settings-redesign.enabled"
-  );
-  for (let [id, config] of Object.entries(CONFIG_PANES)) {
-    if (!redesignEnabled && config.replaces) {
-      continue;
-    }
-    SettingPaneManager.registerPane(id, config);
-  }
-
-  // customHomepage is registered separately because its groups are set up by
-  // AboutPreferences.observe(), which only fires in the redesign path.
-  if (redesignEnabled) {
-    SettingPaneManager.registerPane("customHomepage", {
-      parent: "home",
-      l10nId: "home-custom-homepage-subpage",
-      groupIds: ["customHomepage"],
-      module: "chrome://browser/content/preferences/config/home-startup.mjs",
-    });
-  }
-
   gSearchResultsPane.init();
   gMainPane.preInit();
 

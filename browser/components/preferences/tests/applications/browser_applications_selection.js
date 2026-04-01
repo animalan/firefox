@@ -206,25 +206,11 @@ async function selectStandardOptions(itemToUse) {
   webAppItems = webAppItems.filter(
     item => item.handlerApp instanceof Ci.nsIWebHandlerApp
   );
-
-  // Wait for labels to be populated before comparing them
-  await BrowserTestUtils.waitForMutationCondition(
-    list,
-    {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["label"],
-    },
-    () => webAppItems.every(item => item.label && item.label.trim() !== "")
-  );
-
   Assert.equal(
     webAppItems.length,
     2,
     "Should have 2 web application handler. (" + itemType + ")"
   );
-
   Assert.notEqual(
     webAppItems[0].label,
     webAppItems[1].label,

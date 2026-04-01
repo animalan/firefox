@@ -1264,18 +1264,15 @@ containers-remove-button =
 
 ## Account and sync
 
-account-sync-section =
-    .heading = Account and sync
-
 sync-group-label =
     .label = Sync
 
-account-group-label2 =
-    .label = Account
+account-group-label =
+    .label = { -vendor-short-name } account
 
-account-placeholder2 =
+account-placeholder =
     .label = You’re not signed in
-    .description = Sign in and keep your data private, encrypted, and instantly accessible everywhere you use { -brand-short-name }.
+    .description = Sign in to keep your data private, encrypted, and synced across devices.
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -1413,9 +1410,9 @@ sync-syncing-across-devices-heading = You are syncing these items across all you
 
 sync-syncing-across-devices-heading-2 = Data synced across devices
 
-sync-syncing-across-devices-empty-state2 =
-    .label = Manage synced data
-    .description = You aren’t syncing anything… yet. Start syncing to get all of your data on all your devices.
+sync-syncing-across-devices-empty-state =
+    .label = You aren’t syncing anything… yet.
+    .description = Start syncing to get all of your data on all your devices.
 
 sync-currently-syncing-bookmarks = Bookmarks
 sync-currently-syncing-history = History
@@ -1433,9 +1430,6 @@ sync-manage-options =
 sync-manage-options-2 =
     .label = Manage synced data
     .accesskey = M
-
-settings-sync-disconnect-button =
-    .label = Disconnect
 
 ## The "Choose what to sync" dialog.
 
@@ -1490,7 +1484,7 @@ sync-engine-settings =
 sync-device-name-header = Device Name
 
 sync-device-name-header-2 =
-    .label = Device name
+    .label = Device Name
 
 # Variables:
 #   $placeholder (string) - The placeholder text of the input
