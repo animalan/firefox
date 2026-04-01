@@ -29,12 +29,11 @@
 
 :host([mode="sidebar"]) {
   grid-template-areas:
-    "sidebar-header"
     "browser"
     "prompts"
     "smartbar"
     "disclaimer";
-  grid-template-rows: auto 1fr auto auto auto;
+  grid-template-rows: 1fr auto auto auto;
   --smartbar-width: calc(100% - var(--space-large));
 }
 
@@ -49,12 +48,11 @@
 
 :host([mode="fullpage"].chat-active) {
   grid-template-areas:
-    "fullpage-header"
     "browser"
     "prompts"
     "smartbar"
     "disclaimer";
-  grid-template-rows: auto 1fr auto auto auto;
+  grid-template-rows: 1fr auto auto auto;
 
   & .fullpage-header {
     display: flex;
@@ -63,11 +61,10 @@
 
 :host([mode="sidebar"].chat-active) {
   grid-template-areas:
-    "sidebar-header"
     "browser"
     "smartbar"
     "disclaimer";
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: 1fr auto auto;
 }
 
 #browser-container {
@@ -128,6 +125,8 @@ smartwindow-prompts {
   grid-area: sidebar-header;
   justify-content: flex-end;
   padding: var(--space-small);
+  position: absolute;
+  top: 0;
   width: 100%;
 }
 
@@ -137,6 +136,8 @@ smartwindow-prompts {
   grid-area: fullpage-header;
   justify-content: flex-end;
   padding: var(--space-small);
+  position: absolute;
+  top: 0;
   width: 100%;
 }
 

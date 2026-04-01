@@ -35,6 +35,7 @@ export class AIChatContent extends MozLitElement {
   };
 
   #lastScrollReq = null;
+  #overflowObserver = null;
 
   constructor() {
     super();
@@ -54,6 +55,13 @@ export class AIChatContent extends MozLitElement {
       new CustomEvent("AIChatContent:Ready", { bubbles: true })
     );
     this.#initFooterActionListeners();
+    this.#initOverflowObserver();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.#overflowObserver?.disconnect();
+    this.#overflowObserver = null;
   }
 
   #dispatchAction(action, detail) {
@@ -152,6 +160,21 @@ export class AIChatContent extends MozLitElement {
     });
   }
 
+  #initOverflowObserver() {
+    this.#overflowObserver = new ResizeObserver(() => {
+      const wrapper = this.shadowRoot.querySelector(".chat-content-wrapper");
+      wrapper?.toggleAttribute(
+        "overflowing",
+        wrapper.scrollHeight > wrapper.clientHeight
+      );
+    });
+    this.updateComplete.then(() => {
+      this.#overflowObserver.observe(
+        this.shadowRoot.querySelector(".chat-inner-wrapper")
+      );
+    });
+  }
+
   #getAssistantMessageBody(messageId) {
     if (!messageId) {
       return "";
@@ -230,6 +253,9 @@ export class AIChatContent extends MozLitElement {
     if (convIdChanged || isReloadingSameConvo) {
       this.conversationState = [];
       this.followUpSuggestions = [];
+      this.shadowRoot
+        ?.querySelector(".chat-inner-wrapper")
+        ?.style.removeProperty("--content-height");
       this.requestUpdate();
     }
   }
@@ -352,7 +378,7 @@ export class AIChatContent extends MozLitElement {
         let spacer = haveMultipleMessages ? "small" : "large";
         lastMessage.parentNode.style.setProperty(
           "--content-height",
-          `calc(${elTop}px + 100% - var(--space-${spacer}))`
+          `calc(${elTop}px + 100% - var(--space-${spacer}) - var(--space-xsmall))`
         );
 
         requestAnimationFrame(() => {
