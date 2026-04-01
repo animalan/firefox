@@ -3457,12 +3457,34 @@ pub extern "C" fn Servo_ContainerRule_GetConditionText(
 }
 
 #[no_mangle]
-pub extern "C" fn Servo_ContainerRule_GetContainerQuery(
+pub extern "C" fn Servo_ContainerRule_GetConditionsLength(rule: &ContainerRule) -> usize {
+    rule.conditions.0.len()
+}
+
+#[no_mangle]
+pub extern "C" fn Servo_ContainerRule_GetContainerName(
     rule: &ContainerRule,
+    i: usize,
     result: &mut nsACString,
 ) {
-    if let Some(condition) = rule.conditions.0.first().and_then(|c| c.query_condition()){
-        condition.to_css(&mut CssWriter::new(result)).unwrap();
+    if let Some(condition) = rule.conditions.0.get(i) {
+        let name = condition.name();
+        if !name.is_none() {
+            name.to_css(&mut CssWriter::new(result)).unwrap();
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn Servo_ContainerRule_GetContainerQuery(
+    rule: &ContainerRule,
+    i: usize,
+    result: &mut nsACString,
+) {
+    if let Some(condition) = rule.conditions.0.get(i) {
+        if let Some(condition) = condition.query_condition() {
+            condition.to_css(&mut CssWriter::new(result)).unwrap();
+        }
     }
 }
 
@@ -3471,24 +3493,12 @@ pub extern "C" fn Servo_ContainerRule_QueryContainerFor(
     rule: &ContainerRule,
     element: &RawGeckoElement,
 ) -> *const RawGeckoElement {
-    debug_assert_eq!(rule.conditions.0.len(), 1);
-    let condition = rule.conditions.0.first().unwrap();
-    condition
-        .find_container(GeckoElement(element), None)
-        .map_or(ptr::null(), |result| result.element.0)
-}
-
-#[no_mangle]
-pub extern "C" fn Servo_ContainerRule_GetContainerName(
-    rule: &ContainerRule,
-    result: &mut nsACString,
-) {
-    if let Some(condition) = rule.conditions.0.first() {
-        let name = condition.name();
-        if !name.is_none() {
-            name.to_css(&mut CssWriter::new(result)).unwrap();
+    for condition in rule.conditions.0.iter() {
+        if let Some(result) = condition.find_container(GeckoElement(element), None) {
+            return result.element.0;
         }
     }
+    ptr::null()
 }
 
 #[no_mangle]
