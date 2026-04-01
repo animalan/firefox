@@ -408,6 +408,7 @@ CLAUDE.local.md
 
 # Ignore Claude Code worktrees
 .claude/worktrees/
+.worktreeinclude
 
 # Ignore .json.gz (typically profiles) in the root directory
 # lint-ignore-next-line: git-only

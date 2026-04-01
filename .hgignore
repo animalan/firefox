@@ -398,3 +398,4 @@ toolkit/themes/shared/design-system/node_modules/
 
 # Ignore Claude Code worktrees
 .claude/worktrees/
+.worktreeinclude
