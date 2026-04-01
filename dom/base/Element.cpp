@@ -449,7 +449,7 @@ void nsIContent::UpdateEditableState(bool aNotify) {
     }
   }
 
-  nsIContent* parent = GetParent();
+  nsINode* parent = GetParentNode();
   SetEditableFlag(parent && parent->HasFlag(NODE_IS_EDITABLE));
 }
 

@@ -4841,9 +4841,7 @@ static void NotifyEditableStateChange(Document& aDoc) {
 #endif
   for (nsIContent* node = aDoc.GetNextNode(&aDoc); node;
        node = node->GetNextNode(&aDoc)) {
-    if (auto* element = Element::FromNode(node)) {
-      element->UpdateEditableState(true);
-    }
+    node->UpdateEditableState(true);
   }
   MOZ_DIAGNOSTIC_ASSERT(!g.Mutated(0));
 }
