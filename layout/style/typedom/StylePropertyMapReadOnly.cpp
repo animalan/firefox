@@ -155,8 +155,8 @@ void StylePropertyMapReadOnly::Get(const nsACString& aProperty,
     aRv.Throw(NS_ERROR_UNEXPECTED);
     return;
   }
-  // Step 2.
 
+  // Step 2.
   NonCustomCSSPropertyId id = nsCSSProps::LookupProperty(aProperty);
   if (id == eCSSProperty_UNKNOWN) {
     aRv.ThrowTypeError("Invalid property: "_ns + aProperty);
@@ -166,11 +166,9 @@ void StylePropertyMapReadOnly::Get(const nsACString& aProperty,
   auto propertyId = CSSPropertyId::FromIdOrCustomProperty(id, aProperty);
 
   // Step 3.
-
   const Declarations& declarations = mDeclarations;
 
   // Step 4.
-
   auto value = declarations.Get(propertyId, aRv);
   if (aRv.Failed()) {
     return;
@@ -192,16 +190,35 @@ void StylePropertyMapReadOnly::Get(const nsACString& aProperty,
 void StylePropertyMapReadOnly::GetAll(const nsACString& aProperty,
                                       nsTArray<RefPtr<CSSStyleValue>>& aRetVal,
                                       ErrorResult& aRv) const {
-  OwningUndefinedOrCSSStyleValue retVal;
+  if (!mParent) {
+    aRv.Throw(NS_ERROR_UNEXPECTED);
+    return;
+  }
 
-  Get(aProperty, retVal, aRv);
+  // Step 2.
+  NonCustomCSSPropertyId id = nsCSSProps::LookupProperty(aProperty);
+  if (id == eCSSProperty_UNKNOWN) {
+    aRv.ThrowTypeError("Invalid property: "_ns + aProperty);
+    return;
+  }
+
+  auto propertyId = CSSPropertyId::FromIdOrCustomProperty(id, aProperty);
+
+  // Step 3.
+  const Declarations& declarations = mDeclarations;
+
+  // Step 4.
+  auto value = declarations.Get(propertyId, aRv);
   if (aRv.Failed()) {
     return;
   }
 
-  if (retVal.IsCSSStyleValue()) {
-    auto styleValue = retVal.GetAsCSSStyleValue();
-    aRetVal.AppendElement(styleValue);
+  RefPtr<CSSStyleValue> styleValue = CSSStyleValue::Create(
+      mParent, CSSPropertyId::FromIdOrCustomProperty(id, aProperty),
+      std::move(value));
+
+  if (styleValue) {
+    aRetVal.AppendElement(std::move(styleValue));
   }
 }
 
