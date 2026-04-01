@@ -586,6 +586,8 @@ linux64-asan/opt:
     treeherder:
         platform: linux64/asan
         symbol: Bo
+    attributes:
+        enable-full-crashsymbols: true
     worker:
         env:
             PERFHERDER_EXTRA_OPTIONS: "opt asan"
@@ -627,6 +629,8 @@ linux64-tsan/opt:
     treeherder:
         platform: linux64/tsan
         symbol: Bo
+    attributes:
+        enable-full-crashsymbols: true
     worker:
         env:
             PERFHERDER_EXTRA_OPTIONS: "opt tsan"
