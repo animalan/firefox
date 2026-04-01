@@ -614,7 +614,9 @@ class MOZ_STACK_CLASS OpIter : private Policy {
     }
 
     // No hint found for this branch.
-    if (lastBranchHintIndex_ >= branchHintVector_->length()) {
+    if (lastBranchHintIndex_ >= branchHintVector_->length() ||
+        (*branchHintVector_)[lastBranchHintIndex_].branchOffset !=
+            branchOffset) {
       return BranchHint::Invalid;
     }
 
