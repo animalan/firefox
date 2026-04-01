@@ -297,3 +297,267 @@ add_task(async function dismiss_menu_for_origin_autofill() {
   await UrlbarTestUtils.promisePopupClose(window);
   await PlacesUtils.history.clear();
 });
+
+// Dismissed adaptive page autofill should be restored after picking the same
+// URL as a history result.
+add_task(async function reintegration_adaptive_page_url() {
+  await addAdaptiveHistoryEntry(ADAPTIVE_URL, ADAPTIVE_INPUT);
+
+  // Verify adaptive autofill works before dismissal.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  let details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.equal(
+    details.result.autofill?.type,
+    "adaptive",
+    "Should have adaptive autofill before dismissal"
+  );
+
+  // Dismiss via result menu.
+  await UrlbarTestUtils.openResultMenuAndClickItem(window, "dismiss_autofill", {
+    resultIndex: 0,
+    openByMouse: true,
+  });
+
+  // Wait for the async onEngagement handler to finish writing to the DB.
+  let originId = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "origin_id",
+    { url: ADAPTIVE_URL }
+  );
+  await TestUtils.waitForCondition(async () => {
+    let val = await PlacesTestUtils.getDatabaseValue(
+      "moz_origins",
+      "block_pages_until_ms",
+      { id: originId }
+    );
+    return val > Date.now();
+  }, "block_pages_until_ms should be in the future");
+
+  // Verify adaptive autofill is gone.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.ok(
+    !details.result.autofill || details.result.autofill.type !== "adaptive",
+    "Adaptive autofill should not appear while blocked"
+  );
+
+  // Find and pick the history result for the same URL.
+  await UrlbarTestUtils.pickResultAndWaitForLoad(window, ADAPTIVE_URL);
+
+  // The block should be cleared.
+  let blockPagesUntilMs = await PlacesTestUtils.getDatabaseValue(
+    "moz_origins",
+    "block_pages_until_ms",
+    { id: originId }
+  );
+  Assert.ok(
+    !blockPagesUntilMs,
+    "block_pages_until_ms should be cleared after picking the URL as history"
+  );
+
+  // Adaptive autofill should work again.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.equal(
+    details.result.autofill?.type,
+    "adaptive",
+    "Adaptive autofill should be restored after reintegration"
+  );
+
+  await UrlbarTestUtils.promisePopupClose(window);
+  await PlacesUtils.history.clear();
+});
+
+// Dismissed adaptive origin autofill should be restored after picking the same
+// origin as a history result.
+add_task(async function reintegration_adaptive_origin() {
+  await addAdaptiveHistoryEntry(ORIGIN_URL, ADAPTIVE_INPUT);
+
+  // Verify adaptive autofill works before dismissal.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  let details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.equal(
+    details.result.autofill?.type,
+    "adaptive",
+    "Should have adaptive origin autofill before dismissal"
+  );
+
+  // Dismiss via result menu (origin dismiss).
+  await UrlbarTestUtils.openResultMenuAndClickItem(window, "dismiss_autofill", {
+    resultIndex: 0,
+    openByMouse: true,
+  });
+
+  // Wait for the async onEngagement handler to finish writing to the DB.
+  let originId = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "origin_id",
+    { url: ORIGIN_URL }
+  );
+  await TestUtils.waitForCondition(async () => {
+    let val = await PlacesTestUtils.getDatabaseValue(
+      "moz_origins",
+      "block_until_ms",
+      { id: originId }
+    );
+    return val > Date.now();
+  }, "block_until_ms should be in the future");
+
+  // Verify autofill is gone.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.ok(!details.autofill, "Autofill should not appear while blocked");
+
+  // Find and pick the history result.
+  await UrlbarTestUtils.pickResultAndWaitForLoad(window, ORIGIN_URL);
+
+  // The block should be cleared.
+  let blockUntilMs = await PlacesTestUtils.getDatabaseValue(
+    "moz_origins",
+    "block_until_ms",
+    { id: originId }
+  );
+  Assert.ok(
+    !blockUntilMs,
+    "block_until_ms should be cleared after picking the origin as history"
+  );
+
+  // Adaptive autofill should work again.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.equal(
+    details.result.autofill?.type,
+    "adaptive",
+    "Adaptive origin autofill should be restored after reintegration"
+  );
+
+  // Make sure we navigate away or else in other tests, a result macthing the
+  // URL the user on will be suppressed.
+  await BrowserTestUtils.loadURIString({
+    browser: gBrowser.selectedBrowser,
+    uriString: "about:blank",
+  });
+
+  await UrlbarTestUtils.promisePopupClose(window);
+  await PlacesUtils.history.clear();
+});
+
+// Dismissed origin autofill (non-adaptive) should be restored after picking
+// the origin as a history result.
+add_task(async function reintegration_origins_autofill() {
+  // Create a typed visit for origins autofill (no adaptive history).
+  await PlacesTestUtils.addVisits({
+    uri: ORIGIN_URL,
+    transition: PlacesUtils.history.TRANSITIONS.TYPED,
+  });
+  await PlacesFrecencyRecalculator.recalculateAnyOutdatedFrecencies();
+
+  // Verify origins autofill works.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  let details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.ok(details.autofill, "Should have origins autofill before dismissal");
+  Assert.notEqual(
+    details.result.autofill?.type,
+    "adaptive",
+    "Should be regular origin autofill, not adaptive"
+  );
+
+  // Dismiss via result menu.
+  await UrlbarTestUtils.openResultMenuAndClickItem(window, "dismiss_autofill", {
+    resultIndex: 0,
+    openByMouse: true,
+  });
+
+  // Wait for the async onEngagement handler to finish writing to the DB.
+  let originId = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "origin_id",
+    { url: ORIGIN_URL }
+  );
+  await TestUtils.waitForCondition(async () => {
+    let val = await PlacesTestUtils.getDatabaseValue(
+      "moz_origins",
+      "block_until_ms",
+      { id: originId }
+    );
+    return val > Date.now();
+  }, "block_until_ms should be in the future");
+
+  await UrlbarTestUtils.promisePopupClose(window);
+
+  // Verify autofill is gone.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.ok(
+    !details.autofill,
+    "Origins autofill should not appear while blocked"
+  );
+
+  // Find and pick the history result.
+  await UrlbarTestUtils.pickResultAndWaitForLoad(window, ORIGIN_URL);
+
+  // The block should be cleared.
+  let blockUntilMs = await PlacesTestUtils.getDatabaseValue(
+    "moz_origins",
+    "block_until_ms",
+    { id: originId }
+  );
+  Assert.ok(
+    !blockUntilMs,
+    "block_until_ms should be cleared after picking the origin as history"
+  );
+
+  // Origins autofill should work again.
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+  });
+  details = await UrlbarTestUtils.getDetailsOfResultAt(window, 0);
+  Assert.ok(
+    details.autofill,
+    "Origins autofill should be restored after reintegration"
+  );
+
+  // Make sure we navigate away or else in other tests, a result macthing the
+  // URL the user on will be suppressed.
+  await BrowserTestUtils.loadURIString({
+    browser: gBrowser.selectedBrowser,
+    uriString: "about:blank",
+  });
+
+  await UrlbarTestUtils.promisePopupClose(window);
+  await PlacesUtils.history.clear();
+});

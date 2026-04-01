@@ -544,6 +544,43 @@ class UrlbarInputTestUtils {
   }
 
   /**
+   * Finds a non-autofill result matching the given URL and type in the
+   * currently open results panel, selects it with arrow keys, and presses
+   * Enter to load it. The search must be complete before calling this, since
+   * it starts with a synchronous getResultCount call.
+   *
+   * @param {ChromeWindow} win The window containing the urlbar.
+   * @param {string} url The URL to match against the result's payload.
+   * @param {number} [type] The UrlbarUtils.RESULT_TYPE to match.
+   *   Defaults to RESULT_TYPE.URL.
+   */
+  async pickResultAndWaitForLoad(win, url, type = UrlbarUtils.RESULT_TYPE.URL) {
+    let resultCount = this.getResultCount(win);
+    let targetIndex = -1;
+    for (let i = 0; i < resultCount; i++) {
+      let d = await this.getDetailsOfResultAt(win, i);
+      if (
+        !d.autofill &&
+        d.result.payload.url === url &&
+        d.result.type === type
+      ) {
+        targetIndex = i;
+        break;
+      }
+    }
+    this.Assert.notEqual(targetIndex, -1, "Should find the result in panel");
+
+    let loadPromise = lazy.BrowserTestUtils.browserLoaded(
+      win.gBrowser.selectedBrowser
+    );
+    while (this.getSelectedRowIndex(win) !== targetIndex) {
+      this.EventUtils.synthesizeKey("KEY_ArrowDown", {}, win);
+    }
+    this.EventUtils.synthesizeKey("KEY_Enter", {}, win);
+    await loadPromise;
+  }
+
+  /**
    * Returns true if the oneOffSearchButtons are visible.
    *
    * @param {ChromeWindow} win The window containing the urlbar

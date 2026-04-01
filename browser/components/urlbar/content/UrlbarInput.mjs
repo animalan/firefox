@@ -1839,6 +1839,23 @@ export class UrlbarInput extends HTMLElement {
         // the load. Just reportError it.
         lazy.UrlbarUtils.addToInputHistory(url, input).catch(console.error);
       }
+
+      // Re-integration: If the user picks a non-autofill result for a URL
+      // that has a blocked origin, clear the block.
+      if (
+        lazy.UrlbarPrefs.get("autoFillAdaptiveHistoryEnabled") &&
+        !result.autofill &&
+        result.type == lazy.UrlbarUtils.RESULT_TYPE.URL
+      ) {
+        let isOrigin = lazy.UrlbarUtils.isOriginUrl(url);
+        if (isOrigin) {
+          lazy.UrlbarUtils.clearOriginAutofillBlock(url).catch(console.error);
+        } else {
+          lazy.UrlbarUtils.clearOriginPageAutofillBlock(url).catch(
+            console.error
+          );
+        }
+      }
     }
 
     this.controller.engagementEvent.startTrackingBounceEvent(browser, event, {
