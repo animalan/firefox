@@ -2876,7 +2876,7 @@ export var Policies = {
   },
 
   SecurityDevices: {
-    async _onProfileAfterChangeImpl(manager, param) {
+    async onProfileAfterChange(manager, param) {
       let pkcs11db = Cc["@mozilla.org/security/pkcs11moduledb;1"].getService(
         Ci.nsIPKCS11ModuleDB
       );
@@ -2925,20 +2925,6 @@ export var Policies = {
           lazy.log.debug(ex);
         }
       }
-    },
-
-    onProfileAfterChange(manager, param) {
-      this._onProfileAfterChangeImpl(manager, param)
-        .then(() => {
-          Services.obs.notifyObservers(
-            null,
-            "test-enterprisepolicies-securitydevices"
-          );
-        })
-        .catch(ex => {
-          lazy.log.error(`Error running SecurityDevices.onProfileAfterChange`);
-          lazy.log.debug(ex);
-        });
     },
   },
 
