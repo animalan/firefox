@@ -15,6 +15,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import mozilla.components.browser.state.search.SearchEngine
+import mozilla.components.browser.state.state.selectedOrDefaultPrivateSearchEngine
 import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
 import mozilla.components.support.ktx.android.view.hideKeyboard
 import org.mozilla.fenix.BrowserDirection
@@ -193,7 +194,17 @@ class SearchEngineFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragm
     @VisibleForTesting
     internal fun updateDefaultSearchEnginePreference() {
         with(requirePreference<Preference>(R.string.pref_key_default_search_engine)) {
-            summary = getSelectedSearchEngine(requireContext())?.name
+            val searchState = requireContext().components.core.store.state.search
+            val normalEngine = searchState.selectedOrDefaultSearchEngine
+            val privateEngine = searchState.selectedOrDefaultPrivateSearchEngine
+            summary = if (searchState.userSelectedPrivateSearchEngineId != null &&
+                normalEngine != privateEngine
+            ) {
+                val privateLabel = getString(R.string.preferences_category_select_private_search_engine)
+                "${normalEngine?.name} / ${privateEngine?.name} ($privateLabel)"
+            } else {
+                normalEngine?.name
+            }
         }
     }
 
