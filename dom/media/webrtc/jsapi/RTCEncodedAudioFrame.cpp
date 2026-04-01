@@ -37,6 +37,7 @@ RTCEncodedAudioFrame::RTCEncodedAudioFrame(
                           aOwner) {
   mMetadata.mSynchronizationSource.Construct(mFrame->GetSsrc());
   mMetadata.mPayloadType.Construct(mFrame->GetPayloadType());
+  mMetadata.mMimeType.Construct(NS_ConvertASCIItoUTF16(mFrame->GetMimeType()));
   const auto& audioFrame(
       static_cast<webrtc::TransformableAudioFrameInterface&>(*mFrame));
   mMetadata.mContributingSources.Construct();
@@ -83,6 +84,7 @@ already_AddRefed<RTCEncodedAudioFrame> RTCEncodedAudioFrame::Constructor(
     };
     set_if(dst.mSynchronizationSource, src.mSynchronizationSource);
     set_if(dst.mPayloadType, src.mPayloadType);
+    set_if(dst.mMimeType, src.mMimeType);
     set_if(dst.mContributingSources, src.mContributingSources);
     set_if(dst.mSequenceNumber, src.mSequenceNumber);
   }
