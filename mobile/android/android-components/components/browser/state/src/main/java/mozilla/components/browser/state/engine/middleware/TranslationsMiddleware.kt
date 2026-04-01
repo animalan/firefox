@@ -76,6 +76,10 @@ class TranslationsMiddleware(
                 }
             }
 
+            is TranslationsAction.SetTranslationsEnabledAction -> if (action.isTranslationsEnabled) {
+                store.dispatch(TranslationsAction.InitTranslationsBrowserState)
+            }
+
             is TranslationsAction.TranslateExpectedAction -> {
                 requestDefaultModelDownloadSize(store, action.tabId)
             }

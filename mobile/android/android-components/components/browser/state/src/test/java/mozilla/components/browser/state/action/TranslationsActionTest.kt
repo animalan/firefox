@@ -1077,6 +1077,48 @@ class TranslationsActionTest {
     }
 
     @Test
+    fun `WHEN a SetTranslationsEnabledAction is dispatched with false THEN both the browser and session translation stores are cleared`() {
+        val fromLanguage = Language("en", "English")
+        val toLanguage = Language("es", "Spanish")
+        val supportedLanguages = TranslationSupport(listOf(fromLanguage), listOf(toLanguage))
+
+        // Set up populated browser store state
+        state = BrowserStateReducer.reduce(
+            state,
+            TranslationsAction.SetSupportedLanguagesAction(supportedLanguages = supportedLanguages),
+        )
+
+        // Set up populated session store state
+        state = BrowserStateReducer.reduce(
+            state,
+            TranslationsAction.TranslateExpectedAction(tabId = tab.id),
+        )
+
+        // Verify initial populated state
+        assertEquals(supportedLanguages, state.translationEngine.supportedLanguages)
+        assertTrue(tabState().translationsState.isExpectedTranslate)
+
+        // Turn off translations
+        state = BrowserStateReducer.reduce(
+            state,
+            TranslationsAction.SetTranslationsEnabledAction(isTranslationsEnabled = false),
+        )
+
+        // Browser store is cleared and disabled
+        assertFalse(state.translationEngine.isTranslationsEnabled)
+        assertNull(state.translationEngine.supportedLanguages)
+        assertNull(state.translationEngine.languageModels)
+        assertNull(state.translationEngine.languageSettings)
+        assertNull(state.translationEngine.neverTranslateSites)
+
+        // Session store is cleared
+        assertFalse(tabState().translationsState.isExpectedTranslate)
+        assertFalse(tabState().translationsState.isTranslated)
+        assertNull(tabState().translationsState.translationEngineState)
+        assertNull(tabState().translationsState.pageSettings)
+    }
+
+    @Test
     fun `WHEN a SetEngineSupportAction is dispatched THEN the browser store is updated to match`() {
         // Initial state
         assertNull(state.translationEngine.isEngineSupported)

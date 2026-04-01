@@ -1141,4 +1141,31 @@ class TranslationsMiddlewareTest {
             assertEquals(mockLanguageModels, action.languageModels)
         }
     }
+
+    @Test
+    fun `WHEN SetTranslationsEnabledAction is dispatched with true THEN InitTranslationsBrowserState is also dispatched`() = runTest(testDispatcher) {
+        translationsMiddleware.invoke(
+            store = store,
+            next = {},
+            action = TranslationsAction.SetTranslationsEnabledAction(isTranslationsEnabled = true),
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        captureActionsMiddleware.assertFirstAction(TranslationsAction.InitTranslationsBrowserState::class)
+    }
+
+    @Test
+    fun `WHEN SetTranslationsEnabledAction is dispatched with false THEN InitTranslationsBrowserState is not dispatched`() = runTest(testDispatcher) {
+        // InitTranslationsBrowserState has already went through on test startup
+        captureActionsMiddleware.reset()
+
+        translationsMiddleware.invoke(
+            store = store,
+            next = {},
+            action = TranslationsAction.SetTranslationsEnabledAction(isTranslationsEnabled = false),
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        captureActionsMiddleware.assertNotDispatched(TranslationsAction.InitTranslationsBrowserState::class)
+    }
 }
