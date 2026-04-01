@@ -441,6 +441,19 @@ bool retryDueToTLSIntolerance(PRErrorCode err, NSSSocketControl* socketInfo) {
     return true;
   }
 
+  if (!socketInfo->IsPreliminaryHandshakeDone() &&
+      !socketInfo->HasTls13HandshakeSecrets() && socketInfo->SentMlkemShare()) {
+    nsAutoCString errorName;
+    const char* prErrorName = PR_ErrorToName(err);
+    if (prErrorName) {
+      errorName.AppendASCII(prErrorName);
+    }
+    mozilla::glean::tls::xyber_intolerance_reason.Get(errorName).Add(1);
+    // Don't record version intolerance if we sent mlkem768x25519, just force a
+    // retry.
+    return true;
+  }
+
   SSLVersionRange range = socketInfo->GetTLSVersionRange();
 
   if (err == SSL_ERROR_UNSUPPORTED_VERSION &&
@@ -1265,6 +1278,9 @@ static PRFileDesc* nsSSLIOLayerImportFD(PRFileDesc* fd,
       SECSuccess) {
     return nullptr;
   }
+  if (SSL_SecretCallback(sslSock, SecretCallback, infoObject) != SECSuccess) {
+    return nullptr;
+  }
   if (SSL_SetCanFalseStartCallback(sslSock, CanFalseStartCallback,
                                    infoObject) != SECSuccess) {
     return nullptr;
@@ -1599,7 +1615,9 @@ static nsresult nsSSLIOLayerSetOptions(PRFileDesc* fd, bool forSTARTTLS,
   unsigned int additional_shares =
       StaticPrefs::security_tls_client_hello_send_p256_keyshare();
   if (StaticPrefs::security_tls_enable_kyber() &&
-      range.max >= SSL_LIBRARY_VERSION_TLS_1_3) {
+      range.max >= SSL_LIBRARY_VERSION_TLS_1_3 &&
+      !(infoObject->GetProviderFlags() &
+        (nsISocketProvider::BE_CONSERVATIVE | nsISocketProvider::IS_RETRY))) {
     const SSLNamedGroup namedGroups[] = {
         ssl_grp_kem_mlkem768x25519, ssl_grp_ec_curve25519, ssl_grp_ec_secp256r1,
         ssl_grp_ec_secp384r1,       ssl_grp_ec_secp521r1,  ssl_grp_ffdhe_2048,
@@ -1609,6 +1627,7 @@ static nsresult nsSSLIOLayerSetOptions(PRFileDesc* fd, bool forSTARTTLS,
       return NS_ERROR_FAILURE;
     }
     additional_shares += 1;
+    infoObject->WillSendMlkemShare();
   } else {
     const SSLNamedGroup namedGroups[] = {
         ssl_grp_ec_curve25519, ssl_grp_ec_secp256r1, ssl_grp_ec_secp384r1,

@@ -1155,3 +1155,17 @@ void HandshakeCallback(PRFileDesc* fd, void* client_data) {
   infoObject->NoteTimeUntilReady();
   infoObject->SetHandshakeCompleted();
 }
+
+void SecretCallback(PRFileDesc* fd, PRUint16 epoch, SSLSecretDirection dir,
+                    PK11SymKey* secret, void* arg) {
+  // arg must be set to an NSSSocketControl* in SSL_SecretCallback
+  MOZ_ASSERT(arg);
+  NSSSocketControl* infoObject = (NSSSocketControl*)arg;
+  if (epoch == 2 && dir == ssl_secret_read) {
+    // |secret| is the server_handshake_traffic_secret. Set a flag to indicate
+    // that the Server Hello has been processed successfully. We use this when
+    // deciding whether to retry a connection in which an mlkem768x25519 share
+    // was sent.
+    infoObject->SetHasTls13HandshakeSecrets();
+  }
+}

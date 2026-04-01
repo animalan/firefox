@@ -177,8 +177,8 @@ nsresult Http3Session::Init(const nsHttpConnectionInfo* aConnInfo,
         StaticPrefs::network_http_http3_max_data(),
         StaticPrefs::network_http_http3_max_stream_data(),
         StaticPrefs::network_http_http3_version_negotiation_enabled(),
-        mConnInfo->GetWebTransport(), gHttpHandler->Http3QlogDir(), idleTimeout,
-        fastPto, getter_AddRefs(mHttp3Connection));
+        mConnInfo->GetWebTransport(), gHttpHandler->Http3QlogDir(),
+        aProviderFlags, idleTimeout, fastPto, getter_AddRefs(mHttp3Connection));
   } else {
     rv = NeqoHttp3Conn::Init(
         mSocketControl->GetHostName(), alpn, selfAddr, peerAddr,
@@ -187,9 +187,9 @@ nsresult Http3Session::Init(const nsHttpConnectionInfo* aConnInfo,
         StaticPrefs::network_http_http3_max_data(),
         StaticPrefs::network_http_http3_max_stream_data(),
         StaticPrefs::network_http_http3_version_negotiation_enabled(),
-        mConnInfo->GetWebTransport(), gHttpHandler->Http3QlogDir(), idleTimeout,
-        fastPto, socket->GetFileDescriptor(), isOuterConnection,
-        getter_AddRefs(mHttp3Connection));
+        mConnInfo->GetWebTransport(), gHttpHandler->Http3QlogDir(),
+        aProviderFlags, idleTimeout, fastPto, socket->GetFileDescriptor(),
+        isOuterConnection, getter_AddRefs(mHttp3Connection));
   }
   if (NS_FAILED(rv)) {
     return rv;
