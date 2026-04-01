@@ -233,6 +233,7 @@ export class IPProtectionToolbarButton {
     let isExcluded = this.#isExcludedSite(principal);
 
     let isActive = lazy.IPPProxyManager.state === lazy.IPPProxyStates.ACTIVE;
+    let isPaused = lazy.IPPProxyManager.state === lazy.IPPProxyStates.PAUSED;
 
     // Show error icon when proxy manager is in ERROR state.
     let hasProxyError =
@@ -260,6 +261,7 @@ export class IPProtectionToolbarButton {
       isActive,
       isError,
       isExcluded,
+      isPaused,
     });
   }
 
@@ -317,7 +319,12 @@ export class IPProtectionToolbarButton {
    */
   updateIconStatus(
     toolbaritem,
-    status = { isActive: false, isError: false, isExcluded: false }
+    status = {
+      isActive: false,
+      isError: false,
+      isExcluded: false,
+      isPaused: false,
+    }
   ) {
     if (!toolbaritem) {
       return;
@@ -326,16 +333,20 @@ export class IPProtectionToolbarButton {
     let isActive = status.isActive;
     let isError = status.isError;
     let isExcluded = status.isExcluded && this.isExceptionsFeatureEnabled;
+    let isPaused = status.isPaused;
     let l10nId = isError ? "ipprotection-button-error" : "ipprotection-button";
 
     toolbaritem.classList.remove(
       "ipprotection-on",
       "ipprotection-error",
-      "ipprotection-excluded"
+      "ipprotection-excluded",
+      "ipprotection-paused"
     );
 
     if (isError) {
       toolbaritem.classList.add("ipprotection-error");
+    } else if (isPaused) {
+      toolbaritem.classList.add("ipprotection-paused");
     } else if (isExcluded && isActive) {
       toolbaritem.classList.add("ipprotection-excluded");
     } else if (isActive) {

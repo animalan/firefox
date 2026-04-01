@@ -352,8 +352,14 @@ export default class IPProtectionContentElement extends MozLitElement {
         .descriptionL10nArgs=${JSON.stringify({
           maxUsage: this.state.bandwidthUsage.max / BANDWIDTH.BYTES_IN_GB,
         })}
-        type="disconnected"
+        type="paused"
       >
+        <img
+          slot="icon"
+          role="presentation"
+          class="icon"
+          src="chrome://browser/content/ipprotection/assets/states/ipprotection-paused.svg"
+        />
         ${this.upgradeTemplate()}
       </ipprotection-status-box>
     `;
