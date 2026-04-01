@@ -142,6 +142,7 @@ def test_push_to_try(repo, monkeypatch):
             (str(vcs._git._tool), "cinnabar", "--version"),
             (
                 str(tool),
+                "--quiet",
                 "operation",
                 "log",
                 "-n1",
@@ -151,6 +152,7 @@ def test_push_to_try(repo, monkeypatch):
             ),
             (
                 str(tool),
+                "--quiet",
                 "log",
                 "-n0",
                 "-T",
@@ -158,6 +160,7 @@ def test_push_to_try(repo, monkeypatch):
             ),
             (
                 str(tool),
+                "--quiet",
                 "operation",
                 "log",
                 "-n1",
@@ -167,16 +170,18 @@ def test_push_to_try(repo, monkeypatch):
             ),
             (
                 str(tool),
+                "--quiet",
                 "new",
                 "-m",
                 "commit message",
                 'coalesce(@ ~ (empty() & description(exact:"")) ~ bookmarks(), @-)',
             ),
-            (str(tool), "file", "track", "extra-file"),
-            (str(tool), "file", "track", "other/extra-file"),
-            (str(tool), "log", "-n0", "-T", '"snapshot: prepare_try_push"'),
+            (str(tool), "--quiet", "file", "track", "extra-file"),
+            (str(tool), "--quiet", "file", "track", "other/extra-file"),
+            (str(tool), "--quiet", "log", "-n0", "-T", '"snapshot: prepare_try_push"'),
             (
                 str(tool),
+                "--quiet",
                 "bookmark",
                 "move",
                 "--from",
@@ -186,6 +191,7 @@ def test_push_to_try(repo, monkeypatch):
             ),
             (
                 str(tool),
+                "--quiet",
                 "--ignore-working-copy",
                 "log",
                 "--no-graph",
@@ -203,9 +209,10 @@ def test_push_to_try(repo, monkeypatch):
                 "mach_tryserver",
                 "hg::ssh://hg.mozilla.org/try",
             ),
-            (str(tool), "git", "import"),
+            (str(tool), "--quiet", "git", "import"),
             (
                 str(tool),
+                "--quiet",
                 "git",
                 "push",
                 "--remote",
@@ -215,8 +222,8 @@ def test_push_to_try(repo, monkeypatch):
                 "--allow-new",
                 "--allow-empty-description",
             ),
-            (str(tool), "operation", "restore", ""),
-            (str(tool), "git", "remote", "remove", "mach_tryserver"),
+            (str(tool), "--quiet", "operation", "restore", ""),
+            (str(tool), "--quiet", "git", "remote", "remove", "mach_tryserver"),
         ]
         expected_inputs = []
 

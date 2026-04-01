@@ -72,12 +72,16 @@ class JujutsuRepository(Repository):
 
         self._git._env["GIT_DIR"] = str(git_dir.resolve())
 
+    def _run(self, *args, **kwargs):
+        # Suppress extra output like "Snapshotting ..."
+        return super()._run("--quiet", *args, **kwargs)
+
     def _run_read_only(self, *args, **kwargs):
         """_run_read_only() should be used instead of _run() for read-only jj commands.
 
         It will avoid locking the working copy and can prevent potential concurrency issues.
         """
-        return super()._run("--ignore-working-copy", *args, **kwargs)
+        return self._run("--ignore-working-copy", *args, **kwargs)
 
     def _snapshot(self, reason):
         """_snapshot() can be used to update the repository after changing files in the working
@@ -393,6 +397,7 @@ class JujutsuRepository(Repository):
             self._run("git", "import")
             cmd = (
                 str(self._tool),
+                "--quiet",
                 "git",
                 "push",
                 "--remote",
