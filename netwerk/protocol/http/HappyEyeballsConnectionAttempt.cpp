@@ -347,6 +347,12 @@ void HappyEyeballsConnectionAttempt::MaybeSendTransportStatus(
       !mTransaction) {
     return;
   }
+  // Skip forwarding to NullTransaction/SpeculativeTransaction. They fire the
+  // activity distributor themselves, causing duplicate events. The statuses
+  // will be replayed to the real transaction when Claim() replaces it.
+  if (mTransaction->IsNullTransaction()) {
+    return;
+  }
   mTransaction->OnTransportStatus(aTransport, aStatus, aProgress);
 }
 
@@ -935,6 +941,16 @@ bool HappyEyeballsConnectionAttempt::Claim(nsHttpTransaction* newTransaction) {
            this, mTransaction.get(), newTransaction));
       mTransaction->Close(NS_ERROR_ABORT);
       mTransaction = newTransaction;
+      // Replay transport statuses that were sent while the null transaction
+      // was in place, in the correct order.
+      static const nsresult kStatusOrder[] = {
+          NS_NET_STATUS_RESOLVING_HOST, NS_NET_STATUS_RESOLVED_HOST,
+          NS_NET_STATUS_CONNECTING_TO, NS_NET_STATUS_CONNECTED_TO};
+      for (nsresult status : kStatusOrder) {
+        if (mSentTransportStatuses.Contains(static_cast<uint32_t>(status))) {
+          mTransaction->OnTransportStatus(nullptr, status, 0);
+        }
+      }
     }
     return true;
   }
