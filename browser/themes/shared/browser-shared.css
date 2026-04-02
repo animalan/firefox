@@ -1377,7 +1377,7 @@ popupnotificationcontent {
 
   /* Toggle button should only have padding-inline-end if #PanelUI-button both visible and rendered next to it */
   :root:not([aiwindow-first-run]) &:has(+ #PanelUI-button) {
-    padding: 0 var(--toolbarbutton-outer-padding);
+    padding: 0 var(--smartwindow-ai-toggle-padding, 4px);
   }
 
   > .toolbarbutton-icon {

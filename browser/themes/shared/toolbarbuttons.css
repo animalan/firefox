@@ -33,6 +33,7 @@
   }
 
   /* Smart window properties */
+  --smartwindow-ai-toggle-padding: 4px;
   --smartwindow-ask-btn-gradient: linear-gradient(
     117deg,
     rgba(50, 27, 253, 0.3) -17.87%,
@@ -56,6 +57,12 @@
   --smartwindow-ask-btn-icon-stroke-color: light-dark(#ecbcea, var(--color-violet-40));
   --smartwindow-ask-btn-icon-height: var(--size-item-small);
   --smartwindow-ask-btn-icon-width: var(--size-item-small);
+
+  /* could instead use --size-item-small (OS-specific 6, 7, or 8) */
+  --smartwindow-ask-btn-inner-padding-inline: 8px;
+
+  --smartwindow-ask-btn-inline-start-padding: 4px;
+  --smartwindow-ask-btn-text-icon-gap: 6px;
   --smartwindow-toggle-shadow-color: light-dark(
     color-mix(in srgb, var(--color-violet-60) 20%, transparent),
     color-mix(in srgb, var(--color-violet-40) 20%, transparent)
@@ -677,7 +684,7 @@ toolbarpaletteitem[place="palette"] > #ipprotection-button > .toolbarbutton-icon
 /* Smart Window toolbar ask button */
 #smartwindow-ask-button {
   align-items: center;
-  padding-inline-start: var(--toolbarbutton-outer-padding);
+  padding-inline-start: var(--smartwindow-ask-btn-inline-start-padding);
   padding-inline-end: var(--toolbar-start-end-padding);
 }
 
@@ -690,8 +697,10 @@ toolbarpaletteitem[place="palette"] > #ipprotection-button > .toolbarbutton-icon
   color: var(--smartwindow-ask-btn-text-color);
   flex-direction: row-reverse;
   font-weight: var(--font-weight-semibold);
+  gap: var(--smartwindow-ask-btn-text-icon-gap);
   height: var(--size-item-medium);
   --toolbarbutton-outer-padding: var(--space-small);
+  padding-inline: var(--smartwindow-ask-btn-inner-padding-inline);
   --toolbarbutton-hover-outline-color: none;
   --toolbarbutton-hover-background: transparent;
 
