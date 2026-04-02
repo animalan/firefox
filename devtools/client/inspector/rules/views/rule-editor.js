@@ -310,6 +310,8 @@ class RuleEditor extends EventEmitter {
           selectorContainer.append(this.doc.createTextNode(text));
         } else if (ancestorData.type == "starting-style") {
           selectorContainer.append(this.doc.createTextNode(`@starting-style`));
+        } else if (ancestorData.type == "appearance-base") {
+          selectorContainer.append(this.doc.createTextNode(`@appearance-base`));
         } else if (ancestorData.selectors) {
           ancestorData.selectors.forEach((selector, i) => {
             if (i !== 0) {
@@ -348,7 +350,7 @@ class RuleEditor extends EventEmitter {
       // We can't use a proper "ol" as it will mess with selection copy text,
       // adding spaces on list item instead of the one we craft (.ruleview-rule-indent)
       this.ancestorDataEl = createChild(this.element, "div", {
-        class: "ruleview-rule-ancestor-data theme-link",
+        class: "ruleview-rule-ancestor-data",
         role: "list",
       });
       this.ancestorDataEl.append(ancestorsFrag);

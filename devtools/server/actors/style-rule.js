@@ -738,7 +738,10 @@ class StyleRuleActor extends Actor {
           start: rawRule.start,
           end: rawRule.end,
         });
-      } else if (ruleClassName === "CSSStartingStyleRule") {
+      } else if (
+        ruleClassName === "CSSStartingStyleRule" ||
+        ruleClassName === "CSSAppearanceBaseRule"
+      ) {
         ancestorData.push({
           type,
         });
