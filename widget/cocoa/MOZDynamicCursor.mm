@@ -29,7 +29,7 @@ static constexpr nsCursor kCustomCursor = eCursorCount;
 
 @interface NSCursor (Undocumented)
 // busyButClickableCursor is an undocumented NSCursor API, but has been in use
-// since at least OS X 10.4 and through 10.9.
+// since at least macOS 10.4 and through 10.9.
 + (NSCursor*)busyButClickableCursor;
 @end
 

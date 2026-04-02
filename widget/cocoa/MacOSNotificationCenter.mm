@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "OSXNotificationCenter.h"
+#include "MacOSNotificationCenter.h"
 #import <AppKit/AppKit.h>
 #include "imgIRequest.h"
 #include "imgIContainer.h"
@@ -25,17 +25,17 @@ static constexpr nsLiteralString kActionSuffix = u"-moz"_ns;
 
 @interface mozNotificationCenterDelegate
     : NSObject <NSUserNotificationCenterDelegate> {
-  OSXNotificationCenter* mOSXNC;
+  MacOSNotificationCenter* mMacOSNC;
 }
-- (id)initWithOSXNC:(OSXNotificationCenter*)osxnc;
+- (id)initWithMacOSNC:(MacOSNotificationCenter*)macosnc;
 @end
 
 @implementation mozNotificationCenterDelegate
 
-- (id)initWithOSXNC:(OSXNotificationCenter*)osxnc {
+- (id)initWithMacOSNC:(MacOSNotificationCenter*)macosnc {
   [super init];
-  // We should *never* outlive this OSXNotificationCenter.
-  mOSXNC = osxnc;
+  // We should *never* outlive this MacOSNotificationCenter.
+  mMacOSNC = macosnc;
   return self;
 }
 
@@ -45,7 +45,7 @@ static constexpr nsLiteralString kActionSuffix = u"-moz"_ns;
 
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
-  mOSXNC->OnActivate([[notification userInfo] valueForKey:@"name"],
+  mMacOSNC->OnActivate([[notification userInfo] valueForKey:@"name"],
                      notification.activationType,
                      notification.additionalActivationAction);
 }
@@ -61,7 +61,7 @@ static constexpr nsLiteralString kActionSuffix = u"-moz"_ns;
     didRemoveDeliveredNotifications:(NSArray*)notifications {
   for (NSUserNotification* notification in notifications) {
     NSString* name = [[notification userInfo] valueForKey:@"name"];
-    mOSXNC->CloseAlertCocoaString(name);
+    mMacOSNC->CloseAlertCocoaString(name);
   }
 }
 
@@ -70,20 +70,20 @@ static constexpr nsLiteralString kActionSuffix = u"-moz"_ns;
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
                didDismissAlert:(NSUserNotification*)notification {
   NSString* name = [[notification userInfo] valueForKey:@"name"];
-  mOSXNC->CloseAlertCocoaString(name);
+  mMacOSNC->CloseAlertCocoaString(name);
 }
 
 @end
 
 namespace mozilla {
 
-class OSXNotificationInfo final : public nsISupports {
+class MacOSNotificationInfo final : public nsISupports {
  private:
-  virtual ~OSXNotificationInfo();
+  virtual ~MacOSNotificationInfo();
 
  public:
   NS_DECL_ISUPPORTS
-  OSXNotificationInfo(NSString* name, nsIAlertNotification* aAlertNotification,
+  MacOSNotificationInfo(NSString* name, nsIAlertNotification* aAlertNotification,
                       nsIObserver* observer, const nsAString& alertCookie);
 
   NSString* mName;
@@ -92,14 +92,14 @@ class OSXNotificationInfo final : public nsISupports {
   nsString mCookie;
 };
 
-NS_IMPL_ISUPPORTS0(OSXNotificationInfo)
+NS_IMPL_ISUPPORTS0(MacOSNotificationInfo)
 
-OSXNotificationInfo::OSXNotificationInfo(
+MacOSNotificationInfo::MacOSNotificationInfo(
     NSString* name, nsIAlertNotification* aAlertNotification,
     nsIObserver* observer, const nsAString& alertCookie) {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
-  NS_ASSERTION(name, "Cannot create OSXNotificationInfo without a name!");
+  NS_ASSERTION(name, "Cannot create MacOSNotificationInfo without a name!");
   mName = [name retain];
   mAlertNotification = aAlertNotification;
   mObserver = observer;
@@ -108,7 +108,7 @@ OSXNotificationInfo::OSXNotificationInfo(
   NS_OBJC_END_TRY_IGNORE_BLOCK;
 }
 
-OSXNotificationInfo::~OSXNotificationInfo() {
+MacOSNotificationInfo::~MacOSNotificationInfo() {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
   [mName release];
@@ -125,17 +125,17 @@ static NSUserNotificationCenter* GetNotificationCenter() {
   NS_OBJC_END_TRY_BLOCK_RETURN(nil);
 }
 
-OSXNotificationCenter::OSXNotificationCenter() {
+MacOSNotificationCenter::MacOSNotificationCenter() {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
-  mDelegate = [[mozNotificationCenterDelegate alloc] initWithOSXNC:this];
+  mDelegate = [[mozNotificationCenterDelegate alloc] initWithMacOSNC:this];
   GetNotificationCenter().delegate = mDelegate;
   mSuppressForScreenSharing = false;
 
   NS_OBJC_END_TRY_IGNORE_BLOCK;
 }
 
-OSXNotificationCenter::~OSXNotificationCenter() {
+MacOSNotificationCenter::~MacOSNotificationCenter() {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
   [GetNotificationCenter() removeAllDeliveredNotifications];
@@ -144,10 +144,10 @@ OSXNotificationCenter::~OSXNotificationCenter() {
   NS_OBJC_END_TRY_IGNORE_BLOCK;
 }
 
-NS_IMPL_ISUPPORTS(OSXNotificationCenter, nsIAlertsService,
+NS_IMPL_ISUPPORTS(MacOSNotificationCenter, nsIAlertsService,
                   nsIAlertsDoNotDisturb)
 
-nsresult OSXNotificationCenter::Init() {
+nsresult MacOSNotificationCenter::Init() {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
   return (!!NSClassFromString(@"NSUserNotification")) ? NS_OK
@@ -157,7 +157,7 @@ nsresult OSXNotificationCenter::Init() {
 }
 
 NS_IMETHODIMP
-OSXNotificationCenter::ShowAlert(nsIAlertNotification* aAlert,
+MacOSNotificationCenter::ShowAlert(nsIAlertNotification* aAlert,
                                  nsIObserver* aAlertListener) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
@@ -261,7 +261,7 @@ OSXNotificationCenter::ShowAlert(nsIAlertNotification* aAlert,
   rv = aAlert->GetName(name);
   // Don't let an alert name be more than MAX_NOTIFICATION_NAME_LEN characters.
   // More than that shouldn't be necessary and userInfo (assigned to below) has
-  // a length limit of 16k on OS X 10.11. Exception thrown if limit exceeded.
+  // a length limit of 16k on MacOS 10.11. Exception thrown if limit exceeded.
   if (name.Length() > MAX_NOTIFICATION_NAME_LEN) {
     return NS_ERROR_FAILURE;
   }
@@ -293,15 +293,15 @@ OSXNotificationCenter::ShowAlert(nsIAlertNotification* aAlert,
     [cocoaImage release];
   }
 
-  OSXNotificationInfo* osxni =
-      new OSXNotificationInfo(alertName, aAlert, aAlertListener, cookie);
+  MacOSNotificationInfo* macosni =
+      new MacOSNotificationInfo(alertName, aAlert, aAlertListener, cookie);
 
   bool inPrivateBrowsing;
   rv = aAlert->GetInPrivateBrowsing(&inPrivateBrowsing);
   NS_ENSURE_SUCCESS(rv, rv);
 
   CloseAlertCocoaString(alertName);
-  mActiveAlerts.AppendElement(osxni);
+  mActiveAlerts.AppendElement(macosni);
   [GetNotificationCenter() deliverNotification:notification];
   if (aAlertListener) {
     aAlertListener->Observe(nullptr, "alertshow", cookie.get());
@@ -313,7 +313,7 @@ OSXNotificationCenter::ShowAlert(nsIAlertNotification* aAlert,
 }
 
 NS_IMETHODIMP
-OSXNotificationCenter::CloseAlert(const nsAString& aAlertName,
+MacOSNotificationCenter::CloseAlert(const nsAString& aAlertName,
                                   bool aContextClosed) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
@@ -324,16 +324,16 @@ OSXNotificationCenter::CloseAlert(const nsAString& aAlertName,
   NS_OBJC_END_TRY_BLOCK_RETURN(NS_ERROR_FAILURE);
 }
 
-NS_IMETHODIMP OSXNotificationCenter::Teardown() {
+NS_IMETHODIMP MacOSNotificationCenter::Teardown() {
   mActiveAlerts.Clear();
   return NS_OK;
 }
 
-NS_IMETHODIMP OSXNotificationCenter::PbmTeardown() {
+NS_IMETHODIMP MacOSNotificationCenter::PbmTeardown() {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
-void OSXNotificationCenter::CloseAlertCocoaString(NSString* aAlertName) {
+void MacOSNotificationCenter::CloseAlertCocoaString(NSString* aAlertName) {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
   if (!aAlertName) {
@@ -350,11 +350,11 @@ void OSXNotificationCenter::CloseAlertCocoaString(NSString* aAlertName) {
   }
 
   for (unsigned int i = 0; i < mActiveAlerts.Length(); i++) {
-    OSXNotificationInfo* osxni = mActiveAlerts[i];
-    if ([aAlertName isEqualToString:osxni->mName]) {
-      if (osxni->mObserver) {
-        osxni->mObserver->Observe(nullptr, "alertfinished",
-                                  osxni->mCookie.get());
+    MacOSNotificationInfo* macosni = mActiveAlerts[i];
+    if ([aAlertName isEqualToString:macosni->mName]) {
+      if (macosni->mObserver) {
+        macosni->mObserver->Observe(nullptr, "alertfinished",
+                                  macosni->mCookie.get());
       }
       mActiveAlerts.RemoveElementAt(i);
       break;
@@ -364,7 +364,7 @@ void OSXNotificationCenter::CloseAlertCocoaString(NSString* aAlertName) {
   NS_OBJC_END_TRY_IGNORE_BLOCK;
 }
 
-void OSXNotificationCenter::OnActivate(
+void MacOSNotificationCenter::OnActivate(
     NSString* aAlertName, NSUserNotificationActivationType aActivationType,
     NSUserNotificationAction* aAdditionalActivationAction) {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
@@ -374,9 +374,9 @@ void OSXNotificationCenter::OnActivate(
   }
 
   for (unsigned int i = 0; i < mActiveAlerts.Length(); i++) {
-    OSXNotificationInfo* osxni = mActiveAlerts[i];
-    if ([aAlertName isEqualToString:osxni->mName]) {
-      if (osxni->mObserver) {
+    MacOSNotificationInfo* macosni = mActiveAlerts[i];
+    if ([aAlertName isEqualToString:macosni->mName]) {
+      if (macosni->mObserver) {
         switch ((int)aActivationType) {
           case NSUserNotificationActivationTypeAdditionalActionClicked: {
             MOZ_ASSERT(aAdditionalActivationAction);
@@ -385,13 +385,13 @@ void OSXNotificationCenter::OnActivate(
                 aAdditionalActivationAction.identifier, actionName);
 
             if (actionName == kAlertActionDisable) {
-              osxni->mObserver->Observe(nullptr, "alertdisablecallback",
-                                        osxni->mCookie.get());
+              macosni->mObserver->Observe(nullptr, "alertdisablecallback",
+                                        macosni->mCookie.get());
               break;
             }
             if (actionName == kAlertActionSettings) {
-              osxni->mObserver->Observe(nullptr, "alertsettingscallback",
-                                        osxni->mCookie.get());
+              macosni->mObserver->Observe(nullptr, "alertsettingscallback",
+                                        macosni->mCookie.get());
               break;
             }
 
@@ -399,16 +399,16 @@ void OSXNotificationCenter::OnActivate(
             actionName.Truncate(actionName.Length() - kActionSuffix.Length());
 
             nsCOMPtr<nsIAlertAction> action;
-            osxni->mAlertNotification->GetAction(actionName,
+            macosni->mAlertNotification->GetAction(actionName,
                                                  getter_AddRefs(action));
-            osxni->mObserver->Observe(action, "alertclickcallback",
-                                      osxni->mCookie.get());
+            macosni->mObserver->Observe(action, "alertclickcallback",
+                                      macosni->mCookie.get());
             break;
           }
           case NSUserNotificationActivationTypeActionButtonClicked:
           default:
-            osxni->mObserver->Observe(nullptr, "alertclickcallback",
-                                      osxni->mCookie.get());
+            macosni->mObserver->Observe(nullptr, "alertclickcallback",
+                                      macosni->mCookie.get());
             break;
         }
       }
@@ -420,7 +420,7 @@ void OSXNotificationCenter::OnActivate(
 }
 
 NS_IMETHODIMP
-OSXNotificationCenter::GetHistory(nsTArray<nsString>& aResult) {
+MacOSNotificationCenter::GetHistory(nsTArray<nsString>& aResult) {
   // NSUserNotificationCenter doesn't support this, blocked by the migration to
   // UNUserNotificationCenter which has
   // getDeliveredNotificationsWithCompletionHandler
@@ -431,17 +431,17 @@ OSXNotificationCenter::GetHistory(nsTArray<nsString>& aResult) {
 
 // nsIAlertsDoNotDisturb
 NS_IMETHODIMP
-OSXNotificationCenter::GetManualDoNotDisturb(bool* aRetVal) {
+MacOSNotificationCenter::GetManualDoNotDisturb(bool* aRetVal) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
-OSXNotificationCenter::SetManualDoNotDisturb(bool aDoNotDisturb) {
+MacOSNotificationCenter::SetManualDoNotDisturb(bool aDoNotDisturb) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
-OSXNotificationCenter::GetSuppressForScreenSharing(bool* aRetVal) {
+MacOSNotificationCenter::GetSuppressForScreenSharing(bool* aRetVal) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN
 
   NS_ENSURE_ARG(aRetVal);
@@ -452,7 +452,7 @@ OSXNotificationCenter::GetSuppressForScreenSharing(bool* aRetVal) {
 }
 
 NS_IMETHODIMP
-OSXNotificationCenter::SetSuppressForScreenSharing(bool aSuppress) {
+MacOSNotificationCenter::SetSuppressForScreenSharing(bool aSuppress) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN
 
   mSuppressForScreenSharing = aSuppress;

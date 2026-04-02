@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef OSXNotificationCenter_h
-#define OSXNotificationCenter_h
+#ifndef MacOSNotificationCenter_h
+#define MacOSNotificationCenter_h
 
 #import <Foundation/Foundation.h>
 #include "nsIAlertsService.h"
@@ -19,16 +19,16 @@
 
 namespace mozilla {
 
-class OSXNotificationInfo;
+class MacOSNotificationInfo;
 
-class OSXNotificationCenter : public nsIAlertsService,
+class MacOSNotificationCenter : public nsIAlertsService,
                               public nsIAlertsDoNotDisturb {
  public:
   NS_DECL_ISUPPORTS
   NS_DECL_NSIALERTSSERVICE
   NS_DECL_NSIALERTSDONOTDISTURB
 
-  OSXNotificationCenter();
+  MacOSNotificationCenter();
 
   nsresult Init();
   void CloseAlertCocoaString(NSString* aAlertName);
@@ -37,14 +37,14 @@ class OSXNotificationCenter : public nsIAlertsService,
                   NSUserNotificationAction* aAdditionalActivationAction);
 
  protected:
-  virtual ~OSXNotificationCenter();
+  virtual ~MacOSNotificationCenter();
 
  private:
   mozNotificationCenterDelegate* mDelegate;
-  nsTArray<RefPtr<OSXNotificationInfo> > mActiveAlerts;
+  nsTArray<RefPtr<MacOSNotificationInfo> > mActiveAlerts;
   bool mSuppressForScreenSharing;
 };
 
 }  // namespace mozilla
 
-#endif  // OSXNotificationCenter_h
+#endif  // MacOSNotificationCenter_h

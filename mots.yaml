@@ -8,7 +8,7 @@
 # documentation and how to modify this file.
 repo: mozilla-central
 created_at: '2021-10-14T12:50:40.073465'
-updated_at: '2026-03-27T21:05:05.333005+00:00'
+updated_at: '2026-04-02T17:59:02.014303+00:00'
 export:
   path: ./docs/mots/index.rst
   format: rst
@@ -2543,7 +2543,7 @@ modules:
       - toolkit/system/gnome/nsAlertsIconListener*
       - toolkit/system/gnome/nsSystemAlertsService*
       - widget/windows/ToastNotification*
-      - widget/cocoa/OSXNotificationCenter*
+      - widget/cocoa/MacOSNotificationCenter*
     meta:
       group: dev-platform
       components:
@@ -2751,8 +2751,8 @@ modules:
       - *gcp
     machine_name: core_sandboxing_linux
 
-  - name: 'Core: Sandboxing (OSX)'
-    description: Sandboxing for the OSX platform
+  - name: 'Core: Sandboxing (macOS)'
+    description: Sandboxing for the macOS platform
     includes:
       - security/sandbox/mac/**/*
     meta:
@@ -4756,5 +4756,5 @@ modules:
         - Ryan Tilder
       group: dev-platform
 hashes:
-  config: 009cb9105c17d815a03c96da105dba952c335ea6
-  export: 95ffb8ae9a26590ff47948a56318a331abca9d56
+  config: f068c5e2b2faa1f61fb51d2ea1f43a1e32806561
+  export: f1a8e33331930c7e04b6ca9c85c4df74c9ecc5f2

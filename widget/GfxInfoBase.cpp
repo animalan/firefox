@@ -636,14 +636,14 @@ inline bool MatchingAllowStatus(int32_t aStatus) {
 // aBlockedOS is describing the system(s) we are trying to block.
 // aSystemOS is describing the system we are running on.
 //
-// aSystemOS should not be "Windows" or "OSX" - it should be set to
+// aSystemOS should not be "Windows" or "macOS" - it should be set to
 // a particular version instead.
 // However, it is valid for aBlockedOS to be one of those generic values,
 // as we could be blocking all of the versions.
 inline bool MatchingOperatingSystems(OperatingSystem aBlockedOS,
                                      OperatingSystem aSystemOS) {
   MOZ_ASSERT(aSystemOS != OperatingSystem::Windows &&
-             aSystemOS != OperatingSystem::OSX);
+             aSystemOS != OperatingSystem::MacOS);
 
   // If the block entry OS is unknown, it doesn't match
   if (aBlockedOS == OperatingSystem::Unknown) {
@@ -664,7 +664,7 @@ inline bool MatchingOperatingSystems(OperatingSystem aBlockedOS,
 #endif
 
 #if defined(XP_MACOSX)
-  if (aBlockedOS == OperatingSystem::OSX) {
+  if (aBlockedOS == OperatingSystem::MacOS) {
     // We do want even "unknown" aSystemOS to fall under "all OS X"
     return true;
   }

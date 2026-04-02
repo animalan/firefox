@@ -1387,7 +1387,7 @@ void nsCocoaWindow::DispatchAPZWheelInputEvent(InputData& aEvent) {
         break;
       }
       case SCROLLWHEEL_INPUT: {
-        // For wheel events on OS X, send it to APZ using the WidgetInputEvent
+        // For wheel events on macOS, send it to APZ using the WidgetInputEvent
         // variant of ReceiveInputEvent, because the APZInputBridge version of
         // that function has special handling (for delta multipliers etc.) that
         // we need to run. Using the InputData variant would bypass that and
@@ -2342,9 +2342,9 @@ NSEvent* gLastDragMouseDownEvent = nil;  // [strong]
   gLastDragView = nil;
 
   if (!mGeckoChild || mBlockedLastMouseDown || mPerformedDrag) {
-    // There is case that mouseUp event will be fired right after DnD on OSX. As
-    // mPerformedDrag will be YES at end of DnD processing, ignore this mouseUp
-    // event fired right after DnD.
+    // There is case that mouseUp event will be fired right after DnD on macOS.
+    // As mPerformedDrag will be YES at end of DnD processing, ignore this
+    // mouseUp event fired right after DnD.
     return;
   }
 
@@ -5618,7 +5618,7 @@ void nsCocoaWindow::GetWorkspaceID(nsAString& workspaceID) {
 int32_t nsCocoaWindow::GetWorkspaceID() {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
-  // Mac OSX space IDs start at '1' (default space), so '0' means 'unknown',
+  // macOS space IDs start at '1' (default space), so '0' means 'unknown',
   // effectively.
   CGSSpaceID sid = 0;
 
@@ -5678,7 +5678,7 @@ void nsCocoaWindow::MoveToWorkspace(const nsAString& workspaceIDStr) {
 void nsCocoaWindow::MoveVisibleWindowToWorkspace(int32_t workspaceID) {
   CGSConnection cid = _CGSDefaultConnection();
   int32_t currentSpace = GetWorkspaceID();
-  // If an empty workspace ID is passed in (not valid on OSX), or when the
+  // If an empty workspace ID is passed in (not valid on macOS), or when the
   // window is already on this workspace, we don't need to do anything.
   if (!workspaceID || workspaceID == currentSpace) {
     return;
@@ -6750,7 +6750,7 @@ void nsCocoaWindow::CaptureRollupEvents(bool aDoCapture) {
     // non-native popup window).  In these cases the "active" popup window
     // should be the topmost -- the (nested) context menu the mouse is currently
     // over, or the combo-box's drop-down list (when it's displayed).  But
-    // (among windows that have the same "level") OS X makes topmost the window
+    // (among windows that have the same "level") macOS makes topmost the window
     // that last received a mouse-down event, which may be incorrect (in the
     // combo-box case, it makes topmost the window containing the combo-box).
     // So here we fiddle with a non-native popup window's level to make sure the
@@ -7947,7 +7947,7 @@ static const NSString* kStateCollectionBehavior = @"collectionBehavior";
 
   id retval = [super accessibilityAttributeValue:attribute];
 
-  // The following works around a problem with Text-to-Speech on OS X 10.7.
+  // The following works around a problem with Text-to-Speech on macOS 10.7.
   // See bug 674612 for more info.
   //
   // When accessibility is off, AXUIElementCopyAttributeValue(), when called
@@ -7959,10 +7959,10 @@ static const NSString* kStateCollectionBehavior = @"collectionBehavior";
   // AXWindow object will always have four "accessible" children, one of which
   // is an AXStaticText object (the title bar's "title"; the other three are
   // the close, minimize and zoom buttons).  This means that (for complicated
-  // reasons, for which see bug 674612) Text-to-Speech on OS X 10.7 will often
+  // reasons, for which see bug 674612) Text-to-Speech on macOS 10.7 will often
   // "speak" the window title, no matter what text is selected, or even if no
   // text at all is selected.  (This always happens when accessibility is off.
-  // It doesn't happen in Firefox releases because Apple has (on OS X 10.7)
+  // It doesn't happen in Firefox releases because Apple has (on macOS 10.7)
   // special-cased the handling of apps whose CFBundleIdentifier is
   // org.mozilla.firefox.)
   //
