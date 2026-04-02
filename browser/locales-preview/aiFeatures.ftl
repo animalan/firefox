@@ -3,6 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 preferences-ai-controls-block-confirmation-smart-window = Smart Window
+smart-window-block-title = Block Smart Window?
+smart-window-block-description-both = This will delete your Smart Window chats and memories.
+smart-window-block-description-chats = This will delete your Smart Window chats.
+smart-window-block-description-memories = This will delete your Smart Window memories.
 
 ai-window-features-group =
     .label = Smart Window
