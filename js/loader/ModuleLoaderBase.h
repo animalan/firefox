@@ -595,7 +595,7 @@ class ModuleLoaderBase : public nsISupports {
   void Cancel(ModuleLoadRequest* aRequest);
 
   // The slot stored in ImportMetaResolve function.
-  enum class ImportMetaSlots : uint32_t { ModulePrivateSlot = 0, SlotCount };
+  enum class ImportMetaSlots : uint32_t { ModuleRecordSlot = 0, SlotCount };
 
   // The number of args in ImportMetaResolve.
   static const uint32_t ImportMetaResolveNumArgs = 1;
