@@ -232,6 +232,10 @@
     /* Panels with a custom width shouldn't grow. */
     .split-view-panel[width] {
       flex: none;
+
+      @media not (prefers-reduced-motion) {
+        transition: width 50ms ease-out;
+      }
     }
 
     /* Display split view footer within inactive panels. */
