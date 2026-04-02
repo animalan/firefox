@@ -3021,7 +3021,7 @@ bool CacheIRCompiler::emitStringToAtom(StringOperandId stringId) {
 
   Label done, vmCall;
   masm.branchTest32(Assembler::NonZero, Address(str, JSString::offsetOfFlags()),
-                    Imm32(JSString::ATOM_BIT), &done);
+                    Imm32(StringFlags::ATOM_BIT), &done);
 
   masm.tryFastAtomize(str, scratch, str, &vmCall);
   masm.jump(&done);

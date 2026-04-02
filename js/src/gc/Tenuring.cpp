@@ -713,11 +713,13 @@ void JSLinearString::maybeCloneCharsOnPromotionTyped(JSLinearString* str) {
   // The dependent string will be overwritten with a new non-dependent linear
   // string with a fresh set of flags appropriate for its new type. Preserve
   // flags that still apply to the new string.
-  uint32_t saved_flags = str->flags() & PRESERVE_LINEAR_NONATOM_BITS_ON_REPLACE;
+  uint32_t saved_flags =
+      str->flags() & StringFlags::PRESERVE_LINEAR_NONATOM_BITS_ON_REPLACE;
 
   // Overwrite the dest string with a new linear string.
   new (str) JSLinearString(data, len, false /* hasBuffer */);
-  MOZ_ASSERT((str->flags() & PRESERVE_LINEAR_NONATOM_BITS_ON_REPLACE) == 0);
+  MOZ_ASSERT((str->flags() &
+              StringFlags::PRESERVE_LINEAR_NONATOM_BITS_ON_REPLACE) == 0);
   str->setHeaderLengthAndFlags(len, str->flags() | saved_flags);
   if (str->isTenured()) {
     str->zone()->addCellMemory(str, nbytes, js::MemoryUse::StringContents);

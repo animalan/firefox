@@ -2564,7 +2564,7 @@ static void EmitInitDependentStringBase(MacroAssembler& masm,
   // Determine the base string to use and store it in temp2.
   Label notDependent, markedDependedOn;
   masm.load32(Address(base, JSString::offsetOfFlags()), temp1);
-  masm.branchTest32(Assembler::Zero, temp1, Imm32(JSString::DEPENDENT_BIT),
+  masm.branchTest32(Assembler::Zero, temp1, Imm32(StringFlags::DEPENDENT_BIT),
                     &notDependent);
   {
     // The base is also a dependent string. Load its base to prevent chains of
@@ -2584,9 +2584,10 @@ static void EmitInitDependentStringBase(MacroAssembler& masm,
     //
     //   flags |= ~(flags | ~ATOM_BIT) << (DEPENDED_ON_BIT - ATOM_BIT)
     //
-    masm.or32(Imm32(~JSString::ATOM_BIT), temp1, temp2);
+    masm.or32(Imm32(~StringFlags::ATOM_BIT), temp1, temp2);
     masm.not32(temp2);
-    ShiftFlag32<JSString::ATOM_BIT, JSString::DEPENDED_ON_BIT>(masm, temp2);
+    ShiftFlag32<StringFlags::ATOM_BIT, StringFlags::DEPENDED_ON_BIT>(masm,
+                                                                     temp2);
     masm.or32(temp2, temp1);
     masm.movePtr(base, temp2);
     masm.store32(temp1, Address(temp2, JSString::offsetOfFlags()));
@@ -2598,7 +2599,7 @@ static void EmitInitDependentStringBase(MacroAssembler& masm,
   Label isAppropriatelyMarked;
   masm.branchTest32(Assembler::NonZero,
                     Address(temp2, JSString::offsetOfFlags()),
-                    Imm32(JSString::ATOM_BIT | JSString::DEPENDED_ON_BIT),
+                    Imm32(StringFlags::ATOM_BIT | StringFlags::DEPENDED_ON_BIT),
                     &isAppropriatelyMarked);
   masm.assumeUnreachable("Base string is missing DEPENDED_ON_BIT");
   masm.bind(&isAppropriatelyMarked);
@@ -2695,12 +2696,12 @@ void CreateDependentString::generate(MacroAssembler& masm,
 
   auto newGCString = [&](FallbackKind kind) {
     uint32_t flags = kind == FallbackKind::InlineString
-                         ? JSString::INIT_THIN_INLINE_FLAGS
+                         ? StringFlags::INIT_THIN_INLINE_FLAGS
                      : kind == FallbackKind::FatInlineString
-                         ? JSString::INIT_FAT_INLINE_FLAGS
-                         : JSString::INIT_DEPENDENT_FLAGS;
+                         ? StringFlags::INIT_FAT_INLINE_FLAGS
+                         : StringFlags::INIT_DEPENDENT_FLAGS;
     if (encoding_ == CharEncoding::Latin1) {
-      flags |= JSString::LATIN1_CHARS_BIT;
+      flags |= StringFlags::LATIN1_CHARS_BIT;
     }
 
     if (kind != FallbackKind::FatInlineString) {
@@ -5120,7 +5121,7 @@ void CodeGenerator::visitSmallObjectVariableKeyHasProp(
 #ifdef DEBUG
   Label isAtom;
   masm.branchTest32(Assembler::NonZero, Address(id, JSString::offsetOfFlags()),
-                    Imm32(JSString::ATOM_BIT), &isAtom);
+                    Imm32(StringFlags::ATOM_BIT), &isAtom);
   masm.assumeUnreachable("Expected atom input");
   masm.bind(&isAtom);
 #endif
@@ -13087,7 +13088,7 @@ void CodeGenerator::visitCompareSInline(LCompareSInline* lir) {
 
     if (str->isAtom()) {
       // Atoms cannot be equal to each other if they point to different strings.
-      Imm32 atomBit(JSString::ATOM_BIT);
+      Imm32 atomBit(StringFlags::ATOM_BIT);
       masm.branchTest32(Assembler::NonZero,
                         Address(input, JSString::offsetOfFlags()), atomBit,
                         &setNotEqualResult);
@@ -14071,9 +14072,9 @@ static void AllocateThinOrFatInlineString(MacroAssembler& masm, Register output,
   Label isFat, allocDone;
   masm.branch32(Assembler::Above, length, Imm32(maxThinInlineLength), &isFat);
   {
-    uint32_t flags = JSString::INIT_THIN_INLINE_FLAGS;
+    uint32_t flags = StringFlags::INIT_THIN_INLINE_FLAGS;
     if (encoding == CharEncoding::Latin1) {
-      flags |= JSString::LATIN1_CHARS_BIT;
+      flags |= StringFlags::LATIN1_CHARS_BIT;
     }
     masm.newGCString(output, temp, initialStringHeap, failure);
     masm.store32(Imm32(flags), Address(output, JSString::offsetOfFlags()));
@@ -14081,9 +14082,9 @@ static void AllocateThinOrFatInlineString(MacroAssembler& masm, Register output,
   }
   masm.bind(&isFat);
   {
-    uint32_t flags = JSString::INIT_FAT_INLINE_FLAGS;
+    uint32_t flags = StringFlags::INIT_FAT_INLINE_FLAGS;
     if (encoding == CharEncoding::Latin1) {
-      flags |= JSString::LATIN1_CHARS_BIT;
+      flags |= StringFlags::LATIN1_CHARS_BIT;
     }
     masm.newGCFatInlineString(output, temp, initialStringHeap, failure);
     masm.store32(Imm32(flags), Address(output, JSString::offsetOfFlags()));
@@ -14289,7 +14290,7 @@ void CodeGenerator::visitSubstr(LSubstr* lir) {
                         Imm32(JSFatInlineString::MAX_LENGTH_LATIN1),
                         &notInline);
         }
-        masm.move32(Imm32(JSString::LATIN1_CHARS_BIT), temp2);
+        masm.move32(Imm32(StringFlags::LATIN1_CHARS_BIT), temp2);
         masm.branch32(Assembler::Above, length,
                       Imm32(JSThinInlineString::MAX_LENGTH_LATIN1), &allocFat);
       }
@@ -14297,12 +14298,12 @@ void CodeGenerator::visitSubstr(LSubstr* lir) {
       masm.bind(&allocThin);
     } else {
       masm.load32(Address(string, JSString::offsetOfFlags()), temp2);
-      masm.and32(Imm32(JSString::LATIN1_CHARS_BIT), temp2);
+      masm.and32(Imm32(StringFlags::LATIN1_CHARS_BIT), temp2);
     }
 
     {
       masm.newGCString(output, temp0, initialStringHeap(), slowPath);
-      masm.or32(Imm32(JSString::INIT_THIN_INLINE_FLAGS), temp2);
+      masm.or32(Imm32(StringFlags::INIT_THIN_INLINE_FLAGS), temp2);
     }
 
     if (tryFatInlineOrDependent) {
@@ -14311,7 +14312,7 @@ void CodeGenerator::visitSubstr(LSubstr* lir) {
       masm.bind(&allocFat);
       {
         masm.newGCFatInlineString(output, temp0, initialStringHeap(), slowPath);
-        masm.or32(Imm32(JSString::INIT_FAT_INLINE_FLAGS), temp2);
+        masm.or32(Imm32(StringFlags::INIT_FAT_INLINE_FLAGS), temp2);
       }
 
       masm.bind(&allocDone);
@@ -14337,7 +14338,7 @@ void CodeGenerator::visitSubstr(LSubstr* lir) {
 
     Label isInlineLatin1;
     masm.branchTest32(Assembler::NonZero, temp2,
-                      Imm32(JSString::LATIN1_CHARS_BIT), &isInlineLatin1);
+                      Imm32(StringFlags::LATIN1_CHARS_BIT), &isInlineLatin1);
     initializeInlineString(CharEncoding::TwoByte);
     masm.jump(done);
 
@@ -14360,9 +14361,9 @@ void CodeGenerator::visitSubstr(LSubstr* lir) {
                                 /* needsPostBarrier = */ false);
 
     auto initializeDependentString = [&](CharEncoding encoding) {
-      uint32_t flags = JSString::INIT_DEPENDENT_FLAGS;
+      uint32_t flags = StringFlags::INIT_DEPENDENT_FLAGS;
       if (encoding == CharEncoding::Latin1) {
-        flags |= JSString::LATIN1_CHARS_BIT;
+        flags |= StringFlags::LATIN1_CHARS_BIT;
       }
       masm.store32(Imm32(flags), Address(output, JSString::offsetOfFlags()));
       masm.loadNonInlineStringChars(string, temp0, encoding);
@@ -14424,7 +14425,7 @@ JitCode* JitZone::generateStringConcatStub(JSContext* cx) {
 
   Label isLatin1, notInline;
   masm.branchTest32(Assembler::NonZero, temp1,
-                    Imm32(JSString::LATIN1_CHARS_BIT), &isLatin1);
+                    Imm32(StringFlags::LATIN1_CHARS_BIT), &isLatin1);
   {
     masm.branch32(Assembler::BelowOrEqual, temp2,
                   Imm32(JSFatInlineString::MAX_LENGTH_TWO_BYTE),
@@ -14450,9 +14451,9 @@ JitCode* JitZone::generateStringConcatStub(JSContext* cx) {
   // Store rope length and flags. temp1 still holds the result of AND'ing the
   // lhs and rhs flags, so we just have to clear the other flags to get our rope
   // flags (Latin1 if both lhs and rhs are Latin1).
-  static_assert(JSString::INIT_ROPE_FLAGS == 0,
+  static_assert(StringFlags::INIT_ROPE_FLAGS == 0,
                 "Rope type flags must have no bits set");
-  masm.and32(Imm32(JSString::LATIN1_CHARS_BIT), temp1);
+  masm.and32(Imm32(StringFlags::LATIN1_CHARS_BIT), temp1);
   masm.store32(temp1, Address(output, JSString::offsetOfFlags()));
   masm.store32(temp2, Address(output, JSString::offsetOfLength()));
 
@@ -14867,7 +14868,7 @@ void CodeGenerator::visitFromCodePoint(LFromCodePoint* lir) {
       static_assert(JSThinInlineString::MAX_LENGTH_TWO_BYTE >= 2,
                     "JSThinInlineString can hold a supplementary code point");
 
-      uint32_t flags = JSString::INIT_THIN_INLINE_FLAGS;
+      uint32_t flags = StringFlags::INIT_THIN_INLINE_FLAGS;
       masm.newGCString(output, temp0, gen->initialStringHeap(), ool->entry());
       masm.store32(Imm32(flags), Address(output, JSString::offsetOfFlags()));
     }
@@ -15321,7 +15322,8 @@ void CodeGenerator::visitStringToLowerCase(LStringToLowerCase* lir) {
       lir, ArgList(string), StoreRegisterTo(output));
 
   // Take the slow path if the string isn't a linear Latin-1 string.
-  Imm32 linearLatin1Bits(JSString::LINEAR_BIT | JSString::LATIN1_CHARS_BIT);
+  Imm32 linearLatin1Bits(StringFlags::LINEAR_BIT |
+                         StringFlags::LATIN1_CHARS_BIT);
   Register flags = temp0;
   masm.load32(Address(string, JSString::offsetOfFlags()), flags);
   masm.and32(linearLatin1Bits, flags);
@@ -18229,11 +18231,11 @@ void CodeGenerator::emitMaybeAtomizeSlot(LInstruction* ins, Register stringReg,
   addOutOfLineCode(ool, ins->mirRaw()->toInstruction());
   masm.branchTest32(Assembler::NonZero,
                     Address(stringReg, JSString::offsetOfFlags()),
-                    Imm32(JSString::ATOM_BIT), ool->rejoin());
+                    Imm32(StringFlags::ATOM_BIT), ool->rejoin());
 
   masm.branchTest32(Assembler::Zero,
                     Address(stringReg, JSString::offsetOfFlags()),
-                    Imm32(JSString::ATOM_REF_BIT), ool->entry());
+                    Imm32(StringFlags::ATOM_REF_BIT), ool->entry());
   masm.loadPtr(Address(stringReg, JSAtomRefString::offsetOfAtom()), stringReg);
 
   if (dest.hasValue()) {
@@ -22557,7 +22559,7 @@ void CodeGenerator::visitToHashableString(LToHashableString* ins) {
   Label isAtom;
   masm.branchTest32(Assembler::NonZero,
                     Address(input, JSString::offsetOfFlags()),
-                    Imm32(JSString::ATOM_BIT), &isAtom);
+                    Imm32(StringFlags::ATOM_BIT), &isAtom);
 
   masm.tryFastAtomize(input, output, output, ool->entry());
   masm.jump(ool->rejoin());

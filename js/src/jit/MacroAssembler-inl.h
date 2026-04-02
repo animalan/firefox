@@ -432,22 +432,23 @@ void MacroAssembler::branchIfNotNullOrUndefined(ValueOperand val,
 
 void MacroAssembler::branchIfRope(Register str, Label* label) {
   Address flags(str, JSString::offsetOfFlags());
-  branchTest32(Assembler::Zero, flags, Imm32(JSString::LINEAR_BIT), label);
+  branchTest32(Assembler::Zero, flags, Imm32(StringFlags::LINEAR_BIT), label);
 }
 
 void MacroAssembler::branchIfNotRope(Register str, Label* label) {
   Address flags(str, JSString::offsetOfFlags());
-  branchTest32(Assembler::NonZero, flags, Imm32(JSString::LINEAR_BIT), label);
+  branchTest32(Assembler::NonZero, flags, Imm32(StringFlags::LINEAR_BIT),
+               label);
 }
 
 void MacroAssembler::branchLatin1String(Register string, Label* label) {
   branchTest32(Assembler::NonZero, Address(string, JSString::offsetOfFlags()),
-               Imm32(JSString::LATIN1_CHARS_BIT), label);
+               Imm32(StringFlags::LATIN1_CHARS_BIT), label);
 }
 
 void MacroAssembler::branchTwoByteString(Register string, Label* label) {
   branchTest32(Assembler::Zero, Address(string, JSString::offsetOfFlags()),
-               Imm32(JSString::LATIN1_CHARS_BIT), label);
+               Imm32(StringFlags::LATIN1_CHARS_BIT), label);
 }
 
 void MacroAssembler::branchIfBigIntIsNegative(Register bigInt, Label* label) {

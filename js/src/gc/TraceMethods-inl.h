@@ -111,7 +111,7 @@ inline void JSString::traceChildren(JSTracer* trc) {
 template <uint32_t opts>
 void js::GCMarker::eagerlyMarkChildren(JSString* str) {
   uint32_t flags = str->flags();
-  if (flags & JSString::LINEAR_BIT) {
+  if (flags & js::StringFlags::LINEAR_BIT) {
     eagerlyMarkChildren<opts>(static_cast<JSLinearString*>(str));
   } else {
     eagerlyMarkChildren<opts>(static_cast<JSRope*>(str));
