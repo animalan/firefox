@@ -86,9 +86,9 @@ class HappyEyeballsConnectionAttempt final : public ConnectionAttempt,
   // DNS lookups
   Result<nsIDNSService::DNSFlags, nsresult> SetupDnsFlags(
       happy_eyeballs::DnsRecordType aType);
-  nsresult DNSLookup(happy_eyeballs::DnsRecordType aType,
-                     nsIDNSService::DNSFlags aFlags, uint64_t aId,
-                     const nsACString& aHostname);
+  void DNSLookup(happy_eyeballs::DnsRecordType aType,
+                 Result<nsIDNSService::DNSFlags, nsresult> aFlags,
+                 uint64_t aId, const nsACString& aHostname);
 
   // DNS answers
   nsresult OnARecord(nsIDNSRecord* aRecord, nsresult status, uint64_t aId);
@@ -137,6 +137,7 @@ class HappyEyeballsConnectionAttempt final : public ConnectionAttempt,
   WeakPtr<ConnectionEntry> mEntry;
   bool mDone = false;
   nsresult mLastConnectionError = NS_OK;
+  nsresult mLastDnsError = NS_OK;
   bool mFirstAttempt = true;
   Maybe<uint64_t> mHttpTransEstablisherId;
   RefPtr<HappyEyeballsTransaction> mProxyTransaction;
