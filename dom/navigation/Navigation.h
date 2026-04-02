@@ -142,7 +142,8 @@ class Navigation final : public DOMEventTargetHelper {
 
   MOZ_CAN_RUN_SCRIPT
   void UpdateEntriesForSameDocumentNavigation(
-      SessionHistoryInfo* aDestinationSHE, NavigationType aNavigationType);
+      SessionHistoryInfo* aDestinationSHE, NavigationType aNavigationType,
+      bool aFiredNavigateEvent = true);
 
   MOZ_CAN_RUN_SCRIPT
   void RunNavigateEventHandlerSteps(

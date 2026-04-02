@@ -372,7 +372,8 @@ void Navigation::InitializeHistoryEntries(
 
 // https://html.spec.whatwg.org/#update-the-navigation-api-entries-for-a-same-document-navigation
 void Navigation::UpdateEntriesForSameDocumentNavigation(
-    SessionHistoryInfo* aDestinationSHE, NavigationType aNavigationType) {
+    SessionHistoryInfo* aDestinationSHE, NavigationType aNavigationType,
+    bool aFiredNavigateEvent) {
   // Step 1.
   if (HasEntriesAndEventsDisabled()) {
     return;
@@ -432,7 +433,8 @@ void Navigation::UpdateEntriesForSameDocumentNavigation(
     entry->ResetIndexForDisposal();
   }
 
-  RefPtr ongoingNavigateEvent = mOngoingNavigateEvent;
+  RefPtr ongoingNavigateEvent =
+      aFiredNavigateEvent ? mOngoingNavigateEvent : nullptr;
   RefPtr ongoingAPIMethodTracker = mOngoingAPIMethodTracker;
 
   {

@@ -10429,9 +10429,9 @@ Document* Document::Open(const Optional<nsAString>& /* unused */,
       return nullptr;
     }
     nsCOMPtr<nsIStructuredCloneContainer> stateContainer(mStateObjectContainer);
-    rv = shell->UpdateURLAndHistory(this, newURI, stateContainer,
-                                    NavigationHistoryBehavior::Replace,
-                                    currentURI, equalURIs);
+    rv = shell->UpdateURLAndHistory(
+        this, newURI, stateContainer, NavigationHistoryBehavior::Replace,
+        currentURI, equalURIs, /* aFiredNavigateEvent */ false);
     if (NS_WARN_IF(NS_FAILED(rv))) {
       aError.Throw(rv);
       return nullptr;
