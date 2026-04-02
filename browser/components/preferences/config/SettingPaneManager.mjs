@@ -41,13 +41,14 @@ export const SettingPaneManager = {
     if (this._data.has(id)) {
       throw new Error(`Setting pane "${id}" already registered`);
     }
+    let fullConfig = { ...config, id };
     this._data.set(id, config);
     let subPane = friendlyPrefCategoryNameToInternalName(id);
     let settingPane = /** @type {SettingPane} */ (
       document.createElement("setting-pane")
     );
     settingPane.name = subPane;
-    settingPane.config = config;
+    settingPane.config = fullConfig;
     settingPane.isSubPane = !!config.parent;
     document.getElementById("mainPrefPane").append(settingPane);
     window.register_module(subPane, {

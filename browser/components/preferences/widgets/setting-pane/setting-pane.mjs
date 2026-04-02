@@ -104,6 +104,15 @@ export class SettingPane extends MozLitElement {
     if (this.config.module) {
       ChromeUtils.importESModule(this.config.module, { global: "current" });
     }
+
+    // Notify observers that the module is loaded. This needs to be done prior
+    // to the initSettingGroup calls since the home pane relies on this event
+    // to register additional groups.
+    Services.obs.notifyObservers(
+      /** @type {nsISupports} */ (window),
+      `${this.config.id}-pane-loaded`
+    );
+
     for (let groupId of this.config.groupIds) {
       window.initSettingGroup(groupId);
     }
