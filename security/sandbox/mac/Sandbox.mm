@@ -489,6 +489,9 @@ bool StartMacSandbox(MacSandboxInfo const& aInfo, std::string& aErrorMessage) {
     bundleIDCacheDir.append("/" MOZ_GPU_PROCESS_BUNDLEID);
     params.push_back("BUNDLE_ID_CACHE_DIR");
     params.push_back(bundleIDCacheDir.c_str());
+    params.push_back("ALLOW_REMOTE_APPLE_IMAGEIO");
+    params.push_back(getenv("MOZ_BLOCK_REMOTE_APPLE_IMAGEIO") ? "FALSE"
+                                                              : "TRUE");
   } else {
     char* msg = NULL;
     asprintf(&msg, "Unexpected sandbox type %u", aInfo.type);
