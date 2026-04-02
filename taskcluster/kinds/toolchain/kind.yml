@@ -61,7 +61,9 @@ tasks-from:
     - python-wheels.yml
     - rust.yml
     - rust-size.yml
+    - samply.yml
     - sccache.yml
+    - symbolicator-cli.yml
     - sysroot.yml
     - upx.yml
     - uv.yml
