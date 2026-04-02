@@ -104,7 +104,6 @@ gecko_parameters_schema = {
     },
     Required("version"): str,
     Optional("head_git_rev"): str,
-    Optional("pull_request_number"): int,
 }
 
 

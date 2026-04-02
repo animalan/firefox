@@ -97,9 +97,6 @@ Push Information
 ``tasks_for``
    The ``tasks_for`` value used to generate the decision task.
 
-``pull_request_number``
-   The GitHub pull request number, if any.
-
 Tree Information
 ----------------
 
