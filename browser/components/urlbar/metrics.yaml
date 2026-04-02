@@ -1590,6 +1590,26 @@ urlbar.unifiedsearchbutton:
     expires: never
     telemetry_mirror: URLBAR_UNIFIEDSEARCHBUTTON_PICKED
 
+urlbar.autofill:
+  reintegration:
+    type: labeled_counter
+    description: >
+      Counts how many times a blocked autofill result was reintegrated
+      (unblocked) because the user picked the same URL as a non-autofill
+      history result.
+    labels:
+      - origin
+      - url
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2019719
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2019719
+    notification_emails:
+      - fx-search-telemetry@mozilla.com
+    expires: never
+    data_sensitivity:
+      - interaction
+
 urlbar.merino:
   latency_by_response_status:
     type: labeled_timing_distribution

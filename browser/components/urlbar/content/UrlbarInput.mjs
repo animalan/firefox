@@ -1869,11 +1869,21 @@ export class UrlbarInput extends HTMLElement {
       ) {
         let isOrigin = lazy.UrlbarUtils.isOriginUrl(url);
         if (isOrigin) {
-          lazy.UrlbarUtils.clearOriginAutofillBlock(url).catch(console.error);
+          lazy.UrlbarUtils.clearOriginAutofillBlock(url)
+            .then(wasBlocked => {
+              if (wasBlocked) {
+                Glean.urlbarAutofill.reintegration.origin.add(1);
+              }
+            })
+            .catch(console.error);
         } else {
-          lazy.UrlbarUtils.clearOriginPageAutofillBlock(url).catch(
-            console.error
-          );
+          lazy.UrlbarUtils.clearOriginPageAutofillBlock(url)
+            .then(wasBlocked => {
+              if (wasBlocked) {
+                Glean.urlbarAutofill.reintegration.url.add(1);
+              }
+            })
+            .catch(console.error);
         }
       }
     }

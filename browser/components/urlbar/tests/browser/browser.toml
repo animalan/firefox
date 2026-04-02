@@ -164,6 +164,8 @@ https_first_disabled = true
 
 ["browser_autoFill_preserve.js"]
 
+["browser_autoFill_reintegration_telemetry.js"]
+
 ["browser_autoFill_resultMenu_dismissal.js"]
 
 ["browser_autoFill_trimURLs.js"]
