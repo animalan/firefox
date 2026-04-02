@@ -1260,6 +1260,7 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         _sessionControlInteractor = null
         _bottomToolbarContainerView = null
         awesomeBarComposable = null
+        homeSwipeIntegration = null
         _binding = null
 
         bundleArgs.clear()

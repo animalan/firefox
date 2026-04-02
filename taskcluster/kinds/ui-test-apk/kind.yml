@@ -343,7 +343,7 @@ tasks:
                   extract: false
         optimization:
             skip-unless-backstop: null
-        run-on-projects: []
+        run-on-projects: [trunk]
         run:
             secrets:
                 - name: project/gecko/level-any/firefox-android/fenix/firebase

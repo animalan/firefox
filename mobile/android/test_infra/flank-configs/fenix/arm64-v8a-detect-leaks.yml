@@ -21,7 +21,7 @@ gcloud:
   environment-variables:
     clearPackageData: true
     additionalTestOutputDir: /sdcard/Download
-    detect-leaks: false # to enable memory leak checks
+    detect-leaks: true # to enable memory leak checks
   directories-to-pull:
     - /sdcard/Android/data/org.mozilla.fenix.debug/minidumps
     - /sdcard/Download/memory_leaks
