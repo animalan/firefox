@@ -147,7 +147,7 @@ export class SmartbarInput extends HTMLElement {
           <menupopup class="searchmode-switcher-popup toolbar-menupopup"
                      consumeoutsideclicks="false">
             <menucaption class="searchmode-switcher-popup-description"
-                         data-l10n-id="urlbar-searchmode-popup-description-menucaption"
+                         data-l10n-id="urlbar-searchmode-popup-one-off-description-menucaption"
                          role="heading" />
             <menuseparator/>
             <menuseparator class="searchmode-switcher-popup-footer-separator"/>
