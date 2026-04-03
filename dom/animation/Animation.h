@@ -602,8 +602,6 @@ class Animation : public DOMEventTargetHelper,
 
   nsString mId;
 
-  bool mResetCurrentTimeOnResume = false;
-
   // Whether the Animation is System, ResistFingerprinting, or neither
   RTPCallerType mRTPCallerType;
 
