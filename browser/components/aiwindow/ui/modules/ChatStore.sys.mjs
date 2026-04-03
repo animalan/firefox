@@ -168,7 +168,6 @@ class ChatStore {
           status: conversation.status,
           active_branch_tip_message_id: conversation.activeBranchTipMessageId,
           security_properties: toJSONOrNull(conversation.securityProperties),
-          seen_urls: JSON.stringify(Array.from(conversation.seenUrls ?? [])),
         });
 
         const messages = conversation.messages.map(m => ({

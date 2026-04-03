@@ -332,10 +332,6 @@ export class AIWindow extends MozLitElement {
       "chat-conversation:message-complete",
       this.#onMessageComplete
     );
-    this.#conversation.on(
-      "chat-conversation:seen-urls-updated",
-      this.#onSeenUrlsUpdated
-    );
   }
 
   #removeConversationListeners() {
@@ -351,18 +347,7 @@ export class AIWindow extends MozLitElement {
       "chat-conversation:message-complete",
       this.#onMessageComplete
     );
-    this.#conversation.off(
-      "chat-conversation:seen-urls-updated",
-      this.#onSeenUrlsUpdated
-    );
   }
-
-  #onSeenUrlsUpdated = () => {
-    const actor = this.#getAIChatContentActor();
-    if (actor) {
-      this.#dispatchSeenUrls(actor);
-    }
-  };
 
   #onMessageUpdate = (_event, message) => {
     this.#dispatchMessageToChatContent(message);
@@ -968,7 +953,12 @@ export class AIWindow extends MozLitElement {
         this.#calculateCurrentMentions(contextMentions);
 
       if (allUrls.size) {
-        this.#conversation.addSeenUrls(allUrls);
+        const actor = this.#getAIChatContentActor();
+        if (actor && this.#conversation?.id) {
+          for (const url of allUrls) {
+            actor.seedMentionedUrl(this.#conversation.id, url);
+          }
+        }
       }
       this.submitChatMessage({
         text: value,
@@ -1263,9 +1253,7 @@ export class AIWindow extends MozLitElement {
    *
    * @private
    *
-   * @param {string} [inputText] - The already trimmed and non-empty input text from the
-   *   user. If this argument is not provided then the conversation will resume either
-   *   from tool calls or from an error.
+   * @param {string} inputText
    * @param {object} [options]
    * @param {boolean} [options.skipUserDispatch=false] - If true, do not dispatch
    * a user message into chat content (used for retries to avoid duplicate
@@ -1275,10 +1263,15 @@ export class AIWindow extends MozLitElement {
    * @param {URL|null} [options.pageUrl] - Page URL to associate with the
    * message, or null if the user removed page context.
    */
-  async #fetchAIResponse(
-    inputText,
+  #fetchAIResponse = async (
+    inputText = false,
     { skipUserDispatch = false, pageUrl, ...userOpts } = {}
-  ) {
+  ) => {
+    const formattedPrompt = (inputText || "").trim();
+    if (!formattedPrompt && inputText !== false) {
+      return;
+    }
+
     this.showStarters = false;
     this.showFooter = false;
     this.showDisclaimer = true;
@@ -1292,7 +1285,7 @@ export class AIWindow extends MozLitElement {
         return;
       }
       firstTokenTime = Date.now();
-      this.#conversation?.off("chat-conversation:message-update", onUpdate);
+      this.#conversation.off("chat-conversation:message-update", onUpdate);
     };
     this.#conversation.on("chat-conversation:message-update", onUpdate);
 
@@ -1304,9 +1297,9 @@ export class AIWindow extends MozLitElement {
         lazy.PURPOSES.CHAT
       );
 
-      if (inputText) {
+      if (formattedPrompt) {
         await this.#conversation.generatePrompt(
-          inputText,
+          formattedPrompt,
           pageUrl,
           engineInstance,
           userOpts,
@@ -1320,11 +1313,12 @@ export class AIWindow extends MozLitElement {
         this.#sendModelRequestTelemetryEvent();
       }
 
-      await lazy.Chat.fetchWithHistory({
-        conversation: this.#conversation,
-        engineInstance,
+      await lazy.Chat.fetchWithHistory(this.#conversation, engineInstance, {
+        inputText,
         browsingContext: this.#getBrowsingContext(),
-        mode: this.mode,
+        telemetry: {
+          location: this.mode,
+        },
       });
 
       this.#sendModelResponseTelemetryEvent(
@@ -1339,7 +1333,7 @@ export class AIWindow extends MozLitElement {
       );
       this.requestUpdate?.();
     }
-  }
+  };
 
   #onMessageComplete = (_event, msg) => {
     this.#addConversationTitle(msg?.content?.body);
@@ -1438,7 +1432,6 @@ export class AIWindow extends MozLitElement {
   }
 
   #handleError(error, { latency, duration }) {
-    console.error(error);
     let errorCode = error.error ?? error.metadata?.errorMessage;
     const newErrorMessage = {
       role: "",
@@ -1455,27 +1448,12 @@ export class AIWindow extends MozLitElement {
   }
 
   /**
-   * A helper function to dispatches the current conversation's seen urls to the
-   * chat content.
-   *
-   * @param {AIChatContentParent} actor
-   */
-  #dispatchSeenUrls(actor) {
-    if (!this.#conversation?.id) {
-      return;
-    }
-    actor.dispatchSeenUrlsToChatContent({
-      conversationId: this.#conversation.id,
-      seenUrls: this.#conversation.seenUrls,
-    });
-  }
-
-  /**
    * Retrieves the AIChatContent actor from the browser's window global.
    *
    * @returns {Promise<object|null>} The AIChatContent actor, or null if unavailable.
    * @private
    */
+
   #getAIChatContentActor() {
     if (!this.#browser) {
       lazy.log.warn("AI browser not set, cannot get AIChatContent actor");
@@ -1559,7 +1537,10 @@ export class AIWindow extends MozLitElement {
    * @param {JSActor} actor
    */
   #deliverConversationMessages(actor) {
-    this.#dispatchSeenUrls(actor);
+    // Notify actor of current conversation for security ledger access.
+    if (this.#conversation?.id) {
+      actor.setConversation(this.#conversation.id);
+    }
 
     if (!this.#pendingMessageDelivery) {
       return;
@@ -1839,7 +1820,7 @@ export class AIWindow extends MozLitElement {
     }
 
     this._isRetrying = true;
-    this.#fetchAIResponse()
+    this.#fetchAIResponse(false)
       .catch(error => {
         console.error("Error retrying after error:", error);
       })

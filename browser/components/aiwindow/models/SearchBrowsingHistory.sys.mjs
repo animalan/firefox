@@ -31,24 +31,13 @@ function isoToMicroseconds(iso) {
 }
 
 /**
- * A history row from the moz_places databases, normalized for usage.
- *
- * @typedef {object} HistoryRow
- * @property {string} title - Sanitized title (falls back to URL if missing).
- * @property {string} url - Page URL.
- * @property {string|null} visitDate - ISO timestamp of last visit, or null.
- * @property {number} visitCount - Number of visits (defaults to 0).
- * @property {number} relevanceScore - Ranking score (semantic relevance or frecency fallback).
- */
-
-/**
  * Normalize a history row from either:
  * - semantic SQL result (mozIStorageRow), or
  * - Places history node (plain object from nsINavHistoryResultNode).
  *
  * @param {object} row
  * @param {boolean} [fromNode=false]  // true if row came from Places node
- * @returns {HistoryRow}              // normalized history entry
+ * @returns {object}                  // normalized history entry
  */
 function buildHistoryRow(row, fromNode = false) {
   let title, url, visitDateIso, visitCount, distance, frecency;
@@ -106,7 +95,7 @@ function buildHistoryRow(row, fromNode = false) {
  * @param {number|null} params.startTs
  * @param {number|null} params.endTs
  * @param {number} params.historyLimit
- * @returns {Promise<HistoryRow[]>}
+ * @returns {Promise<object[]>}
  */
 async function searchBrowsingHistoryTimeRange({
   startTs,
@@ -214,7 +203,7 @@ function extractVectorFromTensor(tensor) {
  * @param {number|null} params.endTs
  * @param {number} params.historyLimit
  * @param {number} params.distanceThreshold
- * @returns {Promise<HistoryRow[]>}
+ * @returns {Promise<object[]>}
  */
 async function searchBrowsingHistorySemantic({
   searchTerm,
@@ -311,7 +300,7 @@ async function searchBrowsingHistorySemantic({
  * @param {object} params
  * @param {string} params.searchTerm
  * @param {number} params.historyLimit
- * @returns {Promise<HistoryRow[]>}
+ * @returns {Promise<object[]>}
  */
 async function searchBrowsingHistoryBasic({ searchTerm, historyLimit }) {
   let root;
@@ -357,15 +346,6 @@ async function searchBrowsingHistoryBasic({ searchTerm, historyLimit }) {
 }
 
 /**
- * @typedef {object} HistorySearchSummary
- * @property {string} searchTerm - The search term.
- * @property {number} count - The history count.
- * @property {HistoryRow[]} results - The history row results.
- * @property {string} [message] - A message if there are no results.
- * @property {string} [error] - An error message if there is an error.
- */
-
-/**
  * Searches browser history using semantic search when possible, otherwise basic
  * text search or time-range filtering.
  *
@@ -385,7 +365,7 @@ async function searchBrowsingHistoryBasic({ searchTerm, historyLimit }) {
  *  Optional local ISO-8601 end timestamp (e.g. "2025-11-07T09:00:00").
  * @param {number} params.historyLimit
  *  Maximum number of history results to return.
- * @returns {Promise<HistorySearchSummary>}
+ * @returns {Promise<object>}
  *  A promise resolving to an object with the search term and history results.
  *  Includes `count` when matches exist, a `message` when none are found, or an
  *  `error` string on failure.
@@ -396,7 +376,6 @@ export async function searchBrowsingHistory({
   endTs = null,
   historyLimit = 15,
 }) {
-  /** @type {HistoryRow[]} */
   let rows = [];
 
   try {
@@ -442,29 +421,29 @@ export async function searchBrowsingHistory({
     }
 
     if (rows.length === 0) {
-      return {
+      return JSON.stringify({
         searchTerm,
         count: 0,
         results: [],
         message: searchTerm
           ? `No browser history found for "${searchTerm}".`
           : "No browser history found in the requested time range.",
-      };
+      });
     }
 
     // Return as JSON string with metadata
-    return {
+    return JSON.stringify({
       searchTerm,
       count: rows.length,
       results: rows,
-    };
+    });
   } catch (error) {
     console.error("Error searching browser history:", error);
-    return {
+    return JSON.stringify({
       searchTerm,
       count: 0,
       results: [],
       error: `Error searching browser history: ${error.message}`,
-    };
+    });
   }
 }

@@ -33,8 +33,7 @@ CREATE TABLE conversation (
   updated_date INTEGER NOT NULL,
   status INTEGER NOT NULL DEFAULT 0,
   active_branch_tip_message_id TEXT, -- no foreign here, as we insert messages later.
-  security_properties_jsonb BLOB,
-  seen_urls_jsonb BLOB
+  security_properties_jsonb BLOB
 ) WITHOUT ROWID;
 `;
 
@@ -88,19 +87,18 @@ export const CONVERSATION_INSERT = `
 INSERT INTO conversation (
   conv_id, title, description, page_url, page_meta_jsonb,
   created_date, updated_date, status, active_branch_tip_message_id,
-  security_properties_jsonb, seen_urls_jsonb
+  security_properties_jsonb
 ) VALUES (
   :conv_id, :title, :description, :page_url, jsonb(:page_meta),
   :created_date, :updated_date, :status, :active_branch_tip_message_id,
-  jsonb(:security_properties), jsonb(:seen_urls)
+  jsonb(:security_properties)
 )
 ON CONFLICT(conv_id) DO UPDATE
   SET title = :title,
       updated_date = :updated_date,
       status = :status,
       active_branch_tip_message_id = :active_branch_tip_message_id,
-      security_properties_jsonb = jsonb(:security_properties),
-      seen_urls_jsonb = jsonb(:seen_urls);
+      security_properties_jsonb = jsonb(:security_properties);
 `;
 
 export const MESSAGE_INSERT = `
@@ -142,8 +140,7 @@ export const CONVERSATION_BY_ID = `
 SELECT conv_id, title, description, page_url,
   json(page_meta_jsonb) AS page_meta, created_date, updated_date,
   status, active_branch_tip_message_id,
-  json(security_properties_jsonb) AS security_properties,
-  json(seen_urls_jsonb) AS seen_urls
+  json(security_properties_jsonb) AS security_properties
 FROM conversation WHERE conv_id = :conv_id;
 `;
 
@@ -151,10 +148,9 @@ export const CONVERSATIONS_BY_DATE = `
 SELECT conv_id, title, description, page_url,
   json(page_meta_jsonb) AS page_meta, created_date, updated_date,
   status, active_branch_tip_message_id,
-  json(security_properties_jsonb) AS security_properties,
-  json(seen_urls_jsonb) AS seen_urls
+  json(security_properties_jsonb) AS security_properties
 FROM conversation
-WHERE updated_date >= :start_date AND updated_date <= :end_date
+WHERE updated_date >= :start_date AND updated_date <= :end_date 
 ORDER BY updated_date DESC;
 `;
 
@@ -162,8 +158,7 @@ export const CONVERSATIONS_BY_URL = `
 SELECT c.conv_id, c.title, c.description, c.page_url,
   json(c.page_meta_jsonb) AS page_meta, c.created_date, c.updated_date,
   c.status, c.active_branch_tip_message_id,
-  json(c.security_properties_jsonb) AS security_properties,
-  json(c.seen_urls_jsonb) AS seen_urls
+  json(c.security_properties_jsonb) AS security_properties
 FROM conversation c
 WHERE EXISTS (
   SELECT 1
@@ -278,8 +273,7 @@ export const CONVERSATIONS_CONTENT_SEARCH = `
 SELECT c.conv_id, c.title, c.description, c.page_url,
   json(c.page_meta_jsonb) AS page_meta, c.created_date, c.updated_date,
   c.status, c.active_branch_tip_message_id,
-  json(c.security_properties_jsonb) AS security_properties,
-  json(c.seen_urls_jsonb) AS seen_urls
+  json(c.security_properties_jsonb) AS security_properties
 FROM conversation c
 JOIN message m ON m.conv_id = c.conv_id
 WHERE json_type(m.content_jsonb, :path) IS NOT NULL;
@@ -289,8 +283,7 @@ export const CONVERSATIONS_CONTENT_SEARCH_BY_ROLE = `
 SELECT c.conv_id, c.title, c.description, c.page_url,
   json(c.page_meta_jsonb) AS page_meta, c.created_date, c.updated_date,
   c.status, c.active_branch_tip_message_id,
-  json(c.security_properties_jsonb) AS security_properties,
-  json(c.seen_urls_jsonb) AS seen_urls
+  json(c.security_properties_jsonb) AS security_properties
 FROM conversation c
 JOIN message m ON m.conv_id = c.conv_id
 WHERE m.role = :role
@@ -309,7 +302,6 @@ SELECT
   c.status,
   c.active_branch_tip_message_id,
   json(c.security_properties_jsonb) AS security_properties,
-  json(c.seen_urls_jsonb) AS seen_urls,
   json_extract(m.content_jsonb, :path) AS matching_snippet
 FROM conversation AS c
 LEFT JOIN message AS m

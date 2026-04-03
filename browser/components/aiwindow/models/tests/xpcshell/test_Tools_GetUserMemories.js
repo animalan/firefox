@@ -8,28 +8,28 @@ const { getUserMemories } = ChromeUtils.importESModule(
   "moz-src:///browser/components/aiwindow/models/Tools.sys.mjs"
 );
 
+const { SecurityProperties } = ChromeUtils.importESModule(
+  "moz-src:///browser/components/aiwindow/models/SecurityProperties.sys.mjs"
+);
+
 add_task(async function test_getUserMemories_sets_security_flags() {
-  const conversation = makeConversation();
-  await getUserMemories(conversation);
-  conversation.securityProperties.commit();
+  const securityProperties = new SecurityProperties();
+  await getUserMemories({}, securityProperties);
+  securityProperties.commit();
+  Assert.equal(securityProperties.privateData, true, "private_data set");
   Assert.equal(
-    conversation.securityProperties.privateData,
-    true,
-    "private_data set"
-  );
-  Assert.equal(
-    conversation.securityProperties.untrustedInput,
+    securityProperties.untrustedInput,
     false,
     "untrusted_input not set"
   );
 });
 
 add_task(async function test_getUserMemories_allowed_when_flags_set() {
-  const conversation = makeConversation({
-    privateData: true,
-    untrustedInput: true,
-  });
-  const result = await getUserMemories(conversation);
+  const securityProperties = new SecurityProperties();
+  securityProperties.setPrivateData();
+  securityProperties.setUntrustedInput();
+  securityProperties.commit();
+  const result = await getUserMemories({}, securityProperties);
 
   Assert.ok(Array.isArray(result), "returns array, not a refusal");
 });

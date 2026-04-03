@@ -12,6 +12,8 @@ support-files = [
 
 ["test_ChatUtils.js"]
 
+["test_CitationParser.js"]
+
 ["test_ConversationSuggestions.js"]
 
 ["test_Memories.js"]

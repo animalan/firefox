@@ -8,9 +8,7 @@
  * This file contains LLM tool abstractions and tool definitions.
  */
 
-/**
- * @import { ChatConversation } from "moz-src:///browser/components/aiwindow/ui/modules/ChatConversation.sys.mjs"
- */
+/** @import { SecurityProperties } from "moz-src:///browser/components/aiwindow/models/SecurityProperties.sys.mjs" */
 
 import { searchBrowsingHistory as implSearchBrowsingHistory } from "moz-src:///browser/components/aiwindow/models/SearchBrowsingHistory.sys.mjs";
 import { PageExtractorParent } from "resource://gre/actors/PageExtractorParent.sys.mjs";
@@ -226,27 +224,23 @@ export const toolsConfig = [
 ];
 
 /**
- * Metadata about a Tab used in chat conversations.
- *
- * @typedef {object} TabInfo
- * @property {string} url - The url of the tab.
- * @property {string} title - Title of the tab.
- * @property {number} lastAccessed - When the tab was last accessed in milliseconds.
- */
-
-/**
  * Retrieves a list of the latest open tabs from the current active browser window.
- * Tabs are sorted by most recently accessed and limited to MAX_TABS results.
  * Only includes tabs with http/https URLs.
+ * TODO: Ignores chat-only pages (FE to implement isSidebarMode flag).
  *
- * @param {ChatConversation} conversation
- * @returns {Promise<Array<TabInfo>>}
+ * @param {object} _params
+ * @param {SecurityProperties} securityProperties
+ * @returns {Promise<Array<object>>}
+ *  A promise resolving to an array of tab metadata objects, each containing:
+ *  - url {string}: The tab's current URL
+ *  - title {string}: The tab's title
+ *  - description {string}: Optional description (empty string if not available)
+ *  - lastAccessed {number}: Last accessed timestamp in milliseconds
+ *  Tabs are sorted by most recently accessed and limited to MAX_TABS results.
  */
-export async function getOpenTabs(conversation) {
+export async function getOpenTabs(_params, securityProperties) {
   // No security check needed. The security checks prevent data exfiltration,
   // which requires external communication. This tool makes no external requests.
-
-  /** @type {Array<TabInfo>} */
   const tabs = [];
 
   for (const win of lazy.BrowserWindowTracker.orderedWindows) {
@@ -273,16 +267,33 @@ export async function getOpenTabs(conversation) {
 
   tabs.sort((a, b) => b.lastAccessed - a.lastAccessed);
 
-  const recentTabs = tabs.slice(0, MAX_TABS);
+  const topTabs = tabs.slice(0, MAX_TABS);
 
+  const result = await Promise.all(
+    topTabs.map(async ({ url, title, lastAccessed }) => {
+      let description = "";
+      if (url) {
+        // @todo Bug 2009194
+        // PageDataService halts code execution even in try/catch
+        //
+        // try {
+        //   description =
+        //     lazy.PageDataService.getCached(url)?.description ||
+        //     (await lazy.PageDataService.fetchPageData(url))?.description ||
+        //     "";
+        // } catch (e) {
+        //   console.log(e);
+        //   description = "";
+        // }
+      }
+      return { url, title, description, lastAccessed };
+    })
+  );
   // Tab titles are truncated to 100 characters and therefore not expected to
   // contain enough untrusted data for a prompt injection attack.
-  conversation.securityProperties.setPrivateData();
-  lazy.console.log("[Tool] getOpenTabs", recentTabs);
-
-  conversation.addSeenUrls(recentTabs.map(({ url }) => url));
-
-  return recentTabs;
+  securityProperties.setPrivateData();
+  lazy.console.log("[Tool] getOpenTabs", result);
+  return result;
 }
 
 /**
@@ -305,13 +316,13 @@ export async function getOpenTabs(conversation) {
  *  Optional local ISO-8601 end timestamp (e.g. "2025-11-07T09:00:00").
  * @param {number} toolParams.historyLimit
  *  Maximum number of history results to return.
- * @param {ChatConversation} conversation
+ * @param {SecurityProperties} securityProperties
  * @returns {Promise<object>}
  *  A promise resolving to an object with the search term and history results.
  *  Includes `count` when matches exist, a `message` when none are found, or an
  *  `error` string on failure.
  */
-export async function searchBrowsingHistory(toolParams, conversation) {
+export async function searchBrowsingHistory(toolParams, securityProperties) {
   // No security check, always allowed because it makes no external requests.
   const params = toolParams && typeof toolParams === "object" ? toolParams : {};
 
@@ -323,9 +334,7 @@ export async function searchBrowsingHistory(toolParams, conversation) {
     endTs,
     historyLimit: MAX_HISTORY_RESULTS,
   });
-
-  conversation.addSeenUrls(result.results.map(({ url }) => url));
-  conversation.securityProperties.setPrivateData();
+  securityProperties.setPrivateData();
   lazy.console.log("[Tool] searchBrowsingHistory", result);
   return result;
 }
@@ -372,7 +381,6 @@ export function stripSearchBrowsingHistoryFields(result) {
 export class RunSearch {
   static NAVIGATION_TIMEOUT_MS = 15000;
   static CONTENT_SETTLE_MS = 2000;
-  static MAX_CHARACTERS = 15000;
 
   static #ensureTabSelected(tab) {
     if (!tab.selected) {
@@ -422,11 +430,12 @@ export class RunSearch {
 
   /**
    * @param {object} [toolParams]
-   * @param {BrowsingContext} browsingContext
-   * @param {ChatConversation} conversation
+   * @param {object} [context]
+   * @param {BrowsingContext} [context.browsingContext]
+   * @param {SecurityProperties} securityProperties
    * @returns {Promise<string>}
    */
-  static async runSearch(toolParams, browsingContext, conversation) {
+  static async runSearch(toolParams, context = {}, securityProperties) {
     // No security check, always allowed because we assume that the search
     // provider is trusted.
 
@@ -449,17 +458,17 @@ export class RunSearch {
       return "Error: a non-empty search query is required.";
     }
 
-    if (!browsingContext) {
+    if (!context.browsingContext) {
       return "Error: no browsingContext provided to perform search.";
     }
 
-    const win = browsingContext.topChromeWindow;
+    const win = context.browsingContext.topChromeWindow;
     if (!win || win.closed) {
       return "Error: associated browser window not available or closed.";
     }
 
     // Get the original tab from the browsing context, not the currently selected tab
-    const originalBrowser = browsingContext.embedderElement;
+    const originalBrowser = context.browsingContext.embedderElement;
     let targetTab =
       originalBrowser && win.gBrowser?.getTabForBrowser(originalBrowser);
 
@@ -483,7 +492,7 @@ export class RunSearch {
     let result;
     try {
       await RunSearch.#performSearchAndWait(win, originalBrowser, query.trim());
-      result = RunSearch.#extractSerpContent(originalBrowser, conversation);
+      result = RunSearch.#extractSerpContent(originalBrowser);
     } catch (e) {
       console.error("[RunSearch] search failed:", e);
       result = `Error performing search for "${query}": ${e.message}`;
@@ -491,8 +500,8 @@ export class RunSearch {
       RunSearch.#showSearchingIndicator(win, false, null);
     }
 
-    conversation.securityProperties.setPrivateData();
-    conversation.securityProperties.setUntrustedInput();
+    securityProperties.setPrivateData();
+    securityProperties.setUntrustedInput();
 
     lazy.console.log("[Tool] runSearch", result);
     return result;
@@ -577,41 +586,51 @@ export class RunSearch {
     await new Promise(r => lazy.setTimeout(r, RunSearch.CONTENT_SETTLE_MS));
   }
 
-  /**
-   * Run PageExtractor on the search engine page.
-   *
-   * @param {MozBrowser} browser
-   * @param {ChatConversation} conversation
-   * @returns {string}
-   */
-  static async #extractSerpContent(browser, conversation) {
+  static async #extractSerpContent(browser) {
     const windowContext = browser.browsingContext?.currentWindowContext;
     if (!windowContext) {
       return "Error: could not access search results page content.";
     }
 
-    /** @type {string} */
-    let text;
-    /** @type {PageExtractorParent} */
     const pageExtractor = await windowContext.getActor("PageExtractor");
+    let extraction;
     try {
-      const result = await pageExtractor.getText({
-        sufficientLength: RunSearch.MAX_CHARACTERS,
-        cleanWhitespace: true,
-        removeBoilerplate: true,
-      });
-      if (!result) {
-        return "No content could be extracted from the search results page.";
-      }
-      text = result.text;
-      conversation.addSeenUrls(result.links);
+      extraction = await pageExtractor.getReaderModeContent();
     } catch {
-      return "Error: failed to extract search results content.";
+      // Fall back to full text extraction
+    }
+
+    let text = extraction?.text ?? "";
+    if (!text) {
+      try {
+        extraction = await pageExtractor.getText();
+        text = extraction?.text ?? "";
+      } catch {
+        return "Error: failed to extract search results content.";
+      }
+    }
+
+    if (!text) {
+      return "No content could be extracted from the search results page.";
+    }
+
+    let cleanContent = text
+      .replace(/\s+/g, " ")
+      .replace(/\n\s*\n/g, "\n")
+      .trim();
+
+    const MAX_CHARS = 15000;
+    if (cleanContent.length > MAX_CHARS) {
+      const truncatePoint = cleanContent.lastIndexOf(".", MAX_CHARS);
+      if (truncatePoint > MAX_CHARS - 100) {
+        cleanContent = cleanContent.substring(0, truncatePoint + 1);
+      } else {
+        cleanContent = cleanContent.substring(0, MAX_CHARS) + "...";
+      }
     }
 
     const url = browser.currentURI?.spec || "unknown";
-
-    return `Search results from ${url}:\n\n${text}`;
+    return `Search results from ${url}:\n\n${cleanContent}`;
   }
 }
 
@@ -626,12 +645,13 @@ export class GetPageContent {
    *
    * @param {object} toolParams
    * @param {string[]} toolParams.url_list
-   * @param {ChatConversation} conversation
+   * @param {Set<string>} mentionedUrls
+   * @param {SecurityProperties} securityProperties
    * @returns {Promise<Array<string>>}
    *  A promise resolving to a string containing the extracted page content
    *  with a descriptive header, or an error message if extraction fails.
    */
-  static async getPageContent({ url_list }, conversation) {
+  static async getPageContent({ url_list }, mentionedUrls, securityProperties) {
     // This is a decision table for allowing and blocking fetches on the configuration of the
     // SecurityProperties and the URLs. Tab URLs don't do any new page loads. Mention urls
     // have been added by the user so they should be allowed. And all other URLs are
@@ -648,10 +668,6 @@ export class GetPageContent {
       throw new Error("The url list must be an array of stirngs");
     }
 
-    // Collect these one time before the loop below since it must iterate through
-    // all of the conversations and collect a new Set of mentions.
-    const mentionedUrls = conversation.getAllMentionURLs();
-
     const results = await Promise.all(
       url_list.map(async (url, index) => {
         if (!isAllowedURL(url)) {
@@ -661,7 +677,7 @@ export class GetPageContent {
           const text = await GetPageContent.#getPageContentsForSingleURL(
             url,
             mentionedUrls,
-            conversation
+            securityProperties
           );
           return text;
         } catch (error) {
@@ -699,11 +715,15 @@ export class GetPageContent {
   /**
    * @param {string} url
    * @param {Set<string>} mentionedUrls
-   * @param {ChatConversation} conversation
+   * @param {object} securityProperties
    *
    * @returns {Promise<string>}
    */
-  static async #getPageContentsForSingleURL(url, mentionedUrls, conversation) {
+  static async #getPageContentsForSingleURL(
+    url,
+    mentionedUrls,
+    securityProperties
+  ) {
     // First try to get the contents from an existing tab. This is always allowed from
     // a security perspective as it doesn't involve a network request, so there is
     // no risk for data exfiltration.
@@ -723,7 +743,7 @@ export class GetPageContent {
 
       return GetPageContent.#runExtraction(
         pageExtractor,
-        conversation,
+        securityProperties,
         `${sanitizeUntrustedContent(tab.label)} (${url})`
       );
     }
@@ -734,8 +754,8 @@ export class GetPageContent {
     // then the security properties check is bypassed here.
     if (
       !mentionedUrls.has(url) &&
-      conversation.securityProperties.untrustedInput &&
-      conversation.securityProperties.privateData
+      securityProperties.untrustedInput &&
+      securityProperties.privateData
     ) {
       return (
         `Access is not allowed for ${url} because of untrusted and private content ` +
@@ -744,7 +764,7 @@ export class GetPageContent {
     }
 
     return PageExtractorParent.getHeadlessExtractor(url, pageExtractor =>
-      GetPageContent.#runExtraction(pageExtractor, conversation, url)
+      GetPageContent.#runExtraction(pageExtractor, securityProperties, url)
     );
   }
 
@@ -752,32 +772,29 @@ export class GetPageContent {
    * Main extraction function.
    * label is of form `{tab.title} ({tab.url})`.
    *
-   * @param {PageExtractorParent} pageExtractor
-   * @param {ChatConversation} conversation
+   * @param {PageExtractor} pageExtractor
+   * @param {SecurityProperties} securityProperties
    * @param {string} label
    * @returns {Promise<string>}
    *  A promise resolving to a formatted string containing the page content
    *  with mode and label information, or an error message if no content is available.
    */
-  static async #runExtraction(pageExtractor, conversation, label) {
-    const extraction = await pageExtractor.getText({
+  static async #runExtraction(pageExtractor, securityProperties, label) {
+    const { text } = await pageExtractor.getText({
       sufficientLength: GetPageContent.MAX_CHARACTERS,
       cleanWhitespace: true,
       removeBoilerplate: true,
     });
 
-    if (!extraction) {
+    if (!text) {
       return `get_page_content returned no content for ${label}.`;
     }
-
-    const { text, links } = extraction;
-    conversation.addSeenUrls(links);
 
     // If an extraction succeeds set the security properties.
     // The page content is private since it uses a web page load that has credentials.
     // The information is untrusted since it's arbitrary web content.
-    conversation.securityProperties.setPrivateData();
-    conversation.securityProperties.setUntrustedInput();
+    securityProperties.setPrivateData();
+    securityProperties.setUntrustedInput();
 
     return `Content from ${label}:\n\n${text}`;
   }
@@ -786,19 +803,18 @@ export class GetPageContent {
 /**
  * Retrieves the summaries of all saved memories
  *
- * @param {ChatConversation} conversation
+ * @param {object} _toolParams
+ * @param {SecurityProperties} securityProperties
  * @returns {Promise<Array<string>>}
  */
-export async function getUserMemories(conversation) {
+export async function getUserMemories(_toolParams, securityProperties) {
   // No security check, always allowed because it makes no external requests.
   const memories = await lazy.MemoriesManager.getAllMemories();
 
   const result = memories.map(memory => memory.memory_summary);
   // Memory summaries are private user data. They are truncated to 100
   // characters, so they are not considered untrusted input.
-  conversation.securityProperties.setPrivateData();
+  securityProperties.setPrivateData();
   lazy.console.log("[Tool] getUserMemories", result);
   return result;
 }
-
-export const toolFns = { getOpenTabs, searchBrowsingHistory, getUserMemories };
