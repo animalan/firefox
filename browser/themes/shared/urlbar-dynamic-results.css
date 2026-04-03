@@ -148,6 +148,14 @@
  * Calculator & Unit Conversion
  */
 
+.urlbarView-dynamic-calculator-tail150 {
+  width: 20px;
+  height: 20px;
+  align-self: center;
+  margin-inline-end: var(--space-small);
+  cursor: pointer;
+}
+
 .urlbarView-dynamic-calculator-action,
 .urlbarView-dynamic-unitConversion-action {
   font-size: var(--urlbarView-small-font-size);
