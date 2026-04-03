@@ -87,13 +87,13 @@ IntegrityManagerProvider
                │  IntegrityToken │  signed JWT
                │                 │  validate server-side
                └─────────────────┘
- 
+
   On INTEGRITY_TOKEN_PROVIDER_INVALID:
   ┌──────────────────────────────────────────┐
   │  Refresh: re-run Phase 1, retry Phase 2  │──▶ TokenProviderFactory
   └──────────────────────────────────────────┘
 ```
- 
+
 ---
 
 ## Architecture
@@ -127,7 +127,7 @@ return provider.request(requestHashProvider).onFailure {
 ```
 
 The retry is bounded, it recurses exactly once because a freshly prepared provider will not immediately expire.
- 
+
 ---
 
 ## Usage
@@ -185,7 +185,7 @@ lifecycleScope.launch {
     }
 }
 ```
- 
+
 ---
 
 ## Error handling
@@ -199,13 +199,13 @@ lifecycleScope.launch {
 | `StandardIntegrityException` | Propagated from the Play Integrity SDK after a failed Phase 1 or Phase 2 call. The client automatically handles `INTEGRITY_TOKEN_PROVIDER_INVALID` by refreshing and retrying once. All other error codes are passed through. |
 
 See [Play Integrity error codes](https://developer.android.com/google/play/integrity/reference/com/google/android/play/core/integrity/model/IntegrityErrorCode) for the full list of `StandardIntegrityException` causes.
- 
+
 ---
 
 ## Testing
 
 The `concept-integrity` module provides the `IntegrityClient` interface, allowing you to swap the real implementation for a test double at any layer without touching production code.
- 
+
 ---
 
 ## Dependencies
@@ -214,7 +214,7 @@ The `concept-integrity` module provides the `IntegrityClient` interface, allowin
 |-------------------------------------|--------------------------------------------------------------|
 | `concept-integrity`                 | `IntegrityClient` and `IntegrityToken` interface definitions |
 | `com.google.android.play:integrity` | Google Play Integrity SDK                                    |
- 
+
 ---
 
 ## License
@@ -222,3 +222,4 @@ The `concept-integrity` module provides the `IntegrityClient` interface, allowin
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/.
+    
