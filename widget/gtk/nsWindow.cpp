@@ -7408,8 +7408,15 @@ void nsWindow::GetCompositorWidgetInitData(
   }
 #endif
 
+  // Wayland popups are painted at 0,0 but we use mClientArea.x/y as popup
+  // position so we can't use it for rounding of size coordinates.
+  auto clientSize = gUseStableRounding && !IsWaylandPopup()
+                        ? GetClientSize()
+                        : LayoutDeviceIntSize::Round(mClientArea.Size() *
+                                                     GetDesktopToDeviceScale());
+
   *aInitData = mozilla::widget::GtkCompositorWidgetInitData(
-      GetX11Window(), displayName, GdkIsX11Display(), GetClientSize());
+      GetX11Window(), displayName, GdkIsX11Display(), clientSize);
 }
 
 nsresult nsWindow::SetSystemFont(const nsCString& aFontName) {

@@ -49,6 +49,8 @@ GtkCompositorWidget::GtkCompositorWidget(
         (void*)mWidget.get(), (void*)mWidget);
   }
 #endif
+  auto size = LayoutDeviceIntSize(aInitData.InitialClientSize());
+  LOG("  client size %d x %d", size.width, size.height);
 }
 
 GtkCompositorWidget::~GtkCompositorWidget() {
