@@ -367,8 +367,9 @@ Object.assign(Chat, {
 
           const content = { tool_call_id: id, body: result, name: toolName };
           conversation.addToolCallMessage(content, currentTurn, toolRoleOpts);
-        } catch (e) {
-          result = { error: `Tool execution failed: ${String(e)}` };
+        } catch (error) {
+          console.error(error);
+          result = { error: `Tool execution failed: ${String(error)}` };
           const content = { tool_call_id: id, body: result };
           conversation.addToolCallMessage(content, currentTurn, toolRoleOpts);
         }
