@@ -117,7 +117,6 @@ skip-if = [
 
 ["test_ext_background_page.html"]
 skip-if = [
-  "debug && standalone", # Bug 2026600
   "os == 'android'", # test case covering desktop-only expected behavior (android doesn't have devtools)
 ]
 
