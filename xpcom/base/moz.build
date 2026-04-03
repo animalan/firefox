@@ -289,7 +289,6 @@ FINAL_LIBRARY = "xul"
 
 LOCAL_INCLUDES += [
     "../build",
-    "/dom/base",
     "/mfbt",
     "/netwerk/base",
     "/xpcom/ds",
