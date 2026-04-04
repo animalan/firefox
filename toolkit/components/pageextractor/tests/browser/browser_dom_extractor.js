@@ -23,16 +23,16 @@ add_task(async function test_dom_extractor_default_options() {
   );
 
   is(
-    (await actor.getReaderModeContent(true /* force */)).text,
+    (
+      await actor.getText({
+        removeBoilerplate: true,
+        _forceRemoveBoilerplate: true,
+      })
+    ).text,
     "Hello World\nThis is a paragraph",
     "Reader mode can extract page content."
   );
 
-  Assert.deepEqual(
-    await actor.getReaderModeContent(),
-    { text: "", links: [], canvasSnapshots: [] },
-    "Empty result is returned on non-reader mode content."
-  );
   return cleanup();
 });
 
@@ -85,16 +85,18 @@ add_task(async function test_dom_extractor_sufficient_length_option() {
 });
 
 add_task(
-  async function test_dom_extractor_sufficient_length_with_reader_mode() {
+  async function test_dom_extractor_sufficient_length_with_boilerplate_removal() {
     const { actor, cleanup } = await html`
       <article>
         <p>
           This is some article text that has some kind of sufficient length. It
           is going to try and get some text at a sentence boundary.
         </p>
+        <p>This will get cut off.</p>
       </article>
     `;
 
+    // Note how this only wants up to the middle of a sentence. It stops at a DOM boundary though.
     const sufficientLength =
       "This is some article text that has some kind of sufficient length. It is going to try and"
         .length;
@@ -107,13 +109,68 @@ add_task(
           _forceRemoveBoilerplate: true,
         })
       ).text,
-      "This is some article text that has some kind of sufficient length.",
-      `The text is cutoff at a period.`
+      [
+        "This is some article text that has some kind of sufficient length. It",
+        "is going to try and get some text at a sentence boundary.",
+        // "This will get cut off." <- note how this isn't here.
+      ].join("\n"),
+      "The text is cutoff at a period."
     );
 
     return cleanup();
   }
 );
+
+/**
+ * Unit test whitespace collapsing
+ */
+add_task(function test_whitespace_collapse() {
+  const { collapseWhitespace } = ChromeUtils.importESModule(
+    "moz-src:///toolkit/components/pageextractor/DOMExtractor.sys.mjs"
+  );
+
+  Assert.equal(
+    collapseWhitespace("  collapsed   text   "),
+    " collapsed text ",
+    "Normal whitespace gets properly collapsed"
+  );
+
+  Assert.equal(
+    collapseWhitespace("  \n collapsed \n  \n\n text   \n"),
+    "\ncollapsed\n\ntext\n",
+    "Text with newlines gets properly collapsed"
+  );
+
+  Assert.equal(
+    collapseWhitespace("  \t collapsed \t  \t\t text   \t"),
+    " collapsed text ",
+    "Tabs get ignored"
+  );
+
+  Assert.equal(
+    collapseWhitespace("  \n collapsed \n\r \r \n\n text   \n"),
+    "\ncollapsed\n\ntext\n",
+    "Tabs get ignored"
+  );
+
+  Assert.equal(
+    collapseWhitespace("    next", "previous   "),
+    "previous\nnext",
+    "Whitespace on the previous text gets properly collapsed into a single newline."
+  );
+
+  Assert.equal(
+    collapseWhitespace("    next", "previous \n  "),
+    "previous\n\nnext",
+    "Whitespace on the previous text gets placed into two newlines"
+  );
+
+  Assert.equal(
+    collapseWhitespace("    next", "previous \n \n\n  "),
+    "previous\n\nnext",
+    "Whitespace connected chunks of text has at most two newlines"
+  );
+});
 
 add_task(async function test_dom_extractor_whitespace_collapse_reader_mode() {
   // prettier-ignore
@@ -151,11 +208,9 @@ add_task(async function test_dom_extractor_whitespace_collapse_reader_mode() {
       "newlines\n\nrepeated",
       "newlines\n\nrepeated",
       "newlines\n\nrepeated",
-      "",
       "mixed\nnewlines",
       "mixed\n\nnewlines",
       "mixed\n\nnewlines",
-      "",
       "space behavior",
       "space behavior",
       "space behavior",

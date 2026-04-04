@@ -26,8 +26,6 @@ export type GetTextOptions = Partial<{
   _forceRemoveBoilerplate: boolean;
 }>;
 
-export type GetDOMOptions = GetTextOptions;
-
 export type CanvasSnapshot = {
   blob: Blob;
   width: number;

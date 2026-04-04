@@ -761,15 +761,17 @@ export class GetPageContent {
    *  with mode and label information, or an error message if no content is available.
    */
   static async #runExtraction(pageExtractor, conversation, label) {
-    const { text } = await pageExtractor.getText({
+    const extraction = await pageExtractor.getText({
       sufficientLength: GetPageContent.MAX_CHARACTERS,
       cleanWhitespace: true,
       removeBoilerplate: true,
     });
 
-    if (!text) {
+    if (!extraction) {
       return `get_page_content returned no content for ${label}.`;
     }
+
+    const { text } = extraction;
 
     // If an extraction succeeds set the security properties.
     // The page content is private since it uses a web page load that has credentials.
