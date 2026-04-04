@@ -9,10 +9,10 @@ Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/17f6c61e65b9ac586
  1 file changed, 1 insertion(+)
 
 diff --git a/BUILD.gn b/BUILD.gn
-index 13ca6a627a..7c50ec8061 100644
+index 984f2e68d2..32652c48cb 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -640,6 +640,7 @@ if (!build_with_chromium) {
+@@ -612,6 +612,7 @@ if (!build_with_chromium) {
        # Added when we removed deps in other places to avoid building
        # unreachable sources.  See Bug 1820869.
        deps += [

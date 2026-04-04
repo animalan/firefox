@@ -75,7 +75,7 @@ index f771394703..5ef68516cf 100644
  # The python interpreter to use by default. On Windows, this will look
  # for vpython3.exe and vpython3.bat.
 diff --git a/BUILD.gn b/BUILD.gn
-index 8b3a15a173..cca3ff6f79 100644
+index 4a989dd8b2..d58c50ad96 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
 @@ -21,15 +21,15 @@
@@ -98,7 +98,7 @@ index 8b3a15a173..cca3ff6f79 100644
    import("//third_party/jni_zero/jni_zero.gni")
  }
  
-@@ -551,7 +551,7 @@ if (!build_with_chromium) {
+@@ -525,7 +525,7 @@ if (!build_with_chromium) {
      sources = []
  
      complete_static_lib = true
@@ -107,7 +107,7 @@ index 8b3a15a173..cca3ff6f79 100644
      defines = []
  
      deps = [
-@@ -859,7 +859,7 @@ rtc_static_library("dcsctp") {
+@@ -839,7 +839,7 @@ rtc_static_library("dcsctp") {
    visibility = [ "//:default" ]
    sources = []
    complete_static_lib = true
@@ -116,7 +116,7 @@ index 8b3a15a173..cca3ff6f79 100644
    defines = []
    deps = [
      "net/dcsctp/public:factory",
-@@ -897,7 +897,7 @@ group("poison_default_neural_residual_echo_estimator") {
+@@ -877,7 +877,7 @@ group("poison_default_neural_residual_echo_estimator") {
  if (!build_with_chromium) {
    # Write debug logs to gn_logs.txt.
    # This is also required for Siso builds.
@@ -326,7 +326,7 @@ index 589142b014..2ee80ded55 100644
      }
    }
 diff --git a/examples/BUILD.gn b/examples/BUILD.gn
-index 759b97c18f..ac39facfb3 100644
+index 4dd7670cd3..2a93c0b7be 100644
 --- a/examples/BUILD.gn
 +++ b/examples/BUILD.gn
 @@ -9,15 +9,15 @@
@@ -616,7 +616,7 @@ index a673832eec..36469c660e 100644
  
  if (rtc_build_libsrtp) {
 diff --git a/rtc_base/BUILD.gn b/rtc_base/BUILD.gn
-index 3b37570068..3d3238882b 100644
+index a4d20d7279..1bba0f0841 100644
 --- a/rtc_base/BUILD.gn
 +++ b/rtc_base/BUILD.gn
 @@ -9,8 +9,8 @@
@@ -630,7 +630,7 @@ index 3b37570068..3d3238882b 100644
  }
  
  rtc_source_set("protobuf_utils") {
-@@ -1946,8 +1946,8 @@ if (!rtc_rusty_base64) {
+@@ -1961,8 +1961,8 @@ if (!rtc_rusty_base64) {
      ]
    }
  } else {
@@ -702,7 +702,7 @@ index fd98be799b..fe30e9ece9 100644
      output_extension = "so"
    }
 diff --git a/sdk/BUILD.gn b/sdk/BUILD.gn
-index 421df3a311..2530f89e6b 100644
+index 95ce062c7d..c48642cf1a 100644
 --- a/sdk/BUILD.gn
 +++ b/sdk/BUILD.gn
 @@ -9,12 +9,12 @@
@@ -721,8 +721,8 @@ index 421df3a311..2530f89e6b 100644
 +  import("//chromium/build/config/mac/rules.gni")
  }
  
- group("sdk") {
-@@ -67,7 +67,7 @@ if (is_ios || is_mac) {
+ rtc_library("media_constraints") {
+@@ -55,7 +55,7 @@ if (is_ios || is_mac) {
      ]
  
      if (use_clang_coverage) {
@@ -731,7 +731,7 @@ index 421df3a311..2530f89e6b 100644
      }
    }
  
-@@ -1286,7 +1286,7 @@ if (is_ios || is_mac) {
+@@ -1274,7 +1274,7 @@ if (is_ios || is_mac) {
            }
  
            public_deps = [
@@ -756,7 +756,7 @@ index 656ff3b9ba..91f414f340 100644
  import("../webrtc.gni")
  
 diff --git a/test/BUILD.gn b/test/BUILD.gn
-index d867ea8448..f5713178b9 100644
+index 86a454fa68..7703fa8a9f 100644
 --- a/test/BUILD.gn
 +++ b/test/BUILD.gn
 @@ -6,10 +6,10 @@
@@ -772,7 +772,7 @@ index d867ea8448..f5713178b9 100644
    import("//third_party/jni_zero/jni_zero.gni")
  }
  
-@@ -435,7 +435,7 @@ if (is_ios && !build_with_chromium) {
+@@ -432,7 +432,7 @@ if (is_ios && !build_with_chromium) {
      testonly = true
      visibility = [ "*" ]
      sources = [ "ios/google_test_runner.mm" ]

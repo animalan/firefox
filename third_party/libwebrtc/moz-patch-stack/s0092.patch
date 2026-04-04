@@ -5,30 +5,24 @@ Subject: Bug 1903098 - (fix-cd09858f4a) disable perfetto usage to avoid new
 
 Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/b050c455caa1d24a0cfa4933ac8cd82c9cd3c347
 ---
- BUILD.gn                                |  2 ++
+ BUILD.gn                                |  2 +-
  modules/video_coding/generic_decoder.cc | 10 +++++-----
- 2 files changed, 7 insertions(+), 5 deletions(-)
+ rtc_base/BUILD.gn                       |  2 ++
+ 3 files changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/BUILD.gn b/BUILD.gn
-index 2bef29b507..8b3a15a173 100644
+index c8d009fb1e..4a989dd8b2 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -294,6 +294,7 @@ config("rtc_prod_config") {
- }
- 
- group("tracing") {
-+if (!build_with_mozilla) {
-   if (rtc_use_perfetto) {
-     all_dependent_configs = [ "//third_party/perfetto/gn:public_config" ]
-     if (build_with_chromium) {
-@@ -307,6 +308,7 @@ group("tracing") {
+@@ -624,7 +624,7 @@ if (!build_with_chromium) {
+     if (rtc_include_internal_audio_device) {
+       deps += [ "api/audio:create_audio_device_module" ]
      }
-   }
- }
-+}
- 
- if (rtc_use_perfetto) {
-   rtc_library("webrtc_libperfetto") {
+-    if (!build_with_chromium) {
++    if (!build_with_chromium && !build_with_mozilla) {
+       if (is_android) {
+         deps += [ "sdk/android" ]
+       }
 diff --git a/modules/video_coding/generic_decoder.cc b/modules/video_coding/generic_decoder.cc
 index 790d53a908..b607e78268 100644
 --- a/modules/video_coding/generic_decoder.cc
@@ -57,3 +51,23 @@ index 790d53a908..b607e78268 100644
    FrameInfo frame_info;
    frame_info.rtp_timestamp = frame.RtpTimestamp();
    frame_info.decode_start = now;
+diff --git a/rtc_base/BUILD.gn b/rtc_base/BUILD.gn
+index 36dd4b2abb..100480cd88 100644
+--- a/rtc_base/BUILD.gn
++++ b/rtc_base/BUILD.gn
+@@ -228,6 +228,7 @@ rtc_library("event_tracer") {
+     "system:rtc_export",
+     "//third_party/abseil-cpp/absl/strings:string_view",
+   ]
++  if (!build_with_mozilla) {
+   all_dependent_configs = [ "//third_party/perfetto/gn:public_config" ]
+   if (rtc_use_perfetto) {
+     if (build_with_chromium) {
+@@ -242,6 +243,7 @@ rtc_library("event_tracer") {
+   } else {
+     deps += [ "//third_party/perfetto/include/perfetto/tracing" ]
+   }
++  }
+ }
+ 
+ rtc_library("histogram_percentile_counter") {
