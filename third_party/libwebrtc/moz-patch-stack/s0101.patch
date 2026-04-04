@@ -75,7 +75,7 @@ index f771394703..5ef68516cf 100644
  # The python interpreter to use by default. On Windows, this will look
  # for vpython3.exe and vpython3.bat.
 diff --git a/BUILD.gn b/BUILD.gn
-index 7ed17d1899..bb93360a4e 100644
+index 8b3a15a173..cca3ff6f79 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
 @@ -21,15 +21,15 @@
@@ -98,7 +98,7 @@ index 7ed17d1899..bb93360a4e 100644
    import("//third_party/jni_zero/jni_zero.gni")
  }
  
-@@ -554,7 +554,7 @@ if (!build_with_chromium) {
+@@ -551,7 +551,7 @@ if (!build_with_chromium) {
      sources = []
  
      complete_static_lib = true
@@ -107,7 +107,7 @@ index 7ed17d1899..bb93360a4e 100644
      defines = []
  
      deps = [
-@@ -862,7 +862,7 @@ rtc_static_library("dcsctp") {
+@@ -859,7 +859,7 @@ rtc_static_library("dcsctp") {
    visibility = [ "//:default" ]
    sources = []
    complete_static_lib = true
@@ -116,7 +116,7 @@ index 7ed17d1899..bb93360a4e 100644
    defines = []
    deps = [
      "net/dcsctp/public:factory",
-@@ -900,7 +900,7 @@ group("poison_default_neural_residual_echo_estimator") {
+@@ -897,7 +897,7 @@ group("poison_default_neural_residual_echo_estimator") {
  if (!build_with_chromium) {
    # Write debug logs to gn_logs.txt.
    # This is also required for Siso builds.

@@ -10,7 +10,7 @@ Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/b050c455caa1d24a0
  2 files changed, 7 insertions(+), 5 deletions(-)
 
 diff --git a/BUILD.gn b/BUILD.gn
-index f0b5e5b08d..7ed17d1899 100644
+index 2bef29b507..8b3a15a173 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
 @@ -294,6 +294,7 @@ config("rtc_prod_config") {
@@ -18,11 +18,11 @@ index f0b5e5b08d..7ed17d1899 100644
  
  group("tracing") {
 +if (!build_with_mozilla) {
-   all_dependent_configs = [ "//third_party/perfetto/gn:public_config" ]
    if (rtc_use_perfetto) {
+     all_dependent_configs = [ "//third_party/perfetto/gn:public_config" ]
      if (build_with_chromium) {
-@@ -310,6 +311,7 @@ group("tracing") {
-         [ "//third_party/perfetto/include/perfetto/tracing" ]
+@@ -307,6 +308,7 @@ group("tracing") {
+     }
    }
  }
 +}
