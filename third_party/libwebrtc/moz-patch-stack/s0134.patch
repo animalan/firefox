@@ -9,7 +9,7 @@ Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/c00f6910cab76176f
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/video_coding/codecs/av1/libaom_av1_encoder.cc b/modules/video_coding/codecs/av1/libaom_av1_encoder.cc
-index 3f340d675a..5d021588dd 100644
+index 48149b4387..586940d04e 100644
 --- a/modules/video_coding/codecs/av1/libaom_av1_encoder.cc
 +++ b/modules/video_coding/codecs/av1/libaom_av1_encoder.cc
 @@ -270,7 +270,7 @@ LibaomAv1Encoder::LibaomAv1Encoder(const Environment& env,
