@@ -609,7 +609,7 @@ index 589b387d11..2b936a151e 100644
    method_ = new_method;
  }
 diff --git a/modules/rtp_rtcp/source/rtp_header_extensions.cc b/modules/rtp_rtcp/source/rtp_header_extensions.cc
-index 83afe0fe6b..c0e46cc918 100644
+index 3db85794bc..0a221f5e70 100644
 --- a/modules/rtp_rtcp/source/rtp_header_extensions.cc
 +++ b/modules/rtp_rtcp/source/rtp_header_extensions.cc
 @@ -422,6 +422,45 @@ bool PlayoutDelayLimits::Write(ArrayView<uint8_t> data,
