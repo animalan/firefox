@@ -1418,7 +1418,7 @@ ClientWebGLContext::GetInputStream(
   }
 
   return gfxUtils::GetInputStream(dataSurface, premultAlpha, mimeType,
-                                  encoderOptions, out_stream);
+                                  encoderOptions, randomizationKey, out_stream);
 }
 
 // ------------------------- Client WebGL Objects -------------------------

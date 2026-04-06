@@ -368,7 +368,8 @@ NS_IMETHODIMP CanvasContext::GetInputStream(
   }
 
   return gfxUtils::GetInputStream(dataSurface, /* aIsAlphaPremultiplied */ true,
-                                  aMimeType, aEncoderOptions, aStream);
+                                  aMimeType, aEncoderOptions, aRandomizationKey,
+                                  aStream);
 }
 
 bool CanvasContext::GetIsOpaque() {
