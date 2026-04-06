@@ -30,13 +30,14 @@ struct MutableInlineStyleDeclarations {};
 
 template <>
 struct DeclarationTraits<MutableInlineStyleDeclarations> {
-  static void Set(nsStyledElement* aStyledElement, const nsACString& aProperty,
-                  const nsACString& aValue, ErrorResult& aRv) {
+  static void Set(nsStyledElement* aStyledElement,
+                  const CSSPropertyId& aPropertyId, const nsACString& aValue,
+                  ErrorResult& aRv) {
     MOZ_ASSERT(aStyledElement);
 
     nsCOMPtr<nsDOMCSSDeclaration> declaration = aStyledElement->Style();
 
-    declaration->SetProperty(aProperty, aValue, ""_ns, aRv);
+    declaration->SetPropertyTypedValue(aPropertyId, aValue, aRv);
   }
 };
 
@@ -45,13 +46,13 @@ struct MutableStyleRuleDeclarations {};
 
 template <>
 struct DeclarationTraits<MutableStyleRuleDeclarations> {
-  static void Set(CSSStyleRule* aRule, const nsACString& aProperty,
+  static void Set(CSSStyleRule* aRule, const CSSPropertyId& aPropertyId,
                   const nsACString& aValue, ErrorResult& aRv) {
     MOZ_ASSERT(aRule);
 
     nsCOMPtr<nsDOMCSSDeclaration> declaration = aRule->Style();
 
-    declaration->SetProperty(aProperty, aValue, ""_ns, aRv);
+    declaration->SetPropertyTypedValue(aPropertyId, aValue, aRv);
   }
 };
 
@@ -128,7 +129,7 @@ void StylePropertyMap::Set(
   Declarations& declarations = mDeclarations;
 
   // Step 7 & 8 & 9 & 10.
-  declarations.Set(aProperty, cssText, aRv);
+  declarations.Set(propertyId, cssText, aRv);
 }
 
 void StylePropertyMap::Append(
@@ -151,13 +152,13 @@ size_t StylePropertyMap::SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const {
          aMallocSizeOf(this);
 }
 
-void StylePropertyMapReadOnly::Declarations::Set(const nsACString& aProperty,
-                                                 const nsACString& aValue,
-                                                 ErrorResult& aRv) {
+void StylePropertyMapReadOnly::Declarations::Set(
+    const CSSPropertyId& aPropertyId, const nsACString& aValue,
+    ErrorResult& aRv) {
   switch (mKind) {
     case Kind::Inline:
       DeclarationTraits<MutableInlineStyleDeclarations>::Set(
-          mStyledElement, aProperty, aValue, aRv);
+          mStyledElement, aPropertyId, aValue, aRv);
       return;
 
     case Kind::Computed:
@@ -165,7 +166,7 @@ void StylePropertyMapReadOnly::Declarations::Set(const nsACString& aProperty,
       return;
 
     case Kind::Rule:
-      DeclarationTraits<MutableStyleRuleDeclarations>::Set(mRule, aProperty,
+      DeclarationTraits<MutableStyleRuleDeclarations>::Set(mRule, aPropertyId,
                                                            aValue, aRv);
       return;
   }
