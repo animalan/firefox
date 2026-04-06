@@ -97,7 +97,13 @@ class JujutsuRepository(Repository):
 
     def _resolve_to_change(self, revset: str) -> Optional[str]:
         change_id = self._run_read_only(
-            "log", "--no-graph", "-n1", "-r", revset, "--template", "change_id.short()"
+            "log",
+            "--no-graph",
+            "-n1",
+            "--revision",
+            revset,
+            "--template",
+            "change_id.short()",
         ).rstrip()
         return change_id if change_id != "" else None
 
@@ -126,7 +132,12 @@ class JujutsuRepository(Repository):
 
     def _resolve_to_commit(self, revset):
         commit = self._run_read_only(
-            "log", "--no-graph", "-r", f"latest({revset})", "--template", "commit_id"
+            "log",
+            "--no-graph",
+            "--revision",
+            f"latest({revset})",
+            "--template",
+            "commit_id",
         ).rstrip()
         return commit
 
@@ -192,7 +203,7 @@ class JujutsuRepository(Repository):
 
         out = self._run(
             "log",
-            "-r",
+            "--revision",
             rev,
             "--no-graph",
             "--template",
@@ -252,7 +263,7 @@ class JujutsuRepository(Repository):
     def diff_stream(self, rev=None, extensions=(), exclude_file=None, context=8):
         if rev is None:
             rev = self.HEAD_REVSET
-        args = ["diff", "-r", rev, "--git"]
+        args = ["diff", "--revision", rev, "--git"]
 
         # File patterns to include
         patterns = [f'glob:"**/*{dot_extension}"' for dot_extension in extensions]
@@ -330,7 +341,7 @@ class JujutsuRepository(Repository):
         if Path(self.path).samefile(path):
             raise CannotDeleteFromRootOfRepositoryException()
 
-        self._run("restore", "-r", "@-", str(path))
+        self._run("restore", "--revision", "@-", str(path))
 
     def commit(self, message, author=None, date=None, paths=None):
         run_kwargs = {}
@@ -375,7 +386,7 @@ class JujutsuRepository(Repository):
 
             args.extend(["--remote", remote])
         if ref:
-            args.extend(["-r", ref])
+            args.extend(["--revision", ref])
         if dest_branch:
             args.extend(["-b", dest_branch])
         self._run(*args)
@@ -440,7 +451,7 @@ class JujutsuRepository(Repository):
         cmd = [
             "log",
             "--no-graph",
-            "-r",
+            "--revision",
             f"(::{head} & mutable()) ~ empty()",
             "--template",
             'commit_id ++ "\n"',
@@ -514,7 +525,7 @@ class JujutsuRepository(Repository):
             self._run(
                 "log",
                 "--no-graph",
-                "-r",
+                "--revision",
                 "trunk()..@ ~ description(exact:'')",
                 "--template",
                 "'  ' ++ description.first_line() ++ '\n'",
