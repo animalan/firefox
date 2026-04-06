@@ -60,6 +60,25 @@ void nsDOMCSSDeclaration::SetPropertyValue(const NonCustomCSSPropertyId aPropId,
   aRv = ParsePropertyValue(aPropId, aValue, false, aSubjectPrincipal);
 }
 
+void nsDOMCSSDeclaration::SetPropertyTypedValue(
+    const mozilla::CSSPropertyId& aPropId, const nsACString& aValue,
+    mozilla::ErrorResult& aRv) {
+  MOZ_ASSERT(!aValue.IsEmpty());
+
+  if (IsReadOnly()) {
+    return;
+  }
+
+  nsresult rv = SetPropertyTypedValue(aPropId, aValue);
+  if (NS_FAILED(rv)) {
+    if (rv == NS_ERROR_DOM_SYNTAX_ERR) {
+      aRv.ThrowTypeError("Invalid values");
+    } else {
+      aRv.Throw(rv);
+    }
+  }
+}
+
 void nsDOMCSSDeclaration::GetCssText(nsACString& aCssText) {
   MOZ_ASSERT(aCssText.IsEmpty());
 
@@ -316,6 +335,27 @@ nsresult nsDOMCSSDeclaration::ParseCustomPropertyValue(
         // Don't propagate parsing failures as nsresult errors. Instead, treat
         // treat them as "no change".
         return Result<bool, nsresult>(ok);
+      });
+}
+
+nsresult nsDOMCSSDeclaration::SetPropertyTypedValue(
+    const CSSPropertyId& aPropId, const nsACString& aPropValue) {
+  MOZ_ASSERT(!IsReadOnly());
+
+  DeclarationBlockMutationClosure closure = {};
+  MutationClosureData closureData;
+  GetPropertyChangeClosure(&closure, &closureData);
+
+  return ModifyDeclaration(
+      nullptr, &closureData,
+      [&](DeclarationBlock* decl,
+          ParsingEnvironment& env) -> Result<bool, nsresult> {
+        bool changed;
+        MOZ_TRY(Servo_DeclarationBlock_SetPropertyTypedValue(
+            decl->Raw(), &aPropId, &aPropValue, env.mUrlExtraData, closure,
+            &changed));
+
+        return changed;
       });
 }
 
