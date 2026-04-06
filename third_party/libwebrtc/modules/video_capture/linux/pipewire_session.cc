@@ -108,8 +108,7 @@ PipeWireNode::PipeWireNode(PipeWireSession* session,
       .param = OnNodeParam,
   };
 
-  pw_node_add_listener(reinterpret_cast<pw_node*>(proxy_), &node_listener_,
-                       &node_events, this);
+  pw_node_add_listener(reinterpret_cast<pw_node*>(proxy_), &node_listener_, &node_events, this);
 
   static const pw_proxy_events proxy_events{
       .version = PW_VERSION_PROXY_EVENTS,
@@ -159,8 +158,7 @@ void PipeWireNode::OnNodeInfo(void* data, const pw_node_info* info) {
       if (id == SPA_PARAM_EnumFormat &&
           info->params[i].flags & SPA_PARAM_INFO_READ) {
         that->pending_capabilities_.clear();
-        pw_node_enum_params(reinterpret_cast<pw_node*>(that->proxy_), 0, id, 0,
-                            UINT32_MAX, nullptr);
+        pw_node_enum_params(reinterpret_cast<pw_node*>(that->proxy_), 0, id, 0, UINT32_MAX, nullptr);
         that->sync_seq_ = pw_proxy_sync(that->proxy_, that->sync_seq_);
         that->session_->PipeWireSync();
         break;

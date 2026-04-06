@@ -1,159 +1,93 @@
-From: Jan Grulich <jgrulich@redhat.com>
-Date: Tue, 31 Mar 2026 15:05:00 +0000
-Subject: Bug 2023103 - WebRTC backport: PipeWire capture: fix camera
- capability enumeration race and duplicates r=pehrsons
+From: Michael Froman <mfroman@mozilla.com>
+Date: Thu, 2 Apr 2026 16:11:00 +0000
+Subject: Bug 2027501 - fix fast recovery retransmission logic. r=bwc
 
-Don't enumerate capabilities without actual format changes. Push the new
-discovered capabilities into a pending list and swap pending list into
-actual capabilities only after all params from the enumeration have been
-received to ensure capabilities are never empty while enumerating.
-
-This is a simple backport of an WebRTC upstream change.
-
-Upstream commit: 4487631837501e9ff44195f4a718f0b743c8e5d9
-
-Differential Revision: https://phabricator.services.mozilla.com/D290868
-Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/a905d52a7522c83288771bdd918cac0b4c8143d4
+Differential Revision: https://phabricator.services.mozilla.com/D291024
+Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/32071ccb68af0cd311916477dc57d92d0fcd72ef
 ---
- modules/portal/pipewire.sigs                  |  6 +++
- .../video_capture/linux/pipewire_session.cc   | 41 ++++++++++++++++---
- .../video_capture/linux/pipewire_session.h    |  5 +++
- 3 files changed, 46 insertions(+), 6 deletions(-)
+ net/dcsctp/tx/outstanding_data.cc     | 11 ++++++++---
+ net/dcsctp/tx/outstanding_data.h      |  1 +
+ net/dcsctp/tx/retransmission_queue.cc |  8 ++++++++
+ 3 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/modules/portal/pipewire.sigs b/modules/portal/pipewire.sigs
-index cab90280ef..f922048548 100644
---- a/modules/portal/pipewire.sigs
-+++ b/modules/portal/pipewire.sigs
-@@ -54,5 +54,11 @@ pw_context *pw_context_new(pw_loop *main_loop, pw_properties *props, size_t user
- pw_core * pw_context_connect(pw_context *context, pw_properties *properties, size_t user_data_size);
- pw_core * pw_context_connect_fd(pw_context *context, int fd, pw_properties *properties, size_t user_data_size);
- 
-+// node.h
-+struct pw_node_info * pw_node_info_update(struct pw_node_info *info, const struct pw_node_info *update);
-+void pw_node_info_free(struct pw_node_info *info);
+diff --git a/net/dcsctp/tx/outstanding_data.cc b/net/dcsctp/tx/outstanding_data.cc
+index 63e750b5fc..8dbd3bc685 100644
+--- a/net/dcsctp/tx/outstanding_data.cc
++++ b/net/dcsctp/tx/outstanding_data.cc
+@@ -143,6 +143,9 @@ OutstandingData::AckInfo OutstandingData::HandleSack(
+     UnwrappedTSN cumulative_tsn_ack,
+     webrtc::ArrayView<const SackChunk::GapAckBlock> gap_ack_blocks,
+     bool is_in_fast_recovery) {
++  bool cumulative_tsn_ack_advanced =
++      cumulative_tsn_ack > last_cumulative_tsn_ack_;
 +
- // proxy.h
- void pw_proxy_destroy(struct pw_proxy *proxy);
-+void pw_proxy_add_listener(struct pw_proxy *proxy, struct spa_hook *listener, const struct pw_proxy_events *events, void *data);
-+int pw_proxy_sync(struct pw_proxy *proxy, int seq);
-diff --git a/modules/video_capture/linux/pipewire_session.cc b/modules/video_capture/linux/pipewire_session.cc
-index 7b8d915ae9..661cc04ada 100644
---- a/modules/video_capture/linux/pipewire_session.cc
-+++ b/modules/video_capture/linux/pipewire_session.cc
-@@ -29,6 +29,7 @@
- #include <cstring>
- #include <memory>
- #include <optional>
-+#include <utility>
+   OutstandingData::AckInfo ack_info(cumulative_tsn_ack);
+   // Erase all items up to cumulative_tsn_ack.
+   RemoveAcked(cumulative_tsn_ack, ack_info);
+@@ -152,7 +155,7 @@ OutstandingData::AckInfo OutstandingData::HandleSack(
  
- #include "absl/strings/string_view.h"
- #include "common_video/libyuv/include/webrtc_libyuv.h"
-@@ -76,7 +77,9 @@ VideoType PipeWireRawFormatToVideoType(uint32_t id) {
- void PipeWireNode::PipeWireNodeDeleter::operator()(
-     PipeWireNode* node) const noexcept {
-   spa_hook_remove(&node->node_listener_);
-+  spa_hook_remove(&node->proxy_listener_);
-   pw_proxy_destroy(node->proxy_);
-+  pw_node_info_free(node->info_);
- }
+   // NACK and possibly mark for retransmit chunks that weren't acked.
+   NackBetweenAckBlocks(cumulative_tsn_ack, gap_ack_blocks, is_in_fast_recovery,
+-                       ack_info);
++                       cumulative_tsn_ack_advanced, ack_info);
  
- // static
-@@ -107,6 +110,13 @@ PipeWireNode::PipeWireNode(PipeWireSession* session,
+   RTC_DCHECK(IsConsistent());
+   return ack_info;
+@@ -225,6 +228,7 @@ void OutstandingData::NackBetweenAckBlocks(
+     UnwrappedTSN cumulative_tsn_ack,
+     webrtc::ArrayView<const SackChunk::GapAckBlock> gap_ack_blocks,
+     bool is_in_fast_recovery,
++    bool cumulative_tsn_acked_advanced,
+     OutstandingData::AckInfo& ack_info) {
+   // Mark everything between the blocks as NACKED/TO_BE_RETRANSMITTED.
+   // https://tools.ietf.org/html/rfc4960#section-7.2.4
+@@ -237,7 +241,7 @@ void OutstandingData::NackBetweenAckBlocks(
+   // in-flight and between gaps should be nacked. This means that SCTP relies on
+   // the T3-RTX-timer to re-send packets otherwise.
+   UnwrappedTSN max_tsn_to_nack = ack_info.highest_tsn_acked;
+-  if (is_in_fast_recovery && cumulative_tsn_ack > last_cumulative_tsn_ack_) {
++  if (is_in_fast_recovery && cumulative_tsn_acked_advanced) {
+     // https://tools.ietf.org/html/rfc4960#section-7.2.4
+     // "If an endpoint is in Fast Recovery and a SACK arrives that advances
+     // the Cumulative TSN Ack Point, the miss indications are incremented for
+@@ -252,7 +256,8 @@ void OutstandingData::NackBetweenAckBlocks(
+     UnwrappedTSN cur_block_first_acked =
+         UnwrappedTSN::AddTo(cumulative_tsn_ack, block.start);
+     for (UnwrappedTSN tsn = prev_block_last_acked.next_value();
+-         tsn < cur_block_first_acked && tsn <= max_tsn_to_nack;
++         tsn < cur_block_first_acked && tsn <= max_tsn_to_nack &&
++         tsn < next_tsn();
+          tsn = tsn.next_value()) {
+       ack_info.has_packet_loss |=
+           NackItem(tsn, /*retransmit_now=*/false,
+diff --git a/net/dcsctp/tx/outstanding_data.h b/net/dcsctp/tx/outstanding_data.h
+index 512385e6fe..bfe668fbc5 100644
+--- a/net/dcsctp/tx/outstanding_data.h
++++ b/net/dcsctp/tx/outstanding_data.h
+@@ -325,6 +325,7 @@ class OutstandingData {
+       UnwrappedTSN cumulative_tsn_ack,
+       webrtc::ArrayView<const SackChunk::GapAckBlock> gap_ack_blocks,
+       bool is_in_fast_recovery,
++      bool cumulative_tsn_acked_advanced,
+       OutstandingData::AckInfo& ack_info);
  
-   pw_node_add_listener(reinterpret_cast<pw_node*>(proxy_), &node_listener_,
-                        &node_events, this);
-+
-+  static const pw_proxy_events proxy_events{
-+      .version = PW_VERSION_PROXY_EVENTS,
-+      .done = OnProxyDone,
-+  };
-+
-+  pw_proxy_add_listener(proxy_, &proxy_listener_, &proxy_events, this);
- }
- 
- // static
-@@ -114,6 +124,12 @@ RTC_NO_SANITIZE("cfi-icall")
- void PipeWireNode::OnNodeInfo(void* data, const pw_node_info* info) {
-   PipeWireNode* that = static_cast<PipeWireNode*>(data);
- 
-+  that->info_ = pw_node_info_update(that->info_, info);
-+  if (!that->info_)
-+    return;
-+
-+  info = that->info_;
-+
-   if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS) {
-     const char* vid_str;
-     const char* pid_str;
-@@ -135,19 +151,21 @@ void PipeWireNode::OnNodeInfo(void* data, const pw_node_info* info) {
- 
-   if (info->change_mask & PW_NODE_CHANGE_MASK_PARAMS) {
-     for (uint32_t i = 0; i < info->n_params; i++) {
-+      if (info->params[i].user == 0)
-+        continue;
-+      info->params[i].user = 0;
-+
-       uint32_t id = info->params[i].id;
-       if (id == SPA_PARAM_EnumFormat &&
-           info->params[i].flags & SPA_PARAM_INFO_READ) {
--        RTC_LOG(LS_INFO)
--            << "Clearing existing capabilities before re-enumeration for "
--            << that->display_name_;
--        that->capabilities_.clear();
-+        that->pending_capabilities_.clear();
-         pw_node_enum_params(reinterpret_cast<pw_node*>(that->proxy_), 0, id, 0,
-                             UINT32_MAX, nullptr);
-+        that->sync_seq_ = pw_proxy_sync(that->proxy_, that->sync_seq_);
-+        that->session_->PipeWireSync();
-         break;
-       }
-     }
--    that->session_->PipeWireSync();
+   // Process the acknowledgement of the chunk referenced by `iter` and updates
+diff --git a/net/dcsctp/tx/retransmission_queue.cc b/net/dcsctp/tx/retransmission_queue.cc
+index 9557a9be22..e3ed0e6da1 100644
+--- a/net/dcsctp/tx/retransmission_queue.cc
++++ b/net/dcsctp/tx/retransmission_queue.cc
+@@ -251,6 +251,14 @@ bool RetransmissionQueue::IsSackValid(const SackChunk& sack) const {
+   } else if (cumulative_tsn_ack > outstanding_data_.highest_outstanding_tsn()) {
+     return false;
    }
++
++  for (const auto& block : sack.gap_ack_blocks()) {
++    if (UnwrappedTSN::AddTo(cumulative_tsn_ack, block.end) >
++        outstanding_data_.highest_outstanding_tsn()) {
++      return false;
++    }
++  }
++
+   return true;
  }
  
-@@ -215,7 +233,18 @@ void PipeWireNode::OnNodeParam(void* data,
-                       << cap.width << "x" << cap.height << "@" << cap.maxFPS
-                       << ")";
- 
--  that->capabilities_.push_back(cap);
-+  that->pending_capabilities_.push_back(cap);
-+}
-+
-+// static
-+void PipeWireNode::OnProxyDone(void* data, int seq) {
-+  PipeWireNode* that = static_cast<PipeWireNode*>(data);
-+
-+  if (seq != that->sync_seq_)
-+    return;
-+
-+  that->capabilities_ = std::move(that->pending_capabilities_);
-+  that->pending_capabilities_.clear();
- }
- 
- // static
-diff --git a/modules/video_capture/linux/pipewire_session.h b/modules/video_capture/linux/pipewire_session.h
-index 29998822fc..0eebcc0f6a 100644
---- a/modules/video_capture/linux/pipewire_session.h
-+++ b/modules/video_capture/linux/pipewire_session.h
-@@ -73,15 +73,20 @@ class PipeWireNode {
-                           uint32_t next,
-                           const spa_pod* param);
-   static bool ParseFormat(const spa_pod* param, VideoCaptureCapability* cap);
-+  static void OnProxyDone(void* data, int seq);
- 
-   struct pw_proxy* proxy_;
-   struct spa_hook node_listener_;
-+  struct spa_hook proxy_listener_;
-   PipeWireSession* session_;
-   uint32_t id_;
-   std::string display_name_;
-   std::string unique_id_;
-   std::string model_id_;
-+  struct pw_node_info* info_ = nullptr;
-+  int sync_seq_ = 0;
-   std::vector<VideoCaptureCapability> capabilities_;
-+  std::vector<VideoCaptureCapability> pending_capabilities_;
- };
- 
- class CameraPortalNotifier : public CameraPortal::PortalNotifier {
