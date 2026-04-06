@@ -35,24 +35,6 @@ const GENERIC_MODEL_NAME = "generic";
 export const DEFAULT_ENGINE_ID = "smart-openai";
 
 /**
- * Service types for different AI Window features
- */
-export const SERVICE_TYPES = Object.freeze({
-  AI: "ai",
-  MEMORIES: "memories",
-});
-
-/**
- * Purposes for different AI Window features, used to track usage and performance in telemetry
- */
-export const PURPOSES = Object.freeze({
-  CHAT: "chat",
-  TITLE_GENERATION: "title-generation",
-  CONVERSATION_STARTERS_SIDEBAR: "convo-starters-sidebar",
-  MEMORY_GENERATION: "memory-generation",
-});
-
-/**
  * Observer for model preference changes.
  * Invalidates the Remote Settings client cache when user changes their model preference.
  */
@@ -131,6 +113,43 @@ export const DEFAULT_MODEL = Object.freeze({
     "qwen3-235b-a22b-instruct-2507-maas",
   [MODEL_FEATURES.MEMORIES_RELEVANT_CONTEXT]:
     "qwen3-235b-a22b-instruct-2507-maas",
+});
+
+/**
+ * Service types for different AI Window features
+ */
+export const SERVICE_TYPES = Object.freeze({
+  AI: "ai",
+  MEMORIES: "memories",
+});
+
+/**
+ * Purposes for different AI Window features, used to track usage and performance in telemetry
+ */
+export const PURPOSES = Object.freeze({
+  CHAT: "chat",
+  TITLE_GENERATION: "title-generation",
+  CONVERSATION_STARTERS_SIDEBAR: "convo-starters-sidebar",
+  MEMORY_GENERATION: "memory-generation",
+});
+
+/**
+ * Default purposes for different AI Window features, used to track usage and performance in telemetry
+ * (purposes are now defined in remote-settings)
+ */
+export const DEFAULT_PURPOSE = "default";
+export const FEATURE_PURPOSES = Object.freeze({
+  DEFAULT_PURPOSE: PURPOSES.CHAT,
+  [MODEL_FEATURES.CHAT]: PURPOSES.CHAT,
+  [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER]:
+    PURPOSES.CONVERSATION_STARTERS_SIDEBAR,
+  [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_FOLLOWUP]:
+    PURPOSES.CONVERSATION_STARTERS_SIDEBAR,
+  [MODEL_FEATURES.TITLE_GENERATION]: PURPOSES.TITLE_GENERATION,
+  [MODEL_FEATURES.MEMORIES_INITIAL_GENERATION_SYSTEM]:
+    PURPOSES.MEMORY_GENERATION,
+  [MODEL_FEATURES.MEMORIES_MESSAGE_CLASSIFICATION_SYSTEM]:
+    PURPOSES.MEMORY_GENERATION,
 });
 
 /**
@@ -558,7 +577,10 @@ export class openAIEngine {
       ? { prompts: prefPrompt[targetFeature] }
       : null;
 
-    return prefPromptMapping || this.#configs?.[targetFeature] || null;
+    return {
+      ...this.#configs?.[targetFeature],
+      ...prefPromptMapping,
+    };
   }
 
   /**
@@ -585,33 +607,27 @@ export class openAIEngine {
    *   The feature name to use to retrieve remote settings for prompts.
    * @param {string} engineId
    *   The engine ID for MLEngine creation. Defaults to DEFAULT_ENGINE_ID.
-   * @param {string} serviceType
-   *   The type of message to be sent ("ai", "memories", "s2s").
-   *   Defaults to SERVICE_TYPES.AI.
-   * @param {string} purpose
-   *   The purpose of the request, used for telemetry tracking.
-   *   Defaults to PURPOSES.CHAT.
    * @returns {Promise<object>}
    *   Promise that will resolve to the configured engine instance.
    */
-  static async build(
-    feature,
-    engineId = DEFAULT_ENGINE_ID,
-    serviceType = SERVICE_TYPES.AI,
-    purpose = PURPOSES.CHAT
-  ) {
+  static async build(feature, engineId = DEFAULT_ENGINE_ID) {
     const engine = new openAIEngine();
 
     await engine.loadConfig(feature);
 
+    const config = engine.getConfig(feature);
     engine.#engineId = engineId;
-    engine.#serviceType = serviceType;
-    engine.#purpose = purpose;
+    engine.#serviceType =
+      config?.service_type ?? getDefaultServiceType(feature);
+    engine.#purpose =
+      config?.purpose ??
+      FEATURE_PURPOSES[feature] ??
+      FEATURE_PURPOSES[DEFAULT_PURPOSE];
 
     engine.engineInstance = await openAIEngine.#createOpenAIEngine(
       engineId,
-      serviceType,
-      purpose,
+      engine.#serviceType,
+      engine.#purpose,
       engine.model
     );
 
@@ -861,4 +877,11 @@ export function renderPrompt(rawPromptContent, stringsToReplace = {}) {
   }
 
   return finalPromptContent;
+}
+
+function getDefaultServiceType(feature) {
+  if (feature.startsWith("memories")) {
+    return SERVICE_TYPES.MEMORIES;
+  }
+  return SERVICE_TYPES.AI;
 }

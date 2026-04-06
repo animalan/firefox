@@ -18,8 +18,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   openAIEngine: "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
   DEFAULT_ENGINE_ID:
     "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
-  SERVICE_TYPES: "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
-  PURPOSES: "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
   generateChatTitle:
     "moz-src:///browser/components/aiwindow/models/TitleGeneration.sys.mjs",
   AIWindow:
@@ -1299,9 +1297,7 @@ export class AIWindow extends MozLitElement {
     try {
       const engineInstance = await lazy.openAIEngine.build(
         lazy.MODEL_FEATURES.CHAT,
-        lazy.DEFAULT_ENGINE_ID,
-        lazy.SERVICE_TYPES.AI,
-        lazy.PURPOSES.CHAT
+        lazy.DEFAULT_ENGINE_ID
       );
 
       if (inputText) {

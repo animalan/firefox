@@ -8,8 +8,6 @@ import {
   openAIEngine,
   renderPrompt,
   MODEL_FEATURES,
-  SERVICE_TYPES,
-  PURPOSES,
 } from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
 import { sanitizeUntrustedContent } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
 
@@ -55,9 +53,7 @@ export async function generateChatTitle(
     // Build the OpenAI engine
     const engine = await openAIEngine.build(
       MODEL_FEATURES.TITLE_GENERATION,
-      `${MODEL_FEATURES.TITLE_GENERATION}-engine`,
-      SERVICE_TYPES.AI,
-      PURPOSES.TITLE_GENERATION
+      `${MODEL_FEATURES.TITLE_GENERATION}-engine`
     );
 
     const tabInfo = current_tab || { url: "", title: "", description: "" };
