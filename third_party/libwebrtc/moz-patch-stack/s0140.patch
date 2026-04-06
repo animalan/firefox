@@ -11,7 +11,7 @@ Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/32071ccb68af0cd31
  3 files changed, 17 insertions(+), 3 deletions(-)
 
 diff --git a/net/dcsctp/tx/outstanding_data.cc b/net/dcsctp/tx/outstanding_data.cc
-index 63e750b5fc..8dbd3bc685 100644
+index 65b31b4cc2..3fce484fc8 100644
 --- a/net/dcsctp/tx/outstanding_data.cc
 +++ b/net/dcsctp/tx/outstanding_data.cc
 @@ -143,6 +143,9 @@ OutstandingData::AckInfo OutstandingData::HandleSack(
@@ -61,10 +61,10 @@ index 63e750b5fc..8dbd3bc685 100644
        ack_info.has_packet_loss |=
            NackItem(tsn, /*retransmit_now=*/false,
 diff --git a/net/dcsctp/tx/outstanding_data.h b/net/dcsctp/tx/outstanding_data.h
-index 512385e6fe..bfe668fbc5 100644
+index d8bc926ea9..81fb4c27af 100644
 --- a/net/dcsctp/tx/outstanding_data.h
 +++ b/net/dcsctp/tx/outstanding_data.h
-@@ -325,6 +325,7 @@ class OutstandingData {
+@@ -327,6 +327,7 @@ class OutstandingData {
        UnwrappedTSN cumulative_tsn_ack,
        webrtc::ArrayView<const SackChunk::GapAckBlock> gap_ack_blocks,
        bool is_in_fast_recovery,
