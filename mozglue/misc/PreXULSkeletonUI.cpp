@@ -789,7 +789,7 @@ Result<Ok, PreXULSkeletonUIError> DrawSkeletonUI(
   int menubarHeightDevPixels =
       menubarShown ? CSSToDevPixels(28, sCSSToDevPixelScaling) : 0;
 
-  // defined in urlbar-searchbar.inc.css as --urlbar-margin-inline: 5px
+  // defined in browser/themes/shared/urlbar as --urlbar-margin-inline: 5px
   int urlbarMargin =
       CSSToDevPixels(5, sCSSToDevPixelScaling) + horizontalOffset;
 
@@ -823,7 +823,7 @@ Result<Ok, PreXULSkeletonUIError> DrawSkeletonUI(
   }
 
   int placeholderBorderRadius = CSSToDevPixels(4, sCSSToDevPixelScaling);
-  // found in browser.css "--toolbarbutton-border-radius"
+  // found in browser/themes/shared/urlbar "--urlbar-border-radius"
   int urlbarBorderRadius = CSSToDevPixels(8, sCSSToDevPixelScaling);
 
   // The (traditionally dark blue on Windows) background of the tab bar.

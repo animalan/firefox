@@ -130,7 +130,8 @@
 
     /** checkbox **/
     --checkbox-margin-inline: var(--space-small);
-    --checkbox-size: var(--size-item-small); /* TODO Bug 1876537: Make this em-based, probably? */
+    /* TODO Bug 1876537: Make this em-based, probably? */
+    --checkbox-size: var(--size-item-small);
 
     /** color **/
     --color-black: #000000;
@@ -372,13 +373,20 @@
     --size-sidebar-narrow: 118px;
 
     /** space **/
-    --space-xxsmall: var(--dimension-relative-0125); /* 0.125rem */
-    --space-xsmall: var(--dimension-relative-025); /* 0.25rem */
-    --space-small: var(--dimension-relative-050); /* 0.5rem */
-    --space-medium: var(--dimension-relative-075); /* 0.75rem */
-    --space-large: var(--dimension-relative-100); /* 1rem */
-    --space-xlarge: var(--dimension-relative-150); /* 1.5rem */
-    --space-xxlarge: var(--dimension-relative-200); /* 2rem */
+    /* 0.125rem */
+    --space-xxsmall: var(--dimension-relative-0125);
+    /* 0.25rem */
+    --space-xsmall: var(--dimension-relative-025);
+    /* 0.5rem */
+    --space-small: var(--dimension-relative-050);
+    /* 0.75rem */
+    --space-medium: var(--dimension-relative-075);
+    /* 1rem */
+    --space-large: var(--dimension-relative-100);
+    /* 1.5rem */
+    --space-xlarge: var(--dimension-relative-150);
+    /* 2rem */
+    --space-xxlarge: var(--dimension-relative-200);
 
     /** table **/
     --table-background-color: light-dark(#f8f8fa, rgb(35, 34, 43));
@@ -459,7 +467,8 @@
       --border-color-selected: SelectedItem;
 
       /** button **/
-      --button-background-color: ButtonFace; /* TODO Bug 1821203 - Gray use needs to be consolidated */
+      /* TODO Bug 1821203 - Gray use needs to be consolidated */
+      --button-background-color: ButtonFace;
       --button-background-color-hover: SelectedItemText;
       --button-background-color-active: SelectedItemText;
       --button-background-color-disabled: ButtonFace;
@@ -520,7 +529,8 @@
       --table-border-color: CanvasText;
       --table-header-background-color: AccentColor;
       --table-header-text-color: AccentColorText;
-      --table-row-background-color-alternate: var(--background-color-canvas); /* TODO Bug 1821203 - Gray use needs to be consolidated */
+      /* TODO Bug 1821203 - Gray use needs to be consolidated */
+      --table-row-background-color-alternate: var(--background-color-canvas);
 
       /** text-color **/
       --text-color-disabled: GrayText;

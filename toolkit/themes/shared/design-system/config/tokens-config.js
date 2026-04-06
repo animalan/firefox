@@ -542,6 +542,7 @@ function formatTokens({
     outputReferences: false,
     formatting: {
       indentation,
+      commentPosition: "above",
     },
     componentName,
   });

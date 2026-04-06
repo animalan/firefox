@@ -8,21 +8,14 @@
 
 :host,
 :root {
-  --urlbarView-hover-background: var(--arrowpanel-dimmed);
-  --urlbarView-separator-color: color-mix(in srgb, currentColor 14%, transparent);
-
-  --urlbarView-highlight-background: SelectedItem;
-  --urlbarView-highlight-color: SelectedItemText;
-
   --urlbarView-secondary-text-color: color-mix(in srgb, currentColor 73%, transparent);
 
-  --urlbarView-action-color: LinkText;
   --urlbarView-action-slide-in-distance: 200px;
 
   --urlbarView-small-font-size: 0.85em;
 
   --urlbarView-results-padding: 7px;
-  --urlbarView-row-gutter: 2px;
+  --urlbarView-row-gutter: var(--space-xxsmall);
   --urlbarView-item-inline-padding: var(--urlbar-icon-padding);
   --urlbarView-item-block-padding: 6px;
 
@@ -62,8 +55,8 @@
   --urlbarView-labeled-row-label-top: calc(-1.27em - 2px);
   --urlbarView-labeled-tip-margin-top-extra: 8px;
 
-  --urlbarView-action-button-background-color: color-mix(in srgb, var(--urlbarView-hover-background) 50%, transparent);
-  --urlbarView-action-button-hover-background-color: var(--urlbarView-hover-background);
+  --urlbarView-action-button-background-color: color-mix(in srgb, var(--urlbarview-background-color-hover) 50%, transparent);
+  --urlbarView-action-button-hover-background-color: var(--urlbarview-background-color-hover);
 
   --urlbarView-tail150-overlay-background: var(--color-violet-90);
   --urlbarView-tail150-overlay-color: var(--color-gray-05);
@@ -74,13 +67,12 @@
   }
 
   &[lwtheme] {
-    --urlbarView-action-color: light-dark(rgb(91, 91, 102), rgb(191, 191, 201));
-    --urlbarView-highlight-background: light-dark(rgb(0, 99, 255), rgb(0, 99, 225));
-    --urlbarView-highlight-color: white;
+    --urlbarview-text-color-action: light-dark(rgb(91, 91, 102), rgb(191, 191, 201));
+    --urlbarview-background-color-selected: light-dark(rgb(0, 99, 255), rgb(0, 99, 225));
+    --urlbarview-text-color-selected: white;
   }
 
   @media (prefers-contrast) {
-    --urlbarView-separator-color: color-mix(in srgb, currentColor 86%, transparent);
     --urlbarView-result-button-background-opacity: 100%;
     --urlbarView-secondary-text-color: currentColor;
   }
@@ -111,7 +103,7 @@
   margin-inline: calc(-1 * var(--urlbarView-row-gutter));
 
   #urlbar[open] > .urlbarView > .urlbarView-body-outer > & {
-    border-top: 1px solid var(--urlbarView-separator-color);
+    border-top: 1px solid var(--urlbarview-separator-color);
   }
 }
 
@@ -163,12 +155,12 @@
   }
 
   &[row-selectable]:not([selected]):hover {
-    background-color: var(--urlbarView-hover-background);
+    background-color: var(--urlbarview-background-color-hover);
   }
 
   &[selected] {
-    background-color: var(--urlbarView-highlight-background);
-    color: var(--urlbarView-highlight-color);
+    background-color: var(--urlbarview-background-color-selected);
+    color: var(--urlbarview-text-color-selected);
   }
 
   &:not([type="tip"], [type="dynamic"]) {
@@ -419,7 +411,7 @@
     outline: var(--focus-outline);
     /* This color assumes that the row is selected and therefore has the usual
        selection background color. */
-    outline-color: var(--urlbarView-highlight-color);
+    outline-color: var(--urlbarview-text-color-selected);
     outline-offset: 1px;
 
     .urlbarView-row:not([selected]) > .urlbarView-row-buttons > & {
@@ -710,7 +702,7 @@
     @media not -moz-pref("browser.urlbar.scotchBonnet.enableOverride") {
       /* This targets both rich and non-rich results, so not using the child selector here. */
       .urlbarView-row:not(:hover, [selected], [sponsored]) & {
-        color: var(--urlbarView-action-color);
+        color: var(--urlbarview-text-color-action);
       }
     }
 
@@ -770,7 +762,7 @@
 /* Switch-to-tab and Clipboard action text is styled as a chiclet. */
 .urlbarView-row[has-action]:is([type="switchtab"], [type="remotetab"], [type="clipboard"]) {
   > .urlbarView-row-inner > .urlbarView-no-wrap > .urlbarView-action {
-    border-radius: var(--toolbarbutton-border-radius);
+    border-radius: var(--urlbar-border-radius);
     padding: 4px 8px;
     margin-block: -2px;
     margin-inline-start: 8px;
@@ -791,7 +783,7 @@
     /* stylelint-disable-next-line media-query-no-invalid */
     @media not -moz-pref("browser.urlbar.scotchBonnet.enableOverride") {
       color: var(--urlbar-box-text-color);
-      background-color: var(--urlbar-box-focus-bgcolor);
+      background-color: var(--urlbar-box-background-color-focus);
 
       &.urlbarView-userContext {
         padding-top: 0;
@@ -986,12 +978,12 @@
   border-radius: 0;
 
   &:not(:last-child) {
-    border-bottom: 1px solid var(--urlbarView-separator-color);
+    border-bottom: 1px solid var(--urlbarview-separator-color);
     margin-bottom: 4px;
   }
 
   &:not(:first-child) {
-    border-top: 1px solid var(--urlbarView-separator-color);
+    border-top: 1px solid var(--urlbarview-separator-color);
     margin-top: 4px;
   }
 
@@ -1088,7 +1080,7 @@
 
 .urlbarView-row[type$="_amo"][icon-size="24"] > .urlbarView-row-inner > .urlbarView-favicon {
   padding: calc((var(--urlbarView-top-pick-large-icon-box-size) - 24px) / 2);
-  background-color: var(--urlbar-box-focus-bgcolor);
+  background-color: var(--urlbar-box-background-color-focus);
   border-radius: var(--border-radius-xsmall);
 }
 
@@ -1219,7 +1211,7 @@
 .urlbarView-action-btn {
   font-size: smaller;
   font-weight: var(--font-weight-semibold);
-  border-radius: var(--toolbarbutton-border-radius);
+  border-radius: var(--urlbar-border-radius);
   border: 1px solid transparent;
   padding: 0.4em 0.6em;
   display: inline-flex;
@@ -1342,7 +1334,7 @@
   --violet-fg-color: light-dark(var(--color-violet-60), var(--color-violet-10));
 
   @media (prefers-contrast) {
-    --violet-bg-color: var(--urlbar-box-focus-bgcolor);
+    --violet-bg-color: var(--urlbar-box-background-color-focus);
     --violet-fg-color: currentColor;
   }
 
@@ -1360,7 +1352,7 @@
 
     /* This should match the radius on `.urlbarView-row`. Only visible when there
      are multiple items in a row. */
-    border-radius: calc(var(--urlbarView-row-gutter) + var(--toolbarbutton-border-radius));
+    border-radius: calc(var(--urlbarView-row-gutter) + var(--urlbar-border-radius));
 
     /* Inline spacing between multiple items in a row */
     margin-inline-end: var(--space-small);
@@ -1372,12 +1364,12 @@
     padding-inline-end: var(--space-large);
 
     .urlbarView-realtime-root:not([selectable]) > &:not([selected]):hover {
-      background-color: var(--urlbarView-hover-background);
+      background-color: var(--urlbarview-background-color-hover);
     }
 
     &[selected] {
-      color: var(--urlbarView-highlight-color);
-      background-color: var(--urlbarView-highlight-background);
+      color: var(--urlbarview-text-color-selected);
+      background-color: var(--urlbarview-background-color-selected);
     }
 
     > .urlbarView-realtime-image-container {
@@ -1452,7 +1444,7 @@
 /* Market suggestions specific */
 
 .urlbarView-row[dynamicType="realtime-market"] > .urlbarView-realtime-root > .urlbarView-realtime-item {
-  --market-image-bg-color: var(--urlbar-box-focus-bgcolor);
+  --market-image-bg-color: var(--urlbar-box-background-color-focus);
   --market-image-down-bg-color: light-dark(var(--color-red-0), var(--color-red-90));
   --market-image-up-bg-color: light-dark(var(--color-green-0), var(--color-green-90));
 
@@ -1580,7 +1572,7 @@
     --airline-fallback-icon-color: #bac2ca;
 
     border-color: color-mix(in srgb, currentColor 10%, transparent);
-    background-color: var(--urlbar-box-focus-bgcolor);
+    background-color: var(--urlbar-box-background-color-focus);
 
     &[backgroundImageId] {
       background-position: center;
@@ -1734,7 +1726,7 @@
 }
 
 .urlbarView:not([noresults]) > .search-one-offs:not([hidden]) {
-  border-top: 1px solid var(--urlbarView-separator-color);
+  border-top: 1px solid var(--urlbarview-separator-color);
 }
 
 :root[uidensity="touch"] #urlbar .search-one-offs:not([hidden]) {
@@ -1764,7 +1756,7 @@
   min-width: 28px;
   height: 28px;
   margin-inline: 0 12px;
-  border-radius: var(--toolbarbutton-border-radius);
+  border-radius: var(--urlbar-border-radius);
 }
 
 #urlbar .searchbar-engine-one-off-item:last-child {
@@ -1894,8 +1886,8 @@
 }
 
 #PopupSearchAutoComplete .autocomplete-richlistitem[selected] {
-  background: var(--urlbarView-highlight-background);
-  color: var(--urlbarView-highlight-color);
+  background: var(--urlbarview-background-color-selected);
+  color: var(--urlbarview-text-color-selected);
 }
 
 .urlbarView-tail150-overlay {
