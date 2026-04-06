@@ -1411,7 +1411,7 @@ ClientWebGLContext::GetInputStream(
   const auto& premultAlpha = notLost->info.options.premultipliedAlpha;
 
   nsRFPService::PotentiallyDumpImage(PrincipalOrNull(), dataSurface);
-  if (ShouldResistFingerprinting(RFPTarget::CanvasRandomization)) {
+  if (extractionBehavior == CanvasUtils::ImageExtraction::Randomize) {
     return gfxUtils::GetInputStreamWithRandomNoise(
         dataSurface, premultAlpha, mimeType, encoderOptions,
         GetCookieJarSettings(), PrincipalOrNull(), out_stream);
