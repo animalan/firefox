@@ -1510,10 +1510,7 @@ var SidebarController = {
     );
     this._panelResizeObserver.observe(this._box);
 
-    this._launcherDropHandler = () => {
-      this._state.launcherDragActive = false;
-      this.updatePinnedTabsHeightOnResize();
-    };
+    this._launcherDropHandler = () => (this._state.launcherDragActive = false);
     this._launcherSplitter.addEventListener(
       "command",
       this._launcherDropHandler
@@ -1537,19 +1534,15 @@ var SidebarController = {
       }
     });
 
-    this._itemsWrapperResizeObserver = new ResizeObserver(async ([entry]) => {
+    this._itemsWrapperResizeObserver = new ResizeObserver(async () => {
       await window.promiseDocumentFlushed(() => {
+        // Adjust pinned tabs container height if needed
         requestAnimationFrame(() => {
+          // If we are currently moving tabs, don't resize
           if (this._pinnedTabsContainer.hasAttribute("dragActive")) {
             return;
           }
-          // Only respond to WIDTH changes (sidebar being resized wider/narrower).
-          // Ignoring height changes prevents an infinite resize loop.
-          const newWidth = entry.contentBoxSize[0].inlineSize;
-          if (newWidth === this._pinnedTabsItemsWrapperWidth) {
-            return;
-          }
-          this._pinnedTabsItemsWrapperWidth = newWidth;
+
           this.updatePinnedTabsHeightOnResize();
         });
       });
@@ -1604,32 +1597,17 @@ var SidebarController = {
   },
 
   updatePinnedTabsHeightOnResize() {
-    // Skip during sidebar width drag to prevent unpinned tabs from jumping.
-    // The drop handler calls this function once cleanly after drag ends.
-    if (this.isLauncherDragging) {
-      return;
-    }
-
-    const preferredHeight = this._state.launcherExpanded
-      ? this._state.expandedPinnedTabsHeight
-      : this._state.collapsedPinnedTabsHeight;
-
-    if (!preferredHeight || !this._pinnedTabsContainer.childElementCount) {
-      return;
-    }
-
-    if (this.isLauncherDragging) {
-      // Clear height during drag so we can measure the natural content height accurately
-      this._pinnedTabsContainer.style.height = "";
-    }
-
     let itemsWrapperHeight = window.windowUtils.getBoundsWithoutFlushing(
       this._pinnedTabsItemsWrapper
     ).height;
-
-    // Clamp for display only — never overwrite the user's saved preference
-    const clampedHeight = Math.min(preferredHeight, itemsWrapperHeight);
-    this._pinnedTabsContainer.style.height = `${clampedHeight}px`;
+    if (this._state.pinnedTabsHeight > itemsWrapperHeight) {
+      this._state.pinnedTabsHeight = itemsWrapperHeight;
+      if (this._state.launcherExpanded) {
+        this._state.expandedPinnedTabsHeight = this._state.pinnedTabsHeight;
+      } else {
+        this._state.collapsedPinnedTabsHeight = this._state.pinnedTabsHeight;
+      }
+    }
   },
 
   /**
