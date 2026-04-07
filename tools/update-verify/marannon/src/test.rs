@@ -9,6 +9,7 @@ use std::io::Write;
 use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::thread;
 
 use anyhow::{anyhow, Result};
 use log::{error, info};
@@ -89,10 +90,12 @@ pub(crate) fn run_tests(
     tests: Vec<Test>,
     tmpdir: &Path,
     artifact_dir: &Path,
-    runner: &dyn CommandRunner,
+    runner: &(dyn CommandRunner + Sync),
 ) -> Result<Vec<TestResult>> {
-    let mut results: Vec<TestResult> = vec![];
     let mut updater_binaries: HashMap<PathBuf, PathBuf> = HashMap::new();
+    let parallelism = thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1);
 
     // Prepare updater packages
     // Find distinct updater packages (so we don't process repeated ones
@@ -115,49 +118,128 @@ pub(crate) fn run_tests(
         .collect::<Result<HashMap<_, _>>>()?;
 
     // Unpack into the desired locations.
-    for (updater_package, unpack_dir) in &updater_locations {
-        let updater = prepare_updater(
-            &updater_package,
-            appname,
-            cert_replace_script,
-            cert_dir,
-            cert_overrides,
-            &unpack_dir,
-            runner,
-        )?;
+    let updater_items: Vec<_> = updater_locations.iter().collect();
+    let chunk_size = updater_items.len().div_ceil(parallelism).max(1);
+    let updater_results: Vec<_> = thread::scope(|s| -> Result<Vec<_>> {
+        let handles: Vec<_> = updater_items
+            // Return `chunk_size` updater packages at a time
+            .chunks(chunk_size)
+            // For each chunk...
+            .map(|chunk| {
+                // Spawn a thread...
+                s.spawn(move || {
+                    chunk
+                        .iter()
+                        // For each updater package in the chunk...
+                        .map(|(updater_package, unpack_dir)| {
+                            // Unpack it...
+                            let result = prepare_updater(
+                                updater_package,
+                                appname,
+                                cert_replace_script,
+                                cert_dir,
+                                cert_overrides,
+                                unpack_dir,
+                                runner,
+                            );
 
-        updater_binaries.insert(updater_package.clone(), updater);
+                            // And return the package along with the
+                            // Result (whose Ok value is the path to the
+                            // containing updater binary on disk).
+                            return (*updater_package, result);
+                        })
+                        .collect::<Vec<_>>()
+                })
+            })
+            .collect();
+
+        let mut results = Vec::with_capacity(updater_items.len());
+        for h in handles {
+            let chunk_result = h
+                .join()
+                // Handle errors that come up when joining the thread
+                .map_err(|_| anyhow::anyhow!("prepare updater thread panicked"))?;
+            results.extend(chunk_result);
+        }
+        Ok(results)
+    })?;
+
+    for (package, result) in updater_results {
+        match result {
+            Ok(updater) => {
+                updater_binaries.insert(package.clone(), updater);
+            }
+            // Handle errors that came up when preparing an updater
+            Err(e) => return Err(e),
+        }
     }
 
-    for test in tests {
-        let updater = updater_binaries[&test.updater_package].clone();
-        let outcome = run_test(
-            &test,
-            &updater,
-            check_updates,
-            target_platform,
-            to_installer,
-            channel,
-            appname,
-            tmpdir,
-            artifact_dir,
-            runner,
-        );
-        match outcome {
-            Ok(o) => {
-                if o.result == TestResult::Pass {
-                    info!("TEST-PASS: {}", o.label);
-                } else {
-                    error!("{}", o.output);
-                    info!("TEST-UNEXPECTED-FAIL: {}", o.label);
-                }
-                results.push(o.result);
-            }
-            Err(e) => {
-                info!("TEST-UNEXPECTED-FAIL: {}", test);
-                results.push(TestResult::SetupErr(e.to_string()));
-            }
+    // Creating a named reference to `updater_binaries` allows it to be moved
+    // into the thread scope multiple times (because references can be copied).
+    // Without this, the thread scope tries to move the owned `updater_binaries`
+    // which fails because HashMaps are not copyable.
+    let updater_binaries_ref = &updater_binaries;
+    let chunk_size = tests.len().div_ceil(parallelism).max(1);
+    let outcomes: Vec<TestOutcome> = thread::scope(|s| -> Result<Vec<TestOutcome>> {
+        let handles: Vec<_> = tests
+            .chunks(chunk_size)
+            .map(|chunk| {
+                s.spawn(move || {
+                    chunk
+                        .iter()
+                        .map(|test| {
+                            let updater = updater_binaries_ref[&test.updater_package].clone();
+                            match run_test(
+                                test,
+                                &updater,
+                                check_updates,
+                                target_platform,
+                                to_installer,
+                                channel,
+                                appname,
+                                tmpdir,
+                                artifact_dir,
+                                runner,
+                            ) {
+                                Ok(o) => o,
+                                // Any errors coming from `run_test` constitute
+                                // a test failure. Unlike other errors (eg: when
+                                // unpacking updaters above), these do not
+                                // constitute an overall error with the program
+                                // that we need to exit for -- they are simply
+                                // converted to a TestResult indicating the
+                                // error.
+                                Err(e) => TestOutcome {
+                                    label: test.to_string(),
+                                    result: TestResult::SetupErr(e.to_string()),
+                                    output: String::new(),
+                                },
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                })
+            })
+            .collect();
+
+        let mut outcomes = vec![];
+        for h in handles {
+            let chunk_result = h
+                .join()
+                .map_err(|_| anyhow::anyhow!("test thread panicked"))?;
+            outcomes.extend(chunk_result);
         }
+        Ok(outcomes)
+    })?;
+
+    let mut results = Vec::with_capacity(tests.len());
+    for outcome in outcomes {
+        if outcome.result == TestResult::Pass {
+            info!("TEST-PASS: {}", outcome.label);
+        } else {
+            error!("{}", outcome.output);
+            info!("TEST-UNEXPECTED-FAIL: {}", outcome.label);
+        }
+        results.push(outcome.result);
     }
     return Ok(results);
 }
@@ -296,7 +378,7 @@ mod tests {
             locale: "en-US".to_string(),
         };
 
-        let results = run_tests(
+        let result = run_tests(
             &PathBuf::from("/fake/check_updates.sh"),
             "linux",
             &PathBuf::from("/fake/to_installer"),
@@ -309,12 +391,9 @@ mod tests {
             &tmp.to_path_buf(),
             &artifacts.to_path_buf(),
             &FakeRunner(0),
-        )
-        .unwrap();
-
-        assert_eq!(results.len(), 1);
-        assert!(
-            matches!(&results[0], TestResult::SetupErr(e) if e.contains("No such file or directory"))
         );
+        assert!(result.is_err());
+        let e = result.unwrap_err();
+        assert!(e.to_string().contains("No such file or directory"));
     }
 }
