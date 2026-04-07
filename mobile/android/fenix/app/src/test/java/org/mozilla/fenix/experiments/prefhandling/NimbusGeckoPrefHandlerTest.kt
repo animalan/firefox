@@ -8,10 +8,10 @@ import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.runBlocking
 import mozilla.components.ExperimentalAndroidComponentsApi
@@ -20,7 +20,6 @@ import mozilla.components.concept.engine.preferences.BrowserPrefType
 import mozilla.components.concept.engine.preferences.BrowserPreference
 import mozilla.components.service.nimbus.NimbusApi
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.experiments.nimbus.internal.GeckoPref
@@ -29,10 +28,10 @@ import org.mozilla.experiments.nimbus.internal.OriginalGeckoPref
 import org.mozilla.experiments.nimbus.internal.PrefBranch
 import org.mozilla.experiments.nimbus.internal.PrefEnrollmentData
 import org.mozilla.experiments.nimbus.internal.PrefUnenrollReason
-import org.mozilla.fenix.nimbus.FxNimbus
 import org.robolectric.Shadows.shadowOf
 
 const val TEST_PREF = "gecko.nimbus.test"
+const val SECOND_TEST_PREF = "gecko.nimbus.test.two"
 
 @OptIn(ExperimentalAndroidComponentsApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -41,23 +40,32 @@ class NimbusGeckoPrefHandlerTest {
     private val mockNimbusApi = mockk<NimbusApi>(relaxed = true)
     private val mockEngine = mockk<Engine>(relaxed = true)
 
-    // Bug 2020769: This is temporary until we update the Nimbus FML in Bug 2020683 to avoid
-    // difficulty when landing an Application Services change.
-    @Suppress("NoObjectMocking")
-    @Before
-    fun setUp() {
-        mockkObject(FxNimbus)
-        every { FxNimbus.geckoPrefsMap() } returns mapOf(
-            "gecko-nimbus-validation" to mapOf(
-                "test-preference" to GeckoPref(pref = TEST_PREF, branch = PrefBranch.DEFAULT),
-            ),
-        )
-    }
-
     private fun makeHandler(
         engine: Engine = mockEngine,
         nimbusApi: NimbusApi = mockNimbusApi,
     ) = NimbusGeckoPrefHandler(lazy { engine }, lazy { nimbusApi })
+
+    @Test
+    fun `test nimbusGeckoPreferences has appropriate values`() {
+        val handler = makeHandler()
+        assertNotNull(handler.nimbusGeckoPreferences["gecko-nimbus-validation"])
+        assertNotNull(
+            handler.nimbusGeckoPreferences["gecko-nimbus-validation"]?.get(
+                "test-preference",
+            ),
+        )
+        assertNotNull(
+            handler.nimbusGeckoPreferences["gecko-nimbus-validation"]?.get(
+                "test-preference-2",
+            ),
+        )
+    }
+
+    @Test
+    fun `preferenceList has appropriate values`() {
+        val handler = makeHandler()
+        assertTrue(handler.preferenceList.containsAll(listOf(TEST_PREF, SECOND_TEST_PREF)))
+    }
 
     @Test
     fun `WHEN getPreferenceStateFromGecko is successful THEN getBrowserPrefs is called AND it returns true`() {
@@ -170,7 +178,7 @@ class NimbusGeckoPrefHandlerTest {
         handler.setGeckoPrefsState(listOf(prefState))
         shadowOf(Looper.getMainLooper()).idle()
 
-        verify { mockEngine.unregisterPrefsForObservation(eq(listOf(TEST_PREF)), any(), any()) }
+        verify { mockEngine.unregisterPrefsForObservation(match { it.containsAll(listOf(TEST_PREF, SECOND_TEST_PREF)) }, any(), any()) }
         verify { mockNimbusApi.unenrollForGeckoPref(any(), any()) }
 
         assertEquals(TEST_PREF, capturedPrefState.captured.prefString())
@@ -207,7 +215,7 @@ class NimbusGeckoPrefHandlerTest {
         handler.setGeckoPrefsState(listOf(prefState))
         shadowOf(Looper.getMainLooper()).idle()
 
-        verify { mockEngine.unregisterPrefsForObservation(eq(listOf(TEST_PREF)), any(), any()) }
+        verify { mockEngine.unregisterPrefsForObservation(match { it.containsAll(listOf(TEST_PREF, SECOND_TEST_PREF)) }, any(), any()) }
         verify { mockNimbusApi.unenrollForGeckoPref(any(), any()) }
 
         assertEquals(TEST_PREF, capturedPrefState.captured.prefString())
@@ -294,7 +302,7 @@ class NimbusGeckoPrefHandlerTest {
             BrowserPreference<String>(pref = TEST_PREF, hasUserChangedValue = false, prefType = BrowserPrefType.STRING),
         )
 
-        verify { mockEngine.unregisterPrefsForObservation(eq(listOf(TEST_PREF)), any(), any()) }
+        verify { mockEngine.unregisterPrefsForObservation(match { it.containsAll(listOf(TEST_PREF, SECOND_TEST_PREF)) }, any(), any()) }
         verify { mockNimbusApi.unenrollForGeckoPref(any(), eq(PrefUnenrollReason.CHANGED)) }
     }
 
@@ -332,13 +340,6 @@ class NimbusGeckoPrefHandlerTest {
 
     @Test
     fun `WHEN handleErrors is called with errors from the same multi-pref experiment THEN unenrollForGeckoPref is only called once`() {
-        val secondPref = "gecko.nimbus.test.2"
-        every { FxNimbus.geckoPrefsMap() } returns mapOf(
-            "gecko-nimbus-multi" to mapOf(
-                "test-preference" to GeckoPref(pref = TEST_PREF, branch = PrefBranch.DEFAULT),
-                "test-preference-2" to GeckoPref(pref = secondPref, branch = PrefBranch.DEFAULT),
-            ),
-        )
         val handler = makeHandler()
         handler.enrollmentErrors.add(
             Pair(
@@ -348,7 +349,7 @@ class NimbusGeckoPrefHandlerTest {
         )
         handler.enrollmentErrors.add(
             Pair(
-                GeckoPrefState(geckoPref = GeckoPref(pref = secondPref, branch = PrefBranch.DEFAULT), geckoValue = null, enrollmentValue = null, isUserSet = false),
+                GeckoPrefState(geckoPref = GeckoPref(pref = SECOND_TEST_PREF, branch = PrefBranch.DEFAULT), geckoValue = null, enrollmentValue = null, isUserSet = false),
                 null,
             ),
         )
@@ -359,27 +360,21 @@ class NimbusGeckoPrefHandlerTest {
     }
 
     @Test
-    fun `WHEN allExperimentPrefs is called with a pref in a single-pref feature THEN only that pref is returned`() {
+    fun `WHEN allExperimentPrefs is called with an unknown pref THEN only that pref is returned`() {
+        val unknownPref = "some.unknown.pref"
         val handler = makeHandler()
         val prefState = GeckoPrefState(
-            geckoPref = GeckoPref(pref = TEST_PREF, branch = PrefBranch.DEFAULT),
+            geckoPref = GeckoPref(pref = unknownPref, branch = PrefBranch.DEFAULT),
             geckoValue = null,
             enrollmentValue = null,
             isUserSet = false,
         )
 
-        assertEquals(listOf(TEST_PREF), handler.allExperimentPrefs(prefState))
+        assertEquals(listOf(unknownPref), handler.allExperimentPrefs(prefState))
     }
 
     @Test
     fun `WHEN allExperimentPrefs is called with a pref in a multi-pref feature THEN all prefs in the feature are returned`() {
-        val secondPref = "gecko.nimbus.test.2"
-        every { FxNimbus.geckoPrefsMap() } returns mapOf(
-            "gecko-nimbus-multiple-prefs-test" to mapOf(
-                "test-preference" to GeckoPref(pref = TEST_PREF, branch = PrefBranch.DEFAULT),
-                "test-preference-2" to GeckoPref(pref = secondPref, branch = PrefBranch.DEFAULT),
-            ),
-        )
         val handler = makeHandler()
         val prefState = GeckoPrefState(
             geckoPref = GeckoPref(pref = TEST_PREF, branch = PrefBranch.DEFAULT),
@@ -391,6 +386,6 @@ class NimbusGeckoPrefHandlerTest {
         val result = handler.allExperimentPrefs(prefState)
 
         assertEquals(2, result.size)
-        assertTrue(result.containsAll(listOf(TEST_PREF, secondPref)))
+        assertTrue(result.containsAll(listOf(TEST_PREF, SECOND_TEST_PREF)))
     }
 }
