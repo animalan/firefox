@@ -11,18 +11,6 @@ async function createTab() {
   });
 }
 
-function getTelemetryMaxPipCount(resetMax = false) {
-  const scalarData = Services.telemetry.getSnapshotForScalars(
-    "main",
-    resetMax
-  ).parent;
-  if (resetMax) {
-    PictureInPicture.maxConcurrentPlayerCount =
-      PictureInPicture.currentPlayerCount;
-  }
-  return scalarData["pictureinpicture.most_concurrent_players"];
-}
-
 /**
  * Tests that multiple PiPs can be opened and closed in a single tab
  */
@@ -130,8 +118,7 @@ add_task(async () => {
  * tracking
  */
 add_task(async () => {
-  // run this to flush recorded values from previous tests
-  getTelemetryMaxPipCount(true);
+  Services.fog.testResetFOG();
 
   let firstTab = await createTab();
   let secondTab = await createTab();
@@ -145,10 +132,11 @@ add_task(async () => {
   ok(firstPip, "Got first PiP window");
 
   Assert.equal(
-    getTelemetryMaxPipCount(true),
+    Glean.pictureinpicture.mostConcurrentPlayers.testGetValue(),
     1,
     "There should only be 1 PiP window"
   );
+  Services.fog.testResetFOG();
 
   let secondPip = await triggerPictureInPicture(
     firstTab.linkedBrowser,
@@ -157,10 +145,11 @@ add_task(async () => {
   ok(secondPip, "Got second PiP window");
 
   Assert.equal(
-    getTelemetryMaxPipCount(true),
+    Glean.pictureinpicture.mostConcurrentPlayers.testGetValue(),
     2,
     "There should be 2 PiP windows"
   );
+  Services.fog.testResetFOG();
 
   await ensureMessageAndClosePiP(
     firstTab.linkedBrowser,
@@ -185,7 +174,7 @@ add_task(async () => {
   ok(fourthPip, "Got fourth PiP window");
 
   Assert.equal(
-    getTelemetryMaxPipCount(false),
+    Glean.pictureinpicture.mostConcurrentPlayers.testGetValue(),
     3,
     "There should now be 3 PiP windows"
   );
@@ -219,7 +208,7 @@ add_task(async () => {
   info("Fourth PiP was open, it is now closed.");
 
   Assert.equal(
-    getTelemetryMaxPipCount(false),
+    Glean.pictureinpicture.mostConcurrentPlayers.testGetValue(),
     3,
     "Max PiP count should still be 3"
   );
