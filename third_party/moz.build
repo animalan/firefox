@@ -123,3 +123,6 @@ with Files("llama.cpp"):
 
 with Files("application-services/**"):
     BUG_COMPONENT = ("Application Services", "General")
+
+with Files('skv/**'):
+    BUG_COMPONENT = ("Core", "SQLite and Embedded Database Bindings")
