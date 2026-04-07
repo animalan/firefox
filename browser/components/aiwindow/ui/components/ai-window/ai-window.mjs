@@ -964,6 +964,7 @@ export class AIWindow extends MozLitElement {
       contextMentions = [],
       contextPageUrl,
       event: triggeringEvent,
+      location: sourceLocation,
     } = event.detail;
     if (action === ACTION.CHAT) {
       const { mergedMentions, allUrls, inlineMentions } =
@@ -972,12 +973,15 @@ export class AIWindow extends MozLitElement {
       if (allUrls.size) {
         this.#conversation.addSeenUrls(allUrls);
       }
+      const isButtonClick =
+        triggeringEvent?.type === "aiwindow-input-cta:on-action";
       this.submitChatMessage({
         text: value,
         contextMentions: mergedMentions,
         contextPageUrl,
-        submitType: triggeringEvent?.type === "click" ? "button" : "enter",
+        submitType: isButtonClick ? "button" : "enter",
         inlineMentionsCount: inlineMentions.length,
+        sourceLocation,
       });
     } else if (
       this.mode === MODE.SIDEBAR &&
@@ -1044,6 +1048,7 @@ export class AIWindow extends MozLitElement {
    * @param {?URL} [options.contextPageUrl] - Page URL string from the smartbar's current
    *   state. null means the user removed page context
    * @param {number} [options.inlineMentionsCount] - Number of inline mentions
+   * @param {string} [options.sourceLocation] - Override smartbar location
    */
   submitChatMessage({
     text,
@@ -1051,6 +1056,7 @@ export class AIWindow extends MozLitElement {
     contextMentions = [],
     contextPageUrl,
     inlineMentionsCount = 0,
+    sourceLocation,
   }) {
     const trimmed = String(text ?? "").trim();
     if (!trimmed) {
@@ -1059,8 +1065,9 @@ export class AIWindow extends MozLitElement {
 
     Glean.smartWindow.chatSubmit.record({
       chat_id: this.conversationId,
-      detected_intent: this.#smartbar.smartbarAction,
-      location: this.mode,
+      detected_intent: this.#smartbar.detectedIntent,
+      length: String(trimmed.length),
+      location: sourceLocation ?? this.mode,
       mentions: inlineMentionsCount,
       message_seq: this.conversationMessageCount,
       model: this.modelName,
@@ -1149,7 +1156,7 @@ export class AIWindow extends MozLitElement {
     const { pageUrl: contextPageUrl, contextWebsites } =
       this.#smartbar.getCurrentContextData();
 
-    const submitType = starter ? "starter" : "suggestion";
+    const submitType = starter ? "starter" : "follow-up";
     this.submitChatMessage({
       text,
       contextWebsites,
