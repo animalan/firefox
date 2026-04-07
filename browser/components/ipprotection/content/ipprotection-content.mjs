@@ -456,11 +456,16 @@ export default class IPProtectionContentElement extends MozLitElement {
     if (
       (this.state.onboardingMessage || this.state.bandwidthWarning) &&
       !this._messageDismissed &&
-      !this.state.unauthenticated
+      !this.state.unauthenticated &&
+      !this.state.paused
     ) {
       this._showMessageBar = true;
-    } else if (!this.state.onboardingMessage && !this.state.bandwidthWarning) {
+    } else if (
+      (!this.state.onboardingMessage && !this.state.bandwidthWarning) ||
+      this.state.paused
+    ) {
       // Remove the message bar if we can no longer render messages before they were dismissed
+      // or when in the paused state.
       this._showMessageBar = false;
     }
 
