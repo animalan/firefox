@@ -28,7 +28,11 @@
 namespace webrtc {
 
 CopyOnWriteBuffer::RawBuffer::RawBuffer(size_t size)
-    : size_(size), data_(std::make_unique_for_overwrite<uint8_t[]>(size)) {}
+    : size_(size), data_(std::unique_ptr<uint8_t[]>(new uint8_t[size])) {}
+// We should be able to use the form below, but our current compile setup
+// doesn't find std::make_unique_for_overwrite.  See Bug 2030186 to revert
+// this change.
+//     : size_(size), data_(std::make_unique_for_overwrite<uint8_t[]>(size)) {}
 
 scoped_refptr<CopyOnWriteBuffer::RefCountedBuffer>
 CopyOnWriteBuffer::CreateBuffer(size_t capacity) {
