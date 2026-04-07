@@ -120,6 +120,7 @@ void nsHtml5TreeBuilder::startTokenization(nsHtml5Tokenizer* self) {
   listOfActiveFormattingElements =
       jArray<nsHtml5StackNode*, int32_t>::newJArray(64);
   needToDropLF = false;
+  mode = INITIAL;
   originalMode = INITIAL;
   templateModePtr = -1;
   stackNodesIdx = 0;
@@ -3652,6 +3653,11 @@ void nsHtml5TreeBuilder::resetTheInsertionMode() {
         mode = IN_SELECT;
         return;
       }
+      if (!i) {
+        mode = framesetOk ? FRAMESET_OK : IN_BODY;
+        return;
+      }
+      continue;
     } else if (nsGkAtoms::td == name || nsGkAtoms::th == name) {
       mode = IN_CELL;
       return;

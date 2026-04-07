@@ -600,6 +600,7 @@ public abstract class TreeBuilder<T> implements TokenHandler,
         templateModeStack = new int[64];
         listOfActiveFormattingElements = new StackNode[64];
         needToDropLF = false;
+        mode = INITIAL;
         originalMode = INITIAL;
         templateModePtr = -1;
         stackNodesIdx = 0;
@@ -4442,6 +4443,11 @@ public abstract class TreeBuilder<T> implements TokenHandler,
                     mode = IN_SELECT;
                     return;
                 }
+                if (i == 0) {
+                    mode = framesetOk ? FRAMESET_OK : IN_BODY;
+                    return;
+                }
+                continue;
             } else if ("td" == name || "th" == name) {
                 mode = IN_CELL;
                 return;
