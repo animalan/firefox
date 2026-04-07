@@ -154,7 +154,7 @@ set_define("ENABLE_EXPLICIT_RESOURCE_MANAGEMENT", enable_explicit_resource_manag
 # ===================================================
 option(
     "--enable-source-phase-imports",
-    default=milestone.is_nightly,
+    default=False,
     help="Enable experimental source phase imports support",
 )
 
