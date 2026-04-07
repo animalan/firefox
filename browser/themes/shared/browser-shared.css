@@ -1410,6 +1410,10 @@ popupnotificationcontent {
     height: var(--icon-size-medium);
   }
 
+  .toolbarbutton-text {
+    padding-inline-start: 0;
+  }
+
   &::after {
     content: url("chrome://global/skin/icons/check.svg");
     -moz-context-properties: fill;
