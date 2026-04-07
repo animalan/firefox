@@ -1101,14 +1101,6 @@ class SettingsTest {
     }
 
     @Test
-    fun `GIVEN composable toolbar is not enabled WHEN querying the toolbar heigh THEN get the height of the toolbar view`() {
-        val settings = spyk(settings)
-        every { settings.shouldUseComposableToolbar } returns false
-
-        assertEquals(56, settings.browserToolbarHeight)
-    }
-
-    @Test
     fun `GIVEN the conditions to show a prompt are not met WHEN checking prompt eligibility THEN shouldShowSetAsDefaultPrompt is false`() {
         settings.numberOfSetAsDefaultPromptShownTimes = 0
         settings.lastSetAsDefaultPromptShownTimeInMillis = System.currentTimeMillis()
