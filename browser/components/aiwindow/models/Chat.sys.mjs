@@ -22,6 +22,7 @@ import {
   GET_PAGE_CONTENT,
   RUN_SEARCH,
   GET_USER_MEMORIES,
+  GET_NAVIGATION_INFO,
 } from "moz-src:///browser/components/aiwindow/models/Tools.sys.mjs";
 import { compactMessages } from "moz-src:///browser/components/aiwindow/models/PromptOptimizer.sys.mjs";
 
@@ -352,6 +353,9 @@ Object.assign(Chat, {
               break;
             case GET_USER_MEMORIES:
               result = await toolFns.getUserMemories(conversation);
+              break;
+            case GET_NAVIGATION_INFO:
+              result = await toolFns.getNavigationInfo(toolParams);
               break;
             default:
               throw new Error(`No such tool: ${toolName}`);
