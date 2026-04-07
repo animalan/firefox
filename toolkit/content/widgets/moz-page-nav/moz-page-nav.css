@@ -21,10 +21,13 @@
   flex-direction: column;
   gap: var(--page-nav-gap);
 
+  /* (Bug 1610081) Border provides clear differentiation between side
+     navigation and main content area when prefers-reduced-motion is enabled. */
+  padding-inline-end: var(--space-small);
+  border-inline-end: var(--border-width) solid var(--page-nav-border-color);
+
   @media (prefers-reduced-motion) {
-    /* (See Bug 1610081) Setting border-inline-end to add clear differentiation between side navigation and main content area */
-    border-inline-end: 1px solid var(--page-nav-border-color);
-    padding-inline-end: var(--space-small);
+    --page-nav-border-color: var(--border-color);
   }
 
   @media (max-width: 950px) {
