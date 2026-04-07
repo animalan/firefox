@@ -170,6 +170,16 @@ Function PrepareTelemetryPing
     nsJSON::Set /tree ping "Data" "silent" /value false
   ${EndIf}
 
+  ClearErrors
+  ${GetParameters} $0
+  ${GetOptions} $0 "/TelemetryDebug:" $0
+  ${IfNot} ${Errors}
+    nsJSON::Set /tree ping "Headers" /value "{}"
+    nsJSON::Quote /always "$0"
+    Pop $0
+    nsJSON::Set /tree ping "Headers" "X-Debug-ID" /value "$0"
+  ${EndIf}
+
   Pop $0
 
   ; Call the callback function, which is still on the stack.
