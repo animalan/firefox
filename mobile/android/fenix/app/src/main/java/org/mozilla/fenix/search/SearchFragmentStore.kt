@@ -293,7 +293,7 @@ fun createInitialSearchFragmentState(
         areShortcutsAvailable = false,
         showSearchShortcutsSetting = settings.shouldShowSearchShortcuts,
         showClipboardSuggestions = settings.shouldShowClipboardSuggestions,
-        showSearchTermHistory = settings.showUnifiedSearchFeature && settings.shouldShowHistorySuggestions,
+        showSearchTermHistory = settings.shouldShowHistorySuggestions,
         showHistorySuggestionsForCurrentEngine = false,
         showAllHistorySuggestions = settings.shouldShowHistorySuggestions,
         showBookmarksSuggestionsForCurrentEngine = false,
@@ -431,11 +431,9 @@ sealed class SearchFragmentAction : Action {
 
     /**
      * Updates the local `SearchFragmentState` from the global `SearchState` in `BrowserStore`.
-     * If the unified search is enabled, then search shortcuts should not be shown.
      */
     data class UpdateSearchState(
         val search: SearchState,
-        val isUnifiedSearchEnabled: Boolean,
         val isPrivate: Boolean = false,
     ) : SearchFragmentAction()
 
@@ -489,11 +487,9 @@ private fun searchStateReducer(state: SearchFragmentState, action: SearchFragmen
                 searchEngineSource = SearchEngineSource.Default(action.engine),
                 showSearchSuggestionsFromCurrentEngine =
                     shouldShowSearchSuggestions(action.browsingMode, action.settings),
-                showSearchShortcuts = action.settings.shouldShowSearchShortcuts &&
-                    !action.settings.showUnifiedSearchFeature,
+                showSearchShortcuts = false,
                 showClipboardSuggestions = action.settings.shouldShowClipboardSuggestions,
-                showSearchTermHistory = action.settings.showUnifiedSearchFeature &&
-                    action.settings.shouldShowHistorySuggestions,
+                showSearchTermHistory = action.settings.shouldShowHistorySuggestions,
                 showHistorySuggestionsForCurrentEngine = false, // we'll show all history
                 showAllHistorySuggestions = action.settings.shouldShowHistorySuggestions,
                 showBookmarksSuggestionsForCurrentEngine = false, // we'll show all bookmarks
@@ -524,37 +520,20 @@ private fun searchStateReducer(state: SearchFragmentState, action: SearchFragmen
                 searchEngineSource = SearchEngineSource.Shortcut(action.engine),
                 showSearchSuggestionsFromCurrentEngine =
                     shouldShowSearchSuggestions(action.browsingMode, action.settings),
-                showSearchShortcuts = when (action.settings.showUnifiedSearchFeature) {
-                    true -> false
-                    false -> action.settings.shouldShowSearchShortcuts
-                },
+                showSearchShortcuts = false,
                 showClipboardSuggestions = action.settings.shouldShowClipboardSuggestions,
-                showSearchTermHistory = action.settings.showUnifiedSearchFeature &&
-                    action.settings.shouldShowHistorySuggestions,
-                showHistorySuggestionsForCurrentEngine = action.settings.showUnifiedSearchFeature &&
+                showSearchTermHistory = action.settings.shouldShowHistorySuggestions,
+                showHistorySuggestionsForCurrentEngine =
                     action.settings.shouldShowHistorySuggestions && !action.engine.isGeneral,
-                showAllHistorySuggestions = when (action.settings.showUnifiedSearchFeature) {
-                    true -> false
-                    false -> action.settings.shouldShowHistorySuggestions
-                },
-                showBookmarksSuggestionsForCurrentEngine = action.settings.showUnifiedSearchFeature &&
+                showAllHistorySuggestions = false,
+                showBookmarksSuggestionsForCurrentEngine =
                     action.settings.shouldShowBookmarkSuggestions && !action.engine.isGeneral,
-                showAllBookmarkSuggestions = when (action.settings.showUnifiedSearchFeature) {
-                    true -> false
-                    false -> action.settings.shouldShowBookmarkSuggestions
-                },
-                showSyncedTabsSuggestionsForCurrentEngine = action.settings.showUnifiedSearchFeature &&
+                showAllBookmarkSuggestions = false,
+                showSyncedTabsSuggestionsForCurrentEngine =
                     action.settings.shouldShowSyncedTabsSuggestions && !action.engine.isGeneral,
-                showAllSyncedTabsSuggestions = when (action.settings.showUnifiedSearchFeature) {
-                    true -> false
-                    false -> action.settings.shouldShowSyncedTabsSuggestions
-                },
-                showSessionSuggestionsForCurrentEngine = action.settings.showUnifiedSearchFeature &&
-                    !action.engine.isGeneral,
-                showAllSessionSuggestions = when (action.settings.showUnifiedSearchFeature) {
-                    true -> false
-                    false -> true
-                },
+                showAllSyncedTabsSuggestions = false,
+                showSessionSuggestionsForCurrentEngine = !action.engine.isGeneral,
+                showAllSessionSuggestions = false,
                 showSponsoredSuggestions = false,
                 showNonSponsoredSuggestions = false,
                 showStocksSuggestions = false,
@@ -649,10 +628,7 @@ private fun searchStateReducer(state: SearchFragmentState, action: SearchFragmen
             state.copy(
                 defaultEngine = resolvedEngine,
                 areShortcutsAvailable = action.search.searchEngines.size > 1,
-                showSearchShortcuts = !action.isUnifiedSearchEnabled &&
-                    state.url.isEmpty() &&
-                    state.showSearchShortcutsSetting &&
-                    action.search.searchEngines.size > 1,
+                showSearchShortcuts = false,
                 searchEngineSource = when (state.searchEngineSource) {
                     is SearchEngineSource.Default, is SearchEngineSource.None -> {
                         resolvedEngine?.let { SearchEngineSource.Default(it) }

@@ -2224,11 +2224,6 @@ class Settings(
     )
 
     /**
-     * Indicates if the Unified Search feature should be visible.
-     */
-    val showUnifiedSearchFeature = true
-
-    /**
      * Blocklist used to filter items from the home screen that have previously been removed.
      */
     var homescreenBlocklist by stringSetPreference(

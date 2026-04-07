@@ -390,8 +390,6 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
 
         binding.awesomeBar.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
-        val showUnifiedSearchFeature = requireContext().settings().showUnifiedSearchFeature
-
         consumeFlow(requireComponents.core.store) { flow ->
             flow.map { state -> state.search }
                 .distinctUntilChanged()
@@ -399,7 +397,6 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
                     store.dispatch(
                         SearchFragmentAction.UpdateSearchState(
                             search,
-                            showUnifiedSearchFeature,
                             isPrivate = requireComponents.appStore.state.mode.isPrivate,
                         ),
                     )

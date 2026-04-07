@@ -58,7 +58,6 @@ class BrowserStoreToFenixSearchMapperMiddleware(
                     store.dispatch(
                         UpdateSearchState(
                             searchState,
-                            true,
                             isPrivate = appStore?.state?.mode?.isPrivate ?: false,
                         ),
                     )
