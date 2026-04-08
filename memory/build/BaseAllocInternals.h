@@ -20,17 +20,24 @@ constexpr static base_alloc_size_t BASE_ALLOC_SIZE_MAX = UINT32_MAX >> 1;
 // The BaseAllocMetadata and BaseAllocCell classes provide an abstraction for
 // cell metadata in the base allocator.
 //
-// The layout of a cell is:
+// The base allocator uses a layout inspired by dlmalloc, giving it a
+// parseable heap that allows merging of neighbouring cells while being
+// simple is the reason for choosing this design.  Each cell has metadata on
+// either side.
 //
-// +-------------------+---------------+---------+-------------------+------
-// | BaseAllocMetadata | BaseAllocCell | Padding | BaseAllocMetadata | Next
-// +-------------------+---------------+---------+-------------------+------
-//                     ^                                             ^
-//                     Pointer, 16-byte aligned.                     16-byte
-//                                                                   aligned
+// ----------+--------------+---------+---------+------+------------------+
+//     BaseAllocMetadata    |   BaseAllocCell   |    BaseAllocMetaData    |
+//   Left    |     Right    |                   |   Left   |    Right     |
+//   Size    | Size / alloc | Payload | Padding |   Size   | Size / alloc |
+// ----------+--------------+---------+---------+----------+--------------+
+//                          ^                                             ^
+//                          Pointer, 16-byte aligned.       16-byte aligned
 //
 // All cells track their size in the `sizeof(base_alloc_size_t)` bytes
-// immediately before their payload,
+// immediately before their payload, and in the sizeof(unsigned) bytes
+// after.  Duplicating this information is what enables each cell to find
+// its neighbours.  The first and last cell have no neighbours and these
+// fields contain 0.
 //
 // Each cell's payload shall be 16-byte aligned as some platforms make it
 // the minimum.
@@ -48,20 +55,32 @@ constexpr static base_alloc_size_t BASE_ALLOC_SIZE_MAX = UINT32_MAX >> 1;
 // free list.  This is not a security risk since these allocations are never
 // used outside of mozjemalloc.
 //
-// +--------------+-------------------+---------+-------------
-// | Size / Alloc | Free list ptr     | padding | Next Size / Alloc
-// +--------------+-------------------+---------+-------------
+// ----------+--------------+----------+---------+------+------------------+
+//     BaseAllocMetadata    |   BaseAllocCell    |    BaseAllocMetaData
+//   Left    |     Right    |   Free   |         |   Left   |    Right
+//   Size    | Size / alloc | list ptr | Padding |   Size   | Size / alloc
+// ----------+--------------+----------+---------+----------+--------------+
 //
 
 struct BaseAllocMetadata {
-  base_alloc_size_t mSize : 31;
+  // The size of the cell to this metadata's left (lower memory address)
+  base_alloc_size_t mLeftSize;
+
+  // The size of the cell to this metadata's right (higher memory address)
+  base_alloc_size_t mRightSize : 31;
 
   // Allocated is only used for assertions, but will be used with future
   // patches.
-  bool mAllocated : 1;
+  bool mRightAllocated : 1;
 
-  explicit BaseAllocMetadata(base_alloc_size_t aSize)
-      : mSize(aSize), mAllocated(false) {}
+  // There's no constructor because we must preserve either the previous or
+  // next size depending on which cell's metadata needs setting.
+
+  void InitForRightCell(base_alloc_size_t aSize) {
+    mRightSize = aSize;
+    mRightAllocated = false;
+  }
+  void InitForLeftCell(base_alloc_size_t aSize) { mLeftSize = aSize; }
 };
 
 class BaseAllocCell {
@@ -78,7 +97,7 @@ class BaseAllocCell {
   friend struct mozilla::GetDoublyLinkedListElement<BaseAllocCell>;
   friend struct BaseAllocCellRBTrait;
 
-  BaseAllocMetadata* Metadata() {
+  BaseAllocMetadata* LeftMetadata() {
     // Assert that the address computation here produces a properly aligned
     // result.
     static_assert(((alignof(BaseAllocCell) - sizeof(BaseAllocMetadata)) %
@@ -88,11 +107,14 @@ class BaseAllocCell {
         reinterpret_cast<uintptr_t>(this) - sizeof(BaseAllocMetadata));
   }
 
+  BaseAllocMetadata* RightMetadata();
+
  public:
   static uintptr_t Align(uintptr_t aPtr);
 
   explicit BaseAllocCell(base_alloc_size_t aSize) {
-    new (Metadata()) BaseAllocMetadata(aSize);
+    LeftMetadata()->InitForRightCell(aSize);
+    RightMetadata()->InitForLeftCell(aSize);
     ClearPayload();
   }
 
@@ -100,19 +122,19 @@ class BaseAllocCell {
     return reinterpret_cast<BaseAllocCell*>(aPtr);
   }
 
-  base_alloc_size_t Size() { return Metadata()->mSize; }
+  base_alloc_size_t Size() { return LeftMetadata()->mRightSize; }
 
-  bool Allocated() { return Metadata()->mAllocated; }
+  bool Allocated() { return LeftMetadata()->mRightAllocated; }
 
   void* Ptr() { return this; }
 
   void SetAllocated() {
     MOZ_ASSERT(!Allocated());
-    Metadata()->mAllocated = true;
+    LeftMetadata()->mRightAllocated = true;
   }
   void SetFreed() {
     MOZ_ASSERT(Allocated());
-    Metadata()->mAllocated = false;
+    LeftMetadata()->mRightAllocated = false;
   }
 
   // After freeing a cell but before we can use the list pointers we must

@@ -100,6 +100,14 @@ unsigned BaseAlloc::get_list_index_for_size(base_alloc_size_t aSize) {
   }
 }
 
+BaseAllocMetadata* BaseAllocCell::RightMetadata() {
+  uintptr_t ptr = reinterpret_cast<uintptr_t>(this) + Size() +
+                  BaseAlloc::kBaseQuantum - sizeof(BaseAllocMetadata);
+
+  MOZ_ASSERT((ptr % alignof(BaseAllocMetadata)) == 0);
+  return reinterpret_cast<BaseAllocMetadata*>(ptr);
+}
+
 void BaseAlloc::free(void* aPtr) MOZ_EXCLUDES(mMutex) {
   if (aPtr == nullptr) {
     return;
@@ -176,8 +184,8 @@ bool BaseAlloc::pages_alloc(base_alloc_size_t aSize) MOZ_REQUIRES(mMutex) {
   MOZ_ASSERT(aSize != 0);
   MOZ_ASSERT(aSize == size_round_up(aSize));
 
-  // Make room for the preceeding metadata.
-  base_alloc_size_t gross_size = kBaseQuantum + aSize;
+  // Make room for the metadata on either side of this cell.
+  base_alloc_size_t gross_size = kBaseQuantum * 2 + aSize;
 
   size_t csize = CHUNK_CEILING(gross_size);
   uintptr_t base_pages =
@@ -214,21 +222,19 @@ BaseAllocCell* BaseAlloc::wilderness_alloc_inplace(base_alloc_size_t aSize) {
   // The first byte in the next cell, skip over the metadata between cells.
   uintptr_t next_cell =
       BaseAllocCell::Align(mNextAddr + aSize + sizeof(BaseAllocMetadata));
-  // The last byte in the current cell.
-  uintptr_t end_of_cell = next_cell - kBaseQuantum - 1;
 
   // Recalculate size.
   aSize = next_cell - kBaseQuantum - mNextAddr;
   MOZ_ASSERT(aSize == size_round_up(aSize));
 
   // Make sure there's enough space for the allocation.
-  if (end_of_cell + 1 > mPastAddr) {
+  if (next_cell > mPastAddr) {
     return nullptr;
   }
 
   // Make sure enough pages are committed for the new allocation.
-  if (end_of_cell + 1 > mNextDecommitted) {
-    uintptr_t new_next_decommitted = REAL_PAGE_CEILING(end_of_cell + 1);
+  if (next_cell > mNextDecommitted) {
+    uintptr_t new_next_decommitted = REAL_PAGE_CEILING(next_cell);
 
     uintptr_t size_to_commit = new_next_decommitted - mNextDecommitted;
     if (!pages_commit(reinterpret_cast<void*>(mNextDecommitted),
