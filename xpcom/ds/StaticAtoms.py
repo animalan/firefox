@@ -1059,7 +1059,6 @@ STATIC_ATOMS = [
     Atom("prefersContrast", "prefers-contrast"),
     Atom("prefix", "prefix"),
     Atom("prefwidth", "prefwidth"),
-    Atom("queue", "queue"),
     Atom("dynamicRange", "dynamic-range"),
     Atom("videoDynamicRange", "video-dynamic-range"),
     Atom("scripting", "scripting"),
