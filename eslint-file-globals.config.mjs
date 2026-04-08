@@ -453,6 +453,7 @@ export default [
       "testing/raptor/browsertime/network_bench.js",
       "testing/raptor/browsertime/process_switch.js",
       "testing/raptor/browsertime/speculative-connect.js",
+      "testing/raptor/browsertime/speedometer3_etw.js",
       "testing/raptor/browsertime/speedometer3.js",
       "testing/raptor/browsertime/throttled_pageload.js",
       "testing/raptor/browsertime/trr_performance.js",

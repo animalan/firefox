@@ -830,6 +830,10 @@ class Browsertime(Perftest, metaclass=ABCMeta):
         # if geckoProfile enabled, give browser more time for profiling
         if self.config["gecko_profile"] is True:
             bt_timeout += 5 * 60
+
+        if self.config.get("etw_profile"):
+            bt_timeout += 5 * 60
+
         return bt_timeout
 
     @staticmethod
@@ -952,6 +956,11 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             self.kill(proc)
 
         self.run_test_setup(test)
+
+        # Initialize ETW profiling if enabled
+        if self.config.get("etw_profile"):
+            self._init_etw_profiling(test)
+
         # timeout is a single page-load timeout value (ms) from the test INI
         # this will be used for btime --timeouts.pageLoad
         cmd = self._compose_cmd(test, timeout)
@@ -997,6 +1006,17 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             )
 
         LOG.info("PATH: {}".format(env["PATH"]))
+
+        # Start ETW profiling if enabled (before browsertime starts)
+        if self.config.get("etw_profile") and self.etw_profiler:
+            try:
+                self.etw_profiler.start()
+            except Exception as e:
+                LOG.warning(f"Failed to start ETW profiling: {e}")
+                LOG.warning(
+                    "ETW profiling requires administrator privileges - continuing without profiling"
+                )
+                self.etw_profiler = None  # Disable profiler to skip stop() later
 
         try:
             line_matcher = re.compile(r".*(\[.*\])\s+([a-zA-Z]+):\s+(.*)")
@@ -1113,6 +1133,12 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             # We've run the main browsertime process, now we need to run the
             # browsertime one more time if the profiler wasn't enabled already
             # in the previous run and user wants this extra run.
+            if self.config.get("etw_profile") and self.etw_profiler:
+                try:
+                    self.etw_profiler.stop()
+                except Exception as e:
+                    LOG.error(f"Failed to stop ETW profiling: {e}")
+
             if (
                 self.config.get("extra_profiler_run")
                 and not self.config["gecko_profile"]
@@ -1129,3 +1155,10 @@ class Browsertime(Perftest, metaclass=ABCMeta):
         except Exception as e:
             LOG.critical(str(e))
             raise
+
+        finally:
+            if self.config.get("etw_profile") and self.etw_profiler and self.etw_profiler.running:
+                try:
+                    self.etw_profiler.stop()
+                except Exception as e:
+                    LOG.error(f"Failed to stop ETW profiling: {e}")

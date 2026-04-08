@@ -232,6 +232,28 @@ def create_parser(mach_interface=False):
         help="Run the tests again with profiler enabled after the main run.",
     )
     add_arg(
+        "--etw-profile",
+        action="store_true",
+        dest="etw_profile",
+        default=False,
+        help="Enable system-wide ETW profiling on Windows (captures all system activity). "
+        "Profile will be saved to $MOZ_UPLOAD_DIR and automatically symbolicated.",
+    )
+    add_arg(
+        "--etw-profile-rate",
+        dest="etw_profile_rate",
+        type=int,
+        default=1000,
+        help="ETW sampling rate in Hz (default: 1000)",
+    )
+    add_arg(
+        "--etw-profile-duration",
+        dest="etw_profile_duration",
+        type=int,
+        default=None,
+        help="ETW profiling duration in seconds (default: test duration + buffer)",
+    )
+    add_arg(
         "--symbolsPath",
         dest="symbols_path",
         help="Path to the symbols for the build we are testing",

@@ -1140,9 +1140,9 @@ class BrowsertimeResultsHandler(PerftestResultsHandler):
                         ):
                             # add page cycle custom measurements to the existing results
                             for measurement in new_result["measurements"].items():
-                                self.results[i]["measurements"][measurement[0]].extend(
-                                    measurement[1]
-                                )
+                                self.results[i]["measurements"].setdefault(
+                                    measurement[0], []
+                                ).extend(measurement[1])
                             break
                     else:
                         self.results.append(_new_benchmark_result(new_result))

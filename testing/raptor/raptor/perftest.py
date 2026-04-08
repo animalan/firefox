@@ -41,6 +41,7 @@ from cmdline import (
 )
 from condprof.client import ProfileNotFoundError, get_profile
 from condprof.util import get_current_platform
+from etw_profile import ETWProfile
 from gecko_profile import GeckoProfile
 from logger.logger import RaptorLogger
 from results import RaptorResultsHandler
@@ -83,6 +84,9 @@ class Perftest(metaclass=ABCMeta):
         gecko_profile_threads=None,
         gecko_profile_features=None,
         extra_profiler_run=False,
+        etw_profile=False,
+        etw_profile_rate=1000,
+        etw_profile_duration=None,
         symbols_path=None,
         host=None,
         cold=False,
@@ -136,6 +140,9 @@ class Perftest(metaclass=ABCMeta):
             "gecko_profile_threads": gecko_profile_threads,
             "gecko_profile_features": gecko_profile_features,
             "extra_profiler_run": extra_profiler_run,
+            "etw_profile": etw_profile,
+            "etw_profile_rate": etw_profile_rate,
+            "etw_profile_duration": etw_profile_duration,
             "symbols_path": symbols_path,
             "host": host,
             "cold": cold,
@@ -196,6 +203,7 @@ class Perftest(metaclass=ABCMeta):
         self.benchmark = None
         self.gecko_profiler = None
         self.chrome_trace = None
+        self.etw_profiler = None
         self.device = None
         self.runtime_error = None
         self.profile_class = profile_class or app
@@ -539,6 +547,11 @@ class Perftest(metaclass=ABCMeta):
                 LOG.info("cleaning up after gathering chrome trace")
                 self.chrome_trace.clean()
 
+        # ETW profiling symbolication
+        if self.config.get("etw_profile") and self.etw_profiler:
+            self.etw_profiler.symbolicate()
+            self.etw_profiler.clean()
+
         return res
 
     @abstractmethod
@@ -632,6 +645,19 @@ class Perftest(metaclass=ABCMeta):
             LOG.critical("Profiling ignored because MOZ_UPLOAD_DIR was not set")
         else:
             self.gecko_profiler = GeckoProfile(upload_dir, self.config, test)
+
+    def _init_etw_profiling(self, test):
+        LOG.info("initializing ETW profiler")
+        # Only enable on Windows
+        if mozinfo.os != "win":
+            LOG.warning("ETW profiling is only supported on Windows")
+            return
+
+        upload_dir = os.getenv("MOZ_UPLOAD_DIR")
+        if not upload_dir:
+            LOG.critical("ETW Profiling ignored because MOZ_UPLOAD_DIR was not set")
+        else:
+            self.etw_profiler = ETWProfile(upload_dir, self.config, test)
 
     def _init_chrome_trace(self, test):
         LOG.info("initializing Chrome Trace handler")
