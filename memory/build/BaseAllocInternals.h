@@ -196,7 +196,14 @@ class BaseAllocCell {
         : mChange(aChange), mNewCell1(aNewCell1), mNewCell2(aNewCell2) {}
   };
 
+  // Commit part of the cell enough to satisfy aSizeRequest.  If successful
+  // the cell may be split and this will return between 0 and 2 cells that
+  // need to be tracked.
   mozilla::Maybe<DeCommitResult> Commit(base_alloc_size_t aSizeRequest);
+
+  // Commit the entire cell.  If successful returns a non-zero number of bytes
+  // that were committed.
+  size_t CommitAll();
 
   // Decommit as much of the cell as possible.  The boundaries and free list
   // information cannot be decommited.  Depending on where the page

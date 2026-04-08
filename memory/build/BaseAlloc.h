@@ -115,6 +115,12 @@ class BaseAlloc {
   // list.
   BaseAllocCell* chunk_alloc(base_alloc_size_t aSize) MOZ_REQUIRES(mMutex);
 
+  // Attempt to merge any decommitted cells smaller than aSize committing
+  // them in the process.  If it forms at least one cell at least aSize
+  // large then it returns true.  This is used during allocation before
+  // checking the decommitted cells.
+  bool merge_decommitted_cells(base_alloc_size_t aSize) MOZ_REQUIRES(mMutex);
+
   void MaybeTrim(BaseAllocCell* aCell, base_alloc_size_t aSizeRequest,
                  bool aDecommit = false) MOZ_REQUIRES(mMutex);
 
