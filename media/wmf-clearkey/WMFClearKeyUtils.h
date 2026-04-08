@@ -11,6 +11,7 @@
 #include <thread>
 #include <windows.h>
 #include <wrl.h>
+#include <sstream>
 #include <stdio.h>
 
 #include "MFCDMExtra.h"

@@ -4,6 +4,7 @@
 
 #include "ProfileBufferEntry.h"
 
+#include <ostream>
 #include <type_traits>
 
 #include "mozilla/Logging.h"

@@ -17,6 +17,7 @@
 #include <string.h>
 #ifdef ANDROID
 #  include <android/log.h>
+#  include <fstream>
 #endif  // ANDROID
 #ifdef XP_WIN
 #  include <processthreadsapi.h>

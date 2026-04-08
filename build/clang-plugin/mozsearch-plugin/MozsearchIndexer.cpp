@@ -29,6 +29,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <stack>
 #include <string>
 #include <unordered_set>

@@ -118,6 +118,7 @@
 #include <algorithm>
 #include <errno.h>
 #include <fstream>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <string_view>

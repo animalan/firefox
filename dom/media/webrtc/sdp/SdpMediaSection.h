@@ -5,7 +5,7 @@
 #ifndef SDPMEDIASECTION_H_
 #define SDPMEDIASECTION_H_
 
-#include <ostream>
+#include <sstream>
 #include <string>
 #include <vector>
 

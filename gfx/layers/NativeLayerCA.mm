@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <utility>
 
 #include "gfxUtils.h"

@@ -23,6 +23,8 @@
 #include "nsStreamUtils.h"
 #include "nsStringStream.h"
 
+#include <fstream>
+
 #include "FuzzingInterface.h"
 
 typedef int (*FuzzingTestFuncStream)(nsCOMPtr<nsIInputStream>);
