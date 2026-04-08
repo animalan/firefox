@@ -48,7 +48,7 @@ Main components
    The arena structure and many of its sub-structures such as runs and
    arena chunks.
 
- * BaseAlloc.h, BaseAlloc.cpp and BaseAllocInternals.h
+ * BaseAlloc.h and BaseAlloc.cpp
 
    The base allocator and some template classes to spacialise it.  Some of
    mozjemalloc's bookkeeping structures need dynamic allocation and this is
