@@ -136,15 +136,8 @@ void BaseAlloc::free(void* aPtr) MOZ_EXCLUDES(mMutex) {
     Unlink(right);
     cell->Merge(right);
   }
-  // the size will conform to our classes/free lists.
-  MOZ_ASSERT(cell->Size() == size_round_up(cell->Size()));
 
-  unsigned index = get_list_index_for_size(cell->Size());
-  if (index < kNumFreeLists) {
-    mFreeLists[index].pushFront(cell);
-  } else {
-    mFreeListOversize.Insert(cell);
-  }
+  Link(cell);
 }
 
 void* BaseAlloc::alloc(size_t aSize) {
@@ -173,8 +166,10 @@ void* BaseAlloc::alloc_from_list(base_alloc_size_t aSize) {
   for (unsigned i = start_index; i < kNumFreeLists; i++) {
     if (!mFreeLists[i].isEmpty()) {
       BaseAllocCell* cell = mFreeLists[i].popFront();
+      MaybeTrim(cell, aSize);
+
+      MOZ_ASSERT(cell->Size() >= aSize);
       cell->SetAllocated();
-      // TODO attempt split.
       return cell->Ptr();
     }
   }
@@ -183,8 +178,9 @@ void* BaseAlloc::alloc_from_list(base_alloc_size_t aSize) {
   BaseAllocCell* cell = mFreeListOversize.SearchOrNext(aSize);
   if (cell) {
     MOZ_ASSERT(cell->Size() >= aSize);
-    // TODO Split
     mFreeListOversize.Remove(cell);
+
+    MaybeTrim(cell, aSize);
     cell->SetAllocated();
 
     return cell->Ptr();
@@ -201,6 +197,20 @@ void BaseAlloc::Unlink(BaseAllocCell* cell) {
     mFreeLists[index].remove(cell);
   } else {
     mFreeListOversize.Remove(cell);
+  }
+}
+
+void BaseAlloc::Link(BaseAllocCell* cell) {
+  MOZ_ASSERT(!cell->Allocated());
+
+  // the size must conform to our classes/free lists.
+  MOZ_ASSERT(cell->Size() == size_round_up(cell->Size()));
+
+  unsigned index = get_list_index_for_size(cell->Size());
+  if (index < kNumFreeLists) {
+    mFreeLists[index].pushFront(cell);
+  } else {
+    mFreeListOversize.Insert(cell);
   }
 }
 
@@ -339,12 +349,15 @@ BaseAllocCell* BaseAllocCell::RightCell() {
     return nullptr;
   }
 
-  BaseAllocCell* right = reinterpret_cast<BaseAllocCell*>(
-      reinterpret_cast<uintptr_t>(this) + Size() + BaseAlloc::kBaseQuantum);
+  BaseAllocCell* right = reinterpret_cast<BaseAllocCell*>(RightCellRaw());
 
   MOZ_ASSERT(RightMetadata() == right->LeftMetadata());
 
   return right;
+}
+
+uintptr_t BaseAllocCell::RightCellRaw() {
+  return reinterpret_cast<uintptr_t>(this) + Size() + BaseAlloc::kBaseQuantum;
 }
 
 void BaseAllocCell::Merge(BaseAllocCell* aOther) {
@@ -367,4 +380,60 @@ void BaseAllocCell::Merge(BaseAllocCell* aOther) {
 
   // Clearing the old metadata may make debugging easier.
   old_metadata->Clear();
+}
+
+uintptr_t BaseAllocCell::CanSplit(base_alloc_size_t aSizeReq) {
+  if (aSizeReq + BaseAlloc::kBaseQuantum + sizeof(BaseAllocCell) >= Size()) {
+    // Insufficient size.
+    return 0;
+  }
+
+  // Rather than use the requested size directly for the first cell, start
+  // with the requested size then align the next cell and check if it still
+  // leaves enough room after alignment.
+
+  uintptr_t next_addr = Align(reinterpret_cast<uintptr_t>(this) + aSizeReq +
+                              sizeof(BaseAllocMetadata));
+
+  if (next_addr + BaseAlloc::kBaseMinimumSize >
+      reinterpret_cast<uintptr_t>(RightMetadata())) {
+    return 0;
+  }
+
+  return next_addr;
+}
+
+void BaseAlloc::MaybeTrim(BaseAllocCell* aCell,
+                          base_alloc_size_t aSizeRequest) {
+  uintptr_t new_addr = aCell->CanSplit(aSizeRequest);
+  if (!new_addr) {
+    return;
+  }
+
+  BaseAllocCell* next = aCell->Split(new_addr);
+  MOZ_ASSERT(next);
+  Link(next);
+}
+
+BaseAllocCell* BaseAllocCell::Split(uintptr_t aNewAddr) {
+#ifdef MOZ_DEBUG
+  BaseAllocMetadata* last_metadata = RightMetadata();
+#endif
+  base_alloc_size_t old_size = Size();
+  base_alloc_size_t new_size =
+      aNewAddr - BaseAlloc::kBaseQuantum - reinterpret_cast<uintptr_t>(this);
+  SetSize(new_size);
+
+  // This must use NextCellRaw and cast the result, using NextCell would run
+  // assertions that would fail.
+  BaseAllocCell* right = new (reinterpret_cast<BaseAllocCell*>(RightCellRaw()))
+      BaseAllocCell(old_size - new_size - BaseAlloc::kBaseQuantum);
+
+  // Prove that the alignment code above is correct.
+  MOZ_ASSERT(new_size == BaseAlloc::size_round_up(new_size));
+  MOZ_ASSERT(right->Size() == BaseAlloc::size_round_up(right->Size()));
+  MOZ_ASSERT(this->RightMetadata() == right->LeftMetadata());
+  MOZ_ASSERT(right->RightMetadata() == last_metadata);
+
+  return right;
 }

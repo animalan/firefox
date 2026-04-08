@@ -86,6 +86,9 @@ class BaseAlloc {
   // Remove the cell from its free list.
   void Unlink(BaseAllocCell* cell) MOZ_REQUIRES(mMutex);
 
+  // Add the cell to the free list.
+  void Link(BaseAllocCell* cell) MOZ_REQUIRES(mMutex);
+
   mozilla::DoublyLinkedList<BaseAllocCell>
       mFreeLists[kNumFreeLists] MOZ_GUARDED_BY(mMutex);
   RedBlackTree<BaseAllocCell, BaseAllocCellRBTrait> mFreeListOversize
@@ -113,6 +116,9 @@ class BaseAlloc {
   uintptr_t mNextDecommitted MOZ_GUARDED_BY(mMutex) = 0;
   // Address immediately past the current chunk of pages.
   uintptr_t mPastAddr MOZ_GUARDED_BY(mMutex) = 0;
+
+  void MaybeTrim(BaseAllocCell* aCell, base_alloc_size_t aSizeRequest)
+      MOZ_REQUIRES(mMutex);
 
   Stats mStats MOZ_GUARDED_BY(mMutex);
 
