@@ -1482,10 +1482,10 @@ index 0023684501..a04fc4b2ed 100644
  
  //////////////////////////////////////////////////////////////////////
 diff --git a/test/fuzzers/rtp_packet_fuzzer.cc b/test/fuzzers/rtp_packet_fuzzer.cc
-index 2b9c95a5b7..0048dab074 100644
+index aa2f819934..a49bf15938 100644
 --- a/test/fuzzers/rtp_packet_fuzzer.cc
 +++ b/test/fuzzers/rtp_packet_fuzzer.cc
-@@ -183,6 +183,10 @@ void FuzzOneInput(const uint8_t* data, size_t size) {
+@@ -182,6 +182,10 @@ void FuzzOneInput(FuzzDataHelper fuzz_data) {
          CorruptionDetectionMessage message;
          packet.GetExtension<CorruptionDetectionExtension>(&message);
          break;

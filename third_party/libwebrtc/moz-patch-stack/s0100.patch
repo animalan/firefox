@@ -768,7 +768,7 @@ index af255c3db0..8a132a2fea 100644
      deps = [ ":google_test_runner_delegate" ]
    }
 diff --git a/test/fuzzers/BUILD.gn b/test/fuzzers/BUILD.gn
-index f05995da70..46ddb4f25e 100644
+index f44ec6acc1..972a7d5e3c 100644
 --- a/test/fuzzers/BUILD.gn
 +++ b/test/fuzzers/BUILD.gn
 @@ -6,7 +6,7 @@
@@ -780,7 +780,7 @@ index f05995da70..46ddb4f25e 100644
  import("//testing/libfuzzer/fuzzer_test.gni")
  import("../../webrtc.gni")
  
-@@ -78,7 +78,7 @@ template("webrtc_fuzzer_test") {
+@@ -77,7 +77,7 @@ template("webrtc_fuzzer_test") {
      }
  
      if (!build_with_chromium && is_clang) {
