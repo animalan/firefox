@@ -3054,7 +3054,7 @@ avif:
 mfcdm:
   eme_playback:
     objects: ["gecko"]
-    bug_numbers: [1873394, 1902169, 1989168]
+    bug_numbers: [1873394, 1902169, 1989168, 2026435]
     description:
       Record the information about the EME playback when using the media engine.
       The value of this event is the key system name.
@@ -3062,7 +3062,7 @@ mfcdm:
       - firefox
     record_in_processes: ["all"]
     release_channel_collection: opt-out
-    expiry_version: "152"
+    expiry_version: "158"
     notification_emails:
       - media-alerts@mozilla.com
     extra_keys:
@@ -3074,7 +3074,7 @@ mfcdm:
       dropped_frames: The amount of video frames don't get rendered but dropped
   error:
     objects: ["gecko"]
-    bug_numbers: [1873394, 1902169, 1989168]
+    bug_numbers: [1873394, 1902169, 1989168, 2026435]
     description:
       Record the error or crash happened while using the media engine playback.
       The value of this event is the name of error.
@@ -3082,7 +3082,7 @@ mfcdm:
       - firefox
     record_in_processes: ["all"]
     release_channel_collection: opt-out
-    expiry_version: "152"
+    expiry_version: "158"
     notification_emails:
       - media-alerts@mozilla.com
     extra_keys:
