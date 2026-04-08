@@ -152,6 +152,10 @@ add_task(async function () {
   await testVal("foo.://mozilla.org/");
   await testVal("foo-://mozilla.org/");
 
+  await testVal("<https://>ドメイン.テスト");
+  await testVal("<https://サブ.>ドメイン.テスト");
+  await testVal("<https://>дzz.ею");
+
   // Disable formatting.
   Services.prefs.setBoolPref(PREF_FORMATTING, false);
 
