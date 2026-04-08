@@ -124,12 +124,12 @@ nsresult Http3Session::Init(const nsHttpConnectionInfo* aConnInfo,
   }
 
   // Create security control and info object for quic.
-  mSocketControl =
-      new QuicSocketControl(isOuterConnection ? aConnInfo->ProxyInfo()->Host()
-                                              : aConnInfo->GetOrigin(),
-                            isOuterConnection ? aConnInfo->ProxyInfo()->Port()
-                                              : aConnInfo->OriginPort(),
-                            aProviderFlags, this);
+  mSocketControl = new QuicSocketControl(
+      isOuterConnection ? aConnInfo->ProxyInfo()->Host()
+                        : aConnInfo->GetOrigin(),
+      isOuterConnection ? aConnInfo->ProxyInfo()->Port()
+                        : aConnInfo->OriginPort(),
+      aProviderFlags, aConnInfo->GetOriginAttributes(), this);
   const nsCString& alpn = isOuterConnection ? aConnInfo->GetProxyNPNToken()
                                             : aConnInfo->GetNPNToken();
 
