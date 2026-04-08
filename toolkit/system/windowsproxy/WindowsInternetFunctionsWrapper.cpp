@@ -64,6 +64,7 @@ NS_IMETHODIMP NetworkLinkObserver::Observe(nsISupports* aSubject,
     MutexAutoLock lock(mWrapper->mMutex);
     mWrapper->mConnCacheValid = false;
     mWrapper->mCacheValid = false;
+    mWrapper->mAtomicFlags = UINT32_MAX;
   }
   return NS_OK;
 }
@@ -102,6 +103,7 @@ void WindowsInternetFunctionsWrapper::Init() {
                self.get()));
           MutexAutoLock lock(self->mMutex);
           self->mCacheValid = false;
+          self->mAtomicFlags = UINT32_MAX;
         });
   }
 
@@ -161,6 +163,7 @@ nsresult WindowsInternetFunctionsWrapper::ReadAllOptionsLocked(
   }
 
   mCachedFlags = options[0].Value.dwValue;
+  mAtomicFlags = mCachedFlags;
   LOG(("ReadAllOptionsLocked: flags=0x%x", mCachedFlags));
 
   auto assignAndFree = [](nsString& aDest, WCHAR* aSrc, const char* aName) {

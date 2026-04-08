@@ -7576,8 +7576,16 @@ void nsHttpChannel::MaybeResolveProxyAndBeginConnect() {
   // settings if we are never going to make a network connection.
   if (!mProxyInfo &&
       !(mLoadFlags & (LOAD_ONLY_FROM_CACHE | LOAD_NO_NETWORK_IO)) &&
-      !BypassProxy() && NS_SUCCEEDED(ResolveProxy())) {
-    return;
+      !BypassProxy()) {
+    nsCOMPtr<nsIProtocolProxyService> pps =
+        mozilla::components::ProtocolProxy::Service();
+    nsCOMPtr<nsIProtocolProxyService2> pps2 = do_QueryInterface(pps);
+    if (pps2 && pps2->IsEffectivelyDirect()) {
+      mozilla::glean::networking::proxy_fast_path_used.Add(1);
+      MaybeStartDNSPrefetch();
+    } else if (NS_SUCCEEDED(ResolveProxy())) {
+      return;
+    }
   }
 
   if (!gHttpHandler->Active()) {
@@ -8020,6 +8028,9 @@ void nsHttpChannel::MaybeStartDNSPrefetch() {
   // be correct, and even when it isn't, the timing still represents _a_
   // valid DNS lookup timing for the site, even if it is not _the_
   // timing we used.
+  if (mDNSPrefetch) {
+    return;
+  }
   if ((mLoadFlags & (LOAD_NO_NETWORK_IO | LOAD_ONLY_FROM_CACHE)) ||
       LoadAuthRedirectedChannel()) {
     return;

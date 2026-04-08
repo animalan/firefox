@@ -14967,6 +14967,11 @@
 #endif
   mirror: always
 
+- name: network.proxy.fast_path_system_direct
+  type: RelaxedAtomicBool
+  value: true
+  mirror: always
+
 # If all non-direct proxies have failed, we retry all of them in case they
 # are online now.
 - name: network.proxy.retry_failed_proxies

@@ -9,6 +9,7 @@
 
 #include <windows.h>
 
+#include "mozilla/Atomics.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WeakPtr.h"
@@ -38,6 +39,7 @@ class WindowsInternetFunctionsWrapper : public mozilla::SupportsWeakPtr {
   void Shutdown();
   virtual nsresult ReadInternetOption(uint32_t aOption, uint32_t& aFlags,
                                       nsAString& aValue);
+  uint32_t GetCachedFlags() const { return mAtomicFlags; }
 
  protected:
   virtual ~WindowsInternetFunctionsWrapper();
@@ -59,6 +61,9 @@ class WindowsInternetFunctionsWrapper : public mozilla::SupportsWeakPtr {
   // Proxy options cache, invalidated by registry key changes.
   bool mCacheValid MOZ_GUARDED_BY(mMutex){false};
   uint32_t mCachedFlags MOZ_GUARDED_BY(mMutex) = 0;
+  // Atomic mirror of mCachedFlags, readable from any thread without mMutex.
+  // UINT32_MAX means "not yet cached or currently invalidated".
+  mozilla::Atomic<uint32_t, mozilla::Relaxed> mAtomicFlags{UINT32_MAX};
   nsString mCachedProxyServer MOZ_GUARDED_BY(mMutex);
   nsString mCachedProxyBypass MOZ_GUARDED_BY(mMutex);
   nsString mCachedAutoConfigUrl MOZ_GUARDED_BY(mMutex);
