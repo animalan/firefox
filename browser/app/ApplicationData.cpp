@@ -6,7 +6,6 @@
 // on every build due to the build ID) only cause this small file to be
 // recompiled, rather than the much larger nsBrowserApp.cpp.
 
-#include <cstddef>  // for NULL, used in application.ini.h
 #include "ApplicationData.h"
 #include "application.ini.h"
 
