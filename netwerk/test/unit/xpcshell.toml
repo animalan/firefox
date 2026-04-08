@@ -706,11 +706,6 @@ run-if = [
 
 ["test_getHost.js"]
 
-["test_gio_protocol.js"]
-run-if = [
-  "os == 'linux'",
-]
-
 ["test_gre_resources.js"]
 
 ["test_h2proxy_connection_limit.js"]
