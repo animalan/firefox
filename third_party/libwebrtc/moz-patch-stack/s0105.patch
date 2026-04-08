@@ -38,7 +38,7 @@ index 92c1e32e27..46ba693161 100644
        ]
        # Added when we removed deps in other places to avoid building
 diff --git a/media/BUILD.gn b/media/BUILD.gn
-index 302a193108..ab61f22dcb 100644
+index 7ef35cd4ca..630f3e2b7d 100644
 --- a/media/BUILD.gn
 +++ b/media/BUILD.gn
 @@ -12,12 +12,10 @@ import("../webrtc.gni")
@@ -84,7 +84,7 @@ index 302a193108..ab61f22dcb 100644
    sources = [
      "base/turn_utils.cc",
      "base/turn_utils.h",
-@@ -489,10 +490,8 @@ if (!build_with_mozilla) {
+@@ -490,10 +491,8 @@ if (!build_with_mozilla) {
      "../rtc_base/system:rtc_export",
    ]
  }
@@ -95,7 +95,7 @@ index 302a193108..ab61f22dcb 100644
    sources = [
      "base/rid_description.cc",
      "base/rid_description.h",
-@@ -502,7 +501,6 @@ if (!build_with_mozilla) {
+@@ -503,7 +502,6 @@ if (!build_with_mozilla) {
      "//third_party/abseil-cpp/absl/strings:string_view",
    ]
  }
@@ -103,7 +103,7 @@ index 302a193108..ab61f22dcb 100644
  
  rtc_library("rtc_simulcast_encoder_adapter") {
    visibility = [ "*" ]
-@@ -725,6 +723,12 @@ rtc_library("rtc_audio_video") {
+@@ -726,6 +724,12 @@ rtc_library("rtc_audio_video") {
      "engine/webrtc_voice_engine.cc",
      "engine/webrtc_voice_engine.h",
    ]
@@ -117,10 +117,10 @@ index 302a193108..ab61f22dcb 100644
    public_configs = []
    if (!build_with_chromium) {
 diff --git a/rtc_base/BUILD.gn b/rtc_base/BUILD.gn
-index 6710a57906..cc7d2b5e64 100644
+index 79a1eaec5f..c7e13e7d7e 100644
 --- a/rtc_base/BUILD.gn
 +++ b/rtc_base/BUILD.gn
-@@ -1602,6 +1602,7 @@ rtc_source_set("ssl_header") {
+@@ -1607,6 +1607,7 @@ rtc_source_set("ssl_header") {
  }
  
  rtc_library("digest") {
@@ -128,7 +128,7 @@ index 6710a57906..cc7d2b5e64 100644
    visibility = [ "*" ]
    sources = [
      "message_digest.cc",
-@@ -1623,8 +1624,10 @@ rtc_library("digest") {
+@@ -1628,8 +1629,10 @@ rtc_library("digest") {
      configs += [ "..:external_ssl_library" ]
    }
  }
@@ -139,7 +139,7 @@ index 6710a57906..cc7d2b5e64 100644
    visibility = [ "*" ]
    sources = [
      "crypto_random.cc",
-@@ -1645,6 +1648,7 @@ rtc_library("crypto_random") {
+@@ -1650,6 +1653,7 @@ rtc_library("crypto_random") {
      configs += [ "..:external_ssl_library" ]
    }
  }
