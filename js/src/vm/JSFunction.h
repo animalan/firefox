@@ -210,6 +210,7 @@ class JSFunction : public js::NativeObject {
     return flags().isNativeWithoutJitEntry();
   }
   bool isBuiltinNative() const { return flags().isBuiltinNative(); }
+  bool isTrampolineNative() const { return flags().isTrampolineNative(); }
 
   bool hasJitEntry() const { return flags().hasJitEntry(); }
 

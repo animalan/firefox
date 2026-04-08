@@ -319,6 +319,9 @@ class FunctionFlags {
     MOZ_ASSERT_IF(hasFlags(NATIVE_JIT_ENTRY), isNativeFun());
     return hasFlags(NATIVE_JIT_ENTRY);
   }
+  bool isTrampolineNative() const {
+    return !isWasm() && isNativeWithJitEntry();
+  }
   bool isWasmWithJitEntry() const { return isWasm() && isNativeWithJitEntry(); }
   bool isNativeWithoutJitEntry() const {
     MOZ_ASSERT_IF(!hasJitEntry(), isNativeFun());

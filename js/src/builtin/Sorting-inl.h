@@ -31,7 +31,8 @@ void ArraySortData::init(JSObject* obj, JSObject* comparator, ValueVector&& vec,
       return ComparatorKind::Unoptimized;
     }
     JSFunction* fun = &comparator->as<JSFunction>();
-    if (!fun->hasJitEntry() || fun->isClassConstructor()) {
+    if (!fun->hasJitEntry() || fun->isClassConstructor() ||
+        fun->isTrampolineNative()) {
       return ComparatorKind::Unoptimized;
     }
     if (fun->realm() == cx->realm() && fun->nargs() <= ComparatorActualArgs) {
