@@ -135,7 +135,6 @@ void StreamList::NoteClosedAll() {
 
 void StreamList::CloseAll() {
   NS_ASSERT_OWNINGTHREAD(StreamList);
-  SafeRefPtr<StreamList> kungFuDeathGrip = SafeRefPtrFromThis();
 
   if (mStreamControl && mStreamControl->CanSend()) {
     // CloseAll will kick off everything needed for shutdown.
