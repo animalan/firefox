@@ -288,18 +288,9 @@ export class TelemetryFeed {
    * Initializes the Glean session type based on configuration and CIV state.
    * Determines whether to use NormalGleanSession (queue events) or
    * PrivateGleanSession (send to both pings immediately).
-   *
-   * @backward-compat { version 149 } Checking for trainhopConfig length
-   * can be remove after 149 lands
    */
   initializeGleanSession() {
     if (this._gleanSessionInitialized) {
-      return;
-    }
-
-    const trainhopConfig =
-      this.store?.getState()?.Prefs?.values?.trainhopConfig;
-    if (!trainhopConfig || Object.keys(trainhopConfig).length === 0) {
       return;
     }
 
@@ -1590,14 +1581,6 @@ export class TelemetryFeed {
         break;
       case at.PREFS_INITIAL_VALUES:
         this.initializeGleanSession();
-        break;
-      case at.PREF_CHANGED:
-        if (action.data.name === "trainhopConfig") {
-          // @backward-compat { version 149 } trainhopConfig may not have existed
-          // at PREFS_INITIAL_VALUES time, so we need to check for it here as well.
-          // can be removed once 149 lands.
-          this.initializeGleanSession();
-        }
         break;
     }
   }
