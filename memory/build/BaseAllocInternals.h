@@ -151,6 +151,13 @@ class BaseAllocCell {
     LeftMetadata()->mRightAllocated = false;
   }
 
+  bool ProbablyNotInList() {
+    // This method won't work on allocated cells.
+    MOZ_ASSERT(!Allocated());
+
+    return !(mListElem.mNext || mListElem.mPrev);
+  }
+
   // After freeing a cell but before we can use the list pointers we must
   // clear them to avoid assertions in DoublyLinkedList.
   void ClearPayload();

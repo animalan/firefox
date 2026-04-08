@@ -16,6 +16,29 @@ using namespace mozilla;
 // Change this to 1 to enable some BaseAlloc logging. Useful for debugging.
 #define BASE_ALLOC_LOGGING 0
 
+// Change this to 1 to enable expensive assertions beyond normal debug
+// builds.
+#define BASE_ALLOC_VALIDATION 0
+
+#if BASE_ALLOC_VALIDATION
+bool TreeContains(RedBlackTree<BaseAllocCell, BaseAllocCellRBTrait>& aTree,
+                  BaseAllocCell* aCell) {
+  BaseAllocCell* cur = aTree.SearchOrNext(aCell->Size());
+  while (cur) {
+    if (cur == aCell) {
+      return true;
+    }
+
+    if (cur->Size() != aCell->Size()) {
+      return false;
+    }
+    cur = aTree.Next(cur);
+  }
+
+  return false;
+}
+#endif
+
 // By using a macro "Log" won't collide with PHC's Log function in unified
 // builds.
 #if BASE_ALLOC_LOGGING
@@ -211,6 +234,9 @@ BaseAllocCell* BaseAlloc::alloc_from_list(base_alloc_size_t aSize) {
   unsigned start_index = get_list_index_for_size(aSize);
   for (unsigned i = start_index; i < kNumFreeLists; i++) {
     if (!mFreeLists[i].isEmpty()) {
+#if BASE_ALLOC_VALIDATION
+      MOZ_ASSERT(mFreeLists[i].ListIsWellFormed());
+#endif
       BaseAllocCell* cell = mFreeLists[i].popFront();
       MaybeTrim(cell, aSize);
 
@@ -240,11 +266,24 @@ void BaseAlloc::Unlink(BaseAllocCell* cell) {
   if (cell->Committed()) {
     unsigned index = get_list_index_for_size(cell->Size());
     if (index < kNumFreeLists) {
+#if BASE_ALLOC_VALIDATION
+      MOZ_ASSERT(mFreeLists[index].ListIsWellFormed());
+      MOZ_ASSERT(mFreeLists[index].contains(cell));
+#endif
       mFreeLists[index].remove(cell);
+#if BASE_ALLOC_VALIDATION
+      MOZ_ASSERT(mFreeLists[index].ListIsWellFormed());
+#endif
     } else {
+#if BASE_ALLOC_VALIDATION
+      MOZ_ASSERT(TreeContains(mFreeListOversize, cell));
+#endif
       mFreeListOversize.Remove(cell);
     }
   } else {
+#if BASE_ALLOC_VALIDATION
+    MOZ_ASSERT(TreeContains(mFreeListDecommitted, cell));
+#endif
     mFreeListDecommitted.Remove(cell);
   }
 }
@@ -258,11 +297,27 @@ void BaseAlloc::Link(BaseAllocCell* cell) {
   if (cell->Committed()) {
     unsigned index = get_list_index_for_size(cell->Size());
     if (index < kNumFreeLists) {
+#if BASE_ALLOC_VALIDATION
+      MOZ_ASSERT(mFreeLists[index].ListIsWellFormed());
+      MOZ_ASSERT(!mFreeLists[index].contains(cell));
+      MOZ_ASSERT(cell->ProbablyNotInList());
+#endif
       mFreeLists[index].pushFront(cell);
+#if BASE_ALLOC_VALIDATION
+      MOZ_ASSERT(mFreeLists[index].ListIsWellFormed());
+#endif
     } else {
+#if BASE_ALLOC_VALIDATION
+      MOZ_ASSERT(!TreeContains(mFreeListOversize, cell));
+      MOZ_ASSERT(cell->ProbablyNotInList());
+#endif
       mFreeListOversize.Insert(cell);
     }
   } else {
+#if BASE_ALLOC_VALIDATION
+    MOZ_ASSERT(!TreeContains(mFreeListDecommitted, cell));
+    MOZ_ASSERT(cell->ProbablyNotInList());
+#endif
     mFreeListDecommitted.Insert(cell);
   }
 }
