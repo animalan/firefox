@@ -43,7 +43,7 @@ index 4f31b489ea..cdc021bd1a 100644
  }  // namespace
  
 diff --git a/audio/channel_receive.cc b/audio/channel_receive.cc
-index 255880c24f..6c7f984632 100644
+index 2eb4a6202a..f3bb76fc61 100644
 --- a/audio/channel_receive.cc
 +++ b/audio/channel_receive.cc
 @@ -129,7 +129,8 @@ class ChannelReceive : public ChannelReceiveInterface,
@@ -74,7 +74,7 @@ index 255880c24f..6c7f984632 100644
  
    if (frame_transformer)
      InitFrameTransformerDelegate(std::move(frame_transformer));
-@@ -1211,12 +1214,14 @@ std::unique_ptr<ChannelReceiveInterface> CreateChannelReceive(
+@@ -1209,12 +1212,14 @@ std::unique_ptr<ChannelReceiveInterface> CreateChannelReceive(
      scoped_refptr<AudioDecoderFactory> decoder_factory,
      scoped_refptr<FrameDecryptorInterface> frame_decryptor,
      const CryptoOptions& crypto_options,
