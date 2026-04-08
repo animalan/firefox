@@ -8,7 +8,7 @@
 # documentation and how to modify this file.
 repo: mozilla-central
 created_at: '2021-10-14T12:50:40.073465'
-updated_at: '2026-04-02T17:59:02.014303+00:00'
+updated_at: '2026-04-08T16:02:10.097081+00:00'
 export:
   path: ./docs/mots/index.rst
   format: rst
@@ -3330,6 +3330,7 @@ modules:
       group: dev-platform
       components:
         - 'Core::Widget: Win32'
+      review_group: win-reviewers
     owners:
       - *cmartin
     peers:
@@ -4756,5 +4757,5 @@ modules:
         - Ryan Tilder
       group: dev-platform
 hashes:
-  config: f068c5e2b2faa1f61fb51d2ea1f43a1e32806561
-  export: f1a8e33331930c7e04b6ca9c85c4df74c9ecc5f2
+  config: 2fc593ca69b3cb45bcf81fad9fb225a807496d99
+  export: ab69ee83d67b6716ff2444f1a32b359b3b36bd50
