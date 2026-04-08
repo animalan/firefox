@@ -492,11 +492,11 @@ class VideoData : public MediaData {
     ~QuantizableBuffer();
 
    private:
-    void AllocateRecyclableData(size_t aLength);
+    void AllocateRecyclableData(uint32_t aLength);
 
     RefPtr<layers::BufferRecycleBin> mRecycleBin;
     UniquePtr<uint8_t[]> m8bpcPlanes;
-    size_t mAllocatedLength;
+    uint32_t mAllocatedLength;
   };
 
   // Constructs a VideoData object. If aImage is nullptr, creates a new Image
