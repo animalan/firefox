@@ -61,10 +61,10 @@ index 555269ae24..c5e84e0368 100644
    std::optional<TimeDelta> LastRtt() const;
  
 diff --git a/modules/rtp_rtcp/source/rtp_rtcp_impl2.cc b/modules/rtp_rtcp/source/rtp_rtcp_impl2.cc
-index dd4610ac55..97b522f510 100644
+index 8e8b2e036c..e822802e4b 100644
 --- a/modules/rtp_rtcp/source/rtp_rtcp_impl2.cc
 +++ b/modules/rtp_rtcp/source/rtp_rtcp_impl2.cc
-@@ -537,6 +537,11 @@ void ModuleRtpRtcpImpl2::GetSendStreamDataCounters(
+@@ -540,6 +540,11 @@ void ModuleRtpRtcpImpl2::GetSendStreamDataCounters(
  }
  
  // Received RTCP report.
@@ -77,10 +77,10 @@ index dd4610ac55..97b522f510 100644
      const {
    return rtcp_receiver_.GetLatestReportBlockData();
 diff --git a/modules/rtp_rtcp/source/rtp_rtcp_impl2.h b/modules/rtp_rtcp/source/rtp_rtcp_impl2.h
-index 86a40da740..d1352cf30a 100644
+index f5939b6787..1e435678cd 100644
 --- a/modules/rtp_rtcp/source/rtp_rtcp_impl2.h
 +++ b/modules/rtp_rtcp/source/rtp_rtcp_impl2.h
-@@ -215,6 +215,9 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
+@@ -231,6 +231,9 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
        StreamDataCounters* rtp_counters,
        StreamDataCounters* rtx_counters) const override;
  
