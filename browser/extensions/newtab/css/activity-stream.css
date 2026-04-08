@@ -5704,6 +5704,14 @@ hr {
 .nova-enabled .ds-section-wrapper .ds-section .section-heading {
   grid-column: 1/-1;
 }
+.nova-enabled .ds-section-wrapper .ds-section .section-heading .section-title {
+  font-size: var(--font-size-heading-large);
+}
+@container content-grid (inline-size >= calc(12 * 75px + 11 * 0.75rem)) {
+  .nova-enabled .ds-section-wrapper .ds-section .section-heading .section-title {
+    font-size: var(--font-size-heading-xlarge);
+  }
+}
 
 .ds-section-grid.ds-card-grid {
   grid-gap: var(--space-large);
@@ -5852,7 +5860,7 @@ hr {
     --nova-stp-inset: var(--space-medium);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-small.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-small.ds-card.sections-card-ui.nova-card-ui:hover, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-small.ds-card.sections-card-ui.nova-card-ui:active, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-small.ds-card.sections-card-ui.nova-card-ui:focus-within, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-small.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -5892,6 +5900,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-small.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-medium {
@@ -5972,7 +5981,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -6005,6 +6014,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-medium .ds-card-link {
@@ -6109,7 +6119,7 @@ hr {
 }
 @media (max-width: 724px) {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-large.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-large.ds-card.sections-card-ui.nova-card-ui:hover, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-large.ds-card.sections-card-ui.nova-card-ui:active, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-large.ds-card.sections-card-ui.nova-card-ui:focus-within, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-large.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -6159,6 +6169,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-1-large.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
 }
@@ -6312,7 +6323,7 @@ hr {
     --nova-stp-inset: var(--space-medium);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-small.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-small.ds-card.sections-card-ui.nova-card-ui:hover, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-small.ds-card.sections-card-ui.nova-card-ui:active, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-small.ds-card.sections-card-ui.nova-card-ui:focus-within, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-small.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -6352,6 +6363,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-small.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-medium {
@@ -6432,7 +6444,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -6465,6 +6477,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-medium .ds-card-link {
@@ -6569,7 +6582,7 @@ hr {
 }
 @media (724px <= width < 1122px) {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-large.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-large.ds-card.sections-card-ui.nova-card-ui:hover, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-large.ds-card.sections-card-ui.nova-card-ui:active, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-large.ds-card.sections-card-ui.nova-card-ui:focus-within, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-large.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -6619,6 +6632,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-2-large.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
 }
@@ -6790,7 +6804,7 @@ hr {
     --nova-stp-inset: var(--space-medium);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-small.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-small.ds-card.sections-card-ui.nova-card-ui:hover, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-small.ds-card.sections-card-ui.nova-card-ui:active, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-small.ds-card.sections-card-ui.nova-card-ui:focus-within, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-small.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -6830,6 +6844,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-small.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-medium {
@@ -6910,7 +6925,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -6943,6 +6958,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-medium .ds-card-link {
@@ -7047,7 +7063,7 @@ hr {
 }
 @media (1122px <= width < 1390px) {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-large.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-large.ds-card.sections-card-ui.nova-card-ui:hover, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-large.ds-card.sections-card-ui.nova-card-ui:active, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-large.ds-card.sections-card-ui.nova-card-ui:focus-within, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-large.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -7097,6 +7113,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-3-large.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
 }
@@ -7266,7 +7283,7 @@ hr {
     --nova-stp-inset: var(--space-medium);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-small.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-small.ds-card.sections-card-ui.nova-card-ui:hover, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-small.ds-card.sections-card-ui.nova-card-ui:active, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-small.ds-card.sections-card-ui.nova-card-ui:focus-within, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-small.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -7306,6 +7323,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-small.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-medium {
@@ -7386,7 +7404,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -7419,6 +7437,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-medium .ds-card-link {
@@ -7523,7 +7542,7 @@ hr {
 }
 @media (min-width: 1390px) {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-large.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-large.ds-card.sections-card-ui.nova-card-ui:hover, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-large.ds-card.sections-card-ui.nova-card-ui:active, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-large.ds-card.sections-card-ui.nova-card-ui:focus-within, .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-large.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -7573,6 +7592,7 @@ hr {
   .ds-section-grid.ds-card-grid:not(.nova-enabled *) .col-4-large.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
 }
@@ -7749,7 +7769,7 @@ hr {
     --nova-stp-inset: var(--space-medium);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-small.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-small.ds-card.sections-card-ui.nova-card-ui:hover, .nova-enabled .ds-section-grid.ds-card-grid .col-1-small.ds-card.sections-card-ui.nova-card-ui:active, .nova-enabled .ds-section-grid.ds-card-grid .col-1-small.ds-card.sections-card-ui.nova-card-ui:focus-within, .nova-enabled .ds-section-grid.ds-card-grid .col-1-small.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -7789,6 +7809,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-small.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-medium {
@@ -7869,7 +7890,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -7902,6 +7923,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-medium .ds-card-link {
@@ -7991,7 +8013,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-large.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-large.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -8024,6 +8046,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-large.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-1-large .ds-card-link {
@@ -8181,7 +8204,7 @@ hr {
     --nova-stp-inset: var(--space-medium);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-small.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-small.ds-card.sections-card-ui.nova-card-ui:hover, .nova-enabled .ds-section-grid.ds-card-grid .col-2-small.ds-card.sections-card-ui.nova-card-ui:active, .nova-enabled .ds-section-grid.ds-card-grid .col-2-small.ds-card.sections-card-ui.nova-card-ui:focus-within, .nova-enabled .ds-section-grid.ds-card-grid .col-2-small.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -8221,6 +8244,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-small.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-medium {
@@ -8301,7 +8325,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -8334,6 +8358,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-medium .ds-card-link {
@@ -8434,7 +8459,7 @@ hr {
     }
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-large.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-2-large.ds-card.sections-card-ui.nova-card-ui:hover, .nova-enabled .ds-section-grid.ds-card-grid .col-2-large.ds-card.sections-card-ui.nova-card-ui:active, .nova-enabled .ds-section-grid.ds-card-grid .col-2-large.ds-card.sections-card-ui.nova-card-ui:focus-within, .nova-enabled .ds-section-grid.ds-card-grid .col-2-large.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -8483,6 +8508,7 @@ hr {
     .nova-enabled .ds-section-grid.ds-card-grid .col-2-large.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
       width: var(--size-item-medium);
       height: var(--size-item-medium);
+      border-radius: var(--border-radius-circle);
       background-size: var(--icon-size);
     }
   }
@@ -8640,7 +8666,7 @@ hr {
     --nova-stp-inset: var(--space-medium);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-small.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-small.ds-card.sections-card-ui.nova-card-ui:hover, .nova-enabled .ds-section-grid.ds-card-grid .col-3-small.ds-card.sections-card-ui.nova-card-ui:active, .nova-enabled .ds-section-grid.ds-card-grid .col-3-small.ds-card.sections-card-ui.nova-card-ui:focus-within, .nova-enabled .ds-section-grid.ds-card-grid .col-3-small.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -8680,6 +8706,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-small.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-medium {
@@ -8760,7 +8787,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -8793,6 +8820,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-medium .ds-card-link {
@@ -8893,7 +8921,7 @@ hr {
     }
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-large.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-3-large.ds-card.sections-card-ui.nova-card-ui:hover, .nova-enabled .ds-section-grid.ds-card-grid .col-3-large.ds-card.sections-card-ui.nova-card-ui:active, .nova-enabled .ds-section-grid.ds-card-grid .col-3-large.ds-card.sections-card-ui.nova-card-ui:focus-within, .nova-enabled .ds-section-grid.ds-card-grid .col-3-large.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -8942,6 +8970,7 @@ hr {
     .nova-enabled .ds-section-grid.ds-card-grid .col-3-large.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
       width: var(--size-item-medium);
       height: var(--size-item-medium);
+      border-radius: var(--border-radius-circle);
       background-size: var(--icon-size);
     }
   }
@@ -9099,7 +9128,7 @@ hr {
     --nova-stp-inset: var(--space-medium);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-small.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-small.ds-card.sections-card-ui.nova-card-ui:hover, .nova-enabled .ds-section-grid.ds-card-grid .col-4-small.ds-card.sections-card-ui.nova-card-ui:active, .nova-enabled .ds-section-grid.ds-card-grid .col-4-small.ds-card.sections-card-ui.nova-card-ui:focus-within, .nova-enabled .ds-section-grid.ds-card-grid .col-4-small.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -9139,6 +9168,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-small.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-medium {
@@ -9219,7 +9249,7 @@ hr {
     --nova-stp-inset: var(--space-large);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle):not(.placeholder) .img-wrapper > .ds-image.img > img {
     border-radius: var(--border-radius-medium);
@@ -9252,6 +9282,7 @@ hr {
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-medium.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-medium .ds-card-link {
@@ -9352,7 +9383,7 @@ hr {
     }
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-large.ds-card.sections-card-ui.nova-card-ui:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
   }
   .nova-enabled .ds-section-grid.ds-card-grid .col-4-large.ds-card.sections-card-ui.nova-card-ui:hover, .nova-enabled .ds-section-grid.ds-card-grid .col-4-large.ds-card.sections-card-ui.nova-card-ui:active, .nova-enabled .ds-section-grid.ds-card-grid .col-4-large.ds-card.sections-card-ui.nova-card-ui:focus-within, .nova-enabled .ds-section-grid.ds-card-grid .col-4-large.ds-card.sections-card-ui.nova-card-ui.active {
     box-shadow: var(--card-box-shadow-hover);
@@ -9401,6 +9432,7 @@ hr {
     .nova-enabled .ds-section-grid.ds-card-grid .col-4-large.ds-card.sections-card-ui.nova-card-ui .context-menu-position-container .context-menu-button {
       width: var(--size-item-medium);
       height: var(--size-item-medium);
+      border-radius: var(--border-radius-circle);
       background-size: var(--icon-size);
     }
   }
@@ -10348,16 +10380,22 @@ hr {
 .ds-card-grid .ds-card:hover h3, .ds-card-grid .ds-card.active h3 {
   color: var(--color-accent-primary);
 }
-.ds-card-grid .ds-card:hover .context-menu-button:hover, .ds-card-grid .ds-card.active .context-menu-button:hover {
+.ds-card-grid .ds-card:hover .context-menu-button:hover,
+.ds-card-grid .ds-card:hover .context-menu-button[aria-expanded=true], .ds-card-grid .ds-card.active .context-menu-button:hover,
+.ds-card-grid .ds-card.active .context-menu-button[aria-expanded=true] {
   background-color: var(--button-background-color-ghost-hover);
 }
 @media (forced-colors: active) {
-  .ds-card-grid .ds-card:hover .context-menu-button:hover, .ds-card-grid .ds-card.active .context-menu-button:hover {
+  .ds-card-grid .ds-card:hover .context-menu-button:hover,
+.ds-card-grid .ds-card:hover .context-menu-button[aria-expanded=true], .ds-card-grid .ds-card.active .context-menu-button:hover,
+.ds-card-grid .ds-card.active .context-menu-button[aria-expanded=true] {
     border-color: var(--button-border-color-ghost-hover);
     fill: var(--button-text-color-ghost-hover);
   }
 }
-.ds-card-grid .ds-card:hover .context-menu-button:hover:active, .ds-card-grid .ds-card.active .context-menu-button:hover:active {
+.ds-card-grid .ds-card:hover .context-menu-button:hover:active,
+.ds-card-grid .ds-card:hover .context-menu-button[aria-expanded=true]:active, .ds-card-grid .ds-card.active .context-menu-button:hover:active,
+.ds-card-grid .ds-card.active .context-menu-button[aria-expanded=true]:active {
   background-color: var(--button-background-color-ghost-active);
 }
 .ds-card-grid .ds-card:hover .context-menu-button:focus-visible, .ds-card-grid .ds-card.active .context-menu-button:focus-visible {
@@ -11518,6 +11556,9 @@ hr {
 
 .section-context-menu {
   position: relative;
+}
+.section-context-menu.context-menu-open > moz-button::part(button) {
+  background-color: var(--button-background-color-ghost-hover);
 }
 .section-context-menu .context-menu {
   /* Fix the context menu width */

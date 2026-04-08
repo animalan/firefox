@@ -4,7 +4,11 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  column-gap: var(--space-large);
+  column-gap: var(--space-medium);
+
+  @include at-content-cols(12) {
+    column-gap: var(--space-large);
+  }
 
   .section-subtitle {
     flex-basis: 100%;
@@ -17,12 +21,21 @@
 }
 
 .ds-section .section-follow {
-  moz-button::part(moz-button-label) {
-    display: none;
+  moz-button::part(button) {
+    transition: background-color 0.2s ease;
   }
 
-  moz-button:hover::part(moz-button-label),
-  moz-button:focus-within::part(moz-button-label) {
-    display: revert;
+  moz-button::part(moz-button-label) {
+    // CSS can only transition between fixed values;
+    // 30ch accommodates the longest localized string (Georgian: 26ch)
+    max-width: 30ch;
+    transition:
+      max-width 0.2s ease,
+      opacity 0.2s ease;
+
+    @starting-style {
+      max-width: 0;
+      opacity: 0;
+    }
   }
 }

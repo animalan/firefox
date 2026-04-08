@@ -40,12 +40,15 @@ export function SectionContextMenu({
   };
 
   return (
-    <div className="section-context-menu">
+    <div
+      className={`section-context-menu${showContextMenu ? " context-menu-open" : ""}`}
+    >
       <moz-button
         type={buttonType}
         size="default"
         iconsrc="chrome://global/skin/icons/more.svg"
         title={title || source}
+        aria-expanded={showContextMenu}
         onClick={onClick}
       />
       {showContextMenu && (

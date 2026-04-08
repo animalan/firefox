@@ -52,7 +52,7 @@
   }
 
   .tile {
-    box-shadow: none; // @nova-cleanup(remove-conditional): Nova gets rid of box shadow at rest
+    box-shadow: var(--card-box-shadow);
     margin-block-start: var(--space-medium);
     transition: width 100ms ease-out, height 100ms ease-out, margin-block-start 100ms ease-out;
   }
@@ -64,8 +64,6 @@
       /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
       height: var(--col-width);
       margin-block-start: 0;
-      // @backward-compat { version 150 } D281466/D283723 renamed design tokens; remove once Firefox 150 is on Release.
-      box-shadow: var(--card-box-shadow, var(--box-shadow-card));
     }
 
     .icon-pin-small,
@@ -112,8 +110,11 @@
     }
   }
 
+  &.add-button .tile {
+    background: var(--newtab-background-card);
+  }
+
   .title .title-label {
-    font-weight: var(--font-weight-semibold);
     padding: 0;
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     width: var(--col-width);

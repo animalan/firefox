@@ -4,7 +4,7 @@
 
 .nova-enabled .ds-card-grid:not(.ds-section-grid) .ds-card.ds-spoc {
   &:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
 
     &:hover,
     &:focus-within {
@@ -39,7 +39,7 @@
 
 .nova-enabled .ds-card-grid:not(.ds-section-grid) .ds-card.nova-card-ui:not(.ds-spoc) {
   &:not(.placeholder) {
-    box-shadow: none;
+    box-shadow: var(--card-box-shadow);
 
     .img-wrapper > .ds-image.img > img {
       border-radius: var(--border-radius-medium);
@@ -81,6 +81,12 @@
       min-height: var(--size-item-medium);
       padding-inline-end: var(--space-xxlarge);
     }
+  }
+}
+
+.nova-enabled .ds-card {
+  .context-menu-button {
+    border-radius: var(--border-radius-circle);
   }
 }
 

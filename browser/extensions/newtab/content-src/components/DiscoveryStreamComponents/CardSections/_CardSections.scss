@@ -9,6 +9,7 @@
   .context-menu-position-container .context-menu-button {
     width: var(--size-item-medium);
     height: var(--size-item-medium);
+    border-radius: var(--border-radius-circle);
     background-size: var(--icon-size);
   }
 }
@@ -115,7 +116,7 @@
     --nova-small-card-image-height: 108px;
 
     &:not(.placeholder) {
-      box-shadow: none;
+      box-shadow: var(--card-box-shadow);
     }
 
     &:hover,
@@ -276,7 +277,7 @@
 
   &.ds-card.sections-card-ui.nova-card-ui:not(.ds-spoc-rectangle) {
     &:not(.placeholder) {
-      box-shadow: none;
+      box-shadow: var(--card-box-shadow);
 
       .img-wrapper > .ds-image.img > img {
         border-radius: var(--border-radius-medium);
@@ -451,7 +452,7 @@
 
   &.ds-card.sections-card-ui.nova-card-ui {
     &:not(.placeholder) {
-      box-shadow: none;
+      box-shadow: var(--card-box-shadow);
     }
 
     &:hover,
@@ -684,6 +685,14 @@
 // @nova-cleanup(remove-conditional): Remove .nova-enabled wrapper, make default
 .nova-enabled .ds-section-wrapper .ds-section .section-heading {
   grid-column: 1 / -1;
+
+  .section-title {
+    font-size: var(--font-size-heading-large);
+
+    @include at-content-cols(12) {
+      font-size: var(--font-size-heading-xlarge);
+    }
+  }
 }
 
 .ds-section-grid.ds-card-grid {
