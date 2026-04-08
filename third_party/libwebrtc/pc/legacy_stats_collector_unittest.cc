@@ -60,6 +60,7 @@
 #include "rtc_base/ssl_certificate.h"
 #include "rtc_base/ssl_identity.h"
 #include "rtc_base/ssl_stream_adapter.h"
+#include "rtc_base/system/plan_b_only.h"
 #include "rtc_base/thread.h"
 #include "system_wrappers/include/clock.h"
 #include "system_wrappers/include/ntp_time.h"
@@ -662,7 +663,9 @@ class LegacyStatsCollectorTest : public ::testing::Test {
     auto pc = CreatePeerConnection();
     auto stats = CreateStatsCollector(pc.get());
 
+    RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
     pc->AddVoiceChannel(/*mid=*/"audio", kTransportName);
+    RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
     // Fake stats to process.
     TransportChannelStats channel_stats;
@@ -810,7 +813,9 @@ class StatsCollectorTrackTest : public LegacyStatsCollectorTest,
     } else {
       stats->AddTrack(video_track_.get());
     }
+    RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
     pc->AddSender(CreateMockSender(video_track_, kSsrcOfTrack));
+    RTC_ALLOW_PLAN_B_DEPRECATION_END();
   }
 
   // Adds a incoming video track with a given SSRC into the stats.
@@ -825,7 +830,9 @@ class StatsCollectorTrackTest : public LegacyStatsCollectorTest,
     } else {
       stats->AddTrack(video_track_.get());
     }
+    RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
     pc->AddReceiver(CreateMockReceiver(video_track_, kSsrcOfTrack));
+    RTC_ALLOW_PLAN_B_DEPRECATION_END();
   }
 
   // Adds a outgoing audio track with a given SSRC into the stats,
@@ -844,7 +851,10 @@ class StatsCollectorTrackTest : public LegacyStatsCollectorTest,
     } else {
       stats->AddTrack(audio_track_.get());
     }
-    return pc->AddSender(CreateMockSender(audio_track_, kSsrcOfTrack));
+    RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
+    auto sender = pc->AddSender(CreateMockSender(audio_track_, kSsrcOfTrack));
+    RTC_ALLOW_PLAN_B_DEPRECATION_END();
+    return sender;
   }
 
   // Adds a incoming audio track with a given SSRC into the stats.
@@ -859,7 +869,9 @@ class StatsCollectorTrackTest : public LegacyStatsCollectorTest,
     } else {
       stats->AddTrack(audio_track_.get());
     }
+    RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
     pc->AddReceiver(CreateMockReceiver(audio_track_, kSsrcOfTrack));
+    RTC_ALLOW_PLAN_B_DEPRECATION_END();
   }
 
   scoped_refptr<AudioTrackInterface> audio_track() { return audio_track_; }
@@ -996,7 +1008,9 @@ TEST_P(StatsCollectorTrackTest, BytesCounterHandles64Bits) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport", video_info);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   AddOutgoingVideoTrack(pc.get(), stats.get());
 
@@ -1028,7 +1042,9 @@ TEST_P(StatsCollectorTrackTest, AudioBandwidthEstimationInfoIsReported) {
   VoiceMediaInfo voice_info;
   voice_info.senders.push_back(voice_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   auto voice_media_channels = pc->AddVoiceChannel("audio", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   voice_media_channels.first->SetStats(voice_info);
   voice_media_channels.second->SetStats(voice_info);
 
@@ -1079,7 +1095,9 @@ TEST_P(StatsCollectorTrackTest, VideoBandwidthEstimationInfoIsReported) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport", video_info);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   AddOutgoingVideoTrack(pc.get(), stats.get());
 
@@ -1145,7 +1163,9 @@ TEST_P(StatsCollectorTrackTest, TrackObjectExistsWithoutUpdateStats) {
   auto pc = CreatePeerConnection();
   auto stats = CreateStatsCollector(pc.get());
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   AddOutgoingVideoTrack(pc.get(), stats.get());
 
   // Verfies the existence of the track report.
@@ -1176,7 +1196,9 @@ TEST_P(StatsCollectorTrackTest, TrackAndSsrcObjectExistAfterUpdateSsrcStats) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport", video_info);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   AddOutgoingVideoTrack(pc.get(), stats.get());
 
@@ -1230,7 +1252,9 @@ TEST_P(StatsCollectorTrackTest, TransportObjectLinkedFromSsrcObject) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport", video_info);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   AddOutgoingVideoTrack(pc.get(), stats.get());
 
@@ -1265,7 +1289,9 @@ TEST_P(StatsCollectorTrackTest, RemoteSsrcInfoIsAbsent) {
   auto pc = CreatePeerConnection();
   auto stats = CreateStatsCollector(pc.get());
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   AddOutgoingVideoTrack(pc.get(), stats.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
@@ -1292,7 +1318,9 @@ TEST_P(StatsCollectorTrackTest, RemoteSsrcInfoIsPresent) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport", video_info);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   AddOutgoingVideoTrack(pc.get(), stats.get());
 
@@ -1320,7 +1348,9 @@ TEST_P(StatsCollectorTrackTest, ReportsFromRemoteTrack) {
   VideoMediaInfo video_info;
   video_info.receivers.push_back(video_receiver_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport", video_info);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   AddIncomingVideoTrack(pc.get(), stats.get());
 
@@ -1385,7 +1415,9 @@ TEST_F(LegacyStatsCollectorTest, IceCandidateReport) {
   TransportChannelStats channel_stats;
   channel_stats.ice_transport_stats.connection_infos.push_back(connection_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVoiceChannel("audio", kTransportName);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   pc->SetTransportStats(kTransportName, channel_stats);
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
@@ -1516,7 +1548,9 @@ TEST_F(LegacyStatsCollectorTest, NoTransport) {
 
   // This will cause the fake PeerConnection to generate a TransportStats entry
   // but with only a single dummy TransportChannelStats.
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVoiceChannel("audio", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1578,7 +1612,9 @@ TEST_P(StatsCollectorTrackTest, FilterOutNegativeInitialValues) {
   auto local_track =
       make_ref_counted<FakeAudioTrackWithInitValue>(kLocalTrackId);
   stream_->AddTrack(scoped_refptr<AudioTrackInterface>(local_track.get()));
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddSender(CreateMockSender(local_track, kSsrcOfTrack));
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   if (GetParam()) {
     stats->AddStream(stream_.get());
   }
@@ -1590,7 +1626,9 @@ TEST_P(StatsCollectorTrackTest, FilterOutNegativeInitialValues) {
   scoped_refptr<AudioTrackInterface> remote_track =
       make_ref_counted<FakeAudioTrackWithInitValue>(kRemoteTrackId);
   remote_stream->AddTrack(remote_track);
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddReceiver(CreateMockReceiver(remote_track, kSsrcOfTrack));
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   if (GetParam()) {
     stats->AddStream(remote_stream.get());
   }
@@ -1618,7 +1656,9 @@ TEST_P(StatsCollectorTrackTest, FilterOutNegativeInitialValues) {
   voice_info.senders.push_back(voice_sender_info);
   voice_info.receivers.push_back(voice_receiver_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   auto voice_media_channels = pc->AddVoiceChannel("voice", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   voice_media_channels.first->SetStats(voice_info);
   voice_media_channels.second->SetStats(voice_info);
 
@@ -1671,7 +1711,9 @@ TEST_P(StatsCollectorTrackTest, GetStatsFromLocalAudioTrack) {
   VoiceMediaInfo voice_info;
   voice_info.senders.push_back(voice_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   auto voice_media_channels = pc->AddVoiceChannel("audio", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   voice_media_channels.first->SetStats(voice_info);
   voice_media_channels.second->SetStats(voice_info);
 
@@ -1699,7 +1741,9 @@ TEST_P(StatsCollectorTrackTest, GetStatsFromRemoteStream) {
   VoiceMediaInfo voice_info;
   voice_info.receivers.push_back(voice_receiver_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   auto voice_media_channels = pc->AddVoiceChannel("audio", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   voice_media_channels.first->SetStats(voice_info);
   voice_media_channels.second->SetStats(voice_info);
 
@@ -1721,7 +1765,9 @@ TEST_P(StatsCollectorTrackTest, GetStatsAfterRemoveAudioStream) {
   VoiceMediaInfo voice_info;
   voice_info.senders.push_back(voice_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   auto voice_media_channels = pc->AddVoiceChannel("audio", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   voice_media_channels.first->SetStats(voice_info);
   voice_media_channels.second->SetStats(voice_info);
 
@@ -1764,7 +1810,9 @@ TEST_P(StatsCollectorTrackTest, LocalAndRemoteTracksWithSameSsrc) {
       MediaStream::Create("remotestreamid"));
   scoped_refptr<AudioTrackInterface> remote_track =
       make_ref_counted<FakeAudioTrack>(kRemoteTrackId);
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddReceiver(CreateMockReceiver(remote_track, kSsrcOfTrack));
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   remote_stream->AddTrack(remote_track);
   stats->AddStream(remote_stream.get());
 
@@ -1784,7 +1832,9 @@ TEST_P(StatsCollectorTrackTest, LocalAndRemoteTracksWithSameSsrc) {
   voice_info.receivers.push_back(voice_receiver_info);
 
   // Instruct the session to return stats containing the transport channel.
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   auto voice_media_channels = pc->AddVoiceChannel("audio", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   voice_media_channels.first->SetStats(voice_info);
   voice_media_channels.second->SetStats(voice_info);
 
@@ -1841,7 +1891,9 @@ TEST_P(StatsCollectorTrackTest, TwoLocalTracksWithSameSsrc) {
   VoiceMediaInfo voice_info;
   voice_info.senders.push_back(voice_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   auto voice_media_channels = pc->AddVoiceChannel("voice", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   voice_media_channels.first->SetStats(voice_info);
   voice_media_channels.second->SetStats(voice_info);
 
@@ -1851,12 +1903,16 @@ TEST_P(StatsCollectorTrackTest, TwoLocalTracksWithSameSsrc) {
   // Remove the previous audio track from the stream.
   stream_->RemoveTrack(audio_track());
   stats->RemoveLocalAudioTrack(audio_track_.get(), kSsrcOfTrack);
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->RemoveSender(sender);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   // Create a new audio track and adds it to the stream and stats.
   static const std::string kNewTrackId = "new_track_id";
   auto new_audio_track = make_ref_counted<FakeAudioTrack>(kNewTrackId);
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddSender(CreateMockSender(new_audio_track, kSsrcOfTrack));
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   stream_->AddTrack(scoped_refptr<AudioTrackInterface>(new_audio_track.get()));
 
   stats->AddLocalAudioTrack(new_audio_track.get(), kSsrcOfTrack);
@@ -1888,9 +1944,11 @@ TEST_P(StatsCollectorTrackTest, TwoLocalSendersWithSameTrack) {
 
   auto local_track =
       make_ref_counted<FakeAudioTrackWithInitValue>(kLocalTrackId);
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddSender(CreateMockSender(local_track, kFirstSsrc));
   stats->AddLocalAudioTrack(local_track.get(), kFirstSsrc);
   pc->AddSender(CreateMockSender(local_track, kSecondSsrc));
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   stats->AddLocalAudioTrack(local_track.get(), kSecondSsrc);
 
   VoiceSenderInfo first_sender_info;
@@ -1907,7 +1965,9 @@ TEST_P(StatsCollectorTrackTest, TwoLocalSendersWithSameTrack) {
   voice_info.senders.push_back(first_sender_info);
   voice_info.senders.push_back(second_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   auto voice_media_channels = pc->AddVoiceChannel("voice", "transport");
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
   voice_media_channels.first->SetStats(voice_info);
   voice_media_channels.second->SetStats(voice_info);
 
@@ -1956,7 +2016,9 @@ TEST_P(StatsCollectorTrackTest, VerifyVideoSendSsrcStats) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport", video_info);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1983,7 +2045,9 @@ TEST_P(StatsCollectorTrackTest, VerifyVideoReceiveSsrcStatsNew) {
   VideoMediaInfo video_info;
   video_info.receivers.push_back(video_receiver_info);
 
+  RTC_ALLOW_PLAN_B_DEPRECATION_BEGIN();
   pc->AddVideoChannel("video", "transport", video_info);
+  RTC_ALLOW_PLAN_B_DEPRECATION_END();
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
