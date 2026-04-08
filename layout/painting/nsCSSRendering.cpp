@@ -64,8 +64,6 @@ using namespace mozilla::image;
 using mozilla::CSSSizeOrRatio;
 using mozilla::dom::Document;
 
-static int gFrameTreeLockCount = 0;
-
 // To avoid storing this data on nsInlineFrame (bloat) and to avoid
 // recalculating this for each frame in a continuation (perf), hold
 // a cache of various coordinate information that we need in order
@@ -263,8 +261,6 @@ struct InlineBackgroundData {
 
   void SetFrame(nsIFrame* aFrame) {
     MOZ_ASSERT(aFrame, "Need a frame");
-    NS_ASSERTION(gFrameTreeLockCount > 0,
-                 "Can't call this when frame tree is not locked");
 
     if (aFrame == mFrame) {
       return;
@@ -1333,12 +1329,8 @@ ComputedStyle* nsCSSRendering::FindBackground(const nsIFrame* aForFrame) {
   return nullptr;
 }
 
-void nsCSSRendering::BeginFrameTreesLocked() { ++gFrameTreeLockCount; }
-
-void nsCSSRendering::EndFrameTreesLocked() {
-  NS_ASSERTION(gFrameTreeLockCount > 0, "Unbalanced EndFrameTreeLocked");
-  --gFrameTreeLockCount;
-  if (gFrameTreeLockCount == 0) {
+void nsCSSRendering::PresShellChanged() {
+  if (gInlineBGData) {
     gInlineBGData->Reset();
   }
 }
