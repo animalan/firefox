@@ -565,23 +565,20 @@ export let ContentSearch = {
       const forceSuppressFocusBorder = ev?.type === "mousedown";
       urlBar.removeHiddenFocus(forceSuppressFocusBorder);
 
-      urlBar.inputField.removeEventListener("keydown", onKeydown);
-      urlBar.inputField.removeEventListener("mousedown", onDone);
-      urlBar.inputField.removeEventListener("blur", onDone);
-      urlBar.inputField.removeEventListener(
-        "compositionstart",
-        checkFirstChange
-      );
-      urlBar.inputField.removeEventListener("paste", checkFirstChange);
+      urlBar.removeEventListener("keydown", onKeydown);
+      urlBar.removeEventListener("mousedown", onDone);
+      urlBar.removeEventListener("blur", onDone);
+      urlBar.removeEventListener("compositionstart", checkFirstChange);
+      urlBar.removeEventListener("paste", checkFirstChange);
 
       actor.sendAsyncMessage("ShowSearch");
     };
 
-    urlBar.inputField.addEventListener("keydown", onKeydown);
-    urlBar.inputField.addEventListener("mousedown", onDone);
-    urlBar.inputField.addEventListener("blur", onDone);
-    urlBar.inputField.addEventListener("compositionstart", checkFirstChange);
-    urlBar.inputField.addEventListener("paste", checkFirstChange);
+    urlBar.addEventListener("keydown", onKeydown);
+    urlBar.addEventListener("mousedown", onDone);
+    urlBar.addEventListener("blur", onDone);
+    urlBar.addEventListener("compositionstart", checkFirstChange);
+    urlBar.addEventListener("paste", checkFirstChange);
   },
 
   async _onObserve(eventItem) {
