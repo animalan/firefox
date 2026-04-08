@@ -1526,9 +1526,17 @@ class MochitestDesktop:
         self.mozHttp2Server = None
         self.dohServer = None
         if options.useHttp3Server:
+            options.dohServerPort = self.findFreePort(socket.SOCK_STREAM)
+            options.http3ServerPort = self.findFreePort(socket.SOCK_DGRAM)
+            self.log.info(f"use doh server at port: {options.dohServerPort}")
+            self.log.info(f"use http3 server at port: {options.http3ServerPort}")
             self.startHttp3Server(options)
             self.startDoHServer(options, options.http3ServerPort, "h3")
         elif options.useHttp2Server:
+            options.dohServerPort = self.findFreePort(socket.SOCK_STREAM)
+            options.http2ServerPort = self.findFreePort(socket.SOCK_STREAM)
+            self.log.info(f"use doh server at port: {options.dohServerPort}")
+            self.log.info(f"use http2 server at port: {options.http2ServerPort}")
             self.startHttp2Server(options)
             self.startDoHServer(options, options.http2ServerPort, "h2")
 
@@ -2316,18 +2324,8 @@ toolbar#nav-bar {
             "ws": options.sslPort,
         }
 
-        if options.useHttp3Server:
-            options.dohServerPort = self.findFreePort(socket.SOCK_STREAM)
-            options.http3ServerPort = self.findFreePort(socket.SOCK_DGRAM)
+        if getattr(options, "dohServerPort", None) is not None:
             proxyOptions["dohServerPort"] = options.dohServerPort
-            self.log.info(f"use doh server at port: {options.dohServerPort}")
-            self.log.info(f"use http3 server at port: {options.http3ServerPort}")
-        elif options.useHttp2Server:
-            options.dohServerPort = self.findFreePort(socket.SOCK_STREAM)
-            options.http2ServerPort = self.findFreePort(socket.SOCK_STREAM)
-            proxyOptions["dohServerPort"] = options.dohServerPort
-            self.log.info(f"use doh server at port: {options.dohServerPort}")
-            self.log.info(f"use http2 server at port: {options.http2ServerPort}")
         return proxyOptions
 
     def merge_base_profiles(self, options, category):
@@ -2475,7 +2473,6 @@ toolbar#nav-bar {
             profile=options.profilePath,
             addons=extensions,
             locations=self.locations,
-            proxy=self.proxy(options),
             allowlistpaths=sandbox_allowlist_paths,
         )
 
@@ -3863,6 +3860,9 @@ toolbar#nav-bar {
         try:
             if self.startServers(options, debuggerInfo) is False:
                 return 1
+
+            # Write proxy prefs now that server ports are finalized.
+            self.profile.set_proxy(self.proxy(options))
 
             if self.mozHttp2Server is not None:
                 for key, value in self.mozHttp2Server.ports().items():
