@@ -48,7 +48,7 @@ void BaseAlloc::free(void* aPtr) MOZ_EXCLUDES(mMutex) {
   if (index < NUM_LIST_SIZES) {
     mFreeLists[index].pushFront(cell);
   } else {
-    mFreeListOversize.pushFront(cell);
+    mFreeListOversize.Insert(cell);
   }
 }
 
@@ -84,14 +84,15 @@ void* BaseAlloc::alloc_from_list(base_alloc_size_t aSize) {
     }
   }
 
-  // Linear scan the final free list, TODO: improve this with a tree.
-  for (auto& cell : mFreeListOversize) {
-    if (cell.Size() >= aSize) {
-      mFreeListOversize.remove(&cell);
-      cell.SetAllocated();
+  // Search for the best fit in the oversize tree.
+  BaseAllocCell* cell = mFreeListOversize.SearchOrNext(aSize);
+  if (cell) {
+    MOZ_ASSERT(cell->Size() >= aSize);
+    // TODO Split
+    mFreeListOversize.Remove(cell);
+    cell->SetAllocated();
 
-      return cell.Ptr();
-    }
+    return cell->Ptr();
   }
 
   return nullptr;

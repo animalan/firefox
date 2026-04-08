@@ -7,6 +7,7 @@
 
 #include "Constants.h"
 #include "Mutex.h"
+#include "RedBlackTree.h"
 #include "Utils.h"
 
 #include "mozilla/DoublyLinkedList.h"
@@ -63,7 +64,7 @@ class BaseAlloc {
   constexpr static base_alloc_size_t NUM_LIST_SIZES = 2608 / kCacheLineSize + 1;
   mozilla::DoublyLinkedList<BaseAllocCell>
       mFreeLists[NUM_LIST_SIZES] MOZ_GUARDED_BY(mMutex);
-  mozilla::DoublyLinkedList<BaseAllocCell> mFreeListOversize
+  RedBlackTree<BaseAllocCell, BaseAllocCellRBTrait> mFreeListOversize
       MOZ_GUARDED_BY(mMutex);
 
   // Attempt an allocation within the "wilderness" of already mapped chunks.
