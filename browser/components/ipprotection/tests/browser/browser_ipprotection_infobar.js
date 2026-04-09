@@ -89,8 +89,8 @@ add_task(async function test_90_percent_notification() {
     "Notification has high warning priority"
   );
   Assert.ok(
-    REGEX_WHOLE_NUMBER.test(notification.messageL10nArgs.usageLeft),
-    "90% notification shows GB rounded to whole number"
+    REGEX_DECIMAL.test(notification.messageL10nArgs.usageLeft),
+    "90% notification shows GB rounded to one decimal place"
   );
 
   window.gNotificationBox.removeNotification(notification);
@@ -211,8 +211,8 @@ add_task(async function test_90_percent_overrides_75_percent() {
 
   Assert.ok(notification90, "90% notification exists");
   Assert.ok(
-    REGEX_WHOLE_NUMBER.test(notification90.messageL10nArgs.usageLeft),
-    "90% notification shows GB rounded to whole number"
+    REGEX_DECIMAL.test(notification90.messageL10nArgs.usageLeft),
+    "90% notification shows GB rounded to one decimal place"
   );
   Assert.equal(notification75, null, "75% notification does not exist");
 

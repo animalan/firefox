@@ -7,6 +7,7 @@ browser.jar:
     content/browser/ipprotection/ipprotection-content.css (content/ipprotection-content.css)
     content/browser/ipprotection/ipprotection-content.mjs (content/ipprotection-content.mjs)
     content/browser/ipprotection/ipprotection-constants.mjs (content/ipprotection-constants.mjs)
+    content/browser/ipprotection/ipprotection-utils.mjs (content/ipprotection-utils.mjs)
     content/browser/ipprotection/ipprotection-customelements.js (content/ipprotection-customelements.js)
     content/browser/ipprotection/ipprotection-message-bar.mjs (content/ipprotection-message-bar.mjs)
     content/browser/ipprotection/ipprotection-unauthenticated.mjs (content/ipprotection-unauthenticated.mjs)

@@ -8,6 +8,7 @@ import {
   BANDWIDTH,
   LINKS,
 } from "chrome://browser/content/ipprotection/ipprotection-constants.mjs";
+import { formatRemainingBandwidth } from "chrome://browser/content/ipprotection/ipprotection-utils.mjs";
 
 const { ERRORS } = ChromeUtils.importESModule(
   "moz-src:///toolkit/components/ipprotection/IPPProxyManager.sys.mjs"
@@ -214,22 +215,16 @@ export default class IPProtectionContentElement extends MozLitElement {
     let messageType = "info";
 
     if (this.state.bandwidthWarning && this.state.bandwidthUsage) {
-      messageId = "ipprotection-message-bandwidth-warning";
       messageType = "warning";
-      const bandwidthRemaining =
-        this.state.bandwidthUsage.remaining / BANDWIDTH.BYTES_IN_GB;
+      const { value: usageLeft, useGB } = formatRemainingBandwidth(
+        this.state.bandwidthUsage.remaining
+      );
       const maxUsage = this.state.bandwidthUsage.max / BANDWIDTH.BYTES_IN_GB;
-      const pctUsed = (100 * (maxUsage - bandwidthRemaining)) / maxUsage;
-      let usageLeft = Math.round(bandwidthRemaining);
 
-      if (pctUsed >= 75 && pctUsed < 90) {
-        usageLeft = bandwidthRemaining.toFixed(1);
-      } else if (bandwidthRemaining < 1) {
-        messageId = "ipprotection-message-bandwidth-warning-mb";
-        usageLeft = Math.floor(
-          this.state.bandwidthUsage.remaining / BANDWIDTH.BYTES_IN_MB
-        );
-      }
+      messageId = useGB
+        ? "ipprotection-message-bandwidth-warning"
+        : "ipprotection-message-bandwidth-warning-mb";
+
       messageLinkL10nArgs = JSON.stringify({
         usageLeft,
         maxUsage,

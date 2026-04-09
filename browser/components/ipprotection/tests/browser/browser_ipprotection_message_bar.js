@@ -447,8 +447,8 @@ add_task(async function test_warning_message_l10n_args_at_80_percent_used() {
   const l10nArgs = JSON.parse(messageBar.messageLinkL10nArgs);
   Assert.equal(
     l10nArgs.usageLeft,
-    (remaining / BANDWIDTH.BYTES_IN_GB).toFixed(1),
-    "usageLeft should be a decimal GB value when 75% <= pctUsed < 90%"
+    parseFloat((remaining / BANDWIDTH.BYTES_IN_GB).toFixed(1)),
+    "usageLeft should be the GB value rounded to nearest 0.1"
   );
 
   await closePanel();

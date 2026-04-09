@@ -421,7 +421,7 @@ add_task(async function test_bandwidth_states() {
       used: 45.1 * BANDWIDTH.BYTES_IN_GB,
       usedGB: 45.1,
       percent: "90",
-      remainingRounded: 5, // 4.9 is rounded up
+      remainingRounded: 4.9,
       gbCount: 2,
       mbCount: 0,
     },
