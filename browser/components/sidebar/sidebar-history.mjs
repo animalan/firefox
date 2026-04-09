@@ -195,6 +195,17 @@ export class SidebarHistory extends SidebarPage {
     this.handleNavigateToLink(e);
   }
 
+  onKeyDown(e) {
+    if (
+      (e.code === "Delete" || e.code === "Backspace") &&
+      e.composedTarget.localName === "sidebar-tab-row"
+    ) {
+      e.preventDefault();
+      this.triggerNode = e.composedTarget;
+      this.controller.deleteFromHistory().catch(console.error);
+    }
+  }
+
   /**
    * The template to use for cards-container.
    */
@@ -367,6 +378,7 @@ export class SidebarHistory extends SidebarPage {
       @fxview-tab-list-primary-action=${this.onPrimaryAction}
       @fxview-tab-list-secondary-action=${this.onSecondaryAction}
       @fxview-tab-list-middleclick-action=${this.onMiddleClickAction}
+      @keydown=${this.onKeyDown}
     >
     </sidebar-tab-list>`;
   }
