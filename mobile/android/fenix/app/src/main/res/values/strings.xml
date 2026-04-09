@@ -2766,6 +2766,10 @@
     <string name="ip_protection_menu_error">Error</string>
     <!-- Content description for the chevron button that opens the browser VPN settings screen -->
     <string name="ip_protection_navigate_settings">Open VPN settings</string>
+    <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
+    <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN on</string>
+    <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
+    <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN is active.</string>
 
     <!-- Autofill -->
     <!-- Preference and title for managing the autofill settings -->
