@@ -1692,12 +1692,10 @@ void MacroAssembler::minFloat32(FloatRegister other, FloatRegister srcDest,
   Float32Min(srcDest, srcDest, other);
 }
 void MacroAssembler::move16SignExtend(Register src, Register dest) {
-  slli(dest, src, xlen - 16);
-  srai(dest, dest, xlen - 16);
+  SignExtendShort(dest, src);
 }
 void MacroAssembler::move16To64SignExtend(Register src, Register64 dest) {
-  move32To64SignExtend(src, dest);
-  move16SignExtend(dest.reg, dest.reg);
+  SignExtendShort(dest.reg, src);
 }
 void MacroAssembler::move8SignExtendToPtr(Register src, Register dest) {
   move8To64SignExtend(src, Register64(dest));
@@ -1712,12 +1710,10 @@ void MacroAssembler::move32To64SignExtend(Register src, Register64 dest) {
   SignExtendWord(dest.reg, src);
 }
 void MacroAssembler::move32To64ZeroExtend(Register src, Register64 dest) {
-  slli(dest.reg, src, 32);
-  srli(dest.reg, dest.reg, 32);
+  ZeroExtendWord(dest.reg, src);
 }
 void MacroAssembler::move32ZeroExtendToPtr(Register src, Register dest) {
-  slli(dest, src, 32);
-  srli(dest, dest, 32);
+  ZeroExtendWord(dest, src);
 }
 void MacroAssembler::move64(Register64 src, Register64 dest) {
   movePtr(src.reg, dest.reg);
@@ -1736,12 +1732,10 @@ void MacroAssembler::move8ZeroExtend(Register src, Register dest) {
 }
 
 void MacroAssembler::move8SignExtend(Register src, Register dest) {
-  slli(dest, src, xlen - 8);
-  srai(dest, dest, xlen - 8);
+  SignExtendByte(dest, src);
 }
 void MacroAssembler::move8To64SignExtend(Register src, Register64 dest) {
-  move32To64SignExtend(src, dest);
-  move8SignExtend(dest.reg, dest.reg);
+  SignExtendByte(dest.reg, src);
 }
 void MacroAssembler::moveDoubleToGPR64(FloatRegister src, Register64 dest) {
   fmv_x_d(dest.reg, src);
