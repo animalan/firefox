@@ -644,7 +644,7 @@ export const NET_ERRORS = [
       whatCanYouDoL10nId: "neterror-net-offline",
     },
     hasNoUserFix: false,
-    image: "chrome://global/skin/illustrations/no-connection.svg",
+    image: NET_ERROR_ILLUSTRATIONS.noConnection,
   },
   {
     id: "networkProtocolError",

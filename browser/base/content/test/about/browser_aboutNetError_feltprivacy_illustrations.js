@@ -10,6 +10,10 @@ add_setup(async function () {
   await setSecurityCertErrorsFeltPrivacyToTrue();
 });
 
+registerCleanupFunction(() => {
+  Services.io.offline = false;
+});
+
 add_task(async function test_noConnection_illustration() {
   let browser, tab;
   await BrowserTestUtils.openNewForegroundTab(
@@ -48,6 +52,51 @@ add_task(async function test_noConnection_illustration() {
     );
   });
 
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_workOffline_showsNoConnectionIllustration() {
+  Services.io.offline = true;
+
+  let browser, tab, errorPageLoaded;
+  await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    () => {
+      gBrowser.selectedTab = BrowserTestUtils.addTab(
+        gBrowser,
+        "https://does-not-exist.test"
+      );
+      browser = gBrowser.selectedBrowser;
+      tab = gBrowser.selectedTab;
+      errorPageLoaded = BrowserTestUtils.waitForErrorPage(browser);
+    },
+    false
+  );
+  await errorPageLoaded;
+
+  await SpecialPowers.spawn(browser, [], async () => {
+    const netErrorCard = content.document.querySelector("net-error-card");
+    await netErrorCard.wrappedJSObject.getUpdateComplete();
+    const img = netErrorCard.shadowRoot.querySelector("img");
+    Assert.ok(img, "illustration img element exists");
+    Assert.equal(
+      img.getAttribute("src"),
+      "chrome://global/skin/illustrations/no-connection.svg",
+      "work offline illustration src is correct"
+    );
+    Assert.equal(
+      img.getAttribute("data-l10n-id"),
+      "fp-neterror-illustration-alt",
+      "work offline illustration data-l10n-id is correct"
+    );
+    Assert.equal(
+      img.getAttribute("data-l10n-attrs"),
+      "alt",
+      "data-l10n-attrs is set to 'alt'"
+    );
+  });
+
+  Services.io.offline = false;
   BrowserTestUtils.removeTab(tab);
 });
 
