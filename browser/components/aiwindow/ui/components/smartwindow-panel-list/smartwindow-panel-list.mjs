@@ -115,7 +115,6 @@ export class SmartwindowPanelList extends MozLitElement {
           : this.renderRoot.querySelector(".smartwindow-panel-list-anchor");
     }
     if (
-      this.sidebarMode &&
       this.#panelList?.open &&
       (changedProperties.has("anchor") || changedProperties.has("groups"))
     ) {
