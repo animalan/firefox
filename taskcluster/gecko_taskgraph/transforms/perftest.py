@@ -430,6 +430,10 @@ def set_perftest_attributes(config, jobs):
         yield job
 
 
+# Restrict most perftest jobs to Ubuntu 24.04, keeping only allowed exceptions on 18.04.
+transforms.add(linux_perf_platform_restrictions.restrict_perftest_to_2404)
+
+
 @transforms.add
 def setup_autoland_retriggers(config, jobs):
 

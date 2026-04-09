@@ -555,6 +555,8 @@ def define_tags(config, tasks):
         yield task
 
 
+# Restrict most perf tests to Ubuntu 24.04, keeping only allowed exceptions on 18.04.
+transforms.add(linux_perf_platform_restrictions.restrict_tests_to_2404)
 # Apply platform restrictions for tests failing on Ubuntu 24.04.
 transforms.add(linux_perf_platform_restrictions.restrict_failing_tests_to_1804)
 

@@ -974,15 +974,15 @@ browsertime-network-bench:
         by-app:
             firefox:
                 by-test-platform:
-                    linux.*shippable-qr.*: [mozilla-central]
+                    linux.*shippable.*: [mozilla-central]
                     default: []
             chrome:
                 by-test-platform:
-                    linux.*shippable-qr.*: [mozilla-central]
+                    linux.*shippable.*: [mozilla-central]
                     default: []
             custom-car:
                 by-test-platform:
-                    linux.*shippable-qr.*: [mozilla-central]
+                    linux.*shippable.*: [mozilla-central]
                     default: []
             default: []
     tier:
