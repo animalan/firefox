@@ -7,11 +7,17 @@
 
 "use strict";
 
+Services.scriptloader.loadSubScript(
+  "chrome://mochitests/content/browser/browser/components/preferences/tests/head.js",
+  this
+);
+
 add_setup(async function setup() {
   await SpecialPowers.pushPrefEnv({
     set: [
       ["browser.urlbar.quickactions.enabled", true],
       ["browser.urlbar.secondaryActions.featureGate", true],
+      ["browser.preferences.experimental.hidden", false],
     ],
   });
 });
@@ -52,6 +58,25 @@ let COMMANDS_TESTS = [
     uri: "about:addons",
     numTabPress: 2,
     testFun: async () => isSelected("button[name=theme]"),
+  },
+  {
+    cmd: "labs",
+    uri: "about:preferences#experimental",
+    loadType: LOAD_TYPE.PRE_LOADED,
+    setup: async () => {
+      // eslint-disable-next-line no-undef
+      const cleanup = await setupLabsTest();
+      registerCleanupFunction(cleanup);
+    },
+    testFun: async () => {
+      await BrowserTestUtils.waitForCondition(() => {
+        return (
+          window.gBrowser.selectedBrowser.currentURI.spec ==
+          "about:preferences#experimental"
+        );
+      });
+      return true;
+    },
   },
   {
     cmd: "add-ons",

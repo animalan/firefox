@@ -291,6 +291,12 @@ const DEFAULT_ACTIONS = {
         controller.browserWindow
       ),
   },
+  labs: {
+    l10nCommands: ["quickactions-cmd-labs"],
+    icon: "chrome://global/skin/icons/experiments.svg",
+    label: "quickactions-labs",
+    onPick: openUrlFun("about:preferences#experimental"),
+  },
 };
 
 function openInspector(window) {
