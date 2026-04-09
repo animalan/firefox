@@ -100,7 +100,7 @@ export class ListsFeed {
       ac.BroadcastToContent({
         type: at.WIDGETS_LISTS_SET,
         data: data.lists,
-        meta: { isStartup },
+        meta: isStartup,
       })
     );
   }
@@ -110,7 +110,7 @@ export class ListsFeed {
       ac.BroadcastToContent({
         type: at.WIDGETS_LISTS_SET_SELECTED,
         data,
-        meta: { isStartup },
+        meta: isStartup,
       })
     );
   }

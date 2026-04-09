@@ -99,7 +99,7 @@ export class TimerFeed {
       ac.BroadcastToContent({
         type: at.WIDGETS_TIMER_SET,
         data,
-        meta: { isStartup },
+        meta: isStartup,
       })
     );
   }
