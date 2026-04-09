@@ -561,7 +561,7 @@ add_task(async function test_history_context_menu() {
   );
   await promiseRemoved;
   await TestUtils.waitForCondition(
-    () => () => rows[0].mainEl.href !== site,
+    () => rows[0].mainEl.href !== site,
     "The removed entry should no longer be visible."
   );
 
