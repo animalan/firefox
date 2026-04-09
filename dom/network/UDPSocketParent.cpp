@@ -407,7 +407,7 @@ void UDPSocketParent::Send(const IPCStream& aStream,
 }
 
 mozilla::ipc::IPCResult UDPSocketParent::RecvJoinMulticast(
-    const nsACString& aMulticastAddress, const nsACString& aInterface) {
+    const nsCString& aMulticastAddress, const nsCString& aInterface) {
   if (!mSocket) {
     NS_WARNING("multicast socket is closed");
     FireInternalError(__LINE__);
@@ -424,7 +424,7 @@ mozilla::ipc::IPCResult UDPSocketParent::RecvJoinMulticast(
 }
 
 mozilla::ipc::IPCResult UDPSocketParent::RecvLeaveMulticast(
-    const nsACString& aMulticastAddress, const nsACString& aInterface) {
+    const nsCString& aMulticastAddress, const nsCString& aInterface) {
   if (!mSocket) {
     NS_WARNING("multicast socket is closed");
     FireInternalError(__LINE__);

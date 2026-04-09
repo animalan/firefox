@@ -25,6 +25,12 @@ class NeckoChild : public PNeckoChild {
  protected:
   virtual ~NeckoChild();
 
+  PStunAddrsRequestChild* AllocPStunAddrsRequestChild();
+  bool DeallocPStunAddrsRequestChild(PStunAddrsRequestChild* aActor);
+
+  PWebrtcTCPSocketChild* AllocPWebrtcTCPSocketChild(const Maybe<TabId>& tabId);
+  bool DeallocPWebrtcTCPSocketChild(PWebrtcTCPSocketChild* aActor);
+
   PCacheEntryWriteHandleChild* AllocPCacheEntryWriteHandleChild(
       PHttpChannelChild* channel);
   bool DeallocPCacheEntryWriteHandleChild(PCacheEntryWriteHandleChild* aActor);
@@ -45,6 +51,13 @@ class NeckoChild : public PNeckoChild {
   PTCPSocketChild* AllocPTCPSocketChild(const nsAString& host,
                                         const uint16_t& port);
   bool DeallocPTCPSocketChild(PTCPSocketChild*);
+  PTCPServerSocketChild* AllocPTCPServerSocketChild(
+      const uint16_t& aLocalPort, const uint16_t& aBacklog,
+      const bool& aUseArrayBuffers);
+  bool DeallocPTCPServerSocketChild(PTCPServerSocketChild*);
+  PUDPSocketChild* AllocPUDPSocketChild(nsIPrincipal* aPrincipal,
+                                        const nsACString& aFilter);
+  bool DeallocPUDPSocketChild(PUDPSocketChild*);
   PTransportProviderChild* AllocPTransportProviderChild();
   bool DeallocPTransportProviderChild(PTransportProviderChild* aActor);
   PWebSocketEventListenerChild* AllocPWebSocketEventListenerChild(

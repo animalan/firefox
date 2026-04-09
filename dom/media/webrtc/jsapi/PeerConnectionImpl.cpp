@@ -548,7 +548,7 @@ nsresult PeerConnectionImpl::Initialize(PeerConnectionObserver& aObserver,
 
   if (XRE_IsContentProcess()) {
     mStunAddrsRequest =
-        net::StunAddrsRequestChild::Create(new StunAddrsHandler(this));
+        new net::StunAddrsRequestChild(new StunAddrsHandler(this));
   }
 
   // Initialize the media object.

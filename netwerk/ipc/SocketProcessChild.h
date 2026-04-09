@@ -66,6 +66,9 @@ class SocketProcessChild final : public PSocketProcessChild {
 #endif
   mozilla::ipc::IPCResult RecvSocketProcessTelemetryPing();
 
+  PWebrtcTCPSocketChild* AllocPWebrtcTCPSocketChild(const Maybe<TabId>& tabId);
+  bool DeallocPWebrtcTCPSocketChild(PWebrtcTCPSocketChild* aActor);
+
   already_AddRefed<PHttpTransactionChild> AllocPHttpTransactionChild();
 
   void CleanUp();

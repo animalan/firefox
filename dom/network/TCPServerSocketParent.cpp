@@ -21,11 +21,28 @@ NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(TCPServerSocketParent)
   NS_INTERFACE_MAP_ENTRY(nsISupports)
 NS_INTERFACE_MAP_END
 
+void TCPServerSocketParent::ReleaseIPDLReference() {
+  MOZ_ASSERT(mIPCOpen);
+  NS_ASSERTION(mIPCOpen,
+               "ReleaseIPDLReference called without matching AddIPDLReference");
+  if (!mIPCOpen) {
+    return;
+  }
+  mIPCOpen = false;
+  this->Release();
+}
+
+void TCPServerSocketParent::AddIPDLReference() {
+  MOZ_ASSERT(!mIPCOpen);
+  mIPCOpen = true;
+  this->AddRef();
+}
+
 TCPServerSocketParent::TCPServerSocketParent(PNeckoParent* neckoParent,
                                              uint16_t aLocalPort,
                                              uint16_t aBacklog,
                                              bool aUseArrayBuffers)
-    : mNeckoParent(neckoParent) {
+    : mNeckoParent(neckoParent), mIPCOpen(false) {
   mServerSocket =
       new TCPServerSocket(nullptr, aLocalPort, aUseArrayBuffers, aBacklog);
   mServerSocket->SetServerBridgeParent(this);
@@ -56,6 +73,11 @@ nsresult TCPServerSocketParent::SendCallbackAccept(TCPSocketParent* socket) {
 
   if (mNeckoParent) {
     if (mNeckoParent->SendPTCPSocketConstructor(socket, host, port)) {
+      // Call |AddIPDLReference| only on success; on failure IPDL calls
+      // DeallocPTCPSocketParent which calls ReleaseIPDLReference, guarded
+      // against the unbalanced case.
+      socket->AddIPDLReference();
+
       (void)PTCPServerSocketParent::SendCallbackAccept(WrapNotNull(socket));
     } else {
       NS_ERROR("Sending data from PTCPSocketParent was failed.");

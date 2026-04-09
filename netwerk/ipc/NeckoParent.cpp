@@ -208,22 +208,43 @@ mozilla::ipc::IPCResult NeckoParent::RecvPHttpChannelConstructor(
   return IPC_OK();
 }
 
-already_AddRefed<PStunAddrsRequestParent>
-NeckoParent::AllocPStunAddrsRequestParent() {
+PStunAddrsRequestParent* NeckoParent::AllocPStunAddrsRequestParent() {
 #ifdef MOZ_WEBRTC
-  return do_AddRef(new StunAddrsRequestParent());
+  StunAddrsRequestParent* p = new StunAddrsRequestParent();
+  p->AddRef();
+  return p;
 #else
   return nullptr;
 #endif
 }
 
-already_AddRefed<PWebrtcTCPSocketParent>
-NeckoParent::AllocPWebrtcTCPSocketParent(const Maybe<TabId>& aTabId) {
+bool NeckoParent::DeallocPStunAddrsRequestParent(
+    PStunAddrsRequestParent* aActor) {
 #ifdef MOZ_WEBRTC
-  return do_AddRef(new WebrtcTCPSocketParent(aTabId));
+  StunAddrsRequestParent* p = static_cast<StunAddrsRequestParent*>(aActor);
+  p->Release();
+#endif
+  return true;
+}
+
+PWebrtcTCPSocketParent* NeckoParent::AllocPWebrtcTCPSocketParent(
+    const Maybe<TabId>& aTabId) {
+#ifdef MOZ_WEBRTC
+  WebrtcTCPSocketParent* parent = new WebrtcTCPSocketParent(aTabId);
+  parent->AddRef();
+  return parent;
 #else
   return nullptr;
 #endif
+}
+
+bool NeckoParent::DeallocPWebrtcTCPSocketParent(
+    PWebrtcTCPSocketParent* aActor) {
+#ifdef MOZ_WEBRTC
+  WebrtcTCPSocketParent* parent = static_cast<WebrtcTCPSocketParent*>(aActor);
+  parent->Release();
+#endif
+  return true;
 }
 
 PCacheEntryWriteHandleParent* NeckoParent::AllocPCacheEntryWriteHandleParent(
@@ -421,12 +442,13 @@ bool NeckoParent::DeallocPTCPSocketParent(PTCPSocketParent* actor) {
   return true;
 }
 
-already_AddRefed<PTCPServerSocketParent>
-NeckoParent::AllocPTCPServerSocketParent(const uint16_t& aLocalPort,
-                                         const uint16_t& aBacklog,
-                                         const bool& aUseArrayBuffers) {
-  return do_AddRef(
-      new TCPServerSocketParent(this, aLocalPort, aBacklog, aUseArrayBuffers));
+PTCPServerSocketParent* NeckoParent::AllocPTCPServerSocketParent(
+    const uint16_t& aLocalPort, const uint16_t& aBacklog,
+    const bool& aUseArrayBuffers) {
+  TCPServerSocketParent* p =
+      new TCPServerSocketParent(this, aLocalPort, aBacklog, aUseArrayBuffers);
+  p->AddIPDLReference();
+  return p;
 }
 
 mozilla::ipc::IPCResult NeckoParent::RecvPTCPServerSocketConstructor(
@@ -439,9 +461,17 @@ mozilla::ipc::IPCResult NeckoParent::RecvPTCPServerSocketConstructor(
   return IPC_OK();
 }
 
-already_AddRefed<PUDPSocketParent> NeckoParent::AllocPUDPSocketParent(
+bool NeckoParent::DeallocPTCPServerSocketParent(PTCPServerSocketParent* actor) {
+  TCPServerSocketParent* p = static_cast<TCPServerSocketParent*>(actor);
+  p->ReleaseIPDLReference();
+  return true;
+}
+
+PUDPSocketParent* NeckoParent::AllocPUDPSocketParent(
     nsIPrincipal* /* unused */, const nsACString& /* unused */) {
-  return do_AddRef(new UDPSocketParent(this));
+  RefPtr<UDPSocketParent> p = new UDPSocketParent(this);
+
+  return p.forget().take();
 }
 
 mozilla::ipc::IPCResult NeckoParent::RecvPUDPSocketConstructor(
@@ -454,6 +484,12 @@ mozilla::ipc::IPCResult NeckoParent::RecvPUDPSocketConstructor(
     return IPC_FAIL_NO_REASON(this);
   }
   return IPC_OK();
+}
+
+bool NeckoParent::DeallocPUDPSocketParent(PUDPSocketParent* actor) {
+  UDPSocketParent* p = static_cast<UDPSocketParent*>(actor);
+  p->Release();
+  return true;
 }
 
 already_AddRefed<PDNSRequestParent> NeckoParent::AllocPDNSRequestParent(

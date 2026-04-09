@@ -48,10 +48,14 @@ mozilla::ipc::IPCResult WebrtcTCPSocketChild::RecvOnRead(
 WebrtcTCPSocketChild::WebrtcTCPSocketChild(
     WebrtcTCPSocketCallback* aProxyCallbacks)
     : mProxyCallbacks(aProxyCallbacks) {
+  MOZ_COUNT_CTOR(WebrtcTCPSocketChild);
+
   LOG(("WebrtcTCPSocketChild::WebrtcTCPSocketChild %p\n", this));
 }
 
 WebrtcTCPSocketChild::~WebrtcTCPSocketChild() {
+  MOZ_COUNT_DTOR(WebrtcTCPSocketChild);
+
   LOG(("WebrtcTCPSocketChild::~WebrtcTCPSocketChild %p\n", this));
 }
 
@@ -63,6 +67,8 @@ void WebrtcTCPSocketChild::AsyncOpen(
        PromiseFlatCString(aHost).get(), aPort));
 
   MOZ_ASSERT(NS_IsMainThread(), "not main thread");
+
+  AddIPDLReference();
 
   Maybe<net::WebrtcProxyConfig> proxyConfig;
   Maybe<dom::TabId> tabId;

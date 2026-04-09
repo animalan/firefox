@@ -79,10 +79,12 @@ class NeckoParent : public PNeckoParent {
       const SerializedLoadContext& aSerialized,
       const HttpChannelCreationArgs& aOpenArgs) override;
 
-  already_AddRefed<PStunAddrsRequestParent> AllocPStunAddrsRequestParent();
+  PStunAddrsRequestParent* AllocPStunAddrsRequestParent();
+  bool DeallocPStunAddrsRequestParent(PStunAddrsRequestParent* aActor);
 
-  already_AddRefed<PWebrtcTCPSocketParent> AllocPWebrtcTCPSocketParent(
+  PWebrtcTCPSocketParent* AllocPWebrtcTCPSocketParent(
       const Maybe<TabId>& aTabId);
+  bool DeallocPWebrtcTCPSocketParent(PWebrtcTCPSocketParent* aActor);
 
   PCacheEntryWriteHandleParent* AllocPCacheEntryWriteHandleParent(
       PHttpChannelParent* channel);
@@ -101,6 +103,8 @@ class NeckoParent : public PNeckoParent {
       PBrowserParent* browser, const SerializedLoadContext& aSerialized,
       const uint32_t& aSerial);
   bool DeallocPWebSocketParent(PWebSocketParent*);
+  PTCPSocketParent* AllocPTCPSocketParent(const nsAString& host,
+                                          const uint16_t& port);
 
   already_AddRefed<PDocumentChannelParent> AllocPDocumentChannelParent(
       const dom::MaybeDiscarded<dom::BrowsingContext>& aContext,
@@ -111,23 +115,20 @@ class NeckoParent : public PNeckoParent {
       const DocumentChannelCreationArgs& aArgs) override;
   bool DeallocPDocumentChannelParent(PDocumentChannelParent* channel);
 
-  already_AddRefed<PTCPServerSocketParent> AllocPTCPServerSocketParent(
+  bool DeallocPTCPSocketParent(PTCPSocketParent*);
+  PTCPServerSocketParent* AllocPTCPServerSocketParent(
       const uint16_t& aLocalPort, const uint16_t& aBacklog,
       const bool& aUseArrayBuffers);
   virtual mozilla::ipc::IPCResult RecvPTCPServerSocketConstructor(
       PTCPServerSocketParent*, const uint16_t& aLocalPort,
       const uint16_t& aBacklog, const bool& aUseArrayBuffers) override;
-
-  PTCPSocketParent* AllocPTCPSocketParent(const nsAString& host,
-                                          const uint16_t& port);
-  bool DeallocPTCPSocketParent(PTCPSocketParent*);
-
-  already_AddRefed<PUDPSocketParent> AllocPUDPSocketParent(
-      nsIPrincipal* aPrincipal, const nsACString& aFilter);
+  bool DeallocPTCPServerSocketParent(PTCPServerSocketParent*);
+  PUDPSocketParent* AllocPUDPSocketParent(nsIPrincipal* aPrincipal,
+                                          const nsACString& aFilter);
   virtual mozilla::ipc::IPCResult RecvPUDPSocketConstructor(
       PUDPSocketParent*, nsIPrincipal* aPrincipal,
       const nsACString& aFilter) override;
-
+  bool DeallocPUDPSocketParent(PUDPSocketParent*);
   already_AddRefed<PDNSRequestParent> AllocPDNSRequestParent(
       const nsACString& aHost, const nsACString& aTrrServer,
       const int32_t& aPort, const uint16_t& aType,

@@ -207,6 +207,9 @@ void StunAddrsRequestParent::OnQueryComplete_m(
 StaticRefPtr<StunAddrsRequestParent::MDNSServiceWrapper>
     StunAddrsRequestParent::mSharedMDNSService;
 
+NS_IMPL_ADDREF(StunAddrsRequestParent)
+NS_IMPL_RELEASE(StunAddrsRequestParent)
+
 StunAddrsRequestParent::MDNSServiceWrapper::MDNSServiceWrapper(
     const std::string& ifaddr)
     : ifaddr(ifaddr) {}
