@@ -3395,7 +3395,6 @@ int NS_main(int argc, NS_tchar** argv) {
   if (argc == 4 && (strstr(argv[1], "-dmgInstall") != 0)) {
     isDMGInstall = true;
     if (isElevated) {
-      PerformInstallationFromDMG(argc, argv);
       freeArguments(argc, argv);
       CleanupElevatedMacUpdate(true);
       return 0;
