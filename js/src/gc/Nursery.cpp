@@ -839,7 +839,7 @@ void* js::Nursery::allocateZeroedBuffer(Cell* owner, size_t nbytes,
     return nullptr;
   }
 
-  if (!registerMallocedBuffer(buffer, nbytes)) {
+  if (IsInsideNursery(owner) && !registerMallocedBuffer(buffer, nbytes)) {
     js_free(buffer);
     return nullptr;
   }
