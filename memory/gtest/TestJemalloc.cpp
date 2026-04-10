@@ -865,29 +865,39 @@ TEST(Jemalloc, StatsLite)
   moz_dispose_arena(my_arena);
 }
 
+void TestBaseAlloc(size_t size) {
+  SCOPED_TRACE(testing::Message() << "testing size " << size);
+  void* ptr1 = sBaseAlloc.alloc(size);
+  EXPECT_TRUE(ptr1);
+  EXPECT_TRUE(size <= sBaseAlloc.usable_size(ptr1));
+
+  void* ptr2 = sBaseAlloc.alloc(size);
+  EXPECT_TRUE(ptr2);
+  EXPECT_TRUE(size <= sBaseAlloc.usable_size(ptr2));
+
+  EXPECT_NE(ptr1, ptr2);
+
+  // Freeing the memory and allocating more of the same size should reuse the
+  // same address.
+  sBaseAlloc.free(ptr1);
+  void* ptr3 = sBaseAlloc.alloc(size);
+  EXPECT_TRUE(size <= sBaseAlloc.usable_size(ptr3));
+  EXPECT_EQ(ptr1, ptr3);
+
+  sBaseAlloc.free(ptr2);
+  sBaseAlloc.free(ptr3);
+}
+
 TEST(Jemalloc, BaseAlloc)
 {
-  for (size_t size = 8; size < 2048; size += 16) {
-    SCOPED_TRACE(testing::Message() << "testing size " << size);
-    void* ptr1 = sBaseAlloc.alloc(size);
-    EXPECT_TRUE(size <= sBaseAlloc.usable_size(ptr1));
-    EXPECT_TRUE(ptr1);
-
-    void* ptr2 = sBaseAlloc.alloc(size);
-    EXPECT_TRUE(size <= sBaseAlloc.usable_size(ptr2));
-    EXPECT_TRUE(ptr2);
-
-    EXPECT_NE(ptr1, ptr2);
-
-    // Freeing the memory and allocating more of the same size should reuse the
-    // same address.
-    sBaseAlloc.free(ptr1);
-    void* ptr3 = sBaseAlloc.alloc(size);
-    EXPECT_TRUE(size <= sBaseAlloc.usable_size(ptr3));
-    EXPECT_EQ(ptr1, ptr3);
-
-    sBaseAlloc.free(ptr2);
-    sBaseAlloc.free(ptr3);
+  for (size_t size = 16; size < 1024; size += 16) {
+    TestBaseAlloc(size);
+  }
+  for (size_t size = 1024; size < 8192; size += 128) {
+    TestBaseAlloc(size);
+  }
+  for (size_t size = 8192; size < 8_MiB; size += 1024) {
+    TestBaseAlloc(size);
   }
 
   void* ptr1 = sBaseAlloc.calloc(100, 7);
