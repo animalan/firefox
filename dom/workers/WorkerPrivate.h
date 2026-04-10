@@ -1001,11 +1001,6 @@ class WorkerPrivate final
     return mLoadInfo.mUsingStorageAccess;
   }
 
-  bool SerialAllowed() const {
-    AssertIsOnWorkerThread();
-    return mLoadInfo.mSerialAllowed;
-  }
-
   nsICookieJarSettings* CookieJarSettings() const {
     // Any thread.
     MOZ_ASSERT(mLoadInfo.mCookieJarSettings);

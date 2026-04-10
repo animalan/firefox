@@ -49,7 +49,7 @@ already_AddRefed<WebTransportSendStream> WebTransportSendStream::Create(
   auto stream = MakeRefPtr<WebTransportSendStream>(aGlobal, aWebTransport);
 
   nsCOMPtr<nsIAsyncOutputStream> outputStream = aSender;
-  auto algorithms = MakeRefPtr<WritableStreamToOutputAlgorithms>(
+  auto algorithms = MakeRefPtr<WritableStreamToOutput>(
       stream->GetParentObject(), outputStream);
 
   stream->mStreamId = aStreamId;

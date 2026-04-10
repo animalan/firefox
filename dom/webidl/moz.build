@@ -899,8 +899,6 @@ WEBIDL_FILES = [
     "ScriptProcessorNode.webidl",
     "ScrollAreaEvent.webidl",
     "Selection.webidl",
-    "Serial.webidl",
-    "SerialPort.webidl",
     "ServiceWorker.webidl",
     "ServiceWorkerContainer.webidl",
     "ServiceWorkerGlobalScope.webidl",

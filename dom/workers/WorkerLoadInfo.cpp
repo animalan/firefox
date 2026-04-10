@@ -94,7 +94,6 @@ WorkerLoadInfoData::WorkerLoadInfoData()
       mStorageAccess(StorageAccess::eDeny),
       mUseRegularPrincipal(false),
       mUsingStorageAccess(false),
-      mSerialAllowed(true),
       mServiceWorkersTestingInWindow(false),
       mShouldResistFingerprinting(false),
       mIsThirdPartyContext(true),

@@ -34,8 +34,6 @@ urlbar-web-notification-anchor =
     .tooltiptext = Change whether you can receive notifications from the site
 urlbar-midi-notification-anchor =
     .tooltiptext = Open MIDI panel
-urlbar-serial-notification-anchor =
-    .tooltiptext = Open Serial panel
 urlbar-eme-notification-anchor =
     .tooltiptext = Manage use of DRM software
 urlbar-web-authn-anchor =
@@ -167,8 +165,6 @@ urlbar-canvas-blocked =
     .tooltiptext = You have blocked canvas data extraction for this website.
 urlbar-midi-blocked =
     .tooltiptext = You have blocked MIDI access for this website.
-urlbar-serial-blocked =
-    .tooltiptext = You have blocked serial port access for this website.
 urlbar-install-blocked =
     .tooltiptext = You have blocked add-on installation for this website.
 
@@ -516,11 +512,6 @@ sharing-warning-proceed-to-tab =
   .label = Proceed to Tab
 sharing-warning-disable-for-session =
   .label = Disable sharing protection for this session
-
-## WebSerial "select a port" popup
-
-webserial-select-port-label = Select a serial port:
-webserial-no-ports-available = No serial ports available
 
 ## URL Bar
 

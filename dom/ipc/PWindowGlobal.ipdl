@@ -14,7 +14,6 @@ include protocol PBrowser;
 include protocol PInProcess;
 include protocol PBrowserBridge;
 include protocol PDigitalCredential;
-include protocol PSerialManager;
 include protocol PWebAuthnTransaction;
 include protocol PWebIdentity;
 
@@ -71,7 +70,6 @@ async protocol PWindowGlobal
 {
   manager PBrowser or PInProcess;
   manages PDigitalCredential;
-  manages PSerialManager;
   manages PWebAuthnTransaction;
   manages PWebIdentity;
 
@@ -236,7 +234,6 @@ parent:
   async RecordUserInteractionForPermissions();
 
   async PDigitalCredential();
-  async PSerialManager();
   async PWebAuthnTransaction();
   async PWebIdentity();
 

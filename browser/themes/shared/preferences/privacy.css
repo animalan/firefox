@@ -69,10 +69,6 @@
   list-style-image: url(chrome://browser/skin/notification-icons/midi.svg);
 }
 
-.serial-icon {
-  list-style-image: url(chrome://browser/skin/notification-icons/serial.svg);
-}
-
 /* Content Blocking */
 
 /* Override styling that sets descriptions as grey */

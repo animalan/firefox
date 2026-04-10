@@ -57,9 +57,6 @@ const ContentPermissionIntegration = {
       case "midi": {
         return new lazy.PermissionUI.MIDIPermissionPrompt(request);
       }
-      case "serial": {
-        return new lazy.PermissionUI.SerialPermissionPrompt(request);
-      }
       case "storage-access": {
         return new lazy.PermissionUI.StorageAccessPermissionPrompt(request);
       }

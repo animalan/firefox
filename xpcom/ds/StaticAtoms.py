@@ -831,7 +831,6 @@ STATIC_ATOMS = [
     Atom("oncurrententrychange", "oncurrententrychange"),
     Atom("ondblclick", "ondblclick"),
     Atom("ondischargingtimechange", "ondischargingtimechange"),
-    Atom("ondisconnect", "ondisconnect"),
     Atom("ondispose", "ondispose"),
     Atom("ondownloading", "ondownloading"),
     Atom("onDOMActivate", "onDOMActivate"),

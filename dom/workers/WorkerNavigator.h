@@ -32,7 +32,6 @@ class MediaCapabilities;
 class LockManager;
 class Permissions;
 class ServiceWorkerContainer;
-class Serial;
 
 namespace network {
 class Connection;
@@ -50,7 +49,6 @@ class WorkerNavigator final : public nsWrapperCache {
   RefPtr<dom::LockManager> mLocks;
   RefPtr<dom::Permissions> mPermissions;
   RefPtr<ServiceWorkerContainer> mServiceWorkerContainer;
-  RefPtr<dom::Serial> mSerial;
   bool mOnline;
 
   WorkerNavigator(const NavigatorProperties& aProperties, bool aOnline);
@@ -122,8 +120,6 @@ class WorkerNavigator final : public nsWrapperCache {
   dom::Permissions* Permissions();
 
   already_AddRefed<ServiceWorkerContainer> ServiceWorker();
-
-  dom::Serial* Serial();
 };
 
 }  // namespace dom

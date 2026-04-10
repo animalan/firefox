@@ -132,7 +132,6 @@ struct WorkerLoadInfoData {
   StorageAccess mStorageAccess;
   bool mUseRegularPrincipal;
   bool mUsingStorageAccess;
-  bool mSerialAllowed;
   bool mServiceWorkersTestingInWindow;
   bool mShouldResistFingerprinting;
   Maybe<RFPTargetSet> mOverriddenFingerprintingSettings;
