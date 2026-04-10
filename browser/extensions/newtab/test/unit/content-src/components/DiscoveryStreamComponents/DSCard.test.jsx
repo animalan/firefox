@@ -22,7 +22,7 @@ import { Provider } from "react-redux";
 import { combineReducers, createStore } from "redux";
 
 const DEFAULT_PROPS = {
-  url: "about:robots",
+  url: "https://example.com",
   title: "title",
   raw_image_src: "https://picsum.photos/200",
   icon_src: "https://picsum.photos/200",

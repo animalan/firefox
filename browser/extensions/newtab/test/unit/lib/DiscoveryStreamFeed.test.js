@@ -1032,7 +1032,6 @@ describe("DiscoveryStreamFeed", () => {
 
       await feed.loadSpocs(feed.store.dispatch);
 
-      console.log(feed.fetchFromEndpoint.firstCall);
       assert.equal(
         feed.fetchFromEndpoint.secondCall.args[0],
         "unifiedAdEndpoint/v1/ads"
@@ -1081,7 +1080,6 @@ describe("DiscoveryStreamFeed", () => {
 
       await feed.loadSpocs(feed.store.dispatch);
 
-      console.log(feed.fetchFromEndpoint.firstCall);
       assert.equal(
         feed.fetchFromEndpoint.secondCall.args[0],
         "unifiedAdEndpoint/v1/ads"
