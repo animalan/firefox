@@ -1094,6 +1094,7 @@ class MOZ_RAII UnaryArithIRGenerator : public IRGenerator {
   AttachDecision tryAttachBigIntPtr();
   AttachDecision tryAttachStringInt32();
   AttachDecision tryAttachStringNumber();
+  AttachDecision tryAttachDateToNumber();
 
   void trackAttached(const char* name /* must be a C string literal */);
 
