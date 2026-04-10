@@ -3556,6 +3556,9 @@ pref("browser.ipProtection.bandwidth.enabled", true);
 pref("browser.ipProtection.egressLocationEnabled", false);
 // Pref that flips at 50%, 75%, and 90% bandwidth usage thresholds
 pref("browser.ipProtection.bandwidthThreshold", 0);
+// Tracks the highest bandwidth warning threshold (75 or 90) the user has dismissed.
+// Reset to 0 when bandwidth usage resets.
+pref("browser.ipProtection.bandwidthWarningDismissedThreshold", 0);
 
 // Pref to enable aboug:glean redesign.
 pref("about.glean.redesign.enabled", false);
