@@ -167,7 +167,7 @@ class TierStatus:
 def record_cargo_timings(resource_monitor, timings_path):
     cargo_start = 0
     try:
-        with open(timings_path) as fh:
+        with open(timings_path, encoding="utf-8") as fh:
             # Extrace the UNIT_DATA list from the cargo timing HTML file.
             unit_data = dropwhile(lambda l: l.rstrip() != "const UNIT_DATA = [", fh)
             unit_data = islice(unit_data, 1, None)
@@ -2030,7 +2030,7 @@ class BuildDriver(MozbuildObject):
         # Copy the original mozconfig to the objdir.
         mozconfig_objdir = mozpath.join(self.topobjdir, ".mozconfig")
         if mozconfig["path"]:
-            with open(mozconfig["path"]) as ifh:
+            with open(mozconfig["path"], "rb") as ifh:
                 with FileAvoidWrite(mozconfig_objdir) as ofh:
                     ofh.write(ifh.read())
         else:
