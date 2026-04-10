@@ -140,14 +140,14 @@ void BaseAlloc::free(void* aPtr) MOZ_EXCLUDES(mMutex) {
 
   // Attempt to merge backwards
   BaseAllocCell* left = cell->LeftCell();
-  if (left && !left->Allocated()) {
+  if (left && !left->Allocated() && left->Committed()) {
     Unlink(left);
     left->Merge(cell);
     cell = left;
   }
   // And forward
   BaseAllocCell* right = cell->RightCell();
-  if (right && !right->Allocated()) {
+  if (right && !right->Allocated() && right->Committed()) {
     Unlink(right);
     cell->Merge(right);
   }
@@ -191,6 +191,12 @@ BaseAllocCell* BaseAlloc::alloc_cell(base_alloc_size_t aSize) {
     return cell;
   }
 
+  cell = decommitted_alloc(aSize);
+  if (cell) {
+    Log("alloc(%u) = %p (from decommitted)\n", aSize, cell);
+    return cell;
+  }
+
   cell = chunk_alloc(aSize);
   if (cell) {
     Log("alloc(%u) = %p (from new chunk)\n", aSize, cell);
@@ -231,11 +237,15 @@ BaseAllocCell* BaseAlloc::oversize_alloc(base_alloc_size_t aSize) {
 void BaseAlloc::Unlink(BaseAllocCell* cell) {
   MOZ_ASSERT(!cell->Allocated());
 
-  unsigned index = get_list_index_for_size(cell->Size());
-  if (index < kNumFreeLists) {
-    mFreeLists[index].remove(cell);
+  if (cell->Committed()) {
+    unsigned index = get_list_index_for_size(cell->Size());
+    if (index < kNumFreeLists) {
+      mFreeLists[index].remove(cell);
+    } else {
+      mFreeListOversize.Remove(cell);
+    }
   } else {
-    mFreeListOversize.Remove(cell);
+    mFreeListDecommitted.Remove(cell);
   }
 }
 
@@ -245,11 +255,15 @@ void BaseAlloc::Link(BaseAllocCell* cell) {
   // the size must conform to our classes/free lists.
   MOZ_ASSERT(cell->Size() == size_round_up(cell->Size()));
 
-  unsigned index = get_list_index_for_size(cell->Size());
-  if (index < kNumFreeLists) {
-    mFreeLists[index].pushFront(cell);
+  if (cell->Committed()) {
+    unsigned index = get_list_index_for_size(cell->Size());
+    if (index < kNumFreeLists) {
+      mFreeLists[index].pushFront(cell);
+    } else {
+      mFreeListOversize.Insert(cell);
+    }
   } else {
-    mFreeListOversize.Insert(cell);
+    mFreeListDecommitted.Insert(cell);
   }
 }
 
@@ -276,6 +290,29 @@ BaseAllocCell* BaseAlloc::chunk_alloc(base_alloc_size_t aSize)
   BaseAllocCell* cell =
       new (reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(base_pages) +
                                    kBaseQuantum)) BaseAllocCell(net_size);
+  MaybeTrim(cell, aSize, true);
+
+  return cell;
+}
+
+BaseAllocCell* BaseAlloc::decommitted_alloc(base_alloc_size_t aSize) {
+  BaseAllocCell* cell = mFreeListDecommitted.SearchOrNext(aSize);
+  if (!cell) {
+    return nullptr;
+  }
+  mFreeListDecommitted.Remove(cell);
+
+  auto result = cell->Commit(aSize);
+  if (!result) {
+    mFreeListDecommitted.Insert(cell);
+    return nullptr;
+  }
+
+  mStats.mCommitted += result->mBytesCommitted;
+  if (result->mNewCell) {
+    Link(result->mNewCell);
+  }
+
   MaybeTrim(cell, aSize);
 
   return cell;
@@ -320,7 +357,7 @@ void* BaseAlloc::realloc(void* aPtr, size_t aNewSize) {
 
       // See if this cell's neighour is free and large enough that we can
       // merge
-      if (right && !right->Allocated() &&
+      if (right && !right->Allocated() && right->Committed() &&
           (cell->Size() + kBaseQuantum + right->Size()) >= aNewSize) {
         Unlink(right);
         cell->Merge(right);
@@ -371,7 +408,10 @@ void BaseAllocCell::SetSize(base_alloc_size_t aSize) {
   RightMetadata()->mLeftSize = aSize;
 }
 
-void BaseAllocCell::ClearPayload() { memset(&mListElem, 0, sizeof(mListElem)); }
+void BaseAllocCell::ClearPayload() {
+  memset(&mListElem, 0, sizeof(mListElem));
+  mCommitted = true;
+}
 
 BaseAllocCell* BaseAllocCell::LeftCell() {
   base_alloc_size_t left_cell_size = LeftMetadata()->mLeftSize;
@@ -451,8 +491,8 @@ uintptr_t BaseAllocCell::CanSplit(base_alloc_size_t aSizeReq) {
   return next_addr;
 }
 
-void BaseAlloc::MaybeTrim(BaseAllocCell* aCell,
-                          base_alloc_size_t aSizeRequest) {
+void BaseAlloc::MaybeTrim(BaseAllocCell* aCell, base_alloc_size_t aSizeRequest,
+                          bool aDecommit) {
   uintptr_t new_addr = aCell->CanSplit(aSizeRequest);
   if (!new_addr) {
     return;
@@ -460,6 +500,11 @@ void BaseAlloc::MaybeTrim(BaseAllocCell* aCell,
 
   BaseAllocCell* next = aCell->Split(new_addr);
   MOZ_ASSERT(next);
+
+  if (aDecommit) {
+    mStats.mCommitted -= next->Decommit();
+  }
+
   Link(next);
 }
 
@@ -487,6 +532,81 @@ BaseAllocCell* BaseAllocCell::Split(uintptr_t aNewAddr) {
   MOZ_ASSERT(right->RightMetadata() == last_metadata);
 
   return right;
+}
+
+size_t BaseAllocCell::Decommit() {
+  // Decommit pages within the "next" chunk.
+  uintptr_t start = REAL_PAGE_CEILING(reinterpret_cast<uintptr_t>(this) +
+                                      sizeof(BaseAllocCell));
+
+  uintptr_t end = REAL_PAGE_FLOOR(reinterpret_cast<uintptr_t>(RightMetadata()));
+  if (start >= end) {
+    return 0;
+  }
+
+  uintptr_t nbytes = end - start;
+  pages_decommit(reinterpret_cast<void*>(start), nbytes);
+  mCommitted = false;
+
+  Log("Decommitting in cell %p: %p - %p, %zu bytes\n", this, start, end,
+      nbytes);
+
+  return nbytes;
+}
+
+Maybe<BaseAllocCell::CommitResult> BaseAllocCell::Commit(
+    base_alloc_size_t aSizeReq) {
+  MOZ_ASSERT(!mCommitted);
+
+  // The address after the last decommitted byte.
+  uintptr_t last_decommitted =
+      REAL_PAGE_FLOOR(reinterpret_cast<uintptr_t>(RightMetadata()));
+
+  // The first currently-decommitted address.
+  uintptr_t addr_start = REAL_PAGE_CEILING(reinterpret_cast<uintptr_t>(this) +
+                                           sizeof(BaseAllocCell));
+
+  uintptr_t split_addr = CanSplit(aSizeReq);
+
+  // The address after the range to recommit.
+  uintptr_t addr_end;
+  bool whole_cell = false;
+  if (split_addr == 0) {
+    // The whole cell needs to be committed.
+    addr_end = last_decommitted;
+    whole_cell = true;
+  } else {
+    // Only the first part of the cell needs recommitting.
+    addr_end = REAL_PAGE_CEILING(split_addr + sizeof(BaseAllocCell));
+    if (addr_end >= last_decommitted) {
+      // Rounding up to the next page would commit the whole cell.
+      addr_end = last_decommitted;
+      whole_cell = true;
+    }
+  }
+  MOZ_ASSERT(addr_start <= addr_end);
+  MOZ_ASSERT(addr_end <= reinterpret_cast<uintptr_t>(RightMetadata()));
+
+  if (addr_start < addr_end) {
+    Log("Committing %s cell %p: %p - %p, %zu bytes\n",
+        split_addr == 0 ? "whole" : "part", this, addr_start, addr_end,
+        addr_end - addr_start);
+
+    // Do the commit before the split so that the new boundary is writable.
+    if (!pages_commit(reinterpret_cast<void*>(addr_start),
+                      addr_end - addr_start)) {
+      return Nothing();
+    }
+  }
+
+  BaseAllocCell* new_cell = nullptr;
+  if (split_addr != 0) {
+    new_cell = Split(split_addr);
+    new_cell->mCommitted = whole_cell;
+  }
+  mCommitted = true;
+
+  return Some(CommitResult(addr_end - addr_start, new_cell));
 }
 
 #if BASE_ALLOC_LOGGING

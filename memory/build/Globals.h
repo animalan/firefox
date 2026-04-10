@@ -83,6 +83,9 @@ extern size_t gPageSize;
   (((s) + mozilla::gPageSizeMask) & ~mozilla::gPageSizeMask)
 #define REAL_PAGE_CEILING(s) (((s) + gRealPageSizeMask) & ~gRealPageSizeMask)
 
+// Return the largest pagesize multiple that is <= s.
+#define REAL_PAGE_FLOOR(s) ((s) & ~gRealPageSizeMask)
+
 #define PAGES_PER_REAL_PAGE_CEILING(s) \
   (((s) + gPagesPerRealPage - 1) & ~(gPagesPerRealPage - 1))
 

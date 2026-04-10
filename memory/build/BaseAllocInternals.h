@@ -6,6 +6,7 @@
 #define BASEALLOCINTERNALS_H
 
 #include "mozilla/DoublyLinkedList.h"
+#include "mozilla/Maybe.h"
 
 #include "BaseAlloc.h"
 
@@ -97,6 +98,7 @@ class BaseAllocCell {
     mozilla::DoublyLinkedListElement<BaseAllocCell> mListElem;
     RedBlackTreeNode<BaseAllocCell> mTreeElem;
   };
+  bool mCommitted = true;
 
   friend struct mozilla::GetDoublyLinkedListElement<BaseAllocCell>;
   friend struct BaseAllocCellRBTrait;
@@ -131,11 +133,13 @@ class BaseAllocCell {
   void SetSize(base_alloc_size_t aNewSize);
 
   bool Allocated() { return LeftMetadata()->mRightAllocated; }
+  bool Committed() { return mCommitted; }
 
   void* Ptr() { return this; }
 
   void SetAllocated() {
     MOZ_ASSERT(!Allocated());
+    MOZ_ASSERT(Committed());
     LeftMetadata()->mRightAllocated = true;
   }
   void SetFreed() {
@@ -150,8 +154,8 @@ class BaseAllocCell {
   BaseAllocCell* LeftCell();
   BaseAllocCell* RightCell();
 
-  // The pure address calculation of NextCell() without any checking if the
-  // cell exists.
+  // RightCellRaw() is the same address calculation of RightCell() but without
+  // checking if the cell exists.
   uintptr_t RightCellRaw();
 
   void Merge(BaseAllocCell* cell);
@@ -164,6 +168,23 @@ class BaseAllocCell {
   // Perform the split with the new address calculated by CanSplit(), the
   // next cell with the remaining size is returned.  This always succeeds.
   BaseAllocCell* Split(uintptr_t aNewSize);
+
+  // The result of committing a cell.  The number of committed bytes and any
+  // new cell that may have been created are returned.
+  struct CommitResult {
+    size_t mBytesCommitted = 0;
+    BaseAllocCell* mNewCell = nullptr;
+
+    CommitResult(size_t aBytesCommitted, BaseAllocCell* aNewCell)
+        : mBytesCommitted(aBytesCommitted), mNewCell(aNewCell) {}
+  };
+
+  mozilla::Maybe<CommitResult> Commit(base_alloc_size_t aSizeRequest);
+
+  // Decommit as much of the cell as possible.  The boundaries and free list
+  // information cannot be decommited.  It returns the number of pages
+  // decommitted, possibly 0.
+  size_t Decommit();
 
   // disable copy, move and new since this class must only be used in-place.
   BaseAllocCell(const BaseAllocCell&) = delete;

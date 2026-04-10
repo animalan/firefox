@@ -90,6 +90,11 @@ class BaseAlloc {
   // Allocate from the oversize tree.
   BaseAllocCell* oversize_alloc(base_alloc_size_t aSize) MOZ_REQUIRES(mMutex);
 
+  // Allocate from the decommitted tree, this will recommit memory as
+  // needed.
+  BaseAllocCell* decommitted_alloc(base_alloc_size_t aSize)
+      MOZ_REQUIRES(mMutex);
+
   // Remove the cell from its free list.
   void Unlink(BaseAllocCell* cell) MOZ_REQUIRES(mMutex);
 
@@ -101,13 +106,17 @@ class BaseAlloc {
   RedBlackTree<BaseAllocCell, BaseAllocCellRBTrait> mFreeListOversize
       MOZ_GUARDED_BY(mMutex);
 
+  // Cells with some memory pages decommitted.
+  RedBlackTree<BaseAllocCell, BaseAllocCellRBTrait> mFreeListDecommitted
+      MOZ_GUARDED_BY(mMutex);
+
   // Allocate a new chunk and attempt to split it to return a cell at least
   // minsize.  The other half of the split is added to the appropriate free
   // list.
   BaseAllocCell* chunk_alloc(base_alloc_size_t aSize) MOZ_REQUIRES(mMutex);
 
-  void MaybeTrim(BaseAllocCell* aCell, base_alloc_size_t aSizeRequest)
-      MOZ_REQUIRES(mMutex);
+  void MaybeTrim(BaseAllocCell* aCell, base_alloc_size_t aSizeRequest,
+                 bool aDecommit = false) MOZ_REQUIRES(mMutex);
 
   Stats mStats MOZ_GUARDED_BY(mMutex);
 
