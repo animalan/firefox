@@ -13,6 +13,10 @@
   --smartbar-width: 100%;
 }
 
+:host([classic-mode]) {
+  background-color: var(--background-color-canvas);
+}
+
 /* Fullpage: browser collapsed (0 height) until chat starts, showing prompts and smartbar */
 :host([mode="fullpage"]) {
   grid-template-areas:
@@ -194,9 +198,15 @@ moz-button.new-chat-icon-button::part(button) {
 }
 
 #smartbar-toggle-button {
-  --smartbar-button-border-color: color-mix(in srgb, var(--color-purple-70) 15%, transparent);
-  --smartbar-button-background-color: color-mix(in srgb, var(--color-purple-40) 20%, transparent);
-  --smartbar-button-text-color: var(--color-gray-100);
+  --smartbar-button-border-color: light-dark(
+    color-mix(in srgb, var(--color-purple-70) 15%, transparent),
+    color-mix(in srgb, var(--color-violet-30) 25%, transparent)
+  );
+  --smartbar-button-background-color: light-dark(
+    color-mix(in srgb, var(--color-purple-40) 20%, transparent),
+    color-mix(in srgb, var(--color-violet-80) 30%, transparent)
+  );
+  --smartbar-button-text-color: light-dark(var(--color-gray-100), var(--color-white));
 }
 
 #smartbar-toggle-button::part(button) {

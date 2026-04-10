@@ -544,6 +544,7 @@ export class AIWindow extends MozLitElement {
 
     this.#smartbar.hidden = !isSmartWindow;
     this.#smartbarToggleButton.hidden = isSmartWindow;
+    this.toggleAttribute("classic-mode", !isSmartWindow);
   }
 
   disconnectedCallback() {
