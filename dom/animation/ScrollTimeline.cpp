@@ -30,12 +30,12 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(ScrollTimeline,
                                                 AnimationTimeline)
   tmp->Teardown();
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mDocument)
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mSource.ElementForCycleCollection())
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mSource.mElement)
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(ScrollTimeline,
                                                   AnimationTimeline)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mDocument)
-  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mSource.ElementForCycleCollection())
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mSource.mElement)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 NS_IMPL_ISUPPORTS_CYCLE_COLLECTION_INHERITED_0(ScrollTimeline,
@@ -96,11 +96,11 @@ already_AddRefed<ScrollTimeline> ScrollTimeline::MakeAnonymous(
     case StyleScroller::Nearest: {
       auto [element, pseudo] =
           FindNearestScroller(aTarget.mElement, aTarget.mPseudoRequest);
-      scroller = Scroller::Nearest(const_cast<Element*>(element), pseudo);
+      scroller = Scroller::Nearest(const_cast<Element*>(element), pseudo.mType);
       break;
     }
     case StyleScroller::SelfElement:
-      scroller = Scroller::Self(aTarget.mElement, aTarget.mPseudoRequest);
+      scroller = Scroller::Self(aTarget.mElement, aTarget.mPseudoRequest.mType);
       break;
   }
 
@@ -118,7 +118,7 @@ already_AddRefed<ScrollTimeline> ScrollTimeline::MakeNamed(
     const StyleScrollTimeline& aStyleTimeline) {
   MOZ_ASSERT(NS_IsMainThread());
 
-  Scroller scroller = Scroller::Named(aReferenceElement, aPseudoRequest);
+  Scroller scroller = Scroller::Named(aReferenceElement, aPseudoRequest.mType);
   return MakeAndAddRef<ScrollTimeline>(aDocument, std::move(scroller),
                                        aStyleTimeline.GetAxis());
 }
@@ -161,15 +161,14 @@ void ScrollTimeline::WillRefresh() {
 
 bool ScrollTimeline::SourceMatches(
     const Element* aElement, const PseudoStyleRequest& aPseudoRequest) const {
-  return mSource.Source().mElement == aElement &&
-         mSource.Source().mPseudoRequest == aPseudoRequest;
+  return mSource.mElement == aElement &&
+         mSource.mPseudoType == aPseudoRequest.mType;
 }
 
 layers::ScrollDirection ScrollTimeline::Axis() const {
-  MOZ_ASSERT(mSource && mSource.Source().mElement->GetPrimaryFrame());
+  MOZ_ASSERT(mSource && mSource.mElement->GetPrimaryFrame());
 
-  const WritingMode wm =
-      mSource.Source().mElement->GetPrimaryFrame()->GetWritingMode();
+  const WritingMode wm = mSource.mElement->GetPrimaryFrame()->GetWritingMode();
   return mAxis == StyleScrollAxis::X ||
                  (!wm.IsVertical() && mAxis == StyleScrollAxis::Inline) ||
                  (wm.IsVertical() && mAxis == StyleScrollAxis::Block)
@@ -178,7 +177,7 @@ layers::ScrollDirection ScrollTimeline::Axis() const {
 }
 
 StyleOverflow ScrollTimeline::SourceScrollStyle() const {
-  MOZ_ASSERT(mSource && mSource.Source().mElement->GetPrimaryFrame());
+  MOZ_ASSERT(mSource && mSource.mElement->GetPrimaryFrame());
 
   const ScrollContainerFrame* scrollContainerFrame = GetScrollContainerFrame();
   MOZ_ASSERT(scrollContainerFrame);
@@ -193,10 +192,8 @@ StyleOverflow ScrollTimeline::SourceScrollStyle() const {
 bool ScrollTimeline::APZIsActiveForSource() const {
   MOZ_ASSERT(mSource);
   return gfxPlatform::AsyncPanZoomEnabled() &&
-         !nsLayoutUtils::ShouldDisableApzForElement(
-             mSource.Source().mElement) &&
-         DisplayPortUtils::HasNonMinimalNonZeroDisplayPort(
-             mSource.Source().mElement);
+         !nsLayoutUtils::ShouldDisableApzForElement(mSource.mElement) &&
+         DisplayPortUtils::HasNonMinimalNonZeroDisplayPort(mSource.mElement);
 }
 
 bool ScrollTimeline::ScrollingDirectionIsAvailable() const {
@@ -209,8 +206,8 @@ bool ScrollTimeline::ScrollingDirectionIsAvailable() const {
 void ScrollTimeline::ReplacePropertiesWith(
     const Element* aReferenceElement, const PseudoStyleRequest& aPseudoRequest,
     const StyleScrollTimeline& aNew) {
-  MOZ_ASSERT(aReferenceElement == mSource.Source().mElement &&
-             aPseudoRequest == mSource.Source().mPseudoRequest);
+  MOZ_ASSERT(aReferenceElement == mSource.mElement &&
+             aPseudoRequest.mType == mSource.mPseudoType);
   mAxis = aNew.GetAxis();
 
   for (auto* anim = mAnimationOrder.getFirst(); anim;
@@ -229,7 +226,7 @@ void ScrollTimeline::UpdateCachedCurrentTime() {
   mCachedCurrentTime.reset();
 
   // If no layout box, this timeline is inactive.
-  if (!mSource || !mSource.Source().mElement->GetPrimaryFrame()) {
+  if (!mSource || !mSource.mElement->GetPrimaryFrame()) {
     return;
   }
 
@@ -312,15 +309,14 @@ const ScrollContainerFrame* ScrollTimeline::GetScrollContainerFrame() const {
   switch (mSource.mType) {
     case Scroller::Type::Root:
       if (const PresShell* presShell =
-              mSource.Source().mElement->OwnerDoc()->GetPresShell()) {
+              mSource.mElement->OwnerDoc()->GetPresShell()) {
         return presShell->GetRootScrollContainerFrame();
       }
       return nullptr;
     case Scroller::Type::Nearest:
     case Scroller::Type::Name:
     case Scroller::Type::Self:
-      return nsLayoutUtils::FindScrollContainerFrameFor(
-          mSource.Source().mElement);
+      return nsLayoutUtils::FindScrollContainerFrameFor(mSource.mElement);
   }
 
   MOZ_ASSERT_UNREACHABLE("Unsupported scroller type");

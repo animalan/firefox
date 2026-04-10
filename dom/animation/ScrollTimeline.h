@@ -79,40 +79,32 @@ class ScrollTimeline : public AnimationTimeline,
       Self,
     };
     Type mType = Type::Root;
-
-   private:
-    OwningAnimationTarget mTarget;
-    Scroller(Type aType, Element* aElement,
-             const PseudoStyleRequest& aPseudoRequest)
-        : mType{aType}, mTarget{aElement, aPseudoRequest} {}
-
-   public:
-    Scroller() = default;
+    RefPtr<Element> mElement;
+    // FIXME: Bug 1928437. We have to update mPseudoType to use
+    // PseudoStyleRequest.
+    PseudoStyleType mPseudoType;
 
     static Scroller Root(Element* aDocumentElement) {
-      return {Type::Root, aDocumentElement, PseudoStyleRequest{}};
+      return {Type::Root, aDocumentElement, PseudoStyleType::NotPseudo};
     }
 
-    static Scroller Nearest(Element* aElement,
-                            const PseudoStyleRequest& aPseudoRequest) {
-      return {Type::Nearest, aElement, aPseudoRequest};
+    static Scroller Nearest(Element* aElement, PseudoStyleType aPseudoType) {
+      return {Type::Nearest, aElement, aPseudoType};
     }
 
-    static Scroller Named(Element* aElement,
-                          const PseudoStyleRequest& aPseudoRequest) {
-      return {Type::Name, aElement, aPseudoRequest};
+    static Scroller Named(Element* aElement, PseudoStyleType aPseudoType) {
+      return {Type::Name, aElement, aPseudoType};
     }
 
-    static Scroller Self(Element* aElement,
-                         const PseudoStyleRequest& aPseudoRequest) {
-      return {Type::Self, aElement, aPseudoRequest};
+    static Scroller Self(Element* aElement, PseudoStyleType aPseudoType) {
+      return {Type::Self, aElement, aPseudoType};
     }
 
-    explicit operator bool() const { return mTarget.mElement; }
-    NonOwningAnimationTarget Source() const {
-      return NonOwningAnimationTarget{mTarget};
+    explicit operator bool() const { return mElement; }
+    bool operator==(const Scroller& aOther) const {
+      return mType == aOther.mType && mElement == aOther.mElement &&
+             mPseudoType == aOther.mPseudoType;
     }
-    RefPtr<Element>& ElementForCycleCollection() { return mTarget.mElement; }
   };
 
   static already_AddRefed<ScrollTimeline> MakeAnonymous(
@@ -125,6 +117,11 @@ class ScrollTimeline : public AnimationTimeline,
       Document* aDocument, Element* aReferenceElement,
       const PseudoStyleRequest& aPseudoRequest,
       const StyleScrollTimeline& aStyleTimeline);
+
+  bool operator==(const ScrollTimeline& aOther) const {
+    return mDocument == aOther.mDocument && mSource == aOther.mSource &&
+           mAxis == aOther.mAxis;
+  }
 
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(ScrollTimeline, AnimationTimeline)
@@ -184,12 +181,12 @@ class ScrollTimeline : public AnimationTimeline,
 
   Element* SourceElement() const {
     MOZ_ASSERT(mSource);
-    return mSource.Source().mElement;
+    return mSource.mElement;
   }
 
   virtual NonOwningAnimationTarget TimelineTarget() const {
     MOZ_ASSERT(mSource);
-    return mSource.Source();
+    return {mSource.mElement, PseudoStyleRequest{mSource.mPseudoType}};
   }
 
   bool SourceMatches(const Element* aElement,
