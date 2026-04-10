@@ -710,6 +710,18 @@ def handle_tier(config, tasks):
 
 
 @transforms.add
+def apply_artifact_build_settings(config, tasks):
+    """Artifact build tests are tier 2. On Linux and Windows they run on
+    all mozilla-central pushes; on other platforms they are try-only."""
+    for task in tasks:
+        if "-artifact/" in task["test-platform"]:
+            task["tier"] = 2
+            if not task["test-platform"].startswith(("linux", "windows")):
+                task["run-on-projects"] = []
+        yield task
+
+
+@transforms.add
 def apply_raptor_tier_optimization(config, tasks):
     for task in tasks:
         if task["suite"] != "raptor":

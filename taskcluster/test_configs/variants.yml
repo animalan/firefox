@@ -510,6 +510,7 @@ msix:
                         || "debug" in task["test-platform"]
                     ) && !(
                         "asan" in task["test-platform"]
+                        || "artifact" in task["test-platform"]
                         || "ccov" in task["test-platform"]
                         || "devedition" in task["test-platform"]
                     )

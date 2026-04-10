@@ -158,6 +158,13 @@ mochitest-valgrind:
 desktop-screenshot-capture:
     - mochitest-browser-screenshots
 
+artifact-tests:
+    - mochitest-browser-chrome
+    - mochitest-chrome
+    - mochitest-devtools-chrome
+    - mochitest-plain
+    - xpcshell
+
 ### Specific platform test sets
 
 # Linux

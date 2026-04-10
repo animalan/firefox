@@ -5,6 +5,7 @@
 loader: gecko_taskgraph.loader.test:loader
 
 kind-dependencies:
+    - artifact-build
     - build
     - repackage-signing-shippable-l10n-msix
     - repackage-signing-msix
@@ -343,6 +344,7 @@ tasks:
                 webrender-sw:
                     by-test-platform:
                         linux.*64/debug: ['all']
+                        linux.*64-artifact/opt: ['mozilla-central']
                         linux.*64-asan/opt: ['all']
                         linux.*64-tsan/opt: built-projects
                         linux.*64/opt: built-projects
@@ -369,6 +371,7 @@ tasks:
                         default: []
                 vertical-tabs:
                     by-test-platform:
+                        .*-artifact.*: []
                         .*-asan.*: []
                         .*-ccov.*: []
                         linux.*64(-shippable)?/.*: ['autoland', 'mozilla-central']

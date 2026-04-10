@@ -54,6 +54,7 @@ UNCOMMON_TRY_TASK_LABELS = [
     r"windows10-aarch64-qr",
     # Test tasks
     r"web-platform-tests.*backlog",  # hide wpt jobs that are not implemented yet - bug 1572820
+    r"-artifact[/-]",  # Artifact build test jobs - Bug 1945658
     r"-ccov",
     r"-profiling-",  # talos/raptor profiling jobs are run too often
     r"-32-.*-webgpu",  # webgpu gets little benefit from these tests.
