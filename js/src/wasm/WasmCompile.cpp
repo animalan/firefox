@@ -1209,8 +1209,8 @@ SharedModule wasm::CompileStreaming(
   }
 
   BytecodeBuffer bytecodeBuffer(&envBytes, &codeBytes, &tailBytes);
-  return mg.finishModule(BytecodeBufferOrSource(bytecodeBuffer), *moduleMeta,
-                         streamEnd.completeTier2Listener);
+  return mg.finishModule(BytecodeBufferOrSource(std::move(bytecodeBuffer)),
+                         *moduleMeta, streamEnd.completeTier2Listener);
 }
 
 class DumpIonModuleGenerator {

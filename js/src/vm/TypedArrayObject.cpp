@@ -6423,7 +6423,7 @@ Scalar::Type js::TypedArrayConstructorType(const JSFunction* fun) {
 
 bool js::IsBufferSource(JSContext* cx, JSObject* object, bool allowShared,
                         bool allowResizable, SharedMem<uint8_t*>* dataPointer,
-                        size_t* byteLength) {
+                        size_t* byteLength, bool* isShared) {
   if (object->is<TypedArrayObject>()) {
     Rooted<TypedArrayObject*> view(cx, &object->as<TypedArrayObject>());
     if (!allowShared && view->isSharedMemory()) {
@@ -6440,6 +6440,9 @@ bool js::IsBufferSource(JSContext* cx, JSObject* object, bool allowShared,
     }
     *dataPointer = view->dataPointerEither().cast<uint8_t*>();
     *byteLength = view->byteLength().valueOr(0);
+    if (isShared) {
+      *isShared = view->isSharedMemory();
+    }
     return true;
   }
 
@@ -6459,6 +6462,9 @@ bool js::IsBufferSource(JSContext* cx, JSObject* object, bool allowShared,
     }
     *dataPointer = view->dataPointerEither().cast<uint8_t*>();
     *byteLength = view->byteLength().valueOr(0);
+    if (isShared) {
+      *isShared = view->isSharedMemory();
+    }
     return true;
   }
 
@@ -6474,6 +6480,9 @@ bool js::IsBufferSource(JSContext* cx, JSObject* object, bool allowShared,
     }
     *dataPointer = buffer->dataPointerEither();
     *byteLength = buffer->byteLength();
+    if (isShared) {
+      *isShared = false;
+    }
     return true;
   }
 
@@ -6485,6 +6494,9 @@ bool js::IsBufferSource(JSContext* cx, JSObject* object, bool allowShared,
     // This will always be locked and out of line.
     *dataPointer = buffer.dataPointerShared();
     *byteLength = buffer.byteLength();
+    if (isShared) {
+      *isShared = true;
+    }
     return true;
   }
 

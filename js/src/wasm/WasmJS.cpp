@@ -1586,15 +1586,20 @@ struct MOZ_STACK_CLASS AutoPinBufferSourceLength {
   bool wasPinned_;
 };
 
+// Checks if the `obj` is a buffer source (according to WebIDL rules) and
+// returns a view to the underlying memory. Callers should be sure to use
+// AutoPinBufferSourceLength for the resulting lifetime of the bytecode
+// source.
 static bool GetBytecodeSource(JSContext* cx, Handle<JSObject*> obj,
-                              unsigned errorNumber, BytecodeSource* bytecode) {
+                              unsigned errorNumber, BytecodeSource* bytecode,
+                              bool* isShared) {
   JSObject* unwrapped = CheckedUnwrapStatic(obj);
 
   SharedMem<uint8_t*> dataPointer;
   size_t byteLength;
-  if (!unwrapped ||
-      !IsBufferSource(cx, unwrapped, /*allowShared*/ false,
-                      /*allowResizable*/ false, &dataPointer, &byteLength)) {
+  if (!unwrapped || !IsBufferSource(cx, unwrapped, /*allowShared*/ true,
+                                    /*allowResizable*/ true, &dataPointer,
+                                    &byteLength, isShared)) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr, errorNumber);
     return false;
   }
@@ -1603,17 +1608,51 @@ static bool GetBytecodeSource(JSContext* cx, Handle<JSObject*> obj,
   return true;
 }
 
+// The same as `GetBytecodeSource`, but instead returns an owned bytecode
+// buffer copy. Callers don't need to use AutoPinBufferSourceLength because
+// they own the resulting memory.
 static bool GetBytecodeBuffer(JSContext* cx, Handle<JSObject*> obj,
                               unsigned errorNumber, BytecodeBuffer* bytecode) {
   BytecodeSource source;
-  if (!GetBytecodeSource(cx, obj, errorNumber, &source)) {
+  bool isShared;
+  if (!GetBytecodeSource(cx, obj, errorNumber, &source, &isShared)) {
     return false;
   }
   AutoPinBufferSourceLength pin(cx, obj);
+
   if (!BytecodeBuffer::fromSource(source, bytecode)) {
     ReportOutOfMemory(cx);
     return false;
   }
+  return true;
+}
+
+// The same as `GetBytecodeSource`, but instead returns an owned bytecode
+// buffer if the buffer source is shared.
+static bool GetBytecodeBufferOrSource(JSContext* cx, Handle<JSObject*> obj,
+                                      unsigned errorNumber,
+                                      BytecodeBufferOrSource* bytecode) {
+  BytecodeSource source;
+  bool isShared;
+  if (!GetBytecodeSource(cx, obj, errorNumber, &source, &isShared)) {
+    return false;
+  }
+
+  if (!isShared) {
+    *bytecode = BytecodeBufferOrSource(source);
+    return true;
+  }
+
+  // The buffer source is shared, we need to make a copy to ensure it we have an
+  // immutable copy.
+  AutoPinBufferSourceLength pin(cx, obj);
+  BytecodeBuffer buffer;
+  if (!BytecodeBuffer::fromSource(source, &buffer)) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
+  *bytecode = BytecodeBufferOrSource(std::move(buffer));
   return true;
 }
 
@@ -1684,19 +1723,22 @@ bool WasmModuleObject::construct(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  BytecodeSource source;
-  Rooted<JSObject*> sourceObj(cx, &callArgs[0].toObject());
-  if (!GetBytecodeSource(cx, sourceObj, JSMSG_WASM_BAD_BUF_ARG, &source)) {
-    return false;
-  }
-
   UniqueChars error;
   UniqueCharsVector warnings;
   SharedModule module;
   {
+    // Limit the lifetime of the bytecode to just compilation and ensure we pin
+    // the buffer. No user code should be running here anyways, so this is very
+    // conservative.
+    BytecodeBufferOrSource bytecode;
+    Rooted<JSObject*> sourceObj(cx, &callArgs[0].toObject());
+    if (!GetBytecodeBufferOrSource(cx, sourceObj, JSMSG_WASM_BAD_BUF_ARG,
+                                   &bytecode)) {
+      return false;
+    }
     AutoPinBufferSourceLength pin(cx, sourceObj.get());
-    module = CompileBuffer(*compileArgs, BytecodeBufferOrSource(source), &error,
-                           &warnings, nullptr);
+
+    module = CompileBuffer(*compileArgs, bytecode, &error, &warnings, nullptr);
   }
 
   if (!ReportCompileWarnings(cx, warnings)) {
@@ -4573,7 +4615,8 @@ struct CompileBufferTask : PromiseHelperTask {
   CompileBufferTask(JSContext* cx, Handle<PromiseObject*> promise)
       : PromiseHelperTask(cx, promise), instantiate(false) {}
 
-  bool init(JSContext* cx, FeatureOptions options, const char* introducer) {
+  bool init(JSContext* cx, const FeatureOptions& options,
+            const char* introducer) {
     compileArgs = InitCompileArgs(cx, options, introducer);
     if (!compileArgs) {
       return false;
@@ -4582,8 +4625,9 @@ struct CompileBufferTask : PromiseHelperTask {
   }
 
   void execute() override {
-    module = CompileBuffer(*compileArgs, BytecodeBufferOrSource(bytecode),
-                           &error, &warnings, nullptr);
+    module =
+        CompileBuffer(*compileArgs, BytecodeBufferOrSource(std::move(bytecode)),
+                      &error, &warnings, nullptr);
   }
 
   bool resolve(JSContext* cx, Handle<PromiseObject*> promise) override {
@@ -4799,17 +4843,21 @@ static bool WebAssembly_validate(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  BytecodeSource source;
-  Rooted<JSObject*> sourceObj(cx, &callArgs[0].toObject());
-  if (!GetBytecodeSource(cx, sourceObj, JSMSG_WASM_BAD_BUF_ARG, &source)) {
-    return false;
-  }
-
   UniqueChars error;
   bool validated;
   {
+    // Limit the lifetime of the bytecode to just validation and ensure we pin
+    // the buffer. No user code should be running here anyways, so this is very
+    // conservative.
+    BytecodeBufferOrSource bytecode;
+    Rooted<JSObject*> sourceObj(cx, &callArgs[0].toObject());
+    if (!GetBytecodeBufferOrSource(cx, sourceObj, JSMSG_WASM_BAD_BUF_ARG,
+                                   &bytecode)) {
+      return false;
+    }
     AutoPinBufferSourceLength pin(cx, sourceObj.get());
-    validated = Validate(cx, source, options, &error);
+
+    validated = Validate(cx, bytecode.source(), options, &error);
   }
 
   // If the reason for validation failure was OOM (signalled by null error
@@ -5045,7 +5093,8 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
     switch (streamState_.lock().get()) {
       case Env: {
         BytecodeBuffer bytecode(envBytes_, nullptr, nullptr);
-        module_ = CompileBuffer(*compileArgs_, BytecodeBufferOrSource(bytecode),
+        module_ = CompileBuffer(*compileArgs_,
+                                BytecodeBufferOrSource(std::move(bytecode)),
                                 &compileError_, &warnings_, nullptr);
         setClosedAndDestroyBeforeHelperThreadStarted();
         return;

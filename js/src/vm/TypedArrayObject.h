@@ -267,7 +267,7 @@ Scalar::Type TypedArrayConstructorType(const JSFunction* fun);
 //   or growable array buffer.
 bool IsBufferSource(JSContext* cx, JSObject* object, bool allowShared,
                     bool allowResizable, SharedMem<uint8_t*>* dataPointer,
-                    size_t* byteLength);
+                    size_t* byteLength, bool* isShared = nullptr);
 
 inline Scalar::Type TypedArrayObject::type() const {
   return GetTypedArrayClassType(getClass());
