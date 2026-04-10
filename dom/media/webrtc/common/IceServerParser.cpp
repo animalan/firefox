@@ -297,8 +297,9 @@ IceServerParser::Parse(const nsTArray<dom::RTCIceServer>& aIceServers) {
       // Spec says to check this as we check each url. We could set a flag to
       // avoid checking multiple times.
       // - If parsedURL's' scheme is "turn" or "turns", and either of
-      // server.username or server.credential do not exist, then throw an
-      // InvalidAccessError.
+      // server.username or server.credential are missing or their UTF-8
+      // representations fail to conform to [RFC8489] section 14.3 and [RFC8265]
+      // section 4.1 respectively, then throw an InvalidAccessError.
       if (uri.IsTurn()) {
         if (!server.mUsername.WasPassed()) {
           ErrorResult rv;
@@ -310,23 +311,18 @@ IceServerParser::Parse(const nsTArray<dom::RTCIceServer>& aIceServers) {
           rv.ThrowInvalidAccessError("TURN server requires a credential");
           return Err(std::move(rv));
         }
-        // RFC 8489 Section 14.3: USERNAME must be less than 509 bytes UTF-8
-        // webrtc-pc does not mention this.
-        // (see https://github.com/w3c/webrtc-pc/issues/3049).
-        // Proposed fix (https://github.com/w3c/webrtc-pc/pull/3050) is:
-        // - If parsedURL's' scheme is "turn" or "turns", and either of
-        // server.username or server.credential are missing or their UTF-8
-        // representations fail to conform to [RFC8489] section 14.3 and
-        // [RFC8265] section 4.1 respectively, then throw an
-        // InvalidAccessError.
-        // The wpt reflect the username validation, but not the empty
-        // credential check right now.
-        // See https://bugzilla.mozilla.org/show_bug.cgi?id=2021075
         NS_ConvertUTF16toUTF8 utf8Username(server.mUsername.Value());
         if (utf8Username.Length() > 509) {
           ErrorResult rv;
           rv.ThrowInvalidAccessError(
               "TURN server username exceeds 509 byte limit (RFC 8489 14.3)");
+          return Err(std::move(rv));
+        }
+        NS_ConvertUTF16toUTF8 utf8Credential(server.mCredential.Value());
+        if (utf8Credential.Length() == 0) {
+          ErrorResult rv;
+          rv.ThrowInvalidAccessError(
+              "TURN server credential is empty (RFC 8265 4.1)");
           return Err(std::move(rv));
         }
       }
