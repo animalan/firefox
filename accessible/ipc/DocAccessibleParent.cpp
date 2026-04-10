@@ -1031,8 +1031,6 @@ void DocAccessibleParent::Destroy() {
   // If we are already shutdown that is because our containing tab parent is
   // shutting down in which case we don't need to do anything.
   if (mShutdown) {
-    // Just in case there is a cycle in the document heirarchy.
-    SetParent(nullptr);
     return;
   }
 
