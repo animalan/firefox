@@ -76,6 +76,8 @@ pub struct Args {
     /// Path to directory that contains mar certs. Required when --cert-override is given.
     #[arg(long)]
     pub cert_dir: Option<PathBuf>,
+    #[arg(short = 'j', long)]
+    pub parallelism: Option<usize>,
 }
 
 impl Args {

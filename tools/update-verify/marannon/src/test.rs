@@ -91,11 +91,9 @@ pub(crate) fn run_tests(
     tmpdir: &Path,
     artifact_dir: &Path,
     runner: &(dyn CommandRunner + Sync),
+    parallelism: usize,
 ) -> Result<Vec<TestResult>> {
     let mut updater_binaries: HashMap<PathBuf, PathBuf> = HashMap::new();
-    let parallelism = thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(1);
 
     // Prepare updater packages
     // Find distinct updater packages (so we don't process repeated ones
@@ -391,6 +389,7 @@ mod tests {
             &tmp.to_path_buf(),
             &artifacts.to_path_buf(),
             &FakeRunner(0),
+            1,
         );
         assert!(result.is_err());
         let e = result.unwrap_err();

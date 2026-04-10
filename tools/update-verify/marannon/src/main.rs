@@ -10,6 +10,7 @@ mod updater;
 use std::fs::{create_dir, exists};
 use std::path::Path;
 use std::process::exit;
+use std::thread;
 use tempfile::TempDir;
 
 use anyhow::{anyhow, Result};
@@ -50,6 +51,13 @@ fn main() -> Result<()> {
 
     let downloader = UreqDownloader;
     let runner = RealRunner;
+    let parallelism = match args.parallelism {
+        Some(j) => j,
+        None => thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(1),
+    };
+    info!("parallelism set to: {parallelism}");
 
     let mut tests = Vec::new();
     let mut download_dir = tmpdir.clone();
@@ -104,6 +112,7 @@ fn main() -> Result<()> {
         &tmpdir,
         &args.artifact_dir,
         &runner,
+        parallelism,
     )?;
     let passes = results.iter().filter(|r| **r == TestResult::Pass).count();
     let fails = results.len() - passes;
