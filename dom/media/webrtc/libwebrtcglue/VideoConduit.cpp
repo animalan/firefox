@@ -1432,13 +1432,13 @@ RefPtr<GenericPromise> WebrtcVideoConduit::Shutdown() {
         }
 
         mCall->UnregisterConduit(this);
-        mDecoderFactory->DisconnectAll();
-        mEncoderFactory->DisconnectAll();
         {
           MutexAutoLock lock(mMutex);
           DeleteSendStream();
           DeleteRecvStream();
         }
+        mDecoderFactory->DisconnectAll();
+        mEncoderFactory->DisconnectAll();
         // Clear the stats send stream stats cache
         mTransitionalSendStreamStats = Nothing();
 
