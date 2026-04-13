@@ -96,3 +96,16 @@ sealed class SportSuggestionStatus {
      */
     data object Unknown : SportSuggestionStatus()
 }
+
+/**
+ * Represents the state of a sport suggestion.
+ */
+data class SportSuggestionState(
+    val sport: String,
+    val sportCategory: SportSuggestionCategory,
+    val status: SportSuggestionStatus,
+    val statusType: SportSuggestionStatusType,
+    val date: SportSuggestionDate,
+    val homeTeam: SportSuggestionTeam,
+    val awayTeam: SportSuggestionTeam,
+)

@@ -50,27 +50,21 @@ import mozilla.components.compose.browser.awesomebar.internal.utils.SportSuggest
 import mozilla.components.compose.browser.awesomebar.internal.utils.stringResId
 import mozilla.components.concept.awesomebar.optimizedsuggestions.SportSuggestionCategory
 import mozilla.components.concept.awesomebar.optimizedsuggestions.SportSuggestionDate
+import mozilla.components.concept.awesomebar.optimizedsuggestions.SportSuggestionState
 import mozilla.components.concept.awesomebar.optimizedsuggestions.SportSuggestionStatus
 import mozilla.components.concept.awesomebar.optimizedsuggestions.SportSuggestionStatusType
 import mozilla.components.concept.awesomebar.optimizedsuggestions.SportSuggestionTeam
 import mozilla.components.ui.icons.R as iconsR
 
 @Composable
-@Suppress("LongParameterList")
 internal fun SportSuggestion(
-    sport: String,
-    sportCategory: SportSuggestionCategory,
-    status: SportSuggestionStatus,
-    statusType: SportSuggestionStatusType,
-    date: SportSuggestionDate,
-    homeTeam: SportSuggestionTeam,
-    awayTeam: SportSuggestionTeam,
+    state: SportSuggestionState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val shouldDisplayScore by remember(homeTeam, awayTeam) {
+    val shouldDisplayScore by remember(state.homeTeam, state.awayTeam) {
         derivedStateOf {
-            homeTeam.score != null && awayTeam.score != null
+            state.homeTeam.score != null && state.awayTeam.score != null
         }
     }
     Column(
@@ -87,11 +81,11 @@ internal fun SportSuggestion(
                 ),
         ) {
             SuggestionHeader(
-                sport = sport,
-                sportCategory = sportCategory,
-                status = status,
-                statusType = statusType,
-                date = date,
+                sport = state.sport,
+                sportCategory = state.sportCategory,
+                status = state.status,
+                statusType = state.statusType,
+                date = state.date,
             )
 
             HorizontalDivider(
@@ -100,8 +94,8 @@ internal fun SportSuggestion(
             )
 
             SuggestionTeams(
-                awayTeam = awayTeam,
-                homeTeam = homeTeam,
+                awayTeam = state.awayTeam,
+                homeTeam = state.homeTeam,
                 shouldDisplayScore = shouldDisplayScore,
             )
         }
@@ -297,13 +291,7 @@ private fun SportSuggestionPreview(
     AcornTheme {
         Surface {
             SportSuggestion(
-                sport = config.sport,
-                sportCategory = config.sportCategory,
-                status = config.status,
-                statusType = config.statusType,
-                date = config.date,
-                homeTeam = config.homeTeam,
-                awayTeam = config.awayTeam,
+                state = config.state,
                 onClick = {},
             )
         }
@@ -321,13 +309,7 @@ private fun SportSuggestionPreviewPrivate(
     ) {
         Surface {
             SportSuggestion(
-                sport = config.sport,
-                sportCategory = config.sportCategory,
-                status = config.status,
-                statusType = config.statusType,
-                date = config.date,
-                homeTeam = config.homeTeam,
-                awayTeam = config.awayTeam,
+                state = config.state,
                 onClick = {},
             )
         }

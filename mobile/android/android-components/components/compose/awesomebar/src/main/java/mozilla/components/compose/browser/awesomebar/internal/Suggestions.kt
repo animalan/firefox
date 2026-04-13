@@ -27,6 +27,7 @@ import mozilla.components.compose.browser.awesomebar.internal.optimizedsuggestio
 import mozilla.components.compose.browser.awesomebar.internal.optimizedsuggestions.SportSuggestion
 import mozilla.components.compose.browser.awesomebar.internal.optimizedsuggestions.StockSuggestion
 import mozilla.components.concept.awesomebar.AwesomeBar
+import mozilla.components.concept.awesomebar.optimizedsuggestions.SportSuggestionState
 
 @Suppress("LongParameterList")
 @Composable
@@ -150,13 +151,15 @@ private fun SuggestionItem(
         is AwesomeBar.SportSuggestion -> {
             SportSuggestion(
                 onClick = { onSuggestionClicked(group, suggestion) },
-                sport = suggestion.sport,
-                sportCategory = suggestion.sportCategory,
-                status = suggestion.status,
-                statusType = suggestion.statusType,
-                date = suggestion.date,
-                homeTeam = suggestion.homeTeam,
-                awayTeam = suggestion.awayTeam,
+                state = SportSuggestionState(
+                    sport = suggestion.sport,
+                    sportCategory = suggestion.sportCategory,
+                    status = suggestion.status,
+                    statusType = suggestion.statusType,
+                    date = suggestion.date,
+                    homeTeam = suggestion.homeTeam,
+                    awayTeam = suggestion.awayTeam,
+                ),
             )
         }
 
