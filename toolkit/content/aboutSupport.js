@@ -43,7 +43,10 @@ window.addEventListener("load", function onload() {
     populateActionBox();
     setupEventListeners();
 
-    if (Services.sysinfo.getProperty("isPackagedApp")) {
+    if (
+      AppConstants.MOZ_UPDATER &&
+      Services.sysinfo.getProperty("isPackagedApp")
+    ) {
       $("update-dir-row").hidden = true;
       $("update-history-row").hidden = true;
     }
