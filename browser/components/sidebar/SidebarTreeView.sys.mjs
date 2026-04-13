@@ -20,6 +20,15 @@ export class SidebarTreeView {
    */
   selectedLists;
 
+  /**
+   * The anchor row for shift-click range selection. Holds the list and GUID of
+   * the last row selected without Shift, defining one end of the range when the
+   * user shift-clicks another row.
+   *
+   * @type {{ list: SidebarTabList, guid: string }}
+   */
+  #selectionAnchor = { list: null, guid: null };
+
   constructor(host, { multiSelect = true } = {}) {
     this.host = host;
     host.addController(this);
@@ -35,11 +44,17 @@ export class SidebarTreeView {
   hostConnected() {
     this.host.addEventListener("update-selection", this);
     this.host.addEventListener("clear-selection", this);
+    this.host.addEventListener("set-anchor", this);
+    this.host.addEventListener("shift-select", this);
+    this.host.addEventListener("focus-row", this);
   }
 
   hostDisconnected() {
     this.host.removeEventListener("update-selection", this);
     this.host.removeEventListener("clear-selection", this);
+    this.host.removeEventListener("set-anchor", this);
+    this.host.removeEventListener("shift-select", this);
+    this.host.removeEventListener("focus-row", this);
   }
 
   /**
@@ -56,7 +71,20 @@ export class SidebarTreeView {
         this.selectedLists.delete(event.originalTarget);
         this.clearSelection();
         break;
+      case "set-anchor":
+        this.#setAnchor(event.originalTarget, event.detail.guid);
+        break;
+      case "shift-select":
+        this.#handleShiftSelect(event.detail.row);
+        break;
+      case "focus-row":
+        this.#handleFocusRow(event);
+        break;
     }
+  }
+
+  #setAnchor(list, guid) {
+    this.#selectionAnchor = { list, guid };
   }
 
   /**
@@ -121,7 +149,7 @@ export class SidebarTreeView {
         break;
     }
     if (this.multiSelect) {
-      this.updateSelection(event, focusedRow);
+      this.#updateSelection(event, focusedRow);
     }
   }
 
@@ -223,29 +251,163 @@ export class SidebarTreeView {
    * @param {KeyboardEvent} event
    * @param {SidebarTabRow} rowEl
    */
-  updateSelection(event, rowEl) {
-    if (event.code !== "ArrowUp" && event.code !== "ArrowDown") {
+  #updateSelection(event, rowEl) {
+    if (!rowEl || (event.code !== "ArrowUp" && event.code !== "ArrowDown")) {
       return;
     }
-    if (!event.shiftKey) {
-      this.clearSelection();
+    if (event.shiftKey) {
+      this.#handleShiftSelect(rowEl);
       return;
     }
-    if (rowEl != null) {
-      const listForRow = rowEl.getRootNode().host;
-      listForRow.selectedGuids.add(rowEl.guid);
-      listForRow.requestVirtualListUpdate();
-      this.selectedLists.add(listForRow);
+    this.clearSelection();
+    this.#setAnchor(rowEl.getRootNode().host, rowEl.guid);
+  }
+
+  selectRowInList(row, list, updateList = true) {
+    list.selectedGuids.add(row.guid);
+    if (updateList) {
+      list.requestVirtualListUpdate();
+    }
+    this.selectedLists.add(list);
+  }
+
+  /**
+   * Select all items between current anchor and clicked row.
+   *
+   * If no anchor has been set, fall back to selecting just the clicked row
+   * and making it the new anchor.
+   *
+   * @param {SidebarTabRow} clickedRow
+   */
+  #handleShiftSelect(clickedRow) {
+    const clickedList = clickedRow.getRootNode().host;
+    const { list: anchorList, guid: anchorGuid } = this.#selectionAnchor;
+
+    if (!anchorList || !anchorGuid) {
+      this.#setAnchor(clickedList, clickedRow.guid);
+      this.selectRowInList(clickedRow, clickedList);
+      return;
+    }
+
+    const lists = [...this.host.lists];
+    const anchorListIndex = lists.indexOf(anchorList);
+
+    if (anchorListIndex === -1) {
+      // Anchor's list was destroyed (e.g. sort changed); fall back.
+      this.#setAnchor(clickedList, clickedRow.guid);
+      this.selectRowInList(clickedRow, clickedList);
+      return;
+    }
+
+    const anchorRowIndex = anchorList.tabItems.findIndex(
+      ({ guid }) => guid === anchorGuid
+    );
+    const clickedListIndex = lists.indexOf(clickedList);
+    const clickedRowIndex = clickedList.tabItems.findIndex(
+      ({ guid }) => guid === clickedRow.guid
+    );
+
+    let startListIndex, startRowIndex, endListIndex, endRowIndex;
+    const clickedBelowAnchor =
+      clickedListIndex > anchorListIndex ||
+      (clickedList === anchorList && clickedRowIndex >= anchorRowIndex);
+
+    if (clickedBelowAnchor) {
+      startListIndex = anchorListIndex;
+      startRowIndex = anchorRowIndex;
+      endListIndex = clickedListIndex;
+      endRowIndex = clickedRowIndex;
+    } else {
+      startListIndex = clickedListIndex;
+      startRowIndex = clickedRowIndex;
+      endListIndex = anchorListIndex;
+      endRowIndex = anchorRowIndex;
+    }
+
+    this.#selectAllBetween(
+      lists,
+      startListIndex,
+      endListIndex,
+      startRowIndex,
+      endRowIndex
+    );
+  }
+
+  /**
+   * Multiselect all rows from start to end.
+   *
+   * @param {SidebarTabList[]} lists
+   * @param {number} startListIndex
+   * @param {number} endListIndex
+   * @param {number} startRowIndex
+   * @param {number} endRowIndex
+   */
+  #selectAllBetween(
+    lists,
+    startListIndex,
+    endListIndex,
+    startRowIndex,
+    endRowIndex
+  ) {
+    this.clearSelection();
+    for (let i = startListIndex; i <= endListIndex; i++) {
+      const list = lists[i];
+      const isFirst = i === startListIndex;
+      const isLast = i === endListIndex;
+
+      if (!isFirst && !isLast) {
+        list.selectAll();
+        continue;
+      }
+
+      const rows = list.tabItems;
+      const start = isFirst ? startRowIndex : 0;
+      const end = isLast ? endRowIndex : rows.length - 1;
+      for (let j = start; j <= end; j++) {
+        this.selectRowInList(rows[j], list, false);
+      }
+      list.requestVirtualListUpdate();
     }
   }
 
   /**
-   * Clear the selection from all lists.
+   * Set the anchor to the focused row if no anchor is currently set.
+   *
+   * @param {CustomEvent} event
    */
+  #handleFocusRow(event) {
+    if (this.#selectionAnchor.guid) {
+      return;
+    }
+    this.#setAnchor(event.originalTarget, event.detail.guid);
+  }
+
+  /**
+   * Get all selected tab items across all lists.
+   *
+   * @returns {object[]}
+   */
+  getSelectedTabItems() {
+    const items = [];
+    for (const list of this.selectedLists) {
+      for (const item of list.tabItems) {
+        if (list.isTabItemSelected(item)) {
+          items.push(item);
+        }
+      }
+    }
+    return items;
+  }
+
   clearSelection() {
     for (const list of this.selectedLists) {
       list.clearSelection();
     }
     this.selectedLists.clear();
+  }
+
+  resetSelection() {
+    this.clearSelection();
+    this.#setAnchor(null, null);
   }
 }

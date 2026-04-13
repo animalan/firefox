@@ -49,6 +49,10 @@ export class SidebarHistory extends SidebarPage {
 
   connectedCallback() {
     super.connectedCallback();
+    PlacesObservers.addListener(
+      ["page-removed", "history-cleared"],
+      this.#placesRemovedObserver
+    );
     const { document: doc } = this.topWindow;
     this._menu = doc.getElementById("sidebar-history-menu");
     this._menuSortByDate = doc.getElementById("sidebar-history-sort-by-date");
@@ -69,6 +73,10 @@ export class SidebarHistory extends SidebarPage {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    PlacesObservers.removeListener(
+      ["page-removed", "history-cleared"],
+      this.#placesRemovedObserver
+    );
     this._menu.removeEventListener("command", this);
     this._menu.removeEventListener("popuphidden", this.handlePopupEvent);
     this._contextMenu.removeEventListener("popupshowing", this);
@@ -86,8 +94,12 @@ export class SidebarHistory extends SidebarPage {
     }
   }
 
+  #placesRemovedObserver = () => {
+    this.treeView.resetSelection();
+  };
+
   get isMultipleRowsSelected() {
-    return !!this.treeView.selectedLists.size;
+    return this.treeView.getSelectedTabItems().length > 1;
   }
 
   /**
@@ -116,6 +128,25 @@ export class SidebarHistory extends SidebarPage {
       this.findTriggerNode(e, "moz-input-search");
     if (!this.triggerNode) {
       e.preventDefault();
+      return;
+    }
+    // If the right-clicked row is not already part of the selection, move
+    // the selection and anchor to it so the context menu operates on the
+    // correct item.
+    if (this.triggerNode.localName === "sidebar-tab-row") {
+      const row = this.triggerNode;
+      const list = row.getRootNode().host;
+      if (!list.isTabItemSelected(row)) {
+        this.treeView.resetSelection();
+        this.treeView.selectRowInList(row, list);
+        list.dispatchEvent(
+          new CustomEvent("set-anchor", {
+            bubbles: true,
+            composed: true,
+            detail: { guid: row.guid },
+          })
+        );
+      }
     }
   }
 
@@ -149,6 +180,7 @@ export class SidebarHistory extends SidebarPage {
   }
 
   #changeSortOption(e, sortOption) {
+    this.treeView.resetSelection();
     Services.prefs.setStringPref(SORT_OPTION_PREF, sortOption);
     this.controller.onChangeSortOption(e, sortOption);
   }
@@ -172,18 +204,34 @@ export class SidebarHistory extends SidebarPage {
   }
 
   handleNavigateToLink(e) {
-    if (this.isMultipleRowsSelected) {
-      // Avoid opening multiple links at once.
-      return;
-    }
     navigateToLink(e, e.originalTarget.url, { forceNewTab: false });
-    // TO DO: update the below to handle multiple links opened at once. Bug 2024639
     Glean.sidebar.link.history.add(1);
-    this.treeView.clearSelection();
+    this.treeView.resetSelection();
+    this.treeView.selectRowInList(e.originalTarget, e.currentTarget);
   }
 
   onPrimaryAction(e) {
+    const { originalEvent } = e.detail;
+    const list = e.currentTarget;
+    const row = e.originalTarget;
+    if (originalEvent.shiftKey) {
+      list.dispatchEvent(
+        new CustomEvent("shift-select", {
+          bubbles: true,
+          composed: true,
+          detail: { row },
+        })
+      );
+      return;
+    }
     this.handleNavigateToLink(e);
+    list.dispatchEvent(
+      new CustomEvent("set-anchor", {
+        bubbles: true,
+        composed: true,
+        detail: { guid: row.guid },
+      })
+    );
   }
 
   onSecondaryAction(e) {

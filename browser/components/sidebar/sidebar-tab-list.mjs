@@ -34,6 +34,30 @@ export class SidebarTabList extends FxviewTabListBase {
     },
   };
 
+  #dispatchFocusRowEvent = event => {
+    const [row] = event.composedPath();
+    if (row.localName !== "sidebar-tab-row") {
+      return;
+    }
+    this.dispatchEvent(
+      new CustomEvent("focus-row", {
+        bubbles: true,
+        composed: true,
+        detail: { guid: row.guid },
+      })
+    );
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("focusin", this.#dispatchFocusRowEvent);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener("focusin", this.#dispatchFocusRowEvent);
+  }
+
   /**
    * Only handle vertical navigation in sidebar.
    *
@@ -41,11 +65,13 @@ export class SidebarTabList extends FxviewTabListBase {
    */
   handleFocusElementInRow(e) {
     // Handle vertical navigation.
+    let stayedInList = false;
     if (
       (e.code == "ArrowUp" && this.activeIndex > 0) ||
       (e.code == "ArrowDown" && this.activeIndex < this.rowEls.length - 1)
     ) {
       super.handleFocusElementInRow(e);
+      stayedInList = true;
     } else if (
       (e.code == "ArrowUp" && this.activeIndex == 0) ||
       e.code === "ArrowLeft"
@@ -60,7 +86,7 @@ export class SidebarTabList extends FxviewTabListBase {
 
     // Update or clear multi-selection (depending on whether shift key is used).
     if (this.multiSelect && (e.code === "ArrowUp" || e.code === "ArrowDown")) {
-      this.#updateSelection(e);
+      this.#updateSelection(e, stayedInList);
     }
 
     // (Ctrl / Cmd) + A should select all rows.
@@ -69,7 +95,7 @@ export class SidebarTabList extends FxviewTabListBase {
       e.key.toUpperCase() === this.selectAllShortcut
     ) {
       e.preventDefault();
-      this.#selectAll();
+      this.selectAll();
     }
   }
 
@@ -97,10 +123,19 @@ export class SidebarTabList extends FxviewTabListBase {
     }
   }
 
-  #updateSelection(event) {
+  /**
+   * Update multi-selection state during keyboard navigation.
+   *
+   * Without Shift, clears the selection and resets the anchor to the newly
+   * focused row. With Shift, extends the selection from the current anchor to
+   * the newly focused row.
+   *
+   * @param {KeyboardEvent} event
+   * @param {boolean} stayedInList
+   *   Whether focus remained within this list after the navigation.
+   */
+  #updateSelection(event, stayedInList) {
     if (!event.shiftKey) {
-      // Clear the selection when navigating without shift key.
-      // Dispatch event so that other lists will also clear their selection.
       this.clearSelection();
       this.dispatchEvent(
         new CustomEvent("clear-selection", {
@@ -108,34 +143,31 @@ export class SidebarTabList extends FxviewTabListBase {
           composed: true,
         })
       );
+      if (stayedInList) {
+        const newRow = this.rowEls[this.activeIndex];
+        if (newRow) {
+          this.dispatchEvent(
+            new CustomEvent("set-anchor", {
+              bubbles: true,
+              composed: true,
+              detail: { guid: newRow.guid },
+            })
+          );
+        }
+      }
       return;
     }
 
-    // Select the current row.
-    const row = event.target;
-    const {
-      guid,
-      previousElementSibling: prevRow,
-      nextElementSibling: nextRow,
-    } = row;
-    this.selectedGuids.add(guid);
-
-    // Select the previous or next sibling, depending on which arrow key was used.
-    if (event.code === "ArrowUp" && prevRow) {
-      this.selectedGuids.add(prevRow.guid);
-    } else if (event.code === "ArrowDown" && nextRow) {
-      this.selectedGuids.add(nextRow.guid);
-    } else {
-      this.requestVirtualListUpdate();
+    const newRow = this.rowEls[this.activeIndex];
+    if (newRow) {
+      this.dispatchEvent(
+        new CustomEvent("shift-select", {
+          bubbles: true,
+          composed: true,
+          detail: { row: newRow },
+        })
+      );
     }
-
-    // Notify the host component.
-    this.dispatchEvent(
-      new CustomEvent("update-selection", {
-        bubbles: true,
-        composed: true,
-      })
-    );
   }
 
   clearSelection() {
@@ -151,7 +183,7 @@ export class SidebarTabList extends FxviewTabListBase {
     return shortcutKey;
   }
 
-  #selectAll() {
+  selectAll() {
     for (const { guid } of this.tabItems) {
       this.selectedGuids.add(guid);
     }
@@ -195,7 +227,7 @@ export class SidebarTabList extends FxviewTabListBase {
         )}
         .secondaryL10nArgs=${ifDefined(tabItem.secondaryL10nArgs)}
         .secondaryL10nId=${tabItem.secondaryL10nId}
-        .selected=${this.selectedGuids.has(tabItem.guid)}
+        .selected=${this.isTabItemSelected(tabItem)}
         .sourceClosedId=${ifDefined(tabItem.sourceClosedId)}
         .sourceWindowId=${ifDefined(tabItem.sourceWindowId)}
         .tabElement=${ifDefined(tabItem.tabElement)}
@@ -206,6 +238,10 @@ export class SidebarTabList extends FxviewTabListBase {
       ></sidebar-tab-row>
     `;
   };
+
+  isTabItemSelected(tabItem) {
+    return this.selectedGuids.has(tabItem.guid);
+  }
 
   stylesheets() {
     return [

@@ -238,10 +238,12 @@ export class FxviewTabListBase extends MozLitElement {
   }
 
   async requestVirtualListUpdate() {
+    const updates = [];
     for (const sublist of this.rootVirtualListEl.children) {
-      await sublist.requestUpdate();
-      await sublist.updateComplete;
+      sublist.requestUpdate();
+      updates.push(sublist.updateComplete);
     }
+    return Promise.allSettled(updates);
   }
 
   shouldUpdate(changes) {
