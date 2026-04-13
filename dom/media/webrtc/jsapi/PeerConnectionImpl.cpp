@@ -1758,23 +1758,19 @@ already_AddRefed<dom::Promise> PeerConnectionImpl::GetStats(
     MOZ_CRASH("Failed to create a promise!");
   }
 
-  if (!IsClosed()) {
-    GetStats(aSelector, false)
-        ->Then(
-            GetMainThreadSerialEventTarget(), __func__,
-            [promise, window = mWindow](
-                UniquePtr<dom::RTCStatsReportInternal>&& aReport) {
-              RefPtr<RTCStatsReport> report(new RTCStatsReport(window));
-              report->Incorporate(*aReport);
-              promise->MaybeResolve(std::move(report));
-            },
-            [promise, window = mWindow](nsresult aError) {
-              RefPtr<RTCStatsReport> report(new RTCStatsReport(window));
-              promise->MaybeResolve(std::move(report));
-            });
-  } else {
-    promise->MaybeReject(NS_ERROR_DOM_INVALID_STATE_ERR);
-  }
+  GetStats(aSelector, false)
+      ->Then(
+          GetMainThreadSerialEventTarget(), __func__,
+          [promise,
+           window = mWindow](UniquePtr<dom::RTCStatsReportInternal>&& aReport) {
+            RefPtr<RTCStatsReport> report(new RTCStatsReport(window));
+            report->Incorporate(*aReport);
+            promise->MaybeResolve(std::move(report));
+          },
+          [promise, window = mWindow](nsresult aError) {
+            RefPtr<RTCStatsReport> report(new RTCStatsReport(window));
+            promise->MaybeResolve(std::move(report));
+          });
 
   return promise.forget();
 }

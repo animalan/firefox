@@ -188,14 +188,6 @@ already_AddRefed<Promise> RTCRtpSender::GetStats(ErrorResult& aError) {
   if (aError.Failed()) {
     return nullptr;
   }
-  if (NS_WARN_IF(!mPipeline)) {
-    // TODO(bug 1056433): When we stop nulling this out when the PC is closed
-    // (or when the transceiver is stopped), we can remove this code. We
-    // resolve instead of reject in order to make this eventual change in
-    // behavior a little smaller.
-    promise->MaybeResolve(new RTCStatsReport(mWindow));
-    return promise.forget();
-  }
 
   mTransceiver->ChainToDomPromiseWithCodecStats(GetStatsInternal(), promise);
   return promise.forget();
