@@ -214,26 +214,23 @@ add_task(async function test_toggle_vertical_tabs() {
     true
   );
   let hidden2 = BrowserTestUtils.waitForEvent(contextMenu, "popuphidden");
-  await openAndWaitForContextMenu(
-    contextMenu,
-    gBrowser.selectedTab,
-    async () => {
-      info("Tab context menu opened");
-      let pinTabOption = document.getElementById("context_pinTab");
-      if (!pinTabOption) {
-        info("Pin tab context menu option not found");
-      }
-      pinTabOption?.click();
+  const tabToPin = gBrowser.selectedTab;
+  await openAndWaitForContextMenu(contextMenu, tabToPin, async () => {
+    info("Tab context menu opened");
+    let pinTabOption = document.getElementById("context_pinTab");
+    if (!pinTabOption) {
+      info("Pin tab context menu option not found");
     }
-  );
+    pinTabOption?.click();
+  });
 
   await promiseTabPinned;
-  // Wait for pinned tab to render
+  // Wait for the specific pinned tab to appear in the container
   let pinnedTabsContainer = document.getElementById("pinned-tabs-container");
   await BrowserTestUtils.waitForMutationCondition(
     pinnedTabsContainer,
     { childList: true },
-    () => pinnedTabsContainer.childElementCount === 1
+    () => pinnedTabsContainer.contains(tabToPin)
   );
   info("Tab pinned via the context menu");
   contextMenu.hidePopup();
@@ -256,7 +253,8 @@ add_task(async function test_toggle_vertical_tabs() {
 
   is(gBrowser.tabs.length, 2, "Tabstrip now has two tabs");
 
-  let tabRect = gBrowser.selectedTab.getBoundingClientRect();
+  let lastUnpinnedTab = gBrowser.visibleTabs.filter(t => !t.pinned).at(-1);
+  let tabRect = lastUnpinnedTab.getBoundingClientRect();
   let containerRect = gBrowser.tabContainer.getBoundingClientRect();
 
   Assert.greater(
@@ -271,17 +269,17 @@ add_task(async function test_toggle_vertical_tabs() {
     mustHaveAccessibleRule: false,
   });
 
-  // Synthesize a double click 100px below the last tab
+  // Synthesize a double click 200px below the last tab
   let target = document.getElementById("tabbrowser-arrowscrollbox");
   let dblClickPromise = BrowserTestUtils.waitForEvent(target, "dblclick");
   EventUtils.synthesizeMouseAtPoint(
     containerRect.left + containerRect.width / 2,
-    tabRect.bottom + 100,
+    tabRect.bottom + 200,
     { clickCount: 1 }
   );
   EventUtils.synthesizeMouseAtPoint(
     containerRect.left + containerRect.width / 2,
-    tabRect.bottom + 100,
+    tabRect.bottom + 200,
     { clickCount: 2 }
   );
   await dblClickPromise;
@@ -293,7 +291,7 @@ add_task(async function test_toggle_vertical_tabs() {
   // Middle click should also open a new tab.
   EventUtils.synthesizeMouseAtPoint(
     containerRect.left + containerRect.width / 2,
-    tabRect.bottom + 100,
+    tabRect.bottom + 200,
     { button: 1 }
   );
 
@@ -304,7 +302,7 @@ add_task(async function test_toggle_vertical_tabs() {
   const toolbarContextMenu = document.getElementById("toolbar-context-menu");
   EventUtils.synthesizeMouseAtPoint(
     containerRect.left + containerRect.width / 2,
-    tabRect.bottom + 100,
+    tabRect.bottom + 200,
     {
       type: "contextmenu",
       button: 2,

@@ -233,6 +233,11 @@ add_task(async function test_resize_of_pinned_tabs() {
     "Pinned tabs container was resized."
   );
 
+  for (let tab of [...gBrowser.tabs]) {
+    if (tab.pinned) {
+      gBrowser.unpinTab(tab);
+    }
+  }
   while (gBrowser.tabs.length > 1) {
     BrowserTestUtils.removeTab(gBrowser.tabs.at(-1));
   }
