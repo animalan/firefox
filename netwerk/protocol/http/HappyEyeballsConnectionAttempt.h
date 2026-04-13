@@ -64,7 +64,7 @@ class HappyEyeballsConnectionAttempt final : public ConnectionAttempt,
                                  bool speculative, bool urgentStart);
 
   nsresult Init(ConnectionEntry* ent) override;
-  void Abandon(bool aReenqueueTransaction = false) override;
+  void Abandon() override;
   double Duration(TimeStamp epoch) override;
   void OnTimeout() override;
   void PrintDiagnostics(nsCString& log) override;

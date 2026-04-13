@@ -317,24 +317,12 @@ void ConnectionEstablisher::FinishInternal(nsresult aResult) {
     // (which refs the establisher).
     mHandle = nullptr;
 
-    // For H3, check CanReuse() to guard against mHttp3Session being
-    // destroyed between the async handshake callback and this point.
-    // For H1/H2, skip: H1 needs the connection even if the socket is dead
-    // (e.g. cert error) to propagate the proper error code; H2 sessions
-    // may be incorrectly marked DontReuse by the proxy transaction's caps.
-    bool connUsable =
-        mResultConn && (!mResultConn->UsingHttp3() || mResultConn->CanReuse());
-    if (NS_SUCCEEDED(aResult) && connUsable) {
+    if (NS_SUCCEEDED(aResult) && mResultConn && mResultConn->CanReuse()) {
       if (!mConnectStart.IsNull()) {
         mResultConn->SetConnectBootstrapTimings(mConnectStart, mTcpConnectEnd);
       }
       cb(std::move(mResultConn));
     } else {
-      LOG(
-          ("ConnectionEstablisher::FinishInternal %p conn rejected "
-           "aResult=%x connUsable=%d UsingHttp3=%d",
-           this, static_cast<uint32_t>(aResult), connUsable,
-           mResultConn ? mResultConn->UsingHttp3() : 0));
       cb(Err(NS_FAILED(aResult) ? aResult : NS_ERROR_ABORT));
     }
   }
@@ -680,6 +668,7 @@ bool UDPConnectionEstablisher::Start(DoneCallback&& aCallback) {
 
   nsresult rv = CreateAndConfigureUDPConn();
   if (NS_FAILED(rv)) {
+    Finish(rv);
     return false;
   }
 
