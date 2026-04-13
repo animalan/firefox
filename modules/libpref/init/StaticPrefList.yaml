@@ -10262,7 +10262,7 @@
 # Whether style() container queries are enabled
 - name: layout.css.style-queries.enabled
   type: RelaxedAtomicBool
-  value: @IS_NIGHTLY_BUILD@
+  value: true
   mirror: always
   rust: true
 
