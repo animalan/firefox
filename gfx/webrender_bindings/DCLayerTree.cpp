@@ -9,6 +9,7 @@
 #include <d3d11.h>
 #include <dcomp.h>
 #include <d3d11_1.h>
+#include <d3d11_4.h>
 #include <dxgi1_2.h>
 
 // -
@@ -3004,6 +3005,17 @@ bool DCSurfaceVideo::CallVideoProcessorBlt() {
   }
   videoContext1->VideoProcessorSetOutputColorSpace1(videoProcessor,
                                                     outputColorSpace.ref());
+
+  auto hdrMetadata =
+      gfx::DeviceManagerDx::Get()->WindowHDRMetadata(mDCLayerTree->GetHwnd());
+  RefPtr<ID3D11VideoContext2> videoContext2;
+  videoContext->QueryInterface(
+      (ID3D11VideoContext2**)getter_AddRefs(videoContext2));
+  if (hdrMetadata.isSome() && videoContext2) {
+    videoContext2->VideoProcessorSetOutputHDRMetaData(
+        videoProcessor, DXGI_HDR_METADATA_TYPE_HDR10,
+        sizeof(DXGI_HDR_METADATA_HDR10), &(hdrMetadata.ref()));
+  }
 
   D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC inputDesc = {};
   inputDesc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
