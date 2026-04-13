@@ -148,7 +148,6 @@ import org.mozilla.fenix.home.topsites.DefaultTopSitesView
 import org.mozilla.fenix.home.topsites.TopSitesBinding
 import org.mozilla.fenix.home.topsites.controller.DefaultTopSiteController
 import org.mozilla.fenix.home.topsites.getTopSitesConfig
-import org.mozilla.fenix.home.ui.HomeSwipeIntegration
 import org.mozilla.fenix.home.ui.Homepage
 import org.mozilla.fenix.home.ui.MiddleSearchHomepage
 import org.mozilla.fenix.home.ui.WallpaperBackground
@@ -212,8 +211,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
     private val bottomToolbarContainerView: BottomToolbarContainerView
         get() = _bottomToolbarContainerView!!
     private var awesomeBarComposable: AwesomeBarComposable? = null
-
-    private var homeSwipeIntegration: HomeSwipeIntegration? = null
 
     private val browsingModeManager get() = (activity as HomeActivity).browsingModeManager
 
@@ -693,16 +690,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
 
         initComposeHomepage()
 
-        homeSwipeIntegration = HomeSwipeIntegration(
-            components = requireContext().components,
-            settings = requireContext().settings(),
-            binding = binding,
-            activity = requireActivity() as HomeActivity,
-            toolbarView = toolbarView,
-            homeNavigationBar = homeNavigationBar,
-            navController = findNavController(),
-        )
-
         FxNimbus.features.homescreen.recordExposure()
 
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
@@ -963,8 +950,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
             HomeScreen.standardHomepageViewCount.add()
         }
 
-        homeSwipeIntegration?.initializeSwipeUI()
-
         observePrivateModeLock {
             findNavController().navigate(
                 NavGraphDirections.actionGlobalUnlockPrivateTabsFragment(NavigationOrigin.HOME_PAGE),
@@ -1189,7 +1174,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         _sessionControlInteractor = null
         _bottomToolbarContainerView = null
         awesomeBarComposable = null
-        homeSwipeIntegration = null
         _binding = null
 
         bundleArgs.clear()
