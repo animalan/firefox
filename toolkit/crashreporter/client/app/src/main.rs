@@ -88,6 +88,7 @@ fn main() {
         Some(s) if s == "--analyze" => analyze::main(),
         Some(s) if s == "--memtest" => memory_test::main(),
         Some(s) if s == "--send-ping" => send_ping::main(),
+        Some(s) if s == "--ping-cleanup" => send_ping::cleanup_main(),
         _ => report_main(),
     }
 }
