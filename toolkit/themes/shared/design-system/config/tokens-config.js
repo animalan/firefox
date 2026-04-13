@@ -96,10 +96,6 @@ const TOKEN_CATEGORIES = [
     purposes: [PURPOSE.SEMANTIC],
   },
   {
-    name: "outline-radius",
-    purposes: [PURPOSE.SEMANTIC],
-  },
-  {
     name: "outline-width",
     purposes: [PURPOSE.SEMANTIC],
   },

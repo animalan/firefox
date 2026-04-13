@@ -73,6 +73,15 @@ const systemColorSuggestions = {
   windowtext: "var(--text-color)",
 };
 
+// Some "primitive" color tokens can be used directly for background-color, color, fill, stroke, etc.
+const versatileColorTokens = [
+  "--color-accent-primary",
+  "--color-accent-primary-hover",
+  "--color-accent-primary-active",
+  "--color-accent-primary-selected",
+  "--color-accent-attention",
+];
+
 /** @type {PropertyTypeConfig} */
 const BackgroundColor = {
   allow: [
@@ -155,6 +164,7 @@ const BackgroundColor = {
     "--urlbarview-background-color-selected",
     "--urlbarView-result-button-hover-background-color",
     "--urlbarView-result-button-selected-background-color",
+    ...versatileColorTokens,
   ],
   tokenTypes: ["background-color"],
   aliasTokenTypes: ["color", "text-color", "border-color", "icon-color"],
@@ -224,6 +234,7 @@ const Fill = {
     "currentColor",
     "transparent",
   ],
+  allowedTokens: [...versatileColorTokens],
   allowFunctions: ["url"],
   tokenTypes: ["icon-color"],
   aliasTokenTypes: [
@@ -248,6 +259,7 @@ const FontSize = {
     "xxx-large",
     "smaller",
     "larger",
+    "1em",
   ],
   tokenTypes: ["font-size"],
 };
@@ -283,7 +295,8 @@ const BorderColor = {
     "0",
   ],
   allowAlias: [...SYSTEM_COLORS],
-  tokenTypes: ["border-color", "border", "outline"],
+  allowedTokens: [...versatileColorTokens],
+  tokenTypes: ["border-color", "border", "outline-color", "outline"],
   aliasTokenTypes: ["color", "background-color", "text-color"],
   customFixes: customColorFixes,
   customSuggestions: systemColorSuggestions,
@@ -309,7 +322,7 @@ const BorderStyle = {
 /** @type {PropertyTypeConfig} */
 const BorderWidth = {
   allow: ["0"],
-  tokenTypes: ["border-width", "outline"],
+  tokenTypes: ["border-width", "outline-width", "outline"],
   allowUnits: true,
 };
 
@@ -356,6 +369,7 @@ const FlexShorthand = {
 const TextColor = {
   allow: ["currentColor", "white", "black"],
   allowAlias: [...SYSTEM_COLORS],
+  allowedTokens: [...versatileColorTokens],
   tokenTypes: ["text-color", "icon-color"],
   aliasTokenTypes: ["color", "background-color", "border-color"],
   customFixes: customColorFixes,
@@ -416,6 +430,7 @@ const Size = {
 const Stroke = {
   allow: ["none", "context-stroke", "currentColor", "transparent"],
   allowFunctions: ["url"],
+  allowedTokens: [...versatileColorTokens],
   tokenTypes: ["icon-color"],
   aliasTokenTypes: [
     "background-color",
