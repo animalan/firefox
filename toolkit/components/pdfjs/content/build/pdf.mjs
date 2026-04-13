@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.7.97
- * pdfjsBuild = a67b95211
+ * pdfjsVersion = 5.7.145
+ * pdfjsBuild = 652700dac
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -46,10 +46,11 @@
 /******/ })();
 /******/ 
 /************************************************************************/
-var __webpack_exports__ = {};
 
 ;// ./src/shared/util.js
 const isNodeJS = false;
+const BBOX_INIT = [Infinity, Infinity, -Infinity, -Infinity];
+const F32_BBOX_INIT = new Float32Array(BBOX_INIT);
 const FONT_IDENTITY_MATRIX = [0.001, 0, 0, 0.001, 0, 0];
 const LINE_FACTOR = 1.35;
 const LINE_DESCENT_FACTOR = 0.35;
@@ -7009,7 +7010,7 @@ const ensureDebugMetadata = (map, key) => map?.getOrInsertComputed(key, () => ({
 class CanvasBBoxTracker {
   #baseTransformStack = [[1, 0, 0, 1, 0, 0]];
   #clipBox = [-Infinity, -Infinity, Infinity, Infinity];
-  #pendingBBox = new Float64Array([Infinity, Infinity, -Infinity, -Infinity]);
+  #pendingBBox = new Float64Array(BBOX_INIT);
   _pendingBBoxIdx = -1;
   #canvasWidth;
   #canvasHeight;
@@ -7104,16 +7105,13 @@ class CanvasBBoxTracker {
   resetBBox(idx) {
     if (this._pendingBBoxIdx !== idx) {
       this._pendingBBoxIdx = idx;
-      this.#pendingBBox[0] = Infinity;
-      this.#pendingBBox[1] = Infinity;
-      this.#pendingBBox[2] = -Infinity;
-      this.#pendingBBox[3] = -Infinity;
+      this.#pendingBBox.set(BBOX_INIT, 0);
     }
     return this;
   }
   recordClipBox(idx, ctx, minX, maxX, minY, maxY) {
     const transform = Util.multiplyByDOMMatrix(this.#baseTransformStack.at(-1), ctx.getTransform());
-    const clipBox = [Infinity, Infinity, -Infinity, -Infinity];
+    const clipBox = BBOX_INIT.slice();
     Util.axialAlignedBoundingBox([minX, minY, maxX, maxY], transform, clipBox);
     const intersection = Util.intersect(this.#clipBox, clipBox);
     if (intersection) {
@@ -7137,7 +7135,7 @@ class CanvasBBoxTracker {
       Util.axialAlignedBoundingBox([minX, minY, maxX, maxY], transform, this.#pendingBBox);
       return this;
     }
-    const bbox = [Infinity, Infinity, -Infinity, -Infinity];
+    const bbox = BBOX_INIT.slice();
     Util.axialAlignedBoundingBox([minX, minY, maxX, maxY], transform, bbox);
     this.#pendingBBox[0] = MathClamp(bbox[0], clipBox[0], this.#pendingBBox[0]);
     this.#pendingBBox[1] = MathClamp(bbox[1], clipBox[1], this.#pendingBBox[1]);
@@ -7652,7 +7650,7 @@ class CanvasImagesTracker {
     const transform = Util.domMatrixToTransform(ctx.getTransform());
     let coords;
     if (clipBox[0] !== Infinity) {
-      const bbox = [Infinity, Infinity, -Infinity, -Infinity];
+      const bbox = BBOX_INIT.slice();
       Util.axialAlignedBoundingBox([0, -height, width, 0], transform, bbox);
       const finalBBox = Util.intersect(clipBox, bbox);
       if (!finalBBox) {
@@ -8307,7 +8305,7 @@ class PatternInfo {
       const shadingType = this.data[PATTERN_INFO.SHADING_TYPE];
       let bounds = null;
       if (coords.length > 0) {
-        bounds = [Infinity, Infinity, -Infinity, -Infinity];
+        bounds = BBOX_INIT.slice();
         for (let i = 0, ii = coords.length; i < ii; i += 2) {
           Util.pointBoundingBox(coords[i], coords[i + 1], bounds);
         }
@@ -9668,6 +9666,7 @@ class TilingPattern {
   setFillAndStrokeStyleToContext(graphics, paintType, color) {
     const context = graphics.ctx,
       current = graphics.current;
+    current.patternFill = current.patternStroke = false;
     switch (paintType) {
       case PaintType.COLORED:
         const {
@@ -9826,7 +9825,6 @@ const EXECUTION_STEPS = 10;
 const FULL_CHUNK_HEIGHT = 16;
 const SCALE_MATRIX = new DOMMatrix();
 const XY = new Float32Array(2);
-const MIN_MAX_INIT = new Float32Array([Infinity, Infinity, -Infinity, -Infinity]);
 function mirrorContextOperations(ctx, destCtx) {
   if (ctx._removeMirroring) {
     throw new Error("Context is already forwarding operations.");
@@ -9987,7 +9985,7 @@ class CanvasExtraState {
   lineWidth = 1;
   activeSMask = null;
   transferMaps = "none";
-  minMax = MIN_MAX_INIT.slice();
+  minMax = F32_BBOX_INIT.slice();
   constructor(width, height) {
     this.clipBox = new Float32Array([0, 0, width, height]);
   }
@@ -10023,7 +10021,7 @@ class CanvasExtraState {
   }
   startNewPathAndClipBox(box) {
     this.clipBox.set(box, 0);
-    this.minMax.set(MIN_MAX_INIT, 0);
+    this.minMax.set(F32_BBOX_INIT, 0);
   }
   getClippedPathBoundingBox(pathType = PathType.FILL, transform = null) {
     return Util.intersect(this.clipBox, this.getPathBoundingBox(pathType, transform));
@@ -10489,7 +10487,7 @@ class CanvasGraphics {
     }
     let maskToCanvas = Util.transform(currentTransform, [1 / width, 0, 0, -1 / height, 0, 0]);
     maskToCanvas = Util.transform(maskToCanvas, [1, 0, 0, 1, 0, -height]);
-    const minMax = MIN_MAX_INIT.slice();
+    const minMax = F32_BBOX_INIT.slice();
     Util.axialAlignedBoundingBox([0, 0, width, height], maskToCanvas, minMax);
     const [minX, minY, maxX, maxY] = minMax;
     const drawnWidth = Math.round(maxX - minX) || 1;
@@ -11440,7 +11438,7 @@ class CanvasGraphics {
         width,
         height
       } = ctx.canvas;
-      const minMax = MIN_MAX_INIT.slice();
+      const minMax = F32_BBOX_INIT.slice();
       Util.axialAlignedBoundingBox([0, 0, width, height], inv, minMax);
       const [x0, y0, x1, y1] = minMax;
       this.ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
@@ -11526,7 +11524,7 @@ class CanvasGraphics {
     const canvasBounds = [0, 0, currentCtx.canvas.width, currentCtx.canvas.height];
     let bounds;
     if (group.bbox) {
-      bounds = MIN_MAX_INIT.slice();
+      bounds = F32_BBOX_INIT.slice();
       Util.axialAlignedBoundingBox(group.bbox, getCurrentTransform(currentCtx), bounds);
       bounds = Util.intersect(bounds, canvasBounds) || [0, 0, 0, 0];
     } else {
@@ -11608,7 +11606,7 @@ class CanvasGraphics {
       this.restore(opIdx);
       this.ctx.save();
       this.ctx.setTransform(...currentMtx);
-      const dirtyBox = MIN_MAX_INIT.slice();
+      const dirtyBox = F32_BBOX_INIT.slice();
       Util.axialAlignedBoundingBox([0, 0, groupCtx.canvas.width, groupCtx.canvas.height], currentMtx, dirtyBox);
       this.ctx.drawImage(groupCtx.canvas, 0, 0);
       this.ctx.restore();
@@ -13822,7 +13820,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "5.7.97",
+    apiVersion: "5.7.145",
     data,
     password,
     disableAutoFetch,
@@ -15434,8 +15432,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "5.7.97";
-const build = "a67b95211";
+const version = "5.7.145";
+const build = "652700dac";
 
 ;// ./src/display/editor/color_picker.js
 
@@ -20233,10 +20231,9 @@ class FreeDrawOutline extends Outline {
           lastPointX = ltrCallback(lastPointX, x);
         }
       } else {
-        bezierBbox[0] = bezierBbox[1] = Infinity;
-        bezierBbox[2] = bezierBbox[3] = -Infinity;
+        bezierBbox.set(BBOX_INIT, 0);
         Util.bezierBoundingBox(lastX, lastY, ...outline.slice(i, i + 6), bezierBbox);
-        Util.rectBoundingBox(bezierBbox[0], bezierBbox[1], bezierBbox[2], bezierBbox[3], minMax);
+        Util.rectBoundingBox(...bezierBbox, minMax);
         if (firstPointY > bezierBbox[1]) {
           firstPointX = bezierBbox[0];
           firstPointY = bezierBbox[1];
@@ -20299,7 +20296,7 @@ class HighlightOutliner {
   #verticalEdges = [];
   #intervals = [];
   constructor(boxes, borderWidth = 0, innerMargin = 0, isLTR = true) {
-    const minMax = [Infinity, Infinity, -Infinity, -Infinity];
+    const minMax = BBOX_INIT.slice();
     const NUMBER_OF_DIGITS = 4;
     const EPSILON = 10 ** -NUMBER_OF_DIGITS;
     for (const {
@@ -22467,7 +22464,7 @@ class InkDrawOutline extends Outline {
     return [x + marginX, y + marginY, width - 2 * marginX, height - 2 * marginY];
   }
   #computeBbox() {
-    const bbox = this.#bbox = new Float32Array([Infinity, Infinity, -Infinity, -Infinity]);
+    const bbox = this.#bbox = F32_BBOX_INIT.slice();
     for (const {
       line
     } of this.#lines) {
@@ -24857,8 +24854,7 @@ class AnnotationEditorLayer {
         }
         const editor = this.#editors.get(id);
         if (editor?.annotationElementId === null) {
-          e.stopPropagation();
-          e.preventDefault();
+          stopEvent(e);
           editor.dblclick(e);
         }
       }, {
