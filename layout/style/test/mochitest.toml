@@ -620,6 +620,8 @@ skip-if = [
 
 ["test_pseudoelement_state.html"]
 
+["test_query_condition_matches_element.html"]
+
 ["test_query_container_for.html"]
 
 ["test_redundant_font_download.html"]
