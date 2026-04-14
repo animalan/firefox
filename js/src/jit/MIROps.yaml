@@ -1657,7 +1657,7 @@
 
 - name: BoxNonStrictThis
   operands:
-    def: Value
+    def: ValueOrObject
   arguments:
     globalThis: JSObject*
   result_type: Object

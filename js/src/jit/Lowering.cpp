@@ -538,6 +538,12 @@ void LIRGenerator::visitReturnFromCtor(MReturnFromCtor* ins) {
 
 void LIRGenerator::visitBoxNonStrictThis(MBoxNonStrictThis* ins) {
   MOZ_ASSERT(ins->type() == MIRType::Object);
+
+  if (ins->input()->type() == MIRType::Object) {
+    redefine(ins, ins->input());
+    return;
+  }
+
   MOZ_ASSERT(ins->input()->type() == MIRType::Value);
 
   auto* lir = new (alloc()) LBoxNonStrictThis(useBox(ins->input()));
