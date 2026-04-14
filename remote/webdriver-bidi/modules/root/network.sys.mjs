@@ -1962,6 +1962,12 @@ class NetworkModule extends RootBiDiModule {
       return;
     }
 
+    const key = `${request.requestId}-${DataType.Request}`;
+    if (this.#collectedNetworkData.has(key)) {
+      // For redirected requests we might already be tracking the body.
+      return;
+    }
+
     const collectedData = {
       bytes: null,
       collectors: new Set(),
@@ -1977,14 +1983,17 @@ class NetworkModule extends RootBiDiModule {
     // The actual cloning is already handled by the DevTools
     // NetworkResponseListener, here we just have to prepare the networkData and
     // add it to the array.
-    this.#collectedNetworkData.set(
-      `${request.requestId}-${DataType.Request}`,
-      collectedData
-    );
+    this.#collectedNetworkData.set(key, collectedData);
   }
 
   #cloneNetworkResponseBody(request) {
     if (!this.#networkCollectors.size) {
+      return;
+    }
+
+    const key = `${request.requestId}-${DataType.Response}`;
+    if (this.#collectedNetworkData.has(key)) {
+      // For redirected requests we might already be tracking the body.
       return;
     }
 
@@ -2007,10 +2016,7 @@ class NetworkModule extends RootBiDiModule {
     // The actual cloning is already handled by the DevTools
     // NetworkResponseListener, here we just have to prepare the networkData and
     // add it to the array.
-    this.#collectedNetworkData.set(
-      `${request.requestId}-${DataType.Response}`,
-      collectedData
-    );
+    this.#collectedNetworkData.set(key, collectedData);
   }
 
   #deserializeHeader(protocolHeader) {
