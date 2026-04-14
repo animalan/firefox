@@ -5925,18 +5925,14 @@ void AsyncPanZoomController::NotifyMainThreadTransaction(
           Metrics().GetVisualScrollOffset());
 
       CSSPoint destination;
-      if (scrollUpdate.GetType() == ScrollUpdateType::Relative) {
-        CSSPoint delta =
-            scrollUpdate.GetDestination() - scrollUpdate.GetSource();
-        APZC_LOG("%p relative smooth scrolling from %s by %s\n", this,
-                 ToString(base).c_str(), ToString(delta).c_str());
-        destination = Metrics().CalculateScrollRange().ClampPoint(base + delta);
-      } else if (scrollUpdate.GetType() == ScrollUpdateType::PureRelative) {
+      if (scrollUpdate.GetType() == ScrollUpdateType::PureRelative) {
         CSSPoint delta = scrollUpdate.GetDelta();
         APZC_LOG("%p pure-relative smooth scrolling from %s by %s\n", this,
                  ToString(base).c_str(), ToString(delta).c_str());
         destination = Metrics().CalculateScrollRange().ClampPoint(base + delta);
       } else {
+        MOZ_ASSERT(scrollUpdate.GetType() != ScrollUpdateType::Relative,
+                   "Smooth relative update should never happen");
         APZC_LOG("%p smooth scrolling to %s\n", this,
                  ToString(scrollUpdate.GetDestination()).c_str());
         destination = scrollUpdate.GetDestination();
