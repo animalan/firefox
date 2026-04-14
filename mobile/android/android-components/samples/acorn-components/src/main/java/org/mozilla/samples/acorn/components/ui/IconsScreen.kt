@@ -6,6 +6,7 @@ package org.mozilla.samples.acorn.components.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -22,19 +23,26 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import mozilla.components.compose.base.annotation.FlexibleWindowLightDarkPreview
 import mozilla.components.compose.base.button.IconButton
+import mozilla.components.compose.base.snackbar.displaySnackbar
 import mozilla.components.compose.base.theme.AcornTheme
 import mozilla.components.ui.icons.R as iconsR
 
@@ -46,7 +54,12 @@ private const val CATEGORY_LABEL_WIDTH = 140
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IconsScreen(onNavigateUp: () -> Unit = {}) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -82,7 +95,18 @@ fun IconsScreen(onNavigateUp: () -> Unit = {}) {
 
                 items(section.categories.size, key = { "${section.size}-$it" }) { index ->
                     val (title, icons, tint) = section.categories[index]
-                    IconCategoryRow(title = title, icons = icons, tint = tint)
+                    IconCategoryRow(
+                        title = title,
+                        icons = icons,
+                        tint = tint,
+                        onIconClick = { resId ->
+                            val name = context.resources.getResourceEntryName(resId)
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.displaySnackbar(message = name)
+                            }
+                        },
+                    )
                 }
 
                 if (section != iconSizeSections.last()) {
@@ -124,6 +148,7 @@ private fun IconCategoryRow(
     title: String,
     @DrawableRes icons: List<Int>,
     tint: Color = Color.Unspecified,
+    onIconClick: (Int) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -151,6 +176,7 @@ private fun IconCategoryRow(
                     painter = painterResource(iconRes),
                     contentDescription = null,
                     tint = tint,
+                    modifier = Modifier.clickable { onIconClick(iconRes) },
                 )
             }
         }
