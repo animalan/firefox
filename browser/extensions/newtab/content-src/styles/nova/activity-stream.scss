@@ -4,6 +4,7 @@
 
 // @nova-cleanup(merge-styles): Merge nova/activity-stream.scss back to activity-stream.scss after ship
 
+@import 'tokens';
 @import '../normalize';
 @import '../variables';
 @import '../theme';
