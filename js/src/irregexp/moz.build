@@ -15,7 +15,8 @@ include("../js-cxxflags.mozbuild")
 # See bug 1810584, bug 1879225, and bug 1895871.
 CXXFLAGS += ["-Wno-error=type-limits", "-Wno-error=return-type", "-Wno-sign-compare"]
 if CONFIG["CC_TYPE"] == "gcc":
-    CXXFLAGS += ["-Wno-error=nonnull", "-Wno-narrowing"]
+    CXXFLAGS += ["-Wno-error=nonnull", "-Wno-narrowing", "-Wno-error=unused-function",
+                 "-Wno-error=unused-but-set-variable", "-Wno-address"]
 if CONFIG["CC_TYPE"] in ("clang", "clang-cl"):
     CXXFLAGS += ["-Wno-c++11-narrowing"]
 
