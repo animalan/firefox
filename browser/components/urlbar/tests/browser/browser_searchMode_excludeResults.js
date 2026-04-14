@@ -225,7 +225,7 @@ async function enterSearchMode(engineName) {
   let popup = UrlbarTestUtils.searchModeSwitcherPopup(window);
   await UrlbarTestUtils.openSearchModeSwitcher(window);
   let popupHidden = UrlbarTestUtils.searchModeSwitcherPopupClosed(window);
-  popup.querySelector(`panel-item[data-engine-name=${engineName}]`).click();
+  popup.querySelector(`menuitem[label=${engineName}]`).click();
   await popupHidden;
   window.gURLBar.search("example");
   await UrlbarTestUtils.promiseSearchComplete(window);

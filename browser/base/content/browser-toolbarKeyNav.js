@@ -37,9 +37,7 @@ ToolbarKeyboardNavigator = {
       return false;
     }
     return (
-      aElem.tagName == "toolbarbutton" ||
-      aElem.tagName == "html:moz-button" ||
-      aElem.getAttribute("role") == "button"
+      aElem.tagName == "toolbarbutton" || aElem.getAttribute("role") == "button"
     );
   },
 
@@ -387,12 +385,6 @@ ToolbarKeyboardNavigator = {
 
     if (focus.getAttribute("type") == "menu") {
       focus.open = true;
-      return;
-    }
-
-    // moz-button uses an html button internally
-    // which already receives a click event on enter.
-    if (focus.localName == "moz-button") {
       return;
     }
 

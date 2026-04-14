@@ -5,7 +5,6 @@ ChromeUtils.defineESModuleGetters(this, {
   PerfTestHelpers: "resource://testing-common/PerfTestHelpers.sys.mjs",
   PlacesTestUtils: "resource://testing-common/PlacesTestUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
-  UrlbarUtils: "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs",
   UrlbarTestUtils: "resource://testing-common/UrlbarTestUtils.sys.mjs",
 });
 
@@ -301,8 +300,7 @@ async function ensureSearchIconVisible() {
     BrowserTestUtils.removeTab(tab);
     await BrowserTestUtils.waitForCondition(
       () =>
-        UrlbarTestUtils.getSearchModeSwitcherIcon(window) !=
-        UrlbarUtils.ICON.SEARCH_GLASS
+        gURLBar.querySelector(".searchmode-switcher-icon").style.listStyleImage
     );
   }
 }

@@ -293,7 +293,7 @@ export var UrlbarUtils = {
         icon: "chrome://browser/skin/bookmark.svg",
         pref: "shortcuts.bookmarks",
         telemetryLabel: "bookmarks",
-        uiLabel: "urlbar-searchmode-bookmarks2",
+        uiLabel: "urlbar-searchmode-bookmarks",
       },
       {
         source: this.RESULT_SOURCE.TABS,
@@ -301,7 +301,7 @@ export var UrlbarUtils = {
         icon: "chrome://browser/skin/tabs.svg",
         pref: "shortcuts.tabs",
         telemetryLabel: "tabs",
-        uiLabel: "urlbar-searchmode-tabs2",
+        uiLabel: "urlbar-searchmode-tabs",
       },
       {
         source: this.RESULT_SOURCE.HISTORY,
@@ -309,7 +309,7 @@ export var UrlbarUtils = {
         icon: "chrome://browser/skin/history.svg",
         pref: "shortcuts.history",
         telemetryLabel: "history",
-        uiLabel: "urlbar-searchmode-history2",
+        uiLabel: "urlbar-searchmode-history",
       },
       {
         source: this.RESULT_SOURCE.ACTIONS,
@@ -317,7 +317,7 @@ export var UrlbarUtils = {
         icon: "chrome://browser/skin/quickactions.svg",
         pref: "shortcuts.actions",
         telemetryLabel: "actions",
-        uiLabel: "urlbar-searchmode-actions2",
+        uiLabel: "urlbar-searchmode-actions",
       },
     ]);
   },

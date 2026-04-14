@@ -22,18 +22,18 @@ add_task(async function test_opened() {
   await cleanUp();
 
   info("Open search mode switcher popup");
-  let popup = await UrlbarTestUtils.openSearchModeSwitcher(window);
+  const popup1 = await UrlbarTestUtils.openSearchModeSwitcher(window);
   Assert.equal(Glean.urlbarUnifiedsearchbutton.opened.testGetValue(), 1);
 
   info("Close search mode switcher popup");
-  popup.hide();
+  popup1.hidePopup();
 
   info("Open search mode switcher popup again");
-  popup = await UrlbarTestUtils.openSearchModeSwitcher(window);
+  const popup2 = await UrlbarTestUtils.openSearchModeSwitcher(window);
   Assert.equal(Glean.urlbarUnifiedsearchbutton.opened.testGetValue(), 2);
 
   info("Close search mode switcher popup again");
-  popup.hide();
+  popup2.hidePopup();
 });
 
 add_task(async function test_picked_search_engines() {
@@ -46,14 +46,14 @@ add_task(async function test_picked_search_engines() {
   await testSearchEngine("Google", "builtin_search", 1);
   await testSearchEngine("Google", "builtin_search", 2);
   await testSearchEngine("DuckDuckGo", "builtin_search", 3);
-  await testSearchEngine("BOOKMARK", "local_search", 1);
-  await testSearchEngine("OPENPAGE", "local_search", 2);
+  await testSearchEngine("Bookmarks", "local_search", 1);
+  await testSearchEngine("Tabs", "local_search", 2);
   await testSearchEngine("DuckDuckGo", "builtin_search", 4);
-  await testSearchEngine("BOOKMARK", "local_search", 3);
-  await testSearchEngine("OPENPAGE", "local_search", 4);
+  await testSearchEngine("Bookmarks", "local_search", 3);
+  await testSearchEngine("Tabs", "local_search", 4);
   await testSearchEngine("DuckDuckGo", "builtin_search", 5);
 
-  info("Add opensearch search engine");
+  info("Add addon search engine");
   await loadUri(
     "http://mochi.test:8888/browser/browser/components/search/test/browser/opensearch.html"
   );
@@ -66,13 +66,10 @@ add_task(async function test_picked_search_engines() {
   });
 
   info("Test with addon search engine");
-  let addPromise = SearchTestUtils.promiseEngine("Foo");
-  // This will install then engine under the name Foo.
   await testSearchEngine("engine1", "addon_search", 1);
-  await addPromise;
   await testSearchEngine("Foo", "addon_search", 2);
   await testSearchEngine("DuckDuckGo", "builtin_search", 6);
-  await testSearchEngine("BOOKMARK", "local_search", 5);
+  await testSearchEngine("Bookmarks", "local_search", 5);
 
   info("Clean up");
   await removeAddonSearchEngine("Foo");
@@ -104,23 +101,17 @@ add_task(async function test_picked_settings() {
   BrowserTestUtils.removeTab(tab);
 });
 
-async function testSearchEngine(engineOrRestrict, telemetry, expected) {
+async function testSearchEngine(label, telemetry, expected) {
   info(
-    `Test search engine for ${JSON.stringify({ label: engineOrRestrict, telemetry, expected })}`
+    `Test search engine for ${JSON.stringify({ label, telemetry, expected })}`
   );
   let popup = await UrlbarTestUtils.openSearchModeSwitcher(window);
+  await BrowserTestUtils.waitForCondition(() =>
+    popup.querySelector(`menuitem[label*=${label}]`)
+  );
 
   let popupHidden = UrlbarTestUtils.searchModeSwitcherPopupClosed(window);
-
-  if (Object.keys(UrlbarTokenizer.RESTRICT).includes(engineOrRestrict)) {
-    let restrict = UrlbarTokenizer.RESTRICT[engineOrRestrict];
-    popup.querySelector(`panel-item[data-restrict="${restrict}"]`).click();
-  } else {
-    popup
-      .querySelector(`panel-item[data-engine-name="${engineOrRestrict}"]`)
-      .click();
-  }
-
+  popup.querySelector(`menuitem[label*=${label}]`).click();
   await popupHidden;
 
   Assert.equal(

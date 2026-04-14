@@ -118,6 +118,9 @@ let propNameAllowlist = [
   { propName: "--bezier-diagonal-color", isFromDevTools: true },
   { propName: "--highlighter-font-family", isFromDevTools: true },
 
+  // This variable is used from CSS embedded in JS in adjustableTitle.js
+  { propName: "--icon-url", isFromDevTools: false },
+
   // These are referenced from devtools files.
   {
     propName: "--browser-stack-z-index-devtools-splitter",

@@ -455,6 +455,7 @@ toolbar[inactive="true"] .urlbar,
 /* The page actions menu is hidden by default, it is only shown in small
    windows as the overflow target of multiple page action buttons */
 #pageActionButton {
+  /* TODO: display: none fixes browser_startup_images.js but breaks some tests. */
   display: none;
 }
 
@@ -1179,34 +1180,19 @@ toolbar[inactive="true"] .urlbar,
 }
 
 .searchmode-switcher {
+  appearance: none;
+  border-radius: var(--urlbar-inner-border-radius);
+  margin: 0;
   margin-inline-end: var(--urlbar-searchmodeswitcher-margin-inline-end);
-  height: auto;
-  --button-padding: 0 var(--space-small);
-  --button-min-height: 100%;
-  --button-font-weight: normal;
-  --focus-outline-offset: var(--focus-outline-inset);
+  padding-inline: var(--urlbar-searchmodeswitcher-inline-padding);
 
-  --button-background-color-active: var(--button-background-color);
-  --button-background-color-hover: var(--button-background-color);
-  /* Ideally, we'd use this variable instead of the &[open] rule.
-  Unfortunately, it gets overridden by --button-background-color-active
-  during clicks.*/
-  --button-background-color-selected: var(--button-background-color);
-
-  --button-background-color: var(--urlbar-box-background-color);
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media -moz-pref("browser.urlbar.unifiedSearchButton.always") {
-    --button-background-color: transparent;
-  }
-
-  > .searchmode-switcher-content {
-    display: flex;
-    align-items: center;
-    gap: var(--space-small);
+  &:focus-visible {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-outline-inset);
   }
 
   &[open] {
-    --button-background-color: var(--urlbar-box-background-color-focus);
+    background-color: var(--urlbar-box-background-color-focus);
   }
 
   /* No need space if page information icons such as lock and shield is shown */
@@ -1215,11 +1201,11 @@ toolbar[inactive="true"] .urlbar,
   }
 
   .urlbar[searchmode] & {
-    --button-background-color: var(--urlbar-box-background-color);
+    background-color: var(--urlbar-box-background-color);
   }
 
   .urlbar[focused] & {
-    --button-background-color: var(--urlbar-box-background-color-focus);
+    background-color: var(--urlbar-box-background-color-focus);
   }
 
   .urlbar:not(#searchbar-new) & {
@@ -1231,40 +1217,44 @@ toolbar[inactive="true"] .urlbar,
   }
 }
 
+.searchmode-switcher-icon {
+  width: 16px;
+  height: 16px;
+  -moz-context-properties: fill;
+  fill: currentColor;
+  list-style-image: url("chrome://global/skin/icons/search-glass.svg");
+}
+
 .searchmode-switcher-title {
   display: none;
   margin: 0;
+  align-items: center;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
   max-width: var(--search-engine-name-max-width);
+  margin-inline: var(--urlbar-searchmodeswitcher-inline-padding);
 
   .urlbar:not(#searchbar-new)[searchmode] & {
-    display: block;
+    display: inline-flex;
   }
 }
 
 .searchmode-switcher-close {
   display: none;
-  border: 0;
-  align-self: center;
+  appearance: none;
+  pointer-events: all;
 
   /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("browser.urlbar.unifiedSearchButton.always") {
     .urlbar[searchmode] & {
-      display: revert;
+      display: inline-flex;
     }
   }
 }
 
-.searchmode-switcher-panel {
-  --panel-padding: 0;
-}
-
 .searchmode-switcher-dropmarker {
-  -moz-context-properties: fill;
-  fill: currentColor;
-  content: url("chrome://global/skin/icons/arrow-down-12.svg");
+  margin-inline-start: var(--urlbar-searchmodeswitcher-inline-padding);
 
   @media (prefers-reduced-motion: no-preference) {
     transition: 300ms transform ease-in-out;
@@ -1283,7 +1273,7 @@ toolbar[inactive="true"] .urlbar,
     }
   }
 
-  .searchmode-switcher[open] & {
+  .searchmode-switcher[open] > & {
     transform: rotate(-180deg);
 
     &:-moz-locale-dir(rtl) {
@@ -1293,48 +1283,38 @@ toolbar[inactive="true"] .urlbar,
 }
 
 .searchmode-switcher-popup {
+  --panel-padding: 4px 0;
   max-width: var(--search-engine-name-max-width);
-  /* TODO clean this up after 1826841 is done */
-  --panel-list-background-color: var(--panel-background);
-  --panel-list-border-radius: var(--panel-border-color);
-  padding: 8px;
 
-  > panel-item::part(button) {
-    -moz-context-properties: fill;
-    fill: currentColor;
-    /* The --icon-url variable allows setting an icon in JS. */
-    background-image: var(--icon-url, url("chrome://global/skin/icons/search-glass.svg"));
-    background-size: 16px 16px;
-    /* TODO clean this up after 1826841 is done */
-    padding-inline-start: 30px;
-    padding-block: 8px;
+  > menuitem {
+    margin-inline: 4px;
+
+    &.searchmode-switcher-addEngine::before {
+      content: "";
+      position: relative;
+      display: flex;
+      background: url(chrome://browser/skin/search-indicator-badge-add.svg) no-repeat center;
+      height: 11px;
+      width: 11px;
+      margin-inline: 10px -21px;
+      margin-top: -13px;
+    }
   }
-
-  > .searchmode-switcher-popup-search-settings-button::part(button) {
-    background-image: url("chrome://global/skin/icons/settings.svg");
-  }
-
-  /* Add badge */
-  > .searchmode-switcher-addEngine::part(button)::before {
-    content: "";
-    position: absolute;
-    display: flex;
-    background: url(chrome://browser/skin/search-indicator-badge-add.svg) no-repeat center;
-    height: 11px;
-    width: 11px;
-    top: 4px;
-    inset-inline-start: 17px;
-  }
-}
-
-.urlbar-visually-hidden {
-  font-size: 0;
-  position: absolute;
 }
 
 /* Hide footer separator if there are no menuitems between both separators */
 .searchmode-switcher-popup-installed-engine-separator + .searchmode-switcher-popup-footer-separator {
   display: none;
+}
+
+.searchmode-switcher-popup-description {
+  font-weight: revert;
+}
+
+.searchmode-switcher-popup-search-settings-button,
+.searchmode-switcher-local {
+  -moz-context-properties: fill;
+  fill: currentColor;
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
@@ -1355,9 +1335,12 @@ toolbar[inactive="true"] .urlbar,
 
 /* stylelint-disable-next-line media-query-no-invalid */
 @media not -moz-pref("browser.urlbar.unifiedSearchButton.always") {
-  .urlbar:not([unifiedsearchbutton-available]) > .urlbar-input-container > .searchmode-switcher {
-    /* Display as off-screen to get focus */
-    position: fixed;
-    top: -999px;
+  .searchmode-switcher {
+    background-color: var(--urlbar-box-background-color);
+    .urlbar:not([unifiedsearchbutton-available]) > .urlbar-input-container > & {
+      /* Display as off-screen to get focus */
+      position: fixed;
+      top: -999px;
+    }
   }
 }

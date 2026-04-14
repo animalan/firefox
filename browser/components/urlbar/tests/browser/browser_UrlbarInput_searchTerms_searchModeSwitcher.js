@@ -55,7 +55,7 @@ add_task(async function select_default_engine_and_search() {
 
   info("Press on the Example menu button and enter Search Mode.");
   let popupHidden = UrlbarTestUtils.searchModeSwitcherPopupClosed(window);
-  popup.querySelector("panel-item[data-engine-name=Example]").click();
+  popup.querySelector("menuitem[label=Example]").click();
   await popupHidden;
 
   info("Search with the default engine.");
@@ -91,7 +91,7 @@ add_task(async function select_non_default_engine_and_search() {
     true
   );
   let popupHidden = UrlbarTestUtils.searchModeSwitcherPopupClosed(window);
-  popup.querySelector("panel-item[data-engine-name=MochiSearch]").click();
+  popup.querySelector("menuitem[label=MochiSearch]").click();
   await popupHidden;
   await browserLoadedPromise;
 
