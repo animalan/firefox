@@ -132,14 +132,16 @@ static const uint8_t NS_AUTOCAPITALIZE_NONE = 1;
 static const uint8_t NS_AUTOCAPITALIZE_SENTENCES = 2;
 static const uint8_t NS_AUTOCAPITALIZE_WORDS = 3;
 static const uint8_t NS_AUTOCAPITALIZE_CHARACTERS = 4;
+static const uint8_t NS_AUTOCAPITALIZE_OFF = 5;
+static const uint8_t NS_AUTOCAPITALIZE_ON = 6;
 
 static constexpr nsAttrValue::EnumTableEntry kAutocapitalizeTable[] = {
     {"none", NS_AUTOCAPITALIZE_NONE},
     {"sentences", NS_AUTOCAPITALIZE_SENTENCES},
     {"words", NS_AUTOCAPITALIZE_WORDS},
     {"characters", NS_AUTOCAPITALIZE_CHARACTERS},
-    {"off", NS_AUTOCAPITALIZE_NONE},
-    {"on", NS_AUTOCAPITALIZE_SENTENCES},
+    {"off", NS_AUTOCAPITALIZE_OFF},
+    {"on", NS_AUTOCAPITALIZE_ON},
     {"", 0},
 };
 
@@ -3969,6 +3971,26 @@ bool nsGenericHTMLElement::IsFormAssociatedCustomElement() const {
 }
 
 void nsGenericHTMLElement::GetAutocapitalize(nsAString& aValue) const {
+  // https://html.spec.whatwg.org/#dom-autocapitalize
+  // 1. Let state be the own autocapitalization hint of this.
+  const auto* attr = GetParsedAttr(nsGkAtoms::autocapitalize);
+  if (attr && attr->Type() == nsAttrValue::eEnum) {
+    auto enumValue = attr->GetEnumValue();
+    if (enumValue == NS_AUTOCAPITALIZE_OFF ||
+        enumValue == NS_AUTOCAPITALIZE_NONE) {
+      // 3. If state is None, then return "none".
+      aValue.AssignLiteral("none");
+      return;
+    }
+    if (enumValue == NS_AUTOCAPITALIZE_ON ||
+        enumValue == NS_AUTOCAPITALIZE_SENTENCES) {
+      // 4. If state is Sentences, then return "sentences".
+      aValue.AssignLiteral("sentences");
+      return;
+    }
+  }
+  // 2. If state is Default, then return the empty string.
+  // 5. Return the keyword value corresponding to state.
   GetEnumAttr(nsGkAtoms::autocapitalize, nullptr, kDefaultAutocapitalize->tag,
               aValue);
 }
