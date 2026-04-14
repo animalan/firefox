@@ -116,7 +116,7 @@ index 4706638e3e..675807743a 100644
    # TODO(https://bugs.webrtc.org/14437):  Remove this section if general
    # Chromium fix resolves the problem.
 diff --git a/BUILD.gn b/BUILD.gn
-index cd4379fb3f..969173bebd 100644
+index 4d154f8e19..821060e2e3 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
 @@ -33,7 +33,7 @@ if (is_android) {
@@ -723,7 +723,7 @@ index cb74a2710e..b1c02c5025 100644
      : content_hint(VideoTrackInterface::ContentHint::kNone) {}
  VideoOptions::~VideoOptions() = default;
 diff --git a/modules/audio_coding/BUILD.gn b/modules/audio_coding/BUILD.gn
-index 132b293f79..f8b6a6ab5c 100644
+index d8e1e9788a..a9b85f5c54 100644
 --- a/modules/audio_coding/BUILD.gn
 +++ b/modules/audio_coding/BUILD.gn
 @@ -364,7 +364,7 @@ rtc_library("webrtc_opus_wrapper") {
@@ -1013,7 +1013,7 @@ index 741380d68e..bb1abe1005 100644
          "/config/external/nspr",
          "/nsprpub/lib/ds",
 diff --git a/rtc_base/BUILD.gn b/rtc_base/BUILD.gn
-index 48bf6b7046..0ffb7ca2dc 100644
+index 3453f19932..74a9cc3e6c 100644
 --- a/rtc_base/BUILD.gn
 +++ b/rtc_base/BUILD.gn
 @@ -365,6 +365,7 @@ rtc_library("sample_counter") {

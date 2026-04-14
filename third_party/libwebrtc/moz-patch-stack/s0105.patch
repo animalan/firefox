@@ -16,7 +16,7 @@ Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/4527c41ef71d7683c
  4 files changed, 24 insertions(+), 12 deletions(-)
 
 diff --git a/BUILD.gn b/BUILD.gn
-index 9aa625d5ad..9cf4fd325e 100644
+index a20b941b48..520e536654 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
 @@ -499,6 +499,9 @@ if (!rtc_build_ssl) {
@@ -117,7 +117,7 @@ index 52a94890c8..559cb49742 100644
    public_configs = []
    if (!build_with_chromium) {
 diff --git a/rtc_base/BUILD.gn b/rtc_base/BUILD.gn
-index d690fd0fbb..8f6726940b 100644
+index bdc973d5a1..1901d99275 100644
 --- a/rtc_base/BUILD.gn
 +++ b/rtc_base/BUILD.gn
 @@ -1625,6 +1625,7 @@ rtc_source_set("ssl_header") {

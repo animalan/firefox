@@ -11,7 +11,7 @@ Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/b050c455caa1d24a0
  3 files changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/BUILD.gn b/BUILD.gn
-index 9c5338bd15..b8c223b8f8 100644
+index 5d91f40849..0c942fbb0e 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
 @@ -613,7 +613,7 @@ if (!build_with_chromium) {
@@ -52,7 +52,7 @@ index 2320dfdffc..7849ef7f70 100644
    frame_info.rtp_timestamp = frame.RtpTimestamp();
    frame_info.decode_start = now;
 diff --git a/rtc_base/BUILD.gn b/rtc_base/BUILD.gn
-index d2e66a199a..5ab6db2af3 100644
+index 37bfe45efb..46ab39fd46 100644
 --- a/rtc_base/BUILD.gn
 +++ b/rtc_base/BUILD.gn
 @@ -242,6 +242,7 @@ rtc_library("event_tracer") {
