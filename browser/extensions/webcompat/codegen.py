@@ -76,8 +76,6 @@ def generate_run_js(
         )
         output_fd.write(subbed)
 
-        return set([mozpath.abspath(name) for name, _ in input_files])
-
 
 def main(*args):  # mach requires this
     pass
