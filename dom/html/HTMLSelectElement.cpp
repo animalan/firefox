@@ -51,13 +51,6 @@ static bool IsOptionInteractivelySelectable(
   if (!aSelect.IsCombobox()) {
     return aOption.GetPrimaryFrame();
   }
-  // TODO(emilio): This is a bit silly and doesn't match the options that we
-  // show / don't show in the dropdown, but matches the frame construction we
-  // do for multiple selects. For backwards compat also don't allow selecting
-  // options in a display: contents subtree interactively.
-  // test_select_key_navigation_bug1498769.html tests for this and should
-  // probably be changed (and this loop removed) or alternatively
-  // SelectChild.sys.mjs should be changed to match it.
   for (mozilla::dom::Element* el = &aOption; el && el != &aSelect;
        el = el->GetParentElement()) {
     RefPtr style = nsComputedDOMStyle::GetComputedStyleNoFlush(el);
@@ -65,8 +58,7 @@ static bool IsOptionInteractivelySelectable(
       return false;
     }
     auto display = style->StyleDisplay()->mDisplay;
-    if (display == mozilla::StyleDisplay::None ||
-        display == mozilla::StyleDisplay::Contents) {
+    if (display == mozilla::StyleDisplay::None) {
       return false;
     }
   }
@@ -179,7 +171,6 @@ void HTMLSelectElement::SetupShadowTree() {
   if (NS_WARN_IF(!sr)) {
     return;
   }
-  sr->AppendBuiltInStyleSheet(BuiltInStyleSheet::Select);
   // For now, we append a <label> with a text node, a <span> (for the menulist
   // icon), and an hidden <slot> element.
   Document* doc = OwnerDoc();
@@ -198,8 +189,14 @@ void HTMLSelectElement::SetupShadowTree() {
     icon->AppendChildTo(text, false, IgnoreErrors());
   }
   sr->AppendChildTo(icon, false, IgnoreErrors());
+
+  RefPtr picker = doc->CreateHTMLElement(nsGkAtoms::div);
+  picker->SetPseudoElementType(PseudoStyleType::Picker);
+  picker->SetAttr(nsGkAtoms::name, u"select"_ns, IgnoreErrors());
+
   RefPtr slot = doc->CreateHTMLElement(nsGkAtoms::slot);
-  sr->AppendChildTo(slot, false, IgnoreErrors());
+  picker->AppendChildTo(slot, false, IgnoreErrors());
+  sr->AppendChildTo(picker, false, IgnoreErrors());
 }
 
 Text* HTMLSelectElement::GetSelectedContentText() const {
