@@ -330,9 +330,9 @@ void MediaCapabilities::CreateMediaCapabilitiesDecodingInfo(
   // On Windows, the MediaDataDecoder expects to be created on a thread
   // supporting MTA, which the main thread doesn't. So we use our task queue
   // to create such decoder and perform initialization.
-  RefPtr<TaskQueue> taskQueue = TaskQueue::Create(
-      GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER),
-      "MediaCapabilities::TaskQueue");
+  RefPtr<TaskQueue> taskQueue =
+      TaskQueue::Create(GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER),
+                        "MediaCapabilities::TaskQueue");
   RefPtr<layers::KnowsCompositor> compositor = GetCompositor();
   const bool shouldResistFingerprinting =
       mParent->ShouldResistFingerprinting(RFPTarget::MediaCapabilities);
@@ -575,11 +575,8 @@ MediaCapabilities::CheckVideoDecodingInfo(
                               sTrackingIdCounter++,
                               TrackingId::TrackAcrossProcesses::Yes);
         CreateDecoderParams params{
-            *config,
-            compositor,
-            CreateDecoderParams::VideoFrameRate(frameRate),
-            TrackInfo::kVideoTrack,
-            Some(std::move(trackingId))};
+            *config, compositor, CreateDecoderParams::VideoFrameRate(frameRate),
+            TrackInfo::kVideoTrack, Some(std::move(trackingId))};
         // We want to ensure that all decoder's queries are occurring only
         // once at a time as it can quickly exhaust the system resources
         // otherwise.
