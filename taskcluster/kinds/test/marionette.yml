@@ -18,6 +18,10 @@ task-defaults:
                     - marionette/mac_taskcluster_config.py
                 windows.*:
                     - marionette/windows_taskcluster_config.py
+                linux.*:
+                    - marionette/prod_config.py
+                    - unittests/linux_dbus-python.py
+                    - remove_executables.py
                 default:
                     - marionette/prod_config.py
                     - remove_executables.py

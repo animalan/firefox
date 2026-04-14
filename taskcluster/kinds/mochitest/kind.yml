@@ -44,6 +44,11 @@ task-defaults:
     docker-image:
         in-tree: ubuntu2404-test
     fetches:
+        fetch:
+            by-test-platform:
+                win.*:
+                    - win64-ffmpeg-7.1
+                default: []
         toolchain:
             by-test-platform:
                 win.*:
@@ -443,7 +448,12 @@ tasks:
         allow-software-gl-layers: false
         fetches:
             fetch:
-                - ort.jsep.wasm
+                by-test-platform:
+                    win.*:
+                        - win64-ffmpeg-7.1
+                        - ort.jsep.wasm
+                    default:
+                        - ort.jsep.wasm
 
     mochitest-browser-chrome-failures:
         description: "Mochitest browser-chrome failures run"
