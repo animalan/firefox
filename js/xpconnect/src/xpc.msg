@@ -259,6 +259,7 @@ XPC_MSG_DEF(NS_ERROR_CRYPTOMINING_URI                 , "The URI is cryptomining
 XPC_MSG_DEF(NS_ERROR_SOCIALTRACKING_URI               , "The URI is social tracking")
 XPC_MSG_DEF(NS_ERROR_EMAILTRACKING_URI                , "The URI is email tracking")
 XPC_MSG_DEF(NS_ERROR_HARMFULADDON_URI                 , "The URI is not available for add-ons")
+XPC_MSG_DEF(NS_ERROR_SAVE_LINK_AS_TIMEOUT             , "Save Link As failed to see the headers early enough to choose a filename")
 
 /* Profile manager error codes */
 XPC_MSG_DEF(NS_ERROR_DATABASE_CHANGED                 , "Flushing the profiles to disk would have overwritten changes made elsewhere.")
@@ -274,3 +275,6 @@ XPC_MSG_DEF(NS_ERROR_WDBA_BUILD                       , "The existing UserChoice
 
 /* Codes related to QuotaManager */
 XPC_MSG_DEF(NS_ERROR_DOM_QM_CLIENT_INIT_ORIGIN_UNINITIALIZED, "Client initialization attempted before origin has been initialized.")
+
+/* Codes related to IndexedDB */
+XPC_MSG_DEF(NS_ERROR_DOM_INDEXEDDB_NOT_ALLOWED_ERR    , "A mutation operation was attempted on a database that did not allow mutations.")

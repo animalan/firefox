@@ -1863,9 +1863,6 @@ export class nsContextMenu {
     linkDownload,
     isContentWindowPrivate
   ) {
-    // canonical def in nsURILoader.h
-    const NS_ERROR_SAVE_LINK_AS_TIMEOUT = 0x805d0020;
-
     // an object to proxy the data through to
     // nsIExternalHelperAppService.doContent, which will wait for the
     // appropriate MIME-type headers and then prompt the user with a
@@ -1881,7 +1878,7 @@ export class nsContextMenu {
         // if the timer fired, the error status will have been caused by that,
         // and we'll be restarting in onStopRequest, so no reason to notify
         // the user
-        if (aRequest.status == NS_ERROR_SAVE_LINK_AS_TIMEOUT) {
+        if (aRequest.status == Cr.NS_ERROR_SAVE_LINK_AS_TIMEOUT) {
           return;
         }
 
@@ -1935,7 +1932,7 @@ export class nsContextMenu {
       },
 
       onStopRequest: function saveLinkAs_onStopRequest(aRequest, aStatusCode) {
-        if (aStatusCode == NS_ERROR_SAVE_LINK_AS_TIMEOUT) {
+        if (aStatusCode == Cr.NS_ERROR_SAVE_LINK_AS_TIMEOUT) {
           // do it the old fashioned way, which will pick the best filename
           // it can without waiting.
           this._window.saveURL(
@@ -1982,7 +1979,7 @@ export class nsContextMenu {
           // and save as dialog would appear on the screen as we fall back to
           // the old fashioned way after the timeout.
           timer.cancel();
-          channel.cancel(NS_ERROR_SAVE_LINK_AS_TIMEOUT);
+          channel.cancel(Cr.NS_ERROR_SAVE_LINK_AS_TIMEOUT);
         }
         throw Components.Exception("", Cr.NS_ERROR_NO_INTERFACE);
       },
@@ -1994,7 +1991,7 @@ export class nsContextMenu {
     function timerCallback() {}
     timerCallback.prototype = {
       notify: function sLA_timer_notify() {
-        channel.cancel(NS_ERROR_SAVE_LINK_AS_TIMEOUT);
+        channel.cancel(Cr.NS_ERROR_SAVE_LINK_AS_TIMEOUT);
       },
     };
 
