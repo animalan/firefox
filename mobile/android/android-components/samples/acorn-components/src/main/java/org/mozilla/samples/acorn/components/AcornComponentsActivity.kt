@@ -12,6 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import mozilla.components.compose.base.theme.AcornTheme
+import org.mozilla.samples.acorn.components.ui.ButtonsScreen
+import org.mozilla.samples.acorn.components.ui.ComponentListScreen
 
 /**
  * Activity demonstrating the Acorn Design System components.
@@ -30,7 +32,10 @@ class AcornComponentsActivity : ComponentActivity() {
                     startDestination = Destinations.ROOT,
                 ) {
                     composable(Destinations.ROOT) {
-                        // no-op
+                        ComponentListScreen(onNavigate = { navController.navigate(it) })
+                    }
+                    composable(Destinations.BUTTONS) {
+                        ButtonsScreen(onNavigateUp = { navController.popBackStack() })
                     }
                 }
             }
@@ -40,4 +45,5 @@ class AcornComponentsActivity : ComponentActivity() {
 
 internal object Destinations {
     const val ROOT = "root"
+    const val BUTTONS = "buttons"
 }
