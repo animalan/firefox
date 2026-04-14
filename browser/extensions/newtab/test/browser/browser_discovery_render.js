@@ -5,16 +5,13 @@
 /* global ContentTaskUtils */
 
 async function before({ pushPrefs }) {
-  await pushPrefs(
-    ["browser.newtabpage.activity-stream.feeds.discoverystreamfeed", true],
-    [
-      "browser.newtabpage.activity-stream.discoverystream.config",
-      JSON.stringify({
-        collapsible: true,
-        enabled: true,
-      }),
-    ]
-  );
+  await pushPrefs([
+    "browser.newtabpage.activity-stream.discoverystream.config",
+    JSON.stringify({
+      collapsible: true,
+      enabled: true,
+    }),
+  ]);
 }
 
 test_newtab({
