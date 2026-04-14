@@ -3164,6 +3164,10 @@ export class SmartbarInput extends HTMLElement {
     return this.querySelector(".urlbar-go-button");
   }
 
+  get smartbarButtonContainer() {
+    return this.querySelector(".smartbar-button-container");
+  }
+
   get value() {
     return this.#smartbarInputController?.value ?? this.inputField.value;
   }
@@ -5589,6 +5593,9 @@ export class SmartbarInput extends HTMLElement {
           event.composedTarget != this.inputField &&
           event.composedTarget != this._inputContainer
         ) {
+          if (this.smartbarButtonContainer?.contains(event.composedTarget)) {
+            event.preventDefault();
+          }
           break;
         }
 
