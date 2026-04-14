@@ -16,6 +16,7 @@
     --tab-label-height: 2.8em;
     --tab-min-height: 41px;
   }
+  --split-view-padding-block: 2px;
   --tabstrip-min-height: calc(var(--tab-min-height) + 2 * var(--tab-block-margin));
   --tab-group-label-height: max(1.5em, var(--tab-min-height) - 14px);
   --tab-group-label-padding: 4px;
@@ -1203,7 +1204,7 @@ tab-group > tab-split-view-wrapper {
   margin-inline: 0;
   align-items: flex-end;
   flex: 100 100;
-  padding: 2px 0;
+  padding: var(--split-view-padding-block) 0;
   min-width: calc(var(--tab-min-width-pref, var(--tab-min-width)) * 2 + 6px);
   max-width: var(--tab-max-width);
   transition: var(--tab-width-transition);
@@ -1232,10 +1233,11 @@ tab-group > tab-split-view-wrapper {
       min-height: calc(var(--tab-min-height) - 4px); /* exclude the 4px padding normally added */
 
       .tab-group-line {
-        inset-block-end: calc(((var(--tab-block-margin) / 2) + var(--space-xsmall)) * -1);
+        inset-block-end: calc(var(--tab-group-line-toolbar-border-distance) - var(--tab-block-margin) - var(--split-view-padding-block));
         inset-inline-start: calc(var(--space-small) * -2);
       }
     }
+
     .tab-label-container {
       /* Nip and tuck: we can't subtract all the padding and margin added for the
          split-view-wrapper without potentially regressing secondarytext labels but
