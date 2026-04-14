@@ -7,7 +7,6 @@ package org.mozilla.fenix.search
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -24,7 +23,6 @@ import android.view.ViewGroup
 import android.view.ViewStub
 import android.view.Window
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentDialog
 import androidx.activity.OnBackPressedCallback
@@ -655,23 +653,13 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
         _binding = null
     }
 
-    /*
-     * This way of dismissing the keyboard is needed to smoothly dismiss the keyboard while the dialog
-     * is also dismissing. For example, when clicking a top site on home while this dialog is showing.
-     */
-    private fun hideDeviceKeyboard() {
-        // If the interactor/controller has handled a search event itself, it will hide the keyboard.
-        if (!dialogHandledAction) {
-            val imm =
-                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view?.windowToken, InputMethodManager.HIDE_IMPLICIT_ONLY)
-        }
-    }
-
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        hideDeviceKeyboard()
         if (!dialogHandledAction) {
+            // Smoothly dismiss the keyboard while the dialog is also dismissing, e.g. when clicking
+            // a top site on home. If the interactor/controller handled a search event itself, it
+            // will have already hidden the keyboard.
+            view?.hideKeyboard()
             requireComponents.core.store.dispatch(AwesomeBarAction.EngagementFinished(abandoned = true))
         }
 
