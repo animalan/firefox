@@ -727,9 +727,6 @@ skip-if = [
 
 ["browser_tabMatchesInAwesomebar.js"]
 support-files = ["moz.png"]
-skip-if = [
-  "os == 'win' && standalone", # Bug 2028766
-]
 
 ["browser_tabMatchesInAwesomebar_perwindowpb.js"]
 

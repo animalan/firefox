@@ -13,6 +13,10 @@
 
 requestLongerTimeout(2);
 
+const { UrlbarProviderOpenTabs } = ChromeUtils.importESModule(
+  "moz-src:///browser/components/urlbar/UrlbarProviderOpenTabs.sys.mjs"
+);
+
 const TEST_URL_BASES = [
   `${TEST_BASE_URL}dummy_page.html#tabmatch`,
   `${TEST_BASE_URL}moz.png#tabmatch`,
@@ -21,6 +25,13 @@ const TEST_URL_BASES = [
 const RESTRICT_TOKEN_OPENPAGE = "%";
 
 var gTabCounter = 0;
+
+add_setup(async function () {
+  // Ensure the open tabs memory table is initialized before tabs are opened
+  // in the test, so registerOpenTab immediately populates moz_openpages_temp.
+  await PlacesUtils.promiseLargeCacheDBConnection();
+  await UrlbarProviderOpenTabs.promiseDBPopulated;
+});
 
 add_task(async function step_1() {
   info("Running step 1");
@@ -213,9 +224,7 @@ async function checkAutocompleteResults(expected) {
     delete expected[url];
   }
 
-  await UrlbarTestUtils.promisePopupClose(window, () =>
-    EventUtils.synthesizeKey("KEY_Escape")
-  );
+  await UrlbarTestUtils.promisePopupClose(window);
 
   // Make sure there is no reported open page that is not open.
   for (let entry in expected) {
