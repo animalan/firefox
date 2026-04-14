@@ -1,232 +1,122 @@
-From: Harald Alvestrand <hta@webrtc.org>
-Date: Mon, 9 Mar 2026 15:12:30 +0000
-Subject: (cherry-pick-branch-heads/7727) [M147] Emit CCFB parameters per
- codec, not wildcard
+From: Tommi <tommi@webrtc.org>
+Date: Mon, 23 Mar 2026 17:29:21 +0100
+Subject: (cherry-pick-branch-heads/7727) [M147] Refactor AddCertificateReports
+ to prevent crash
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-This works around the inability of some parsers to handle wildcards.
+When processing certificate stats with duplicate fingerprints,
+ReplaceOrAddNew would delete the existing stats report that was
+previously added and pointed to by first_report or prev_report.
 
-(cherry picked from commit d4ef54417d8c961796008aa8766fb2b5dbf93134)
+By adding tracking for duplicate fingerprints we can find the existing
+report and avoid replacing it.
 
-Bug: webrtc:489794442, webrtc:496539443
-Change-Id: I4633e1d27139e13ec571bbd169ed38c324922248
-Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/455280
-Reviewed-by: Per Kjellander <perkj@webrtc.org>
-Commit-Queue: Harald Alvestrand <hta@webrtc.org>
-Cr-Original-Commit-Position: refs/heads/main@{#47096}
-Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/461100
+(cherry picked from commit 731795bab2d89be63e20485407a850173d5d3665)
+
+Bug: chromium:486495143
+Change-Id: Iabc41ae064476c1e5853cdff1dbbcab449f8df27
+Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/459320
 Reviewed-by: Evan Shrubsole <eshr@webrtc.org>
-Commit-Queue: Guido Urdaneta <guidou@webrtc.org>
-Cr-Commit-Position: refs/branch-heads/7727@{#9}
+Reviewed-by: Henrik Boström <hbos@webrtc.org>
+Commit-Queue: Tomas Gunnarsson <tommi@webrtc.org>
+Cr-Original-Commit-Position: refs/heads/main@{#47242}
+Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/461160
+Cr-Commit-Position: refs/branch-heads/7727@{#10}
 Cr-Branched-From: 5788235ac856f62f1522d1491c4a8b00dba10c82-refs/heads/main@{#47086}
 ---
- api/webrtc_sdp.cc                             | 42 ++++++++++++++-----
- pc/congestion_control_integrationtest.cc      |  9 +++-
- .../bwe_integration_tests/l4s_test.cc         | 13 ++++--
- 3 files changed, 48 insertions(+), 16 deletions(-)
+ pc/BUILD.gn                           |  1 +
+ pc/legacy_stats_collector.cc          |  6 ++++++
+ pc/legacy_stats_collector.h           |  5 +++++
+ pc/legacy_stats_collector_unittest.cc | 16 ++++++++++++++++
+ 4 files changed, 28 insertions(+)
 
-diff --git a/api/webrtc_sdp.cc b/api/webrtc_sdp.cc
-index f404b90eb7..aab9251257 100644
---- a/api/webrtc_sdp.cc
-+++ b/api/webrtc_sdp.cc
-@@ -1117,12 +1117,21 @@ void AddOrReplaceCodec(MediaContentDescription* content_desc,
+diff --git a/pc/BUILD.gn b/pc/BUILD.gn
+index 20e7f5d8e2..c033e9e1ea 100644
+--- a/pc/BUILD.gn
++++ b/pc/BUILD.gn
+@@ -1438,6 +1438,7 @@ rtc_library("legacy_stats_collector") {
+     "../rtc_base/system:plan_b_only",
+     "../system_wrappers",
+     "//third_party/abseil-cpp/absl/base:nullability",
++    "//third_party/abseil-cpp/absl/container:flat_hash_set",
+     "//third_party/abseil-cpp/absl/functional:any_invocable",
+     "//third_party/abseil-cpp/absl/strings",
+     "//third_party/abseil-cpp/absl/strings:string_view",
+diff --git a/pc/legacy_stats_collector.cc b/pc/legacy_stats_collector.cc
+index f41de1cded..6978f1b06b 100644
+--- a/pc/legacy_stats_collector.cc
++++ b/pc/legacy_stats_collector.cc
+@@ -21,6 +21,7 @@
+ #include <vector>
  
- void BuildRtpmap(const MediaContentDescription* media_desc,
-                  const MediaType media_type,
-+                 bool use_wildcard,
-                  std::string* message) {
-   RTC_DCHECK(message != nullptr);
-   RTC_DCHECK(media_desc != nullptr);
-   StringBuilder os;
-   if (media_type == MediaType::VIDEO) {
--    for (const Codec& codec : media_desc->codecs()) {
-+    for (Codec codec : media_desc->codecs()) {
-+      // Include transport-wide codec parameters.
-+      // TODO: issues.webrtc.org/489794442 - Remove when wildcards are
-+      // OK to send.
-+      if (!use_wildcard) {
-+        if (media_desc->rtcp_fb_ack_ccfb()) {
-+          codec.feedback_params.Add({"ack", "ccfb"});
-+        }
-+      }
-       // RFC 4566
-       // a=rtpmap:<payload type> <encoding name>/<clock rate>
-       // [/<encodingparameters>]
-@@ -1140,8 +1149,16 @@ void BuildRtpmap(const MediaContentDescription* media_desc,
-     std::vector<int> ptimes;
-     std::vector<int> maxptimes;
-     int max_minptime = 0;
--    for (const Codec& codec : media_desc->codecs()) {
-+    for (Codec codec : media_desc->codecs()) {
-       RTC_DCHECK(!codec.name.empty());
-+      // Include transport-wide codec parameters.
-+      // TODO: issues.webrtc.org/489794442 - Remove when wildcards are
-+      // OK to send.
-+      if (!use_wildcard) {
-+        if (media_desc->rtcp_fb_ack_ccfb()) {
-+          codec.feedback_params.Add({"ack", "ccfb"});
-+        }
-+      }
-       // RFC 4566
-       // a=rtpmap:<payload type> <encoding name>/<clock rate>
-       // [/<encodingparameters>]
-@@ -1183,18 +1200,21 @@ void BuildRtpmap(const MediaContentDescription* media_desc,
-       AddAttributeLine(kCodecParamPTime, ptime, message);
-     }
-   }
--  if (media_desc->rtcp_fb_ack_ccfb()) {
--    // RFC 8888 section 6
--    InitAttrLine(kAttributeRtcpFb, &os);
--    os << kSdpDelimiterColon;
--    os << "* ack ccfb";
--    AddLine(os.str(), message);
-+  if (use_wildcard) {
-+    if (media_desc->rtcp_fb_ack_ccfb()) {
-+      // RFC 8888 section 6
-+      InitAttrLine(kAttributeRtcpFb, &os);
-+      os << kSdpDelimiterColon;
-+      os << "* ack ccfb";
-+      AddLine(os.str(), message);
+ #include "absl/base/nullability.h"
++#include "absl/container/flat_hash_set.h"
+ #include "absl/functional/any_invocable.h"
+ #include "absl/strings/str_cat.h"
+ #include "absl/strings/string_view.h"
+@@ -792,8 +793,13 @@ StatsReport* LegacyStatsCollector::AddCertificateReports(
+ 
+   StatsReport* first_report = nullptr;
+   StatsReport* prev_report = nullptr;
++  absl::flat_hash_set<std::string> visited_fingerprints;
+   for (SSLCertificateStats* stats = cert_stats.get(); stats;
+        stats = stats->issuer.get()) {
++    if (!visited_fingerprints.insert(stats->fingerprint).second) {
++      break;
 +    }
-   }
- }
- 
- void BuildRtpContentAttributes(const MediaContentDescription* media_desc,
-                                const MediaType media_type,
-                                int msid_signaling,
-+                               bool use_wildcard,
-                                std::string* message) {
-   SimulcastSdpSerializer serializer;
-   StringBuilder os;
-@@ -1289,7 +1309,7 @@ void BuildRtpContentAttributes(const MediaContentDescription* media_desc,
-   // RFC 4566
-   // a=rtpmap:<payload type> <encoding name>/<clock rate>
-   // [/<encodingparameters>]
--  BuildRtpmap(media_desc, media_type, message);
-+  BuildRtpmap(media_desc, media_type, use_wildcard, message);
- 
-   for (const StreamParams& track : media_desc->streams()) {
-     // Build the ssrc-group lines.
-@@ -1449,7 +1469,9 @@ void BuildMediaDescription(const ContentInfo* content_info,
-   if (IsDtlsSctp(media_desc->protocol())) {
-     BuildSctpContentAttributes(media_desc, message);
-   } else if (IsRtpProtocol(media_desc->protocol())) {
--    BuildRtpContentAttributes(media_desc, media_type, msid_signaling, message);
-+    // TODO: issues.webrtc.org/48979442 - Make this field trial controlled
-+    BuildRtpContentAttributes(media_desc, media_type, msid_signaling,
-+                              /* use_wildcard= */ false, message);
-   }
- }
- 
-diff --git a/pc/congestion_control_integrationtest.cc b/pc/congestion_control_integrationtest.cc
-index b712b6ba25..4cf7793e04 100644
---- a/pc/congestion_control_integrationtest.cc
-+++ b/pc/congestion_control_integrationtest.cc
-@@ -13,6 +13,7 @@
- 
- #include <memory>
- #include <string>
-+#include <string_view>
- #include <vector>
- 
- #include "absl/strings/str_cat.h"
-@@ -31,6 +32,7 @@
- 
- namespace webrtc {
- 
-+using ::testing::ContainsRegex;
- using ::testing::Eq;
- using ::testing::Field;
- using ::testing::Gt;
-@@ -45,6 +47,9 @@ class PeerConnectionCongestionControlTest
-       : PeerConnectionIntegrationBaseTest(SdpSemantics::kUnifiedPlan) {}
- };
- 
-+// This regexp matches both wildcard and non-wildcard ccfb lines.
-+constexpr std::string_view ccfb_regex = "a=rtcp-fb:[0-9*]* ack ccfb\r\n";
 +
- TEST_F(PeerConnectionCongestionControlTest,
-        OfferDoesNotContainCcfbEvenIfEnabled) {
-   SetFieldTrials("WebRTC-RFC8888CongestionControlFeedback/Enabled/");
-@@ -53,7 +58,7 @@ TEST_F(PeerConnectionCongestionControlTest,
-   std::unique_ptr<SessionDescriptionInterface> offer =
-       caller()->CreateOfferAndWait();
-   std::string offer_str = absl::StrCat(*offer);
--  EXPECT_THAT(offer_str, Not(HasSubstr("a=rtcp-fb:* ack ccfb\r\n")));
-+  EXPECT_THAT(offer_str, Not(ContainsRegex(ccfb_regex)));
- }
+     StatsReport::Id id(StatsReport::NewTypedId(
+         StatsReport::kStatsReportTypeCertificate, stats->fingerprint));
  
- TEST_F(PeerConnectionCongestionControlTest, OfferContainsCcfbIfFieldTrial) {
-@@ -63,7 +68,7 @@ TEST_F(PeerConnectionCongestionControlTest, OfferContainsCcfbIfFieldTrial) {
-   std::unique_ptr<SessionDescriptionInterface> offer =
-       caller()->CreateOfferAndWait();
-   std::string offer_str = absl::StrCat(*offer);
--  EXPECT_THAT(offer_str, HasSubstr("a=rtcp-fb:* ack ccfb\r\n"));
-+  EXPECT_THAT(offer_str, ContainsRegex(ccfb_regex));
- }
+diff --git a/pc/legacy_stats_collector.h b/pc/legacy_stats_collector.h
+index 25e61edfdd..f36e509664 100644
+--- a/pc/legacy_stats_collector.h
++++ b/pc/legacy_stats_collector.h
+@@ -114,6 +114,11 @@ class LegacyStatsCollector : public LegacyStatsCollectorInterface {
  
- TEST_F(PeerConnectionCongestionControlTest, ReceiveOfferSetsCcfbFlag) {
-diff --git a/test/peer_scenario/bwe_integration_tests/l4s_test.cc b/test/peer_scenario/bwe_integration_tests/l4s_test.cc
-index 98fdc9636d..1d1f5c3f97 100644
---- a/test/peer_scenario/bwe_integration_tests/l4s_test.cc
-+++ b/test/peer_scenario/bwe_integration_tests/l4s_test.cc
-@@ -11,6 +11,7 @@
- #include <atomic>
- #include <map>
- #include <string>
-+#include <string_view>
- #include <vector>
+   bool UseStandardBytesStats() const { return use_standard_bytes_stats_; }
  
- #include "absl/strings/str_cat.h"
-@@ -54,12 +55,16 @@ using test::GetPacketsSentWithEct1;
- using test::GetStatsAndProcess;
- using test::PeerScenario;
- using test::PeerScenarioClient;
-+using ::testing::ContainsRegex;
- using ::testing::HasSubstr;
- using ::testing::TestWithParam;
- 
- // RTC event logs can be gathered from these tests.
- // Add --peer_logs=true --peer_logs_root=/tmp/l4s/ to write logs to /tmp/l4s
- 
-+// This regexp matches both wildcard and non-wildcard ccfb lines.
-+constexpr std::string_view ccfb_regex = "a=rtcp-fb:[0-9*]* ack ccfb\r\n";
++  StatsReport* AddCertificateReportsForTest(
++      std::unique_ptr<SSLCertificateStats> cert_stats) {
++    return AddCertificateReports(std::move(cert_stats));
++  }
 +
- // Helper class used for counting RTCP feedback messages.
- class RtcpFeedbackCounter {
-  public:
-@@ -161,7 +166,7 @@ TEST(L4STest, NegotiateAndUseCcfbIfEnabled) {
-         // Check that the offer contain both congestion control feedback
-         // according to RFC 8888, and transport-cc and the header extension
-         // http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01
--        EXPECT_THAT(offer_str, HasSubstr("a=rtcp-fb:* ack ccfb\r\n"));
-+        EXPECT_THAT(offer_str, ContainsRegex(ccfb_regex));
-         EXPECT_THAT(offer_str, HasSubstr("transport-cc"));
-         EXPECT_THAT(
-             offer_str,
-@@ -170,7 +175,7 @@ TEST(L4STest, NegotiateAndUseCcfbIfEnabled) {
-       },
-       [&](const SessionDescriptionInterface& answer) {
-         std::string answer_str = absl::StrCat(answer);
--        EXPECT_THAT(answer_str, HasSubstr("a=rtcp-fb:* ack ccfb\r\n"));
-+        EXPECT_THAT(answer_str, ContainsRegex(ccfb_regex));
-         // Check that the answer does not contain transport-cc nor the
-         // header extension
-         // http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01
-@@ -266,7 +271,7 @@ TEST(L4STest, NoCcfbSentAfterRenegotiationAndCallerCachesLocalDescription) {
-   std::string answer_str;
-   caller->pc()->local_description()->ToString(&answer_str);
-   ASSERT_FALSE(answer_str.empty());
--  ASSERT_THAT(answer_str, HasSubstr("a=rtcp-fb:* ack ccfb\r\n"));
-+  ASSERT_THAT(answer_str, ContainsRegex(ccfb_regex));
+  private:
+   // Struct that's populated on the network thread and carries the values to
+   // the signaling thread where the stats are added to the stats reports.
+diff --git a/pc/legacy_stats_collector_unittest.cc b/pc/legacy_stats_collector_unittest.cc
+index 676b2eec49..7aedd35651 100644
+--- a/pc/legacy_stats_collector_unittest.cc
++++ b/pc/legacy_stats_collector_unittest.cc
+@@ -57,6 +57,7 @@
+ #include "rtc_base/null_socket_server.h"
+ #include "rtc_base/rtc_certificate.h"
+ #include "rtc_base/socket_address.h"
++#include "rtc_base/ssl_certificate.h"
+ #include "rtc_base/ssl_identity.h"
+ #include "rtc_base/ssl_stream_adapter.h"
+ #include "rtc_base/system/plan_b_only.h"
+@@ -1508,6 +1509,21 @@ TEST_F(LegacyStatsCollectorTest, ChainedCertificateReportsCreated) {
+                          remote_ders);
+ }
  
-   callee->CreateAndSetSdp(
-       [&](SessionDescriptionInterface* /*munge_offer*/) {
-@@ -274,7 +279,7 @@ TEST(L4STest, NoCcfbSentAfterRenegotiationAndCallerCachesLocalDescription) {
-       },
-       [&](std::string offer) {
-         // Callee does not support ccfb and does not have it in the offer.
--        ASSERT_THAT(offer, Not(HasSubstr("a=rtcp-fb:* ack ccfb\r\n")));
-+        ASSERT_THAT(offer, Not(ContainsRegex(ccfb_regex)));
-         caller->SetRemoteDescription(
-             offer, SdpType::kOffer, [&](RTCError error) {
-               ASSERT_TRUE(error.ok());
++TEST_F(LegacyStatsCollectorTest,
++       AddCertificateReports_DuplicateFingerprintDoesNotCrash) {
++  auto pc = CreatePeerConnection();
++  auto stats = CreateStatsCollector(pc.get());
++
++  // Create duplicate fingerprints chain
++  auto issuer_stats = std::make_unique<SSLCertificateStats>(
++      "same_fingerprint", "sha-1", "cert_issuer", nullptr);
++  auto cert_stats = std::make_unique<SSLCertificateStats>(
++      "same_fingerprint", "sha-1", "cert_leaf", std::move(issuer_stats));
++
++  // This should not crash (Use-After-Free)
++  stats->AddCertificateReportsForTest(std::move(cert_stats));
++}
++
+ // This test verifies that all certificates without chains are correctly
+ // reported.
+ TEST_F(LegacyStatsCollectorTest, ChainlessCertificateReportsCreated) {
