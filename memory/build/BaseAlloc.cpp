@@ -180,7 +180,7 @@ void BaseAlloc::free(void* aPtr) MOZ_EXCLUDES(mMutex) {
     uintptr_t addr = reinterpret_cast<uintptr_t>(cell) & ~gRealPageSizeMask;
     size_t size = REAL_PAGE_CEILING(cell->Size());
     Log("Releasing entire chunk %p, size %d", addr, size);
-    chunk_dealloc(reinterpret_cast<void*>(addr), size, UNKNOWN_CHUNK);
+    base_chunk_dealloc(reinterpret_cast<void*>(addr), size, UNKNOWN_CHUNK);
     mStats.mCommitted -= size;
     mStats.mMapped -= size;
     return;
@@ -458,7 +458,7 @@ BaseAllocCell* BaseAlloc::chunk_alloc(base_alloc_size_t aSize)
   base_alloc_size_t net_size = csize - kBaseQuantum * 2;
   MOZ_ASSERT(net_size >= aSize);
 
-  void* base_pages = ::chunk_alloc(csize, kChunkSize, true);
+  void* base_pages = base_chunk_alloc(csize, kChunkSize);
   if (base_pages == 0) {
     return nullptr;
   }

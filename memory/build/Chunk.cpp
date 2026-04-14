@@ -608,13 +608,15 @@ static void chunk_record(void* aChunk, size_t aSize, ChunkType aType) {
   gRecycledSize += aSize;
 }
 
-void chunk_dealloc(void* aChunk, size_t aSize, ChunkType aType) {
+// Deallocate chunks, possibly recording them for future recycling.
+// Used for both base allocator chunks and arena chunks already
+// removed from gChunkRTree.
+void base_chunk_dealloc(void* aChunk, size_t aSize, ChunkType aType) {
   MOZ_ASSERT(aChunk);
   MOZ_ASSERT(GetChunkOffsetForPtr(aChunk) == 0);
   MOZ_ASSERT(aSize != 0);
   MOZ_ASSERT((aSize & kChunkSizeMask) == 0);
-
-  gChunkRTree.Unset(aChunk);
+  MOZ_ASSERT(!gChunkRTree.Get(aChunk));
 
   if (CAN_RECYCLE(aSize)) {
     size_t recycled_so_far = gRecycledSize;
@@ -643,6 +645,18 @@ void chunk_dealloc(void* aChunk, size_t aSize, ChunkType aType) {
   }
 
   pages_unmap(aChunk, aSize);
+}
+
+// Deallocate chunks used for Arena allocations.
+void arena_chunk_dealloc(void* aChunk, size_t aSize, ChunkType aType) {
+  MOZ_ASSERT(aChunk);
+  MOZ_ASSERT(GetChunkOffsetForPtr(aChunk) == 0);
+  MOZ_ASSERT(aSize != 0);
+  MOZ_ASSERT((aSize & kChunkSizeMask) == 0);
+
+  gChunkRTree.Unset(aChunk);
+
+  base_chunk_dealloc(aChunk, aSize, aType);
 }
 
 static void* chunk_recycle(size_t aSize, size_t aAlignment) {
@@ -687,7 +701,7 @@ static void* chunk_recycle(size_t aSize, size_t aAlignment) {
       chunks_mtx.Unlock();
       node = new (fallible) extent_node_t();
       if (!node) {
-        chunk_dealloc(ret, aSize, ZEROED_CHUNK);
+        base_chunk_dealloc(ret, aSize, ZEROED_CHUNK);
         return nullptr;
       }
       chunks_mtx.Lock();
@@ -714,15 +728,9 @@ static void* chunk_recycle(size_t aSize, size_t aAlignment) {
   return ret;
 }
 
-// Allocates `size` bytes of system memory aligned for `alignment`.
-// `base` indicates whether the memory will be used for the base allocator
-// (e.g. base_alloc).
-// `zeroed` is an outvalue that returns whether the allocated memory is
-// guaranteed to be full of zeroes. It can be omitted when the caller doesn't
-// care about the result.
-void* chunk_alloc(size_t aSize, size_t aAlignment, bool aBase) {
-  void* ret = nullptr;
-
+// Allocates `size` bytes of system memory aligned for `alignment` for the
+// base allocator.
+void* base_chunk_alloc(size_t aSize, size_t aAlignment) {
   MOZ_ASSERT(aSize != 0);
   MOZ_ASSERT((aSize & kChunkSizeMask) == 0);
   MOZ_ASSERT(aAlignment != 0);
@@ -730,15 +738,31 @@ void* chunk_alloc(size_t aSize, size_t aAlignment, bool aBase) {
 
   // Base allocations can't be fulfilled by recycling because of
   // possible deadlock or infinite recursion.
-  if (CAN_RECYCLE(aSize) && !aBase) {
+  void* ret = pages_mmap_aligned(aSize, aAlignment, ReserveAndCommit);
+  MOZ_ASSERT(GetChunkOffsetForPtr(ret) == 0);
+
+  return ret;
+}
+
+// Allocates `size` bytes of system memory aligned for `alignment` for
+// arena allocations.
+void* arena_chunk_alloc(size_t aSize, size_t aAlignment) {
+  void* ret = nullptr;
+
+  MOZ_ASSERT(aSize != 0);
+  MOZ_ASSERT((aSize & kChunkSizeMask) == 0);
+  MOZ_ASSERT(aAlignment != 0);
+  MOZ_ASSERT((aAlignment & kChunkSizeMask) == 0);
+
+  if (CAN_RECYCLE(aSize)) {
     ret = chunk_recycle(aSize, aAlignment);
   }
   if (!ret) {
     ret = pages_mmap_aligned(aSize, aAlignment, ReserveAndCommit);
   }
-  if (ret && !aBase) {
+  if (ret) {
     if (!gChunkRTree.Set(ret, ret)) {
-      chunk_dealloc(ret, aSize, UNKNOWN_CHUNK);
+      base_chunk_dealloc(ret, aSize, UNKNOWN_CHUNK);
       return nullptr;
     }
   }
