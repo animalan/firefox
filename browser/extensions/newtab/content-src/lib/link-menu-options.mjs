@@ -205,6 +205,7 @@ export const LinkMenuOptions = {
   DeleteUrl: (site, index, eventSource, isEnabled, siteInfo) => ({
     id: "newtab-menu-delete-history",
     icon: "delete",
+    ariaHasPopup: "dialog",
     action: {
       type: at.DIALOG_OPEN,
       data: {
@@ -306,6 +307,7 @@ export const LinkMenuOptions = {
   EditTopSite: (site, index) => ({
     id: "newtab-menu-edit-topsites",
     icon: "edit",
+    ariaHasPopup: "dialog",
     action: {
       type: at.TOP_SITES_EDIT,
       data: { index },
@@ -329,6 +331,7 @@ export const LinkMenuOptions = {
   }) => ({
     id: "newtab-menu-section-block",
     icon: "delete",
+    ariaHasPopup: "dialog",
     action: {
       // Open the confirmation dialog to block a section.
       type: at.DIALOG_OPEN,

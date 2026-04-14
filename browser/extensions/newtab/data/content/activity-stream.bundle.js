@@ -1914,7 +1914,7 @@ class _ContextMenuItem extends (external_React_default()).PureComponent {
       onKeyDown: this.onKeyDown,
       onKeyUp: this.onKeyUp,
       ref: option.first ? this.focusFirst : null,
-      "aria-haspopup": option.id === "newtab-menu-edit-topsites" ? "dialog" : null
+      "aria-haspopup": option.ariaHasPopup || null
     }, /*#__PURE__*/external_React_default().createElement("span", {
       "data-l10n-id": option.string_id || option.id
     })));
@@ -2128,6 +2128,7 @@ const LinkMenuOptions = {
   DeleteUrl: (site, index, eventSource, isEnabled, siteInfo) => ({
     id: "newtab-menu-delete-history",
     icon: "delete",
+    ariaHasPopup: "dialog",
     action: {
       type: actionTypes.DIALOG_OPEN,
       data: {
@@ -2229,6 +2230,7 @@ const LinkMenuOptions = {
   EditTopSite: (site, index) => ({
     id: "newtab-menu-edit-topsites",
     icon: "edit",
+    ariaHasPopup: "dialog",
     action: {
       type: actionTypes.TOP_SITES_EDIT,
       data: { index },
@@ -2252,6 +2254,7 @@ const LinkMenuOptions = {
   }) => ({
     id: "newtab-menu-section-block",
     icon: "delete",
+    ariaHasPopup: "dialog",
     action: {
       // Open the confirmation dialog to block a section.
       type: actionTypes.DIALOG_OPEN,
