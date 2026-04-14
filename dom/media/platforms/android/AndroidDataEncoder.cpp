@@ -310,7 +310,11 @@ void AndroidDataEncoder::ProcessOutput(
 
   int32_t flags;
   bool ok = NS_SUCCEEDED(info->Flags(&flags));
-  bool isEOS = !!(flags & java::sdk::MediaCodec::BUFFER_FLAG_END_OF_STREAM);
+  bool isEOS =
+      ok && !!(flags & java::sdk::MediaCodec::BUFFER_FLAG_END_OF_STREAM);
+  if (isEOS) {
+    mDrainState = DrainState::DRAINED;
+  }
 
   int32_t offset;
   ok &= NS_SUCCEEDED(info->Offset(&offset));
@@ -322,6 +326,8 @@ void AndroidDataEncoder::ProcessOutput(
   ok &= NS_SUCCEEDED(info->PresentationTimeUs(&presentationTimeUs));
 
   if (!ok) {
+    Error(MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
+                      "fail to get output buffer info"_ns));
     return;
   }
 
@@ -348,15 +354,17 @@ void AndroidDataEncoder::ProcessOutput(
           aBuffer, offset, size,
           !!(flags & java::sdk::MediaCodec::BUFFER_FLAG_KEY_FRAME));
     }
+    if (!output) {
+      Error(MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
+                        "fail to copy sample buffer"_ns));
+      return;
+    }
     output->mEOS = isEOS;
     output->mTime = media::TimeUnit::FromMicroseconds(presentationTimeUs);
     output->mDuration = mInputSampleDuration;
     mEncodedData.AppendElement(std::move(output));
   }
 
-  if (isEOS) {
-    mDrainState = DrainState::DRAINED;
-  }
   if (!mDrainPromise.IsEmpty()) {
     EncodedData pending = std::move(mEncodedData);
     mDrainPromise.Resolve(std::move(pending), __func__);
@@ -370,7 +378,7 @@ RefPtr<MediaRawData> AndroidDataEncoder::GetOutputData(
   auto output = MakeRefPtr<MediaRawData>();
   UniquePtr<MediaRawDataWriter> writer(output->CreateWriter());
   if (!writer->SetSize(aSize)) {
-    AND_ENC_LOGE("fail to allocate output buffer");
+    AND_ENC_LOGE("fail to allocate output buffer: size=%d", aSize);
     return nullptr;
   }
 
@@ -500,6 +508,9 @@ void AndroidDataEncoder::Error(const MediaResult& aError) {
   AssertOnTaskQueue();
 
   mError = Some(aError);
+  if (!mDrainPromise.IsEmpty()) {
+    mDrainPromise.Reject(aError, __func__);
+  }
 }
 
 void AndroidDataEncoder::CallbacksSupport::HandleInput(int64_t aTimestamp,
