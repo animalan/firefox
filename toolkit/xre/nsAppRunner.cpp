@@ -147,9 +147,9 @@
 
 #ifdef ACCESSIBILITY
 #  include "nsAccessibilityService.h"
+#  include "mozilla/a11y/Platform.h"
 #  if defined(XP_WIN)
 #    include "mozilla/a11y/Compatibility.h"
-#    include "mozilla/a11y/Platform.h"
 #  endif
 #endif
 
@@ -1428,25 +1428,22 @@ nsXULAppInfo::GetAccessibilityEnabled(bool* aResult) {
 
 NS_IMETHODIMP
 nsXULAppInfo::GetAccessibilityInstantiator(nsAString& aInstantiator) {
-#if defined(ACCESSIBILITY) && defined(XP_WIN)
-  if (!GetAccService()) {
-    aInstantiator.Truncate();
-    return NS_OK;
-  }
-  nsAutoString ipClientInfo;
-  a11y::Compatibility::GetHumanReadableConsumersStr(ipClientInfo);
-  aInstantiator.Append(ipClientInfo);
-  aInstantiator.AppendLiteral("|");
-
-  nsCOMPtr<nsIFile> oopClientExe;
-  if (a11y::GetInstantiator(getter_AddRefs(oopClientExe))) {
-    nsAutoString oopClientInfo;
-    if (NS_SUCCEEDED(oopClientExe->GetPath(oopClientInfo))) {
-      aInstantiator.Append(oopClientInfo);
-    }
-  }
-#else
   aInstantiator.Truncate();
+#if defined(ACCESSIBILITY)
+  if (GetAccService()) {
+    a11y::GetHumanReadableInstantiatorStr(aInstantiator);
+#  if defined(XP_WIN)
+    aInstantiator.AppendLiteral("|");
+
+    nsCOMPtr<nsIFile> oopClientExe;
+    if (a11y::GetInstantiator(getter_AddRefs(oopClientExe))) {
+      nsAutoString oopClientInfo;
+      if (NS_SUCCEEDED(oopClientExe->GetPath(oopClientInfo))) {
+        aInstantiator.Append(oopClientInfo);
+      }
+    }
+#  endif
+  }
 #endif
   return NS_OK;
 }

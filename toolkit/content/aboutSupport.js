@@ -1464,9 +1464,10 @@ var snapshotFormatters = {
     $("a11y-activated").textContent = data.isActive;
     $("a11y-force-disabled").textContent = data.forceDisabled || 0;
 
-    let a11yInstantiator = $("a11y-instantiator");
-    if (a11yInstantiator) {
-      a11yInstantiator.textContent = data.instantiator;
+    const instantiator = data.instantiator;
+    if (instantiator) {
+      $("a11y-instantiator").hidden = false;
+      $("a11y-instantiator").querySelector("td").textContent = instantiator;
     }
   },
 
