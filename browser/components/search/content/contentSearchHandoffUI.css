@@ -11,6 +11,7 @@
   --content-search-handoff-ui-caret-color: FieldText;
   --content-search-handoff-ui-border-width: 1px;
   --content-search-handoff-ui-border-radius: var(--border-radius-circle);
+  --content-search-handoff-ui-engine-icon: var(--newtab-search-icon);
   --content-search-handoff-ui-unfocused-border-color: transparent;
   --content-search-handoff-ui-fakefocus-border-color: SelectedItem;
   --content-search-handoff-ui-fakefocus-box-shadow-inner: color-mix(in srgb, SelectedItem 25%, transparent);
@@ -55,7 +56,7 @@
 
 .search-handoff-button {
   position: relative;
-  background: var(--content-search-handoff-ui-background-color) var(--newtab-search-icon) 16px center no-repeat;
+  background: var(--content-search-handoff-ui-background-color) var(--content-search-handoff-ui-engine-icon) 16px center no-repeat;
   background-size: var(--size-item-medium);
   padding-inline-start: calc(2 * var(--space-xlarge));
   padding-inline-end: var(--space-small);
