@@ -996,10 +996,17 @@ void nsContainerFrame::DisplayOverflowContainers(
   }
 }
 
-void nsContainerFrame::DisplayPushedAbsoluteFrames(
+void nsContainerFrame::DisplayAbsoluteFramesNotBuiltByPlaceholder(
     nsDisplayListBuilder* aBuilder, const nsDisplayListSet& aLists) {
   for (nsIFrame* frame : GetChildList(FrameChildListID::Absolute)) {
     if (frame->HasAnyStateBits(NS_FRAME_IS_PUSHED_OUT_OF_FLOW)) {
+      BuildDisplayListForChild(aBuilder, frame, aLists);
+    } else if (IsTransformed() && !nsLayoutUtils::IsProperAncestorFrame(
+                                      this, frame->GetPlaceholderFrame())) {
+      // If this is a transformed absolute containing block and the abspos's
+      // placeholder is in a different continuation's subtree, build the abspos
+      // directly here so that it ends up in the correct fragment's
+      // nsDisplayTransform.
       BuildDisplayListForChild(aBuilder, frame, aLists);
     }
   }
