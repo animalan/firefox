@@ -12,10 +12,10 @@ Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/19164e58323d59c1f
  3 files changed, 7 insertions(+), 27 deletions(-)
 
 diff --git a/call/call.cc b/call/call.cc
-index 40a35c978a..09d653406c 100644
+index a7fd3e3142..38213c5ee9 100644
 --- a/call/call.cc
 +++ b/call/call.cc
-@@ -476,19 +476,6 @@ class Call final : public webrtc::Call,
+@@ -482,19 +482,6 @@ class Call final : public webrtc::Call,
  };
  }  // namespace internal
  

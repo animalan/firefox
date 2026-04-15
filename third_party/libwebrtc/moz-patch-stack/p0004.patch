@@ -38,7 +38,7 @@ Cr-Branched-From: 5788235ac856f62f1522d1491c4a8b00dba10c82-refs/heads/main@{#470
  4 files changed, 83 insertions(+), 26 deletions(-)
 
 diff --git a/pc/peer_connection.cc b/pc/peer_connection.cc
-index bb541f126e..cd4ad8b463 100644
+index 78a914253c..e2a4adedc9 100644
 --- a/pc/peer_connection.cc
 +++ b/pc/peer_connection.cc
 @@ -1375,10 +1375,7 @@ void PeerConnection::GetStats(
