@@ -278,6 +278,8 @@ skip-if = [
 
 ["browser_net_header-docs.js"]
 
+["browser_net_header-longstring.js"]
+
 ["browser_net_header-ref-policy.js"]
 
 ["browser_net_header-request-priority.js"]
