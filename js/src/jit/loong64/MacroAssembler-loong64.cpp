@@ -211,6 +211,19 @@ void MacroAssemblerLOONG64::ma_li(Register dest, ImmWord imm) {
   const uint32_t bits_51_32 = (value >> 32) & 0xfffff;
   const uint32_t bits_63_52 = (value >> 52) & 0xfff;
 
+  // The mnemonics of these imm-generating instructions may be a bit misleading.
+  // From
+  // <https://loongson.github.io/LoongArch-Documentation/LoongArch-Vol1-EN.html#_lu12i_w_lu32i_d_lu52i_d>:
+  //
+  // * LU12I.W: GR[rd] = SignExtend({si20, 12'b0}, GRLEN)
+  //   Build from 0 and imm
+  // * LU32I.D: GR[rd] = {SignExtend(si20, 32), GR[rd][31:0]}
+  //   Concat(!) rd and imm
+  // * LU52I.D: GR[rd] = {si12, GR[rj][51:0]}
+  //   Concat rj(!), imm and store to rd
+  //
+  // These matter when building large numbers.
+
   if (is_intN(value, 32)) {
     as_lu12i_w(dest, bits_31_12);
   } else if (is_uintN(value, 32)) {
@@ -223,12 +236,19 @@ void MacroAssemblerLOONG64::ma_li(Register dest, ImmWord imm) {
     as_lu12i_w(dest, bits_31_12);
     as_lu32i_d(dest, bits_51_32);
     as_bstrins_d(dest, zero, 63, 52);
+  } else if (bits_31_12 == 0 && bits_51_32 == 0) {
+    as_lu52i_d(dest, zero, bits_63_52);
+  } else if (bits_31_12 != 0 && (((bits_31_12 >> 19) & 1) == 0) && bits_51_32 == 0) {
+    as_lu12i_w(dest, bits_31_12);
+    as_lu52i_d(dest, dest, bits_63_52);
   } else {
     as_lu12i_w(dest, bits_31_12);
     as_lu32i_d(dest, bits_51_32);
     as_lu52i_d(dest, dest, bits_63_52);
   }
-  as_ori(dest, dest, bits_11_0);
+  if (bits_11_0 != 0) {
+    as_ori(dest, dest, bits_11_0);
+  }
 }
 
 // This method generates lu32i_d, lu12i_w and ori instruction block that can be
