@@ -101,6 +101,7 @@
 #include "nsStyleConsts.h"
 #include "nsStyleTransformMatrix.h"
 #include "nsSubDocumentFrame.h"
+#include "nsTextControlFrame.h"
 #include "nsViewportInfo.h"
 
 static mozilla::LazyLogModule sApzPaintSkipLog("apz.paintskip");
@@ -446,6 +447,11 @@ static ShowScrollbar ShouldShowScrollbar(StyleOverflow aOverflow) {
   }
 }
 
+static bool IsSingleLineTextInput(const nsIFrame* aFrame) {
+  const nsTextControlFrame* tcf = do_QueryFrame(aFrame);
+  return tcf && !tcf->IsTextArea();
+}
+
 struct MOZ_STACK_CLASS ScrollReflowInput {
   // === Filled in by the constructor. Members in this section shouldn't change
   // their values after the constructor. ===
@@ -460,7 +466,12 @@ struct MOZ_STACK_CLASS ScrollReflowInput {
   // ShowScrollbar::Never) provided that it is for scrolling the visual viewport
   // inside the layout viewport only.
   bool mVScrollbarAllowedForScrollingVVInsideLV = true;
-  nsMargin mComputedBorder;
+  // The area that shouldn't participate in our scrollport (usually just our
+  // border)
+  nsMargin mScrollportMargin;
+  // The inline size of the button box (e.g., number spin-box) that sits
+  // outside the scrolled area. This space is reserved on the inline-end side.
+  nscoord mButtonISize = 0;
 
   // === Filled in by ReflowScrolledFrame ===
   OverflowAreas mContentsOverflowAreas;
@@ -524,6 +535,17 @@ struct MOZ_STACK_CLASS ScrollReflowInput {
     return gutter;
   }
 
+  LogicalMargin KidPadding() const {
+    const auto wm = mReflowInput.GetWritingMode();
+    LogicalMargin kidPadding = mReflowInput.ComputedLogicalPadding(wm);
+    if (IsSingleLineTextInput(mReflowInput.mFrame)) {
+      // For single-line text inputs we don't want to include padding in the
+      // scrollport in the inline direction.
+      kidPadding.IStart(wm) = kidPadding.IEnd(wm) = 0;
+    }
+    return kidPadding;
+  }
+
   bool OverlayScrollbars() const { return mOverlayScrollbars; }
 
  private:
@@ -537,11 +559,23 @@ struct MOZ_STACK_CLASS ScrollReflowInput {
   nsMargin mScrollbarGutter;
 };
 
+static nsMargin GetScrollPortMargin(ScrollContainerFrame* aFrame,
+                                    const ReflowInput& aRI) {
+  if (!IsSingleLineTextInput(aFrame)) {
+    return aRI.ComputedPhysicalBorder();
+  }
+  const auto wm = aRI.GetWritingMode();
+  auto margin = aRI.ComputedLogicalBorder(wm);
+  const auto& padding = aRI.ComputedLogicalPadding(wm);
+  margin.IStart(wm) += padding.IStart(wm);
+  margin.IEnd(wm) += padding.IEnd(wm);
+  return margin.GetPhysicalMargin(wm);
+}
+
 ScrollReflowInput::ScrollReflowInput(ScrollContainerFrame* aFrame,
                                      const ReflowInput& aReflowInput)
     : mReflowInput(aReflowInput),
-      mComputedBorder(aReflowInput.ComputedPhysicalBorderPadding() -
-                      aReflowInput.ComputedPhysicalPadding()),
+      mScrollportMargin(GetScrollPortMargin(aFrame, aReflowInput)),
       mScrollbarGutterFromLastReflow(aFrame->GetWritingMode()) {
   ScrollStyles styles = aFrame->GetScrollStyles();
   mHScrollbar = ShouldShowScrollbar(styles.mHorizontal);
@@ -590,6 +624,12 @@ ScrollReflowInput::ScrollReflowInput(ScrollContainerFrame* aFrame,
 
   mScrollbarGutter = aFrame->ComputeStableScrollbarGutter(
       scrollbarWidth, scrollbarStyle->StyleDisplay()->mScrollbarGutter);
+
+  if (nsIFrame* buttonBox = aFrame->GetButtonBoxFrame()) {
+    mButtonISize = nsLayoutUtils::IntrinsicForContainer(
+        aReflowInput.mRenderingContext, buttonBox,
+        IntrinsicISizeType::PrefISize);
+  }
 }
 
 }  // namespace mozilla
@@ -602,7 +642,7 @@ static nsSize ComputeInsideBorderSize(const ScrollReflowInput& aState,
   const WritingMode wm = aState.mReflowInput.GetWritingMode();
   const LogicalSize desiredInsideBorderSize(wm, aDesiredInsideBorderSize);
   LogicalSize contentSize = aState.mReflowInput.ComputedSize();
-  const LogicalMargin padding = aState.mReflowInput.ComputedLogicalPadding(wm);
+  const LogicalMargin padding = aState.KidPadding();
 
   if (contentSize.ISize(wm) == NS_UNCONSTRAINEDSIZE) {
     contentSize.ISize(wm) =
@@ -675,8 +715,17 @@ bool ScrollContainerFrame::TryLayout(ScrollReflowInput& aState,
     ReflowScrolledFrame(aState, aAssumeHScroll, aAssumeVScroll, aKidMetrics);
   }
 
-  const nsSize scrollbarGutterSize(scrollbarGutter.LeftRight(),
-                                   scrollbarGutter.TopBottom());
+  // The button box (e.g., number spin-box) reserves space on the inline-end.
+  // Compute the physical margin for the button box.
+  nsMargin buttonBoxMargin;
+  if (aState.mButtonISize > 0) {
+    LogicalMargin logical(wm);
+    logical.IEnd(wm) = aState.mButtonISize;
+    buttonBoxMargin = logical.GetPhysicalMargin(wm);
+  }
+  const nsSize scrollbarGutterSize(
+      scrollbarGutter.LeftRight() + buttonBoxMargin.LeftRight(),
+      scrollbarGutter.TopBottom() + buttonBoxMargin.TopBottom());
 
   // First, compute our inside-border size and scrollport size
   nsSize kidSize = GetContainSizeAxes().ContainSize(
@@ -688,11 +737,9 @@ bool ScrollContainerFrame::TryLayout(ScrollReflowInput& aState,
   nsSize layoutSize =
       mIsUsingMinimumScaleSize ? mMinimumScaleSize : aState.mInsideBorderSize;
 
-  const nsSize scrollPortSize =
-      Max(nsSize(0, 0), layoutSize - scrollbarGutterSize);
+  const nsSize scrollPortSize = Max(nsSize(), layoutSize - scrollbarGutterSize);
   if (mIsUsingMinimumScaleSize) {
-    mICBSize =
-        Max(nsSize(0, 0), aState.mInsideBorderSize - scrollbarGutterSize);
+    mICBSize = Max(nsSize(), aState.mInsideBorderSize - scrollbarGutterSize);
   }
 
   nsSize visualViewportSize = scrollPortSize;
@@ -796,8 +843,9 @@ bool ScrollContainerFrame::TryLayout(ScrollReflowInput& aState,
   aState.mShowHScrollbar = showHScrollbar;
   aState.mShowVScrollbar = showVScrollbar;
   const nsPoint scrollPortOrigin(
-      aState.mComputedBorder.left + scrollbarGutter.left,
-      aState.mComputedBorder.top + scrollbarGutter.top);
+      aState.mScrollportMargin.left + scrollbarGutter.left +
+          buttonBoxMargin.left,
+      aState.mScrollportMargin.top + scrollbarGutter.top + buttonBoxMargin.top);
   SetScrollPort(nsRect(scrollPortOrigin, scrollPortSize));
 
   if (mIsRoot && gfxPlatform::UseDesktopZoomingScrollbars()) {
@@ -862,12 +910,11 @@ void ScrollContainerFrame::ReflowScrolledFrame(ScrollReflowInput& aState,
                                                bool aAssumeVScroll,
                                                ReflowOutput* aMetrics) {
   const WritingMode wm = GetWritingMode();
+  MOZ_ASSERT(wm == mScrolledFrame->GetWritingMode(), "How?");
 
-  // these could be NS_UNCONSTRAINEDSIZE ... std::min arithmetic should
-  // be OK
-  LogicalMargin padding = aState.mReflowInput.ComputedLogicalPadding(wm);
+  LogicalMargin kidPadding = aState.KidPadding();
   nscoord availISize =
-      aState.mReflowInput.ComputedISize() + padding.IStartEnd(wm);
+      aState.mReflowInput.ComputedISize() + kidPadding.IStartEnd(wm);
 
   nscoord computedBSize = aState.mReflowInput.ComputedBSize();
   nscoord computedMinBSize = aState.mReflowInput.ComputedMinBSize();
@@ -876,10 +923,8 @@ void ScrollContainerFrame::ReflowScrolledFrame(ScrollReflowInput& aState,
   const LogicalMargin scrollbarGutter(
       wm, aState.ScrollbarGutter(aAssumeVScroll, aAssumeHScroll,
                                  IsScrollbarOnRight()));
-  if (const nscoord inlineEndsGutter = scrollbarGutter.IStartEnd(wm);
-      inlineEndsGutter > 0) {
-    availISize = std::max(0, availISize - inlineEndsGutter);
-  }
+  availISize = std::max(
+      0, availISize - scrollbarGutter.IStartEnd(wm) - aState.mButtonISize);
   if (const nscoord blockEndsGutter = scrollbarGutter.BStartEnd(wm);
       blockEndsGutter > 0) {
     if (computedBSize != NS_UNCONSTRAINEDSIZE) {
@@ -898,8 +943,7 @@ void ScrollContainerFrame::ReflowScrolledFrame(ScrollReflowInput& aState,
                              LogicalSize(wm, availISize, NS_UNCONSTRAINEDSIZE),
                              Nothing(), ReflowInput::InitFlag::CallerWillInit);
   const WritingMode kidWM = kidReflowInput.GetWritingMode();
-  kidReflowInput.Init(presContext, Nothing(), Nothing(),
-                      Some(padding.ConvertTo(kidWM, wm)));
+  kidReflowInput.Init(presContext, Nothing(), Nothing(), Some(kidPadding));
   kidReflowInput.mFlags.mAssumingHScrollbar = aAssumeHScroll;
   kidReflowInput.mFlags.mAssumingVScrollbar = aAssumeVScroll;
   kidReflowInput.mFlags.mTreatBSizeAsIndefinite =
@@ -1488,8 +1532,9 @@ void ScrollContainerFrame::Reflow(nsPresContext* aPresContext,
 
   nsSize layoutSize =
       mIsUsingMinimumScaleSize ? mMinimumScaleSize : state.mInsideBorderSize;
-  aDesiredSize.Width() = layoutSize.width + state.mComputedBorder.LeftRight();
-  aDesiredSize.Height() = layoutSize.height + state.mComputedBorder.TopBottom();
+  aDesiredSize.Width() = layoutSize.width + state.mScrollportMargin.LeftRight();
+  aDesiredSize.Height() =
+      layoutSize.height + state.mScrollportMargin.TopBottom();
 
   // Set the size of the frame now since computing the perspective-correct
   // overflow (within PlaceScrollArea) can rely on it.
@@ -1536,9 +1581,14 @@ void ScrollContainerFrame::Reflow(nsPresContext* aPresContext,
                                                  state.mShowVScrollbar);
     // place and reflow scrollbars
     const nsRect insideBorderArea(
-        nsPoint(state.mComputedBorder.left, state.mComputedBorder.top),
+        nsPoint(state.mScrollportMargin.left, state.mScrollportMargin.top),
         layoutSize);
     LayoutScrollbars(state, insideBorderArea, oldScrollPort);
+  }
+
+  // Layout the button box (e.g., number spin-box) if present.
+  if (nsIFrame* buttonBox = GetButtonBoxFrame()) {
+    LayoutButtonBox(state, buttonBox);
   }
   if (mIsRoot) {
     if (RefPtr<MobileViewportManager> manager =
@@ -4667,6 +4717,11 @@ ScrollStyles ScrollContainerFrame::GetScrollStyles() const {
   }
 
   if (!mIsRoot) {
+    if (IsSingleLineTextInput(this)) {
+      return !GetWritingMode().IsVertical()
+                 ? ScrollStyles(StyleOverflow::Auto, StyleOverflow::Hidden)
+                 : ScrollStyles(StyleOverflow::Hidden, StyleOverflow::Auto);
+    }
     return ScrollStyles(*StyleDisplay(),
                         ScrollStyles::MapOverflowToValidScrollStyle);
   }
@@ -5458,13 +5513,6 @@ RefPtr<nsINode> ScrollContainerFrame::ScrollEventTargetNode(
     RootTargetsDocument aRootTargetsDocument) const {
   if (aRootTargetsDocument == RootTargetsDocument::Yes && mIsRoot) {
     return PresContext()->Document();
-  }
-  if (Style()->GetPseudoType() == PseudoStyleType::MozTextControlEditingRoot) {
-    // Scroll events from the inner editor root should propagate to the <input>
-    // <textarea>. Note we might want to change a bit the set-up in the future,
-    // to have one scroller for everything (probably owned by the text control
-    // itself), see bug 1239595.
-    return mContent->GetContainingShadowHost();
   }
   return mContent.get();
 }
@@ -6601,6 +6649,39 @@ void ScrollContainerFrame::LayoutScrollbarPartAtRect(
               flags, status);
   FinishReflowChild(kid, pc, kidDesiredSize, &aKidReflowInput, wm, pos,
                     containerSize, flags);
+}
+
+void ScrollContainerFrame::LayoutButtonBox(const ScrollReflowInput& aState,
+                                           nsIFrame* aButtonBox) {
+  const auto wm = GetWritingMode();
+  nsPresContext* pc = PresContext();
+
+  // The button box is placed on the inline-end side, between the scrollport and
+  // the inside-border edge, vertically centered.
+  const nscoord buttonISize = aState.mButtonISize;
+  const LogicalPoint scrollPortOrigin(wm, mScrollPort.TopLeft(), GetSize());
+  const nscoord scrollPortBSize = LogicalSize(wm, mScrollPort.Size()).BSize(wm);
+
+  LogicalSize availSize(wm, buttonISize, NS_UNCONSTRAINEDSIZE);
+  ReflowInput kidRI(pc, aState.mReflowInput, aButtonBox, availSize);
+  kidRI.SetComputedISize(buttonISize);
+  ReflowOutput kidDesiredSize(wm);
+  nsReflowStatus status;
+  const nsSize containerSize = GetSize();
+  ReflowChild(aButtonBox, pc, kidDesiredSize, kidRI, wm, LogicalPoint(wm),
+              containerSize, ReflowChildFlags::Default, status);
+
+  // Center the button in the block axis within the scrollport.
+  const nscoord buttonBSize = kidDesiredSize.BSize(wm);
+  LogicalPoint pos(wm);
+  pos.I(wm) = scrollPortOrigin.I(wm);
+  if (!wm.IsInlineReversed()) {
+    pos.I(wm) += LogicalSize(wm, mScrollPort.Size()).ISize(wm);
+  }
+  pos.B(wm) = scrollPortOrigin.B(wm) + (scrollPortBSize - buttonBSize) / 2;
+
+  FinishReflowChild(aButtonBox, pc, kidDesiredSize, &kidRI, wm, pos,
+                    containerSize, ReflowChildFlags::Default);
 }
 
 void ScrollContainerFrame::LayoutScrollbars(ScrollReflowInput& aState,
@@ -7817,6 +7898,10 @@ bool ScrollContainerFrame::UseOverlayScrollbars() const {
 
 StyleScrollbarWidth ScrollContainerFrame::ScrollbarWidth(
     const ComputedStyle* aStyle) const {
+  if (IsSingleLineTextInput(this)) {
+    return StyleScrollbarWidth::None;
+  }
+
   auto PrefGatedScrollbarWidth =
       [](StyleScrollbarWidth aComputedScrollbarWidth) {
         if (MOZ_UNLIKELY(
