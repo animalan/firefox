@@ -30,9 +30,9 @@ test_computed_value('position-anchor', 'none');
 test_computed_value('position-anchor', 'auto');
 test_computed_value('position-anchor', '--foo');
 
-// Initial: normal
+// Initial: none
 // Inherited: no
-assert_not_inherited('position-anchor', 'normal', '--foo');
+assert_not_inherited('position-anchor', 'none', '--foo');
 
 // Animation type: discrete
 test_no_interpolation({

@@ -904,18 +904,15 @@ Maybe<ScopedNameRef> AnchorPositioningUtils::GetUsedAnchorName(
     return Some(aAnchorName);
   }
 
-  const auto* stylePosition = aPositioned->StylePosition();
-  if (!stylePosition->CanHaveDefaultAnchor()) {
+  const auto& defaultAnchor = aPositioned->StylePosition()->mPositionAnchor;
+  if (defaultAnchor.value.IsNone()) {
     return Nothing{};
   }
 
-  const auto& defaultAnchor = stylePosition->mPositionAnchor;
   if (defaultAnchor.value.IsIdent()) {
     return Some(ScopedNameRef(defaultAnchor.value.AsIdent().AsAtom(),
                               defaultAnchor.scope));
   }
-
-  MOZ_ASSERT(defaultAnchor.value.IsNormal() || defaultAnchor.value.IsAuto());
 
   if (aPositioned->Style()->IsPseudoElement()) {
     return Some(ScopedNameRef(nsGkAtoms::AnchorPosImplicitAnchor,
@@ -1115,7 +1112,7 @@ static ScrollShifts FindScrollCompensatedAnchorShift(
   // end up containing scroll offset in their position. For now, walk the chain
   // to account for those deltas too.
   const nsPoint chainedDelta = [&]() -> nsPoint {
-    if (!defaultAnchor->StylePosition()->CanHaveDefaultAnchor()) {
+    if (defaultAnchor->StylePosition()->mPositionAnchor.value.IsNone()) {
       return {};
     }
     const auto* referenceData =

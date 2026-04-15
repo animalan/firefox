@@ -13443,9 +13443,10 @@ if (IsCSSPropertyPrefEnabled("layout.css.anchor-positioning.enabled")) {
     domProp: "positionAnchor",
     inherited: false,
     type: CSS_TYPE_LONGHAND,
-    initial_values: ["normal"],
-    other_values: ["none", "auto", "--foo"],
+    initial_values: ["none"],
+    other_values: ["auto", "--foo"],
     invalid_values: [
+      "normal",
       "none, auto",
       "--foo none",
       "--foo, auto",
