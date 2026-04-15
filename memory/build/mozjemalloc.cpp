@@ -1181,7 +1181,7 @@ arena_run_t* arena_t::AllocRun(size_t aSize, bool aLarge, bool aZero) {
     // No usable runs.  Create a new chunk from which to allocate
     // the run.
     arena_chunk_t* chunk =
-        (arena_chunk_t*)chunk_alloc(kChunkSize, kChunkSize, false);
+        (arena_chunk_t*)arena_chunk_alloc(kChunkSize, kChunkSize);
     if (!chunk) {
       return nullptr;
     }
@@ -1418,7 +1418,7 @@ ArenaPurgeResult arena_t::Purge(
       if (chunk_is_dying) {
         // Phase one already unlinked the chunk from structures, we just need to
         // release the memory.
-        chunk_dealloc((void*)chunk, kChunkSize, ARENA_CHUNK);
+        arena_chunk_dealloc((void*)chunk, kChunkSize, ARENA_CHUNK);
       }
       // There's nothing else to do here, our caller may execute Purge() again
       // if continue_purge_arena is true.
@@ -1476,7 +1476,7 @@ ArenaPurgeResult arena_t::Purge(
     // Phase 2 can release the spare chunk (not always == chunk) so an extra
     // parameter is used to return that chunk.
     if (chunk_to_release) {
-      chunk_dealloc((void*)chunk_to_release, kChunkSize, ARENA_CHUNK);
+      arena_chunk_dealloc((void*)chunk_to_release, kChunkSize, ARENA_CHUNK);
     }
     if (arena_is_dying) {
       return Dying;
@@ -2738,7 +2738,7 @@ static inline void arena_dalloc(void* aPtr, size_t aOffset, arena_t* aArena) {
   }
 
   if (chunk_dealloc_delay) {
-    chunk_dealloc((void*)chunk_dealloc_delay, kChunkSize, ARENA_CHUNK);
+    arena_chunk_dealloc((void*)chunk_dealloc_delay, kChunkSize, ARENA_CHUNK);
   }
 
   arena->MayDoOrQueuePurge(purge_action, "arena_dalloc");
@@ -3043,7 +3043,7 @@ arena_t::~arena_t() {
   MOZ_RELEASE_ASSERT(!mStats.allocated_small && !mStats.allocated_large,
                      "Arena is not empty");
   if (mSpare) {
-    chunk_dealloc(mSpare, kChunkSize, ARENA_CHUNK);
+    arena_chunk_dealloc(mSpare, kChunkSize, ARENA_CHUNK);
   }
   for (i = 0; i < NUM_SMALL_CLASSES; i++) {
     MOZ_RELEASE_ASSERT(mBins[i].mNonFullRuns.isEmpty(), "Bin is not empty");
@@ -3183,7 +3183,7 @@ void* arena_t::PallocHuge(size_t aSize, size_t aAlignment, bool aZero) {
   }
 
   // Allocate one or more contiguous chunks for this request.
-  ret = chunk_alloc(csize, aAlignment, false);
+  ret = arena_chunk_alloc(csize, aAlignment);
   if (!ret) {
     delete node;
     return nullptr;
@@ -3333,7 +3333,7 @@ static void huge_dalloc(void* aPtr, arena_t* aArena) {
   }
 
   // Unmap chunk.
-  chunk_dealloc(node->mAddr, mapped, HUGE_CHUNK);
+  arena_chunk_dealloc(node->mAddr, mapped, HUGE_CHUNK);
 
   delete node;
 }
