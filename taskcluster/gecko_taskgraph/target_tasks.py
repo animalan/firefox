@@ -1696,6 +1696,17 @@ def target_tasks_android_l10n_sync(full_task_graph, parameters, graph_config):
     return [l for l, t in full_task_graph.tasks.items() if l == "android-l10n-sync"]
 
 
+@register_target_task("android-l10n-sync-beta-to-release")
+def target_tasks_android_l10n_sync_beta_to_release(
+    full_task_graph, parameters, graph_config
+):
+    return [
+        l
+        for l, t in full_task_graph.tasks.items()
+        if l == "android-l10n-sync-beta-to-release"
+    ]
+
+
 @register_target_task("os-integration")
 def target_tasks_os_integration(full_task_graph, parameters, graph_config):
     candidate_attrs = load_yaml(os.path.join(TEST_CONFIGS, "os-integration.yml"))

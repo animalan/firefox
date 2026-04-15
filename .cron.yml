@@ -471,6 +471,15 @@ jobs:
       when:
           - {hour: 2, minute: 0}
 
+    - name: android-l10n-sync-beta-to-release
+      job:
+          type: decision-task
+          treeherder-symbol: android-l10n-sync-rel
+          target-tasks-method: android-l10n-sync-beta-to-release
+      run-on-projects: [mozilla-release]
+      when:
+          - {weekday: 'Sunday', hour: 19, minute: 0}
+
     - name: os-integration
       job:
           type: decision-task
