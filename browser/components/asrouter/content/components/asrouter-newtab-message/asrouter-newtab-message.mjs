@@ -14,9 +14,6 @@ import "chrome://global/content/elements/moz-button.mjs";
 const DEFAULT_CSS =
   "chrome://newtab/content/data/content/external-components/asrouter-newtab-message/asrouter-newtab-message.css";
 
-const DEFAULT_IMAGE =
-  "chrome://newtab/content/data/content/assets/kit-in-circle.svg";
-
 export default class ASRouterNewTabMessage extends MozLitElement {
   static properties = {
     messageData: { type: Object },
@@ -182,7 +179,9 @@ export default class ASRouterNewTabMessage extends MozLitElement {
               ></moz-button>
             </div>`}
         <div class="message-inner">
-          <img src=${content?.imageSrc || DEFAULT_IMAGE} alt="" />
+          ${content?.imageSrc
+            ? html`<img src=${content.imageSrc} alt="" />`
+            : nothing}
           <div class="message-content">
             ${this.#renderHeading(content?.heading)}
             ${this.#renderBody(content?.body)}

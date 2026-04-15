@@ -133,3 +133,14 @@ BlockOnSecondaryButton.args = {
     },
   },
 };
+
+export const NoImage = Template.bind({});
+NoImage.args = {
+  messageData: {
+    ...BASE_MESSAGE,
+    content: {
+      ...BASE_MESSAGE.content,
+      imageSrc: "",
+    },
+  },
+};

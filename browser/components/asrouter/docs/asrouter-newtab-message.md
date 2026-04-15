@@ -46,6 +46,10 @@ This is a string property that can have the following values:
 
 If `content.position` is not defined, it defaults to the `ABOVE_WIDGETS` behaviour.
 
+### `content.imageSrc` (String)
+
+This is an optional square image that can be displayed at the start of the message surface. If `imageSrc` is not defined, the image element is not rendered.
+
 ### Handler Functions
 
 The following functions are injected by the newtab `MessageWrapper` component and provide message lifecycle management:
