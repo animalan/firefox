@@ -689,7 +689,7 @@ index 9b026bf244..580612a99d 100644
  
  rtc_library("rtc_audio_video") {
 diff --git a/media/base/media_channel.h b/media/base/media_channel.h
-index 93693ec740..1685b03b55 100644
+index cdc19280cc..38dc298cd5 100644
 --- a/media/base/media_channel.h
 +++ b/media/base/media_channel.h
 @@ -68,9 +68,6 @@ namespace webrtc {
