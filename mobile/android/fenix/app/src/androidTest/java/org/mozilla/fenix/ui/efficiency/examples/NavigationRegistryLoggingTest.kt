@@ -11,6 +11,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.ui.efficiency.helpers.BaseTest
 import org.mozilla.fenix.ui.efficiency.navigation.NavigationRegistry
+import org.mozilla.fenix.ui.efficiency.navigation.pairs.NavigationPairCaseFactory
 import org.mozilla.fenix.ui.efficiency.navigation.planning.NavigationTestPlannerLogger
 import java.io.File
 

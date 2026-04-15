@@ -6,6 +6,7 @@ package org.mozilla.fenix.ui.efficiency.navigation.planning
 
 import org.mozilla.fenix.ui.efficiency.helpers.BasePage
 import org.mozilla.fenix.ui.efficiency.helpers.PageContext
+import org.mozilla.fenix.ui.efficiency.navigation.NavigationRegistry
 
 // TODO (Jackie J. 3/23/2026): fix all of these horrible names, they're temporary.
 object NavigationTestPlanner {
@@ -17,6 +18,16 @@ object NavigationTestPlanner {
         override fun toString(): String = propertyName
     }
 
+    data class NavigationPairCasePlan(
+        val firstPropertyName: String,
+        val secondPropertyName: String,
+        val firstPage: PageContext.() -> BasePage,
+        val secondPage: PageContext.() -> BasePage,
+        val distinctPathCount: Int,
+    ) {
+        override fun toString(): String = "$firstPropertyName -> $secondPropertyName"
+    }
+
     fun buildReachabilityCases(): List<ReachabilityCase> {
         return PageCatalog.discoverPages()
             .map { pageRef ->
@@ -26,5 +37,56 @@ object NavigationTestPlanner {
                 )
             }
             .sortedBy { it.propertyName }
+    }
+
+    fun buildNavigationPairCases(): List<NavigationPairCasePlan> {
+        val reachabilityCases = buildReachabilityCases()
+
+        val casesByPageName = reachabilityCases.associateBy { it.propertyName.toDisplayLabel() }
+        val sortedPageNames = casesByPageName.keys.sorted()
+
+        return buildList {
+            for (firstPageName in sortedPageNames) {
+                for (secondPageName in sortedPageNames) {
+                    if (firstPageName == secondPageName) {
+                        continue
+                    }
+
+                    val paths = NavigationRegistry.findAllPaths(firstPageName, secondPageName)
+                    if (paths.isEmpty()) {
+                        continue
+                    }
+
+                    val firstCase = casesByPageName.getValue(firstPageName)
+                    val secondCase = casesByPageName.getValue(secondPageName)
+
+                    add(
+                        NavigationPairCasePlan(
+                            firstPropertyName = firstCase.propertyName,
+                            secondPropertyName = secondCase.propertyName,
+                            firstPage = firstCase.page,
+                            secondPage = secondCase.page,
+                            distinctPathCount = paths.size,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    private fun String.toDisplayLabel(): String {
+        val name = replaceFirstChar { char ->
+            if (char.isLowerCase()) {
+                char.titlecase()
+            } else {
+                char.toString()
+            }
+        }
+
+        return if (name.endsWith("Page") || name.endsWith("Component")) {
+            name
+        } else {
+            "${name}Page"
+        }
     }
 }

@@ -1,4 +1,4 @@
-package org.mozilla.fenix.ui.efficiency.navigation.planning
+package org.mozilla.fenix.ui.efficiency.navigation.reachability
 
 import org.mozilla.fenix.ui.efficiency.helpers.BasePage
 import org.mozilla.fenix.ui.efficiency.helpers.PageContext

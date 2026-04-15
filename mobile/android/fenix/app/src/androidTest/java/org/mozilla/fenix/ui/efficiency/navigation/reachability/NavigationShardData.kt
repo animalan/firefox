@@ -1,4 +1,6 @@
-package org.mozilla.fenix.ui.efficiency.navigation.planning
+package org.mozilla.fenix.ui.efficiency.navigation.reachability
+
+import org.mozilla.fenix.ui.efficiency.navigation.reachability.NavigationCaseFactory
 
 object NavigationShardData {
 

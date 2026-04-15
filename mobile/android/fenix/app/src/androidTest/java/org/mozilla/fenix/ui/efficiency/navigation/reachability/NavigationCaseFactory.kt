@@ -1,6 +1,8 @@
-package org.mozilla.fenix.ui.efficiency.navigation.planning
+package org.mozilla.fenix.ui.efficiency.navigation.reachability
 
 import android.util.Log
+import org.mozilla.fenix.ui.efficiency.navigation.planning.NavigationTestPlanner
+import org.mozilla.fenix.ui.efficiency.navigation.planning.ShardUtils
 
 object NavigationCaseFactory {
 

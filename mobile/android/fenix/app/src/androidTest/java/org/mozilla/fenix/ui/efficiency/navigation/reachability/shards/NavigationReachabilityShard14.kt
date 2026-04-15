@@ -1,13 +1,14 @@
-package org.mozilla.fenix.ui.efficiency.navigation.planning
+package org.mozilla.fenix.ui.efficiency.navigation.reachability.shards
 
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.mozilla.fenix.ui.efficiency.helpers.BasePage
-import org.mozilla.fenix.ui.efficiency.helpers.PageContext
+import org.mozilla.fenix.ui.efficiency.navigation.reachability.BaseNavigationShardTest
+import org.mozilla.fenix.ui.efficiency.navigation.reachability.NavigationCase
+import org.mozilla.fenix.ui.efficiency.navigation.reachability.NavigationShardData
 
 @RunWith(Parameterized::class)
-class NavigationReachabilityShard07(
+class NavigationReachabilityShard14(
     private val case: NavigationCase,
 ) : BaseNavigationShardTest(case) {
 
@@ -15,8 +16,8 @@ class NavigationReachabilityShard07(
         @JvmStatic
         @Parameterized.Parameters(name = "{index}: {0}")
         fun data(): List<Array<Any>> = NavigationShardData.loadShard(
-            shardIndex = 7,
-            shardCount = 10,
+            shardIndex = 14,
+            shardCount = 20,
         )
     }
 
