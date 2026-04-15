@@ -173,9 +173,20 @@ export class AIChatContent extends MozLitElement {
   #initOverflowObserver() {
     this.#overflowObserver = new ResizeObserver(() => {
       const wrapper = this.shadowRoot.querySelector(".chat-content-wrapper");
-      wrapper?.toggleAttribute(
+      const innerWrapper = this.shadowRoot.querySelector(".chat-inner-wrapper");
+
+      if (!wrapper || !innerWrapper) {
+        return;
+      }
+
+      const hasContent = innerWrapper.children.length;
+      // Use a 10px threshold to avoid false positives from layout differences
+      const thresholdPadding = 10;
+
+      wrapper.toggleAttribute(
         "overflowing",
-        wrapper.scrollHeight > wrapper.clientHeight
+        hasContent &&
+          wrapper.scrollHeight > wrapper.clientHeight + thresholdPadding
       );
     });
     this.updateComplete.then(() => {
