@@ -24,7 +24,6 @@ import androidx.media3.common.Tracks;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import androidx.media3.datasource.DefaultDataSource;
-import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.RendererCapabilities;
@@ -47,6 +46,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.mozilla.gecko.GeckoAppShell;
 import org.mozilla.gecko.annotation.ReflectionTarget;
+import org.mozilla.gecko.util.GeckoHttpDataSource;
 import org.mozilla.geckoview.BuildConfig;
 import org.mozilla.geckoview.GeckoSession;
 
@@ -356,7 +356,7 @@ public class GeckoHlsPlayer implements BaseHlsPlayer, ExoPlayer.Listener {
     return new HlsMediaSource.Factory(
         new DefaultDataSource.Factory(
             ctx,
-            new DefaultHttpDataSource.Factory()
+            new GeckoHttpDataSource.Factory()
                 .setUserAgent(GeckoSession.getDefaultUserAgent())
                 .setAllowCrossProtocolRedirects(true)));
   }
