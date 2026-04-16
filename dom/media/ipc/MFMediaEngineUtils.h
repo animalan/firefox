@@ -8,8 +8,16 @@
 #include "MFMediaEngineExtra.h"
 #include "ipc/EnumSerializer.h"
 #include "mozilla/Logging.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/ProfilerMarkerTypes.h"
+#include "mozilla/gfx/Types.h"
 #include "nsPrintfCString.h"
+
+// MFVideoTransFunc_HLG was added in the Windows SDK 10.0.15063. Define it
+// here for older SDK versions.
+#ifndef MFVideoTransFunc_HLG
+#  define MFVideoTransFunc_HLG static_cast<MFVideoTransferFunction>(16)
+#endif
 
 namespace mozilla {
 
@@ -124,6 +132,8 @@ const char* GUIDToStr(GUID aGUID);
 const char* MFVideoRotationFormatToStr(MFVideoRotationFormat aFormat);
 const char* MFVideoTransferFunctionToStr(MFVideoTransferFunction aFunc);
 const char* MFVideoPrimariesToStr(MFVideoPrimaries aPrimaries);
+MFVideoTransferFunction ToMFVideoTransFunc(
+    const Maybe<gfx::TransferFunction>& aTransferFunction);
 void ByteArrayFromGUID(REFGUID aGuidIn, nsTArray<uint8_t>& aByteArrayOut);
 void GUIDFromByteArray(const nsTArray<uint8_t>& aByteArrayIn, GUID& aGuidOut);
 BSTR CreateBSTRFromConstChar(const char* aNarrowStr);

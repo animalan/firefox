@@ -4,10 +4,15 @@
 
 UNIFIED_SOURCES += [
     "TestCanCreateMFTDecoder.cpp",
+    "TestMFVideoTransFunc.cpp",
 ]
 
 LOCAL_INCLUDES += [
+    "/dom/media/ipc",
+    "/dom/media/platforms/wmf",
     "/dom/media/platforms/wmf/gtest",
 ]
+
+include("/ipc/chromium/chromium-config.mozbuild")
 
 FINAL_LIBRARY = "xul-gtest"
