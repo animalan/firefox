@@ -1161,14 +1161,10 @@ static ModuleNamespaceObject* ModuleNamespaceCreate(
   }
 
   // Pre-compute all binding mappings now instead of on each access.
-  // See:
-  // https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-get-p-receiver
-  // ES2023 10.4.6.8 Module Namespace Exotic Object [[Get]]
   Rooted<JSAtom*> name(cx);
   Rooted<Value> resolution(cx);
   Rooted<ResolvedBindingObject*> binding(cx);
   Rooted<ModuleObject*> importedModule(cx);
-  Rooted<ModuleNamespaceObject*> importedNamespace(cx);
   Rooted<JSAtom*> bindingName(cx);
   for (JSAtom* atom : ns->exports()) {
     name = atom;
@@ -1181,21 +1177,6 @@ static ModuleNamespaceObject* ModuleNamespaceCreate(
     binding = &resolution.toObject().as<ResolvedBindingObject>();
     importedModule = binding->module();
     bindingName = binding->bindingName();
-
-    if (bindingName == cx->names().star_namespace_star_) {
-      importedNamespace = GetOrCreateModuleNamespace(cx, importedModule);
-      if (!importedNamespace) {
-        return nullptr;
-      }
-
-      // The spec uses an immutable binding here but we have already generated
-      // bytecode for an indirect binding. Instead, use an indirect binding to
-      // "*namespace*" slot of the target environment.
-      InitNamespaceOrSourceBinding(cx, &importedModule->initialEnvironment(),
-                                   bindingName,
-                                   ObjectValue(*importedNamespace));
-    }
-
     if (!ns->addBinding(cx, name, importedModule, bindingName)) {
       return nullptr;
     }
@@ -1309,6 +1290,10 @@ static bool ModuleInitializeEnvironment(JSContext* cx,
   //         do:
   Rooted<JSAtom*> exportName(cx);
   Rooted<Value> resolution(cx);
+  Rooted<ResolvedBindingObject*> binding(cx);
+  Rooted<JSAtom*> bindingName(cx);
+  Rooted<ModuleObject*> bindingModule(cx);
+  Rooted<ModuleNamespaceObject*> bindingNs(cx);
   for (const ExportEntry& e : module->indirectExportEntries()) {
     // Step 1.a. Assert: e.[[ExportName]] is not null.
     MOZ_ASSERT(e.exportName());
@@ -1326,6 +1311,27 @@ static bool ModuleInitializeEnvironment(JSContext* cx,
       ThrowResolutionError(cx, module, resolution, exportName, &errorInfo);
       return false;
     }
+
+    binding = &resolution.toObject().as<ResolvedBindingObject>();
+    bindingName = binding->bindingName();
+
+    // https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-get-p-receiver
+    // ES2023 10.4.6.8 Module Namespace Exotic Object [[Get]]
+    if (bindingName == cx->names().star_namespace_star_) {
+      bindingModule = binding->module();
+      bindingNs = GetOrCreateModuleNamespace(cx, bindingModule);
+      if (!bindingNs) {
+        return false;
+      }
+
+      // The spec uses an immutable binding here but we have already generated
+      // bytecode for an indirect binding. Instead, use an indirect binding to
+      // "*namespace*" slot of the environment.
+      Rooted<ModuleEnvironmentObject*> env(
+          cx, &bindingModule->initialEnvironment());
+      InitNamespaceOrSourceBinding(cx, env, bindingName,
+                                   ObjectValue(*bindingNs));
+    }
   }
 
   // Step 5. Let env be NewModuleEnvironment(realm.[[GlobalEnv]]).
@@ -1339,7 +1345,6 @@ static bool ModuleInitializeEnvironment(JSContext* cx,
   Rooted<JSAtom*> importName(cx);
   Rooted<JSAtom*> localName(cx);
   Rooted<ModuleObject*> sourceModule(cx);
-  Rooted<JSAtom*> bindingName(cx);
   for (const ImportEntry& in : module->importEntries()) {
     // Step 7.a. Let importedModule be ! GetImportedModule(module,
     //           in.[[ModuleRequest]]).
