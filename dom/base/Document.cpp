@@ -2579,6 +2579,7 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INTERNAL(Document)
 
   // Traverse all Document pointer members.
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mSecurityInfo)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mCachedAncestorOrigins)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mDisplayDocument)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mFontFaceSet)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mReadyForIdle)
@@ -2727,6 +2728,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(Document)
   }
 
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mSecurityInfo)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mCachedAncestorOrigins)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mDisplayDocument)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mLazyLoadObserver)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mAutoSizeImageObserver)
@@ -18243,18 +18245,21 @@ void Document::UpdateLastRememberedSizes() {
 void Document::SetAncestorOriginsList(
     nsTArray<nsString>&& aAncestorOriginsList) {
   mAncestorOriginsList = std::move(aAncestorOriginsList);
+  mCachedAncestorOrigins = nullptr;
 }
 
 Span<const nsString> Document::GetAncestorOriginsList() const {
   return mAncestorOriginsList;
 }
 
-already_AddRefed<DOMStringList> Document::AncestorOrigins() const {
-  RefPtr<DOMStringList> list = new DOMStringList();
-  for (const auto& origin : mAncestorOriginsList) {
-    list->Add(origin);
+already_AddRefed<DOMStringList> Document::AncestorOrigins() {
+  if (!mCachedAncestorOrigins) {
+    mCachedAncestorOrigins = new DOMStringList();
+    for (const auto& origin : mAncestorOriginsList) {
+      mCachedAncestorOrigins->Add(origin);
+    }
   }
-  return list.forget();
+  return do_AddRef(mCachedAncestorOrigins);
 }
 
 void Document::NotifyLayerManagerRecreated() {

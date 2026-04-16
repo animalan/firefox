@@ -1994,7 +1994,7 @@ class Document : public nsINode,
   void SetAncestorOriginsList(nsTArray<nsString>&& aAncestorOriginsList);
   Span<const nsString> GetAncestorOriginsList() const;
   // https://html.spec.whatwg.org/#concept-location-ancestor-origins-list
-  already_AddRefed<DOMStringList> AncestorOrigins() const;
+  already_AddRefed<DOMStringList> AncestorOrigins();
 
   // Removes all the elements with fullscreen flag set from the top layer, and
   // clears their fullscreen flag.
@@ -5383,6 +5383,7 @@ class Document : public nsINode,
   nsCString mContentType;
 
   nsTArray<nsString> mAncestorOriginsList;
+  RefPtr<DOMStringList> mCachedAncestorOrigins;
 
  protected:
   // The document's security info
