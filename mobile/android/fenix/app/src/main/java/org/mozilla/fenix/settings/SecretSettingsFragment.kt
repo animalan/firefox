@@ -416,7 +416,7 @@ class SecretSettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFra
         }
 
         requirePreference<SwitchPreferenceCompat>(R.string.pref_key_enable_ip_protection).apply {
-            isVisible = Config.channel.isDebug
+            isVisible = Config.channel.isNightlyOrDebug
             isChecked = context.settings().isIPProtectionEnabled
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
