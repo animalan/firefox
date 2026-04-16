@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.7.162
- * pdfjsBuild = 419c2652c
+ * pdfjsVersion = 5.7.174
+ * pdfjsBuild = 9159afd63
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -8985,6 +8985,7 @@ function drawMeshWithGPU(posData, colData, vertexCount, context, backgroundColor
 
 
 
+
 const PathType = {
   FILL: "Fill",
   STROKE: "Stroke",
@@ -9429,6 +9430,10 @@ class TilingPattern {
   }
   drawPattern(owner, path, useEOFill = false, [n, m], opIdx) {
     const [x0, y0, x1, y1] = this.bbox;
+    const dependencyTracker = owner.dependencyTracker;
+    if (dependencyTracker) {
+      owner.dependencyTracker = new CanvasNestedDependencyTracker(dependencyTracker, opIdx);
+    }
     owner.save();
     if (useEOFill) {
       owner.ctx.clip(path, "evenodd");
@@ -9455,6 +9460,9 @@ class TilingPattern {
       owner.baseTransform = owner.baseTransformStack.pop();
     }
     owner.restore();
+    if (dependencyTracker) {
+      owner.dependencyTracker = dependencyTracker;
+    }
   }
   createPatternCanvas(owner, opIdx) {
     const [x0, y0, x1, y1] = this.bbox;
@@ -10104,6 +10112,10 @@ class CanvasGraphics {
     this.smaskStack = [];
     this.tempSMask = null;
     this.smaskGroupCanvases = [];
+    this.smaskPreparedEntry = null;
+    this.smaskPreparedFor = null;
+    this.smaskPreparedOffsetX = 0;
+    this.smaskPreparedOffsetY = 0;
     this.suspendedCtx = null;
     this.contentVisible = true;
     this.markedContentStack = markedContentStack || [];
@@ -10243,6 +10255,7 @@ class CanvasGraphics {
       this.canvasFactory.destroy(canvas);
     }
     this.smaskGroupCanvases.length = 0;
+    this._clearPreparedSMask();
     this.tempSMask = null;
     this.smaskStack.length = 0;
     this.cachedPatterns.clear();
@@ -10512,20 +10525,93 @@ class CanvasGraphics {
   get inSMaskMode() {
     return !!this.suspendedCtx;
   }
+  _clearPreparedSMask() {
+    if (this.smaskPreparedEntry) {
+      this.canvasFactory.destroy(this.smaskPreparedEntry);
+      this.smaskPreparedEntry = null;
+    }
+    this.smaskPreparedFor = null;
+    this.smaskPreparedOffsetX = 0;
+    this.smaskPreparedOffsetY = 0;
+  }
+  _ensurePreparedSMask(smask, width, height) {
+    if (smask === this.smaskPreparedFor) {
+      return;
+    }
+    this._clearPreparedSMask();
+    this._prepareSMaskCanvas(smask, width, height);
+  }
   checkSMaskState(opIdx) {
     const inSMaskMode = this.inSMaskMode;
     if (this.current.activeSMask && !inSMaskMode) {
       this.beginSMaskMode(opIdx);
     } else if (!this.current.activeSMask && inSMaskMode) {
       this.endSMaskMode();
+    } else if (this.current.activeSMask && inSMaskMode) {
+      this._ensurePreparedSMask(this.current.activeSMask, this.ctx.canvas.width, this.ctx.canvas.height);
     }
+  }
+  _prepareSMaskCanvas(smask, width, height) {
+    const {
+      canvas: maskCanvas,
+      subtype,
+      backdrop,
+      transferMap
+    } = smask;
+    const hasFilter = subtype === "Luminosity" || subtype === "Alpha" && transferMap;
+    if (!backdrop && !hasFilter) {
+      this.smaskPreparedFor = smask;
+      return;
+    }
+    let preparedEntry, offsetX, offsetY;
+    if (backdrop && hasFilter) {
+      const srcEntry = this.canvasFactory.create(width, height);
+      const sCtx = srcEntry.context;
+      sCtx.drawImage(maskCanvas, smask.offsetX, smask.offsetY);
+      sCtx.globalCompositeOperation = "destination-atop";
+      sCtx.fillStyle = backdrop;
+      sCtx.fillRect(0, 0, width, height);
+      sCtx.globalCompositeOperation = "source-over";
+      preparedEntry = this.canvasFactory.create(width, height);
+      const pCtx = preparedEntry.context;
+      pCtx.filter = subtype === "Alpha" ? this.filterFactory.addAlphaFilter(transferMap) : this.filterFactory.addLuminosityFilter(transferMap);
+      pCtx.drawImage(srcEntry.canvas, 0, 0);
+      pCtx.filter = "none";
+      this.canvasFactory.destroy(srcEntry);
+      offsetX = offsetY = 0;
+    } else if (hasFilter) {
+      preparedEntry = this.canvasFactory.create(maskCanvas.width, maskCanvas.height);
+      const pCtx = preparedEntry.context;
+      pCtx.filter = subtype === "Alpha" ? this.filterFactory.addAlphaFilter(transferMap) : this.filterFactory.addLuminosityFilter(transferMap);
+      pCtx.drawImage(maskCanvas, 0, 0);
+      pCtx.filter = "none";
+      ({
+        offsetX,
+        offsetY
+      } = smask);
+    } else {
+      preparedEntry = this.canvasFactory.create(width, height);
+      const pCtx = preparedEntry.context;
+      pCtx.drawImage(maskCanvas, smask.offsetX, smask.offsetY);
+      pCtx.globalCompositeOperation = "destination-atop";
+      pCtx.fillStyle = backdrop;
+      pCtx.fillRect(0, 0, width, height);
+      pCtx.globalCompositeOperation = "source-over";
+      offsetX = offsetY = 0;
+    }
+    this.smaskPreparedEntry = preparedEntry;
+    this.smaskPreparedFor = smask;
+    this.smaskPreparedOffsetX = offsetX;
+    this.smaskPreparedOffsetY = offsetY;
   }
   beginSMaskMode(opIdx) {
     if (this.inSMaskMode) {
       throw new Error("beginSMaskMode called while already in smask mode");
     }
-    const drawnWidth = this.ctx.canvas.width;
-    const drawnHeight = this.ctx.canvas.height;
+    const {
+      width: drawnWidth,
+      height: drawnHeight
+    } = this.ctx.canvas;
     const scratchCanvas = this.canvasFactory.create(drawnWidth, drawnHeight);
     this.smaskScratchCanvas = scratchCanvas;
     this.suspendedCtx = this.ctx;
@@ -10533,6 +10619,7 @@ class CanvasGraphics {
     ctx.setTransform(this.suspendedCtx.getTransform());
     copyCtxState(this.suspendedCtx, ctx);
     mirrorContextOperations(ctx, this.suspendedCtx);
+    this._ensurePreparedSMask(this.current.activeSMask, drawnWidth, drawnHeight);
     this.setGState(opIdx, [["BM", "source-over"]]);
   }
   endSMaskMode() {
@@ -10545,6 +10632,7 @@ class CanvasGraphics {
     this.suspendedCtx = null;
     this.canvasFactory.destroy(this.smaskScratchCanvas);
     this.smaskScratchCanvas = null;
+    this._clearPreparedSMask();
   }
   compose(dirtyBox) {
     if (!this.current.activeSMask) {
@@ -10563,7 +10651,7 @@ class CanvasGraphics {
     this.composeSMask(suspendedCtx, smask, this.ctx, dirtyBox);
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    this.ctx.clearRect(dirtyBox[0], dirtyBox[1], dirtyBox[2] - dirtyBox[0], dirtyBox[3] - dirtyBox[1]);
     this.ctx.restore();
   }
   composeSMask(ctx, smask, layerCtx, layerBox) {
@@ -10574,60 +10662,42 @@ class CanvasGraphics {
     if (layerWidth === 0 || layerHeight === 0) {
       return;
     }
-    this.genericComposeSMask(smask.context, layerCtx, layerWidth, layerHeight, smask.subtype, smask.backdrop, smask.transferMap, layerOffsetX, layerOffsetY, smask.offsetX, smask.offsetY);
+    const preparedEntry = this.smaskPreparedEntry;
+    if (preparedEntry) {
+      const srcX = layerOffsetX - this.smaskPreparedOffsetX;
+      const srcY = layerOffsetY - this.smaskPreparedOffsetY;
+      layerCtx.save();
+      layerCtx.globalAlpha = 1;
+      layerCtx.setTransform(1, 0, 0, 1, 0, 0);
+      const clip = new Path2D();
+      clip.rect(layerOffsetX, layerOffsetY, layerWidth, layerHeight);
+      layerCtx.clip(clip);
+      layerCtx.globalCompositeOperation = "destination-in";
+      layerCtx.drawImage(preparedEntry.canvas, srcX, srcY, layerWidth, layerHeight, layerOffsetX, layerOffsetY, layerWidth, layerHeight);
+      layerCtx.restore();
+    } else {
+      this.genericComposeSMask(smask.context, layerCtx, layerWidth, layerHeight, layerOffsetX, layerOffsetY, smask.offsetX, smask.offsetY);
+    }
     ctx.save();
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = smask.blendMode || "source-over";
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.drawImage(layerCtx.canvas, 0, 0);
+    ctx.drawImage(layerCtx.canvas, layerOffsetX, layerOffsetY, layerWidth, layerHeight, layerOffsetX, layerOffsetY, layerWidth, layerHeight);
     ctx.restore();
   }
-  genericComposeSMask(maskCtx, layerCtx, width, height, subtype, backdrop, transferMap, layerOffsetX, layerOffsetY, maskOffsetX, maskOffsetY) {
-    let maskCanvas = maskCtx.canvas;
-    let maskX = layerOffsetX - maskOffsetX;
-    let maskY = layerOffsetY - maskOffsetY;
-    let maskExtensionEntry = null;
-    if (backdrop) {
-      if (maskX < 0 || maskY < 0 || maskX + width > maskCanvas.width || maskY + height > maskCanvas.height) {
-        maskExtensionEntry = this.canvasFactory.create(width, height);
-        const ctx = maskExtensionEntry.context;
-        ctx.drawImage(maskCanvas, -maskX, -maskY);
-        ctx.globalCompositeOperation = "destination-atop";
-        ctx.fillStyle = backdrop;
-        ctx.fillRect(0, 0, width, height);
-        ctx.globalCompositeOperation = "source-over";
-        maskCanvas = maskExtensionEntry.canvas;
-        maskX = maskY = 0;
-      } else {
-        maskCtx.save();
-        maskCtx.globalAlpha = 1;
-        maskCtx.setTransform(1, 0, 0, 1, 0, 0);
-        const clip = new Path2D();
-        clip.rect(maskX, maskY, width, height);
-        maskCtx.clip(clip);
-        maskCtx.globalCompositeOperation = "destination-atop";
-        maskCtx.fillStyle = backdrop;
-        maskCtx.fillRect(maskX, maskY, width, height);
-        maskCtx.restore();
-      }
-    }
+  genericComposeSMask(maskCtx, layerCtx, width, height, layerOffsetX, layerOffsetY, maskOffsetX, maskOffsetY) {
+    const maskCanvas = maskCtx.canvas;
+    const maskX = layerOffsetX - maskOffsetX;
+    const maskY = layerOffsetY - maskOffsetY;
     layerCtx.save();
     layerCtx.globalAlpha = 1;
     layerCtx.setTransform(1, 0, 0, 1, 0, 0);
-    if (subtype === "Alpha" && transferMap) {
-      layerCtx.filter = this.filterFactory.addAlphaFilter(transferMap);
-    } else if (subtype === "Luminosity") {
-      layerCtx.filter = this.filterFactory.addLuminosityFilter(transferMap);
-    }
     const clip = new Path2D();
     clip.rect(layerOffsetX, layerOffsetY, width, height);
     layerCtx.clip(clip);
     layerCtx.globalCompositeOperation = "destination-in";
     layerCtx.drawImage(maskCanvas, maskX, maskY, width, height, layerOffsetX, layerOffsetY, width, height);
     layerCtx.restore();
-    if (maskExtensionEntry) {
-      this.canvasFactory.destroy(maskExtensionEntry);
-    }
   }
   save(opIdx) {
     if (this.inSMaskMode) {
@@ -10732,6 +10802,7 @@ class CanvasGraphics {
     const isPatternFill = this.current.patternFill;
     let needRestore = false;
     const intersect = this.current.getClippedPathBoundingBox();
+    this.dependencyTracker?.recordDependencies(opIdx, Dependencies.fill);
     if (isPatternFill) {
       const dims = this.current.tilingPatternDims;
       const tileIdx = dims && fillColor.canSkipPatternCanvas(dims);
@@ -10763,7 +10834,6 @@ class CanvasGraphics {
         ctx.fill(path);
       }
     }
-    this.dependencyTracker?.recordDependencies(opIdx, Dependencies.fill);
     if (needRestore) {
       ctx.restore();
       this.dependencyTracker?.restore(opIdx);
@@ -13717,7 +13787,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "5.7.162",
+    apiVersion: "5.7.174",
     data,
     password,
     disableAutoFetch,
@@ -15329,8 +15399,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "5.7.162";
-const build = "419c2652c";
+const version = "5.7.174";
+const build = "9159afd63";
 
 ;// ./src/display/editor/color_picker.js
 

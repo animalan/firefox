@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.7.162
- * pdfjsBuild = 419c2652c
+ * pdfjsVersion = 5.7.174
+ * pdfjsBuild = 9159afd63
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -27568,14 +27568,7 @@ class OpenTypeFileBuilder {
       view = new DataView(file.buffer);
     for (let i = 0; i < numTables; i++) {
       const table = tables.get(tablesNames[i]);
-      let tableOffset = tableOffsets[i];
-      if (table instanceof Uint8Array) {
-        file.set(table, tableOffset);
-      } else if (typeof table === "string") {
-        for (let j = 0, jj = table.length; j < jj; j++) {
-          file[tableOffset++] = table.charCodeAt(j) & 0xff;
-        }
-      }
+      file.set(table, tableOffsets[i]);
     }
     if (sfnt === "true") {
       sfnt = "\x00\x01\x00\x00";
@@ -28630,6 +28623,10 @@ function setSafeInt16(view, pos, val) {
   view.setInt16(pos, MathClamp(val, -0x8000, 0x7fff));
   return pos + 2;
 }
+function setInt32(view, pos, val) {
+  view.setInt32(pos, val);
+  return pos + 4;
+}
 function isTrueTypeFile(file) {
   const header = file.peekBytes(4),
     str = bytesToString(header);
@@ -28922,7 +28919,7 @@ function createCmapTable(glyphs, toUnicodeExtraMap, numGlyphs) {
     }
     header31012 = "\x00\x0C" + "\x00\x00" + string32(format31012.length + 16) + "\x00\x00\x00\x00" + string32(format31012.length / 12);
   }
-  return cmap + "\x00\x04" + string16(format314.length + 4) + format314 + header31012 + format31012;
+  return stringToBytes(cmap + "\x00\x04" + string16(format314.length + 4) + format314 + header31012 + format31012);
 }
 function validateOS2Table(os2, file) {
   file.pos = (file.start || 0) + os2.offset;
@@ -28999,11 +28996,58 @@ function createOS2Table(properties, charstrings, override) {
   }
   const winAscent = override.yMax || typoAscent;
   const winDescent = -override.yMin || -typoDescent;
-  return "\x00\x03" + "\x02\x24" + "\x01\xF4" + "\x00\x05" + "\x00\x00" + "\x02\x8A" + "\x02\xBB" + "\x00\x00" + "\x00\x8C" + "\x02\x8A" + "\x02\xBB" + "\x00\x00" + "\x01\xDF" + "\x00\x31" + "\x01\x02" + "\x00\x00" + "\x00\x00\x06" + String.fromCharCode(properties.fixedPitch ? 0x09 : 0x00) + "\x00\x00\x00\x00\x00\x00" + string32(ulUnicodeRange1) + string32(ulUnicodeRange2) + string32(ulUnicodeRange3) + string32(ulUnicodeRange4) + "\x2A\x32\x31\x2A" + string16(properties.italicAngle ? 1 : 0) + string16(firstCharIndex || properties.firstChar) + string16(lastCharIndex || properties.lastChar) + string16(typoAscent) + string16(typoDescent) + "\x00\x64" + string16(winAscent) + string16(winDescent) + "\x00\x00\x00\x00" + "\x00\x00\x00\x00" + string16(properties.xHeight) + string16(properties.capHeight) + string16(0) + string16(firstCharIndex || properties.firstChar) + "\x00\x03";
+  const data = new Uint8Array(96),
+    view = new DataView(data.buffer);
+  let pos = 0;
+  pos = setArray(data, pos, [0x00, 0x03]);
+  pos = setArray(data, pos, [0x02, 0x24]);
+  pos = setArray(data, pos, [0x01, 0xf4]);
+  pos = setArray(data, pos, [0x00, 0x05]);
+  pos += 2;
+  pos = setArray(data, pos, [0x02, 0x8a]);
+  pos = setArray(data, pos, [0x02, 0xbb]);
+  pos += 2;
+  pos = setArray(data, pos, [0x00, 0x8c]);
+  pos = setArray(data, pos, [0x02, 0x8a]);
+  pos = setArray(data, pos, [0x02, 0xbb]);
+  pos += 2;
+  pos = setArray(data, pos, [0x01, 0xdf]);
+  pos = setArray(data, pos, [0x00, 0x31]);
+  pos = setArray(data, pos, [0x01, 0x02]);
+  pos += 2;
+  pos = setArray(data, pos, [0x00, 0x00, 0x06, properties.fixedPitch ? 0x09 : 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+  pos = setInt32(view, pos, ulUnicodeRange1);
+  pos = setInt32(view, pos, ulUnicodeRange2);
+  pos = setInt32(view, pos, ulUnicodeRange3);
+  pos = setInt32(view, pos, ulUnicodeRange4);
+  pos = setArray(data, pos, [0x2a, 0x32, 0x31, 0x2a]);
+  pos = setInt16(view, pos, properties.italicAngle ? 1 : 0);
+  pos = setInt16(view, pos, firstCharIndex || properties.firstChar);
+  pos = setInt16(view, pos, lastCharIndex || properties.lastChar);
+  pos = setInt16(view, pos, typoAscent);
+  pos = setInt16(view, pos, typoDescent);
+  pos = setArray(data, pos, [0x00, 0x64]);
+  pos = setInt16(view, pos, winAscent);
+  pos = setInt16(view, pos, winDescent);
+  pos += 4;
+  pos += 4;
+  pos = setInt16(view, pos, properties.xHeight);
+  pos = setInt16(view, pos, properties.capHeight);
+  pos += 2;
+  pos = setInt16(view, pos, firstCharIndex || properties.firstChar);
+  setArray(data, pos, [0x00, 0x03]);
+  return data;
 }
 function createPostTable(properties) {
-  const angle = Math.floor(properties.italicAngle * 2 ** 16);
-  return "\x00\x03\x00\x00" + string32(angle) + "\x00\x00" + "\x00\x00" + string32(properties.fixedPitch ? 1 : 0) + "\x00\x00\x00\x00" + "\x00\x00\x00\x00" + "\x00\x00\x00\x00" + "\x00\x00\x00\x00";
+  const data = new Uint8Array(32),
+    view = new DataView(data.buffer);
+  let pos = 0;
+  pos = setArray(data, pos, [0x00, 0x03, 0x00, 0x00]);
+  pos = setInt32(view, pos, Math.floor(properties.italicAngle * 2 ** 16));
+  pos += 2;
+  pos += 2;
+  setInt32(view, pos, properties.fixedPitch ? 1 : 0);
+  return data;
 }
 function createPostscriptName(name) {
   return name.replaceAll(/[^\x21-\x7E]|[[\](){}<>/%]/g, "").slice(0, 63);
@@ -29039,8 +29083,7 @@ function createNameTable(name, proto) {
       strOffset += str.length;
     }
   }
-  nameTable += strings.join("") + stringsUnicode.join("");
-  return nameTable;
+  return stringToBytes(nameTable + strings.join("") + stringsUnicode.join(""));
 }
 class Font {
   #charsCache = new Map();
@@ -64783,7 +64826,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "5.7.162";
+    const workerVersion = "5.7.174";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }
