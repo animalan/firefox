@@ -1265,7 +1265,7 @@ features:
           enabled: true
       - channel: nightly
         value:
-          enabled: true
+          enabled: false
 
   homepage-sports-widget:
     description: Feature to enable Homepage Sports Widget for users on Firefox on Android.
