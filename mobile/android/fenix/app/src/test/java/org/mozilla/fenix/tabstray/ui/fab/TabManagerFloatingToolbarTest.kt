@@ -12,6 +12,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -22,14 +23,18 @@ import mozilla.components.browser.state.state.createTab
 import mozilla.components.compose.base.theme.acornDarkColorScheme
 import mozilla.components.compose.base.theme.acornLightColorScheme
 import mozilla.components.compose.base.theme.acornPrivateColorScheme
+import mozilla.components.support.test.robolectric.testContext
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mozilla.fenix.R
 import org.mozilla.fenix.tabstray.TabsTrayTestTag
 import org.mozilla.fenix.tabstray.TabsTrayTestTag.CLOSE_ALL_TABS
 import org.mozilla.fenix.tabstray.data.TabsTrayItem
+import org.mozilla.fenix.tabstray.redux.state.Page
 import org.mozilla.fenix.tabstray.redux.state.TabsTrayState
 import org.mozilla.fenix.tabstray.redux.store.TabsTrayStore
+import org.mozilla.fenix.tabstray.syncedtabs.SyncedTabsListItem
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.theme.Theme
 
@@ -127,13 +132,90 @@ class TabManagerFloatingToolbarTest {
             .assert(hasTextColor(acornDarkColorScheme().error))
     }
 
-    private fun hasTextColor(color: androidx.compose.ui.graphics.Color) = SemanticsMatcher("Has text color matching $color") { node ->
-        val textLayoutResults = mutableListOf<TextLayoutResult>()
-        node.config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(textLayoutResults)
-        return@SemanticsMatcher if (textLayoutResults.isEmpty()) {
-            false
-        } else {
-            textLayoutResults.first().layoutInput.style.color == color
+    @Test
+    fun `GIVEN user is not signed in WHEN on synced tabs page THEN clicking FAB does not trigger sync`() {
+        var clicked = false
+        val state = TabsTrayState(
+            selectedPage = Page.SyncedTabs,
+        )
+
+        composeTestRule.setContent {
+            FloatingToolbarFAB(
+                state = state,
+                isSignedIn = false,
+                onOpenNewNormalTabClicked = {},
+                onOpenNewPrivateTabClicked = {},
+                onSyncedTabsFabClicked = { clicked = true },
+            )
         }
+
+        composeTestRule.onNodeWithTag(TabsTrayTestTag.FAB).performClick()
+
+        assert(!clicked)
     }
+
+    @Test
+    fun `GIVEN reauth error exists WHEN on synced tabs page THEN clicking FAB does not trigger sync`() {
+        val reauthErrorString = testContext.getString(R.string.synced_tabs_reauth)
+
+        var clicked = false
+        val state = TabsTrayState(
+            selectedPage = Page.SyncedTabs,
+            sync = TabsTrayState.SyncState(
+                syncedTabs = listOf(
+                    SyncedTabsListItem.Error(errorText = reauthErrorString),
+                ),
+            ),
+        )
+
+        composeTestRule.setContent {
+            FloatingToolbarFAB(
+                state = state,
+                isSignedIn = true,
+                onOpenNewNormalTabClicked = {},
+                onOpenNewPrivateTabClicked = {},
+                onSyncedTabsFabClicked = { clicked = true },
+            )
+        }
+
+        composeTestRule.onNodeWithTag(TabsTrayTestTag.FAB).performClick()
+
+        assert(!clicked)
+    }
+
+    @Test
+    fun `GIVEN user is signed in and no errors WHEN on synced tabs page THEN clicking FAB triggers sync`() {
+        var clicked = false
+        val state = TabsTrayState(
+            selectedPage = Page.SyncedTabs,
+            sync = TabsTrayState.SyncState(syncedTabs = emptyList()),
+        )
+
+        composeTestRule.setContent {
+            FloatingToolbarFAB(
+                state = state,
+                isSignedIn = true,
+                onOpenNewNormalTabClicked = {},
+                onOpenNewPrivateTabClicked = {},
+                onSyncedTabsFabClicked = { clicked = true },
+            )
+        }
+
+        composeTestRule.onNodeWithTag(TabsTrayTestTag.FAB)
+            .assertIsDisplayed()
+            .performClick()
+
+        assert(clicked)
+    }
+
+    private fun hasTextColor(color: androidx.compose.ui.graphics.Color) =
+        SemanticsMatcher("Has text color matching $color") { node ->
+            val textLayoutResults = mutableListOf<TextLayoutResult>()
+            node.config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(textLayoutResults)
+            return@SemanticsMatcher if (textLayoutResults.isEmpty()) {
+                false
+            } else {
+                textLayoutResults.first().layoutInput.style.color == color
+            }
+        }
 }
