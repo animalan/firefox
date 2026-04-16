@@ -3851,9 +3851,13 @@ static bool CallDefaultPromiseRejectFunction(
   return true;
 }
 
-[[nodiscard]] static JSObject* CommonStaticResolveRejectImpl(
-    JSContext* cx, HandleValue thisVal, HandleValue argVal,
-    ResolutionMode mode);
+[[nodiscard]] static JSObject* CommonStaticRejectImpl(JSContext* cx,
+                                                      HandleValue thisVal,
+                                                      HandleValue argVal);
+
+[[nodiscard]] static JSObject* CommonStaticResolveImpl(JSContext* cx,
+                                                       HandleValue thisVal,
+                                                       HandleValue argVal);
 
 static bool IsPromiseSpecies(JSContext* cx, JSFunction* species);
 
@@ -3958,14 +3962,13 @@ template <typename GetNextFuncT, typename GetResolveAndRejectFuncT>
         getThen = false;
       } else {
         // Need to revalidate the Promise state in the next iteration,
-        // because CommonStaticResolveRejectImpl may have modified it.
+        // because CommonStaticResolveImpl may have modified it.
         validatePromiseState = true;
 
         // Step {c, d}. Let nextPromise be
         //              ? Call(promiseResolve, constructor, « next »).
         // Inline the call to Promise.resolve.
-        JSObject* res =
-            CommonStaticResolveRejectImpl(cx, CVal, nextValue, ResolveMode);
+        JSObject* res = CommonStaticResolveImpl(cx, CVal, nextValue);
         if (!res) {
           return false;
         }
@@ -3980,8 +3983,7 @@ template <typename GetNextFuncT, typename GetResolveAndRejectFuncT>
       // Step {c, d}. Let nextPromise be
       //              ? Call(promiseResolve, constructor, « next »).
       // Inline the call to Promise.resolve.
-      JSObject* res =
-          CommonStaticResolveRejectImpl(cx, CVal, nextValue, ResolveMode);
+      JSObject* res = CommonStaticResolveImpl(cx, CVal, nextValue);
       if (!res) {
         return false;
       }
@@ -5625,10 +5627,52 @@ static bool PromiseAllSettledKeyedRejectElementFunction(JSContext* cx,
 /**
  * ES2022 draft rev d03c1ec6e235a5180fa772b6178727c17974cb14
  *
- * Unified implementation of
- *
  * Promise.reject ( r )
  * https://tc39.es/ecma262/#sec-promise.reject
+ */
+[[nodiscard]] static JSObject* CommonStaticRejectImpl(JSContext* cx,
+                                                      HandleValue thisVal,
+                                                      HandleValue argVal) {
+  // Promise.reject
+  // Step 1. Let C be the this value.
+  // Step 2. Let promiseCapability be ? NewPromiseCapability(C).
+  //
+  // Promise.reject => NewPromiseCapability
+  // Step 1. If IsConstructor(C) is false, throw a TypeError exception.
+  if (!thisVal.isObject()) {
+    const char* msg = "Receiver of Promise.reject call";
+    JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                              JSMSG_OBJECT_REQUIRED, msg);
+    return nullptr;
+  }
+  RootedObject C(cx, &thisVal.toObject());
+
+  // Promise.reject
+  // Step 2. Let promiseCapability be ? NewPromiseCapability(C).
+  Rooted<PromiseCapability> capability(cx);
+  if (!NewPromiseCapability(cx, C, &capability, true)) {
+    return nullptr;
+  }
+
+  HandleObject promise = capability.promise();
+
+  // Promise.reject
+  // Step 3. Perform ? Call(promiseCapability.[[Reject]], undefined, « r »).
+  if (!CallPromiseRejectFunction(cx, capability.reject(), argVal, promise,
+                                 nullptr, UnhandledRejectionBehavior::Report)) {
+    return nullptr;
+  }
+
+  // Promise.reject
+  // Step 4. Return promiseCapability.[[Promise]].
+  return promise;
+}
+
+/**
+ * ES2022 draft rev d03c1ec6e235a5180fa772b6178727c17974cb14
+ *
+ * Unified implementation of
+
  * NewPromiseCapability ( C )
  * https://tc39.es/ecma262/#sec-newpromisecapability
  * Promise.resolve ( x )
@@ -5636,22 +5680,14 @@ static bool PromiseAllSettledKeyedRejectElementFunction(JSContext* cx,
  * PromiseResolve ( C, x )
  * https://tc39.es/ecma262/#sec-promise-resolve
  */
-[[nodiscard]] static JSObject* CommonStaticResolveRejectImpl(
-    JSContext* cx, HandleValue thisVal, HandleValue argVal,
-    ResolutionMode mode) {
-  // Promise.reject
-  // Step 1. Let C be the this value.
-  // Step 2. Let promiseCapability be ? NewPromiseCapability(C).
-  //
-  // Promise.reject => NewPromiseCapability
-  // Step 1. If IsConstructor(C) is false, throw a TypeError exception.
-  //
+[[nodiscard]] static JSObject* CommonStaticResolveImpl(JSContext* cx,
+                                                       HandleValue thisVal,
+                                                       HandleValue argVal) {
   // Promise.resolve
   // Step 1. Let C be the this value.
   // Step 2. If Type(C) is not Object, throw a TypeError exception.
   if (!thisVal.isObject()) {
-    const char* msg = mode == ResolveMode ? "Receiver of Promise.resolve call"
-                                          : "Receiver of Promise.reject call";
+    const char* msg = "Receiver of Promise.resolve call";
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_OBJECT_REQUIRED, msg);
     return nullptr;
@@ -5664,7 +5700,7 @@ static bool PromiseAllSettledKeyedRejectElementFunction(JSContext* cx,
   // PromiseResolve
   // Step 1. Assert: Type(C) is Object.
   // (implicit)
-  if (mode == ResolveMode && argVal.isObject()) {
+  if (argVal.isObject()) {
     RootedObject xObj(cx, &argVal.toObject());
     bool isPromise = false;
     if (xObj->is<PromiseObject>()) {
@@ -5698,8 +5734,6 @@ static bool PromiseAllSettledKeyedRejectElementFunction(JSContext* cx,
     }
   }
 
-  // Promise.reject
-  // Step 2. Let promiseCapability be ? NewPromiseCapability(C).
   // PromiseResolve
   // Step 3. Let promiseCapability be ? NewPromiseCapability(C).
   Rooted<PromiseCapability> capability(cx);
@@ -5708,25 +5742,13 @@ static bool PromiseAllSettledKeyedRejectElementFunction(JSContext* cx,
   }
 
   HandleObject promise = capability.promise();
-  if (mode == ResolveMode) {
-    // PromiseResolve
-    // Step 4. Perform ? Call(promiseCapability.[[Resolve]], undefined, « x »).
-    if (!CallPromiseResolveFunction(cx, capability.resolve(), argVal,
-                                    promise)) {
-      return nullptr;
-    }
-  } else {
-    // Promise.reject
-    // Step 3. Perform ? Call(promiseCapability.[[Reject]], undefined, « r »).
-    if (!CallPromiseRejectFunction(cx, capability.reject(), argVal, promise,
-                                   nullptr,
-                                   UnhandledRejectionBehavior::Report)) {
-      return nullptr;
-    }
+
+  // PromiseResolve
+  // Step 4. Perform ? Call(promiseCapability.[[Resolve]], undefined, « x »).
+  if (!CallPromiseResolveFunction(cx, capability.resolve(), argVal, promise)) {
+    return nullptr;
   }
 
-  // Promise.reject
-  // Step 4. Return promiseCapability.[[Promise]].
   // PromiseResolve
   // Step 5. Return promiseCapability.[[Promise]].
   return promise;
@@ -5736,7 +5758,7 @@ static bool PromiseAllSettledKeyedRejectElementFunction(JSContext* cx,
                                            HandleObject constructor,
                                            HandleValue value) {
   RootedValue C(cx, ObjectValue(*constructor));
-  return CommonStaticResolveRejectImpl(cx, C, value, ResolveMode);
+  return CommonStaticResolveImpl(cx, C, value);
 }
 
 /**
@@ -5749,8 +5771,7 @@ static bool Promise_reject(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
   HandleValue thisVal = args.thisv();
   HandleValue argVal = args.get(0);
-  JSObject* result =
-      CommonStaticResolveRejectImpl(cx, thisVal, argVal, RejectMode);
+  JSObject* result = CommonStaticRejectImpl(cx, thisVal, argVal);
   if (!result) {
     return false;
   }
@@ -5801,8 +5822,7 @@ bool js::Promise_static_resolve(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
   HandleValue thisVal = args.thisv();
   HandleValue argVal = args.get(0);
-  JSObject* result =
-      CommonStaticResolveRejectImpl(cx, thisVal, argVal, ResolveMode);
+  JSObject* result = CommonStaticResolveImpl(cx, thisVal, argVal);
   if (!result) {
     return false;
   }
@@ -5825,7 +5845,7 @@ JSObject* PromiseObject::unforgeableResolve(JSContext* cx, HandleValue value) {
     return nullptr;
   }
   RootedValue cVal(cx, ObjectValue(*promiseCtor));
-  return CommonStaticResolveRejectImpl(cx, cVal, value, ResolveMode);
+  return CommonStaticResolveImpl(cx, cVal, value);
 }
 
 /**
