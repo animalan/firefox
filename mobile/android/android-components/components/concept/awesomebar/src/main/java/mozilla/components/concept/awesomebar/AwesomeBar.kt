@@ -182,6 +182,7 @@ interface AwesomeBar {
      * @property statusType The type of the status.
      * @property homeTeam The home team information.
      * @property awayTeam The away team information.
+     * @property touched The last time this sport event was updated, in ISO 8601 format.
      */
     data class SportItem(
         val query: String,
@@ -192,6 +193,7 @@ interface AwesomeBar {
         val statusType: String,
         val homeTeam: Team,
         val awayTeam: Team,
+        val touched: String,
     ) {
         /**
          * Represents a team in a sport suggestion.

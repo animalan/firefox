@@ -73,6 +73,7 @@ class MockedSportsSuggestionDataSource : AwesomeBar.SportsSuggestionDataSource {
             score = 107,
             iconUrl = null,
         ),
+        touched = date,
     )
 
     private fun nflSportItem(date: String) = AwesomeBar.SportItem(
@@ -96,6 +97,7 @@ class MockedSportsSuggestionDataSource : AwesomeBar.SportsSuggestionDataSource {
             score = 14,
             iconUrl = null,
         ),
+        touched = date,
     )
 
     private fun mlbSportItem(date: String) = AwesomeBar.SportItem(
@@ -119,6 +121,7 @@ class MockedSportsSuggestionDataSource : AwesomeBar.SportsSuggestionDataSource {
             score = null,
             iconUrl = null,
         ),
+        touched = date,
     )
 
     private fun nhlSportItem(date: String) = AwesomeBar.SportItem(
@@ -142,5 +145,6 @@ class MockedSportsSuggestionDataSource : AwesomeBar.SportsSuggestionDataSource {
             score = 1,
             iconUrl = null,
         ),
+        touched = date,
     )
 }

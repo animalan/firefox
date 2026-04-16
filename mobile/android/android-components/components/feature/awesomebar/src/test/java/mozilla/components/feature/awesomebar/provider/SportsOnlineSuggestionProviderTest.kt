@@ -458,6 +458,7 @@ private fun sampleSportItem(
     statusType = statusType,
     homeTeam = homeTeam,
     awayTeam = awayTeam,
+    touched = "2025-10-29T12:00:00+00:00",
 )
 
 private val sampleHomeTeam = AwesomeBar.SportItem.Team(
