@@ -400,8 +400,9 @@ class TabManagementFragment : DialogFragment() {
 
                             entry<TabManagerNavDestination.ExpandedTabGroup>(
                                 metadata = BottomSheetSceneStrategy.bottomSheet(
-                                    // todo: Bug 2022914
-                                    handleContentDescription = "Dismiss tab group bottom sheet",
+                                    handleContentDescription = stringResource(
+                                        id = R.string.tab_group_sheet_dismiss_description,
+                                    ),
                                 ),
                             ) { args ->
                                 val expandedGroup by tabsTrayStore.observeTabGroup(tabGroup = args.group)
@@ -447,7 +448,7 @@ class TabManagementFragment : DialogFragment() {
                             entry<TabManagerNavDestination.EditTabGroup>(
                                 metadata = BottomSheetSceneStrategy.bottomSheet(
                                     handleContentDescription = stringResource(
-                                        id = R.string.edit_tab_group_bottom_sheet_close_content_description,
+                                        id = R.string.edit_tab_group_bottom_sheet_grabber_content_description,
                                     ),
                                 ),
                             ) {
@@ -457,7 +458,7 @@ class TabManagementFragment : DialogFragment() {
                             entry<TabManagerNavDestination.AddToTabGroup>(
                                 metadata = BottomSheetSceneStrategy.bottomSheet(
                                     handleContentDescription = stringResource(
-                                        id = R.string.add_to_tab_group_bottom_sheet_close_content_description,
+                                        id = R.string.add_to_tab_group_bottom_sheet_grabber_content_description,
                                     ),
                                 ),
                             ) {

@@ -48,8 +48,10 @@ class ExpandedTabGroupTest {
             .assertIsDisplayed()
         composeTestRule.onNodeWithTag(TabsTrayTestTag.TAB_GROUP_THREE_DOT_BUTTON)
             .assertIsDisplayed()
-        composeTestRule.onNodeWithTag(TabsTrayTestTag.BOTTOM_SHEET_CIRCLE).assertIsDisplayed()
-        composeTestRule.onNodeWithText(testGroupTitle).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(
+            TabsTrayTestTag.BOTTOM_SHEET_CIRCLE,
+            useUnmergedTree = true,
+        ).assertIsDisplayed()
     }
 
     @Test

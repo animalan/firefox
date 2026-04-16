@@ -22,6 +22,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,9 +55,21 @@ fun TabGroupRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val tabGroupRowContentDescription = pluralStringResource(
+        id = R.plurals.add_to_exiting_tab_group_content_description,
+        count = tabGroup.tabs.size,
+        tabGroup.title,
+        tabGroup.tabs.size,
+        tabGroup.theme.contentLabel,
+    )
+
     Row(
         modifier = modifier
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) {
+                contentDescription = tabGroupRowContentDescription
+                role = Role.Button
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(FirefoxTheme.layout.space.static200),
     ) {
@@ -75,6 +92,7 @@ fun TabGroupRow(
 
                 Text(
                     text = tabGroup.title,
+                    modifier = Modifier.clearAndSetSemantics { },
                     style = FirefoxTheme.typography.body1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -89,6 +107,7 @@ fun TabGroupRow(
                     count = tabGroup.tabs.size,
                     tabGroup.tabs.size,
                 ),
+                modifier = Modifier.clearAndSetSemantics { },
                 style = FirefoxTheme.typography.caption,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
