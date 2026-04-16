@@ -63,9 +63,10 @@ export var DOMFullscreenTestUtils = {
    *
    * @param browser - Browser to use for JS fullscreen requests
    * @param {boolean} fullscreenState - true to enter fullscreen, false to leave
+   * @param {object} fullscreenOptions - Options to be passed to requestFullscreen
    * @returns {Promise} - Resolves once fullscreen change is applied
    */
-  async changeFullscreen(browser, fullScreenState) {
+  async changeFullscreen(browser, fullScreenState, fullscreenOptions) {
     if (!testContext.scope) {
       throw new Error(
         "Must first initialize DOMFullscreenTestUtils with a test scope"
@@ -78,10 +79,13 @@ export var DOMFullscreenTestUtils = {
       browser,
       fullScreenState
     );
+    if (!fullscreenOptions) {
+      fullscreenOptions = {};
+    }
     testContext.windowGlobal.SpecialPowers.spawn(
       browser,
-      [fullScreenState],
-      async state => {
+      [fullScreenState, fullscreenOptions],
+      async (state, options) => {
         // Wait for document focus before requesting full-screen
         const { ContentTaskUtils } = ChromeUtils.importESModule(
           "resource://testing-common/ContentTaskUtils.sys.mjs"
@@ -91,7 +95,7 @@ export var DOMFullscreenTestUtils = {
           "Waiting for document focus"
         );
         if (state) {
-          content.document.body.requestFullscreen();
+          content.document.body.requestFullscreen(options);
         } else {
           content.document.exitFullscreen();
         }
