@@ -199,16 +199,16 @@ nsresult StorageDBThread::Init(const nsString& aProfilePath) {
   if (mPrivateBrowsingId == 0) {
     nsresult rv;
 
-    // Always derive the profile path in the parent process instead of
-    // trusting the content-supplied value. This incurs a sync dispatch to
-    // the main thread even when the child already provided a path, but this
-    // code is legacy (gated behind dom.storage.enable_unsupported_legacy_
-    // implementation) and the security hardening outweighs the perf cost.
     nsString profilePath;
-    RefPtr<InitHelper> helper = new InitHelper();
-    rv = helper->SyncDispatchAndReturnProfilePath(profilePath);
-    if (NS_WARN_IF(NS_FAILED(rv))) {
-      return rv;
+    if (aProfilePath.IsEmpty()) {
+      RefPtr<InitHelper> helper = new InitHelper();
+
+      rv = helper->SyncDispatchAndReturnProfilePath(profilePath);
+      if (NS_WARN_IF(NS_FAILED(rv))) {
+        return rv;
+      }
+    } else {
+      profilePath = aProfilePath;
     }
 
     rv = NS_NewLocalFile(profilePath, getter_AddRefs(mDatabaseFile));
