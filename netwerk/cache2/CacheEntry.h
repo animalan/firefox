@@ -58,6 +58,9 @@ class CacheEntry final : public nsIRunnable,
              bool aPin);
 
   void AsyncOpen(nsICacheEntryOpenCallback* aCallback, uint32_t aFlags);
+#ifdef NS_FREE_PERMANENT_DATA
+  void ClearCallbacks();
+#endif
 
   CacheEntryHandle* NewHandle();
   // For a new and recreated entry w/o a callback, we need to wrap it
