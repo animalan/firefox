@@ -962,41 +962,37 @@ TestRunner.testUnloaded = function (result, runtime) {
     result = "TIMEOUT";
   }
 
-  TestRunner.structuredLogger.testEnd(
-    TestRunner.currentTestURL,
-    result,
-    "PASS",
-    TestRunner._currentTestTimedOut
-      ? "Test timed out"
-      : "Finished in " + runtime + "ms",
-    { runtime }
-  );
-
-  // Always do this, so we can "reset" preferences between tests.
+  // Compare preferences before testEnd so that any changed-pref failures
+  // are attributed to the test that changed them. This also resets
+  // preferences between tests.
   // Note: this is for mochitest-plain only; browser tests do not
   // unconditionally reset between tests, see
   // checkPreferencesAfterTest in testing/mochitest/browser-test.js
-  SpecialPowers.comparePrefsToBaseline(
-    TestRunner.ignorePrefs,
-    TestRunner.verifyPrefsNextTest
-  );
-};
+  SpecialPowers.comparePrefsToBaseline(TestRunner.ignorePrefs, function (p) {
+    if (TestRunner.comparePrefs) {
+      let prefs = Array.from(SpecialPowers.Cu.waiveXrays(p), x =>
+        SpecialPowers.unwrapIfWrapped(SpecialPowers.Cu.unwaiveXrays(x))
+      );
+      for (let pr of prefs) {
+        record(false, false, "changed preference: " + pr);
+      }
+      if (prefs.length && result == "PASS") {
+        result = "FAIL";
+      }
+    }
 
-TestRunner.verifyPrefsNextTest = function (p) {
-  if (TestRunner.comparePrefs) {
-    let prefs = Array.from(SpecialPowers.Cu.waiveXrays(p), x =>
-      SpecialPowers.unwrapIfWrapped(SpecialPowers.Cu.unwaiveXrays(x))
+    TestRunner.structuredLogger.testEnd(
+      TestRunner.currentTestURL,
+      result,
+      "PASS",
+      TestRunner._currentTestTimedOut
+        ? "Test timed out"
+        : "Finished in " + runtime + "ms",
+      { runtime }
     );
-    prefs.forEach(pr =>
-      TestRunner.structuredLogger.error(
-        "TEST-UNEXPECTED-FAIL | " +
-          TestRunner.currentTestURL +
-          " | changed preference: " +
-          pr
-      )
-    );
-  }
-  TestRunner.doNextTest();
+
+    TestRunner.doNextTest();
+  });
 };
 
 TestRunner.doNextTest = function () {
