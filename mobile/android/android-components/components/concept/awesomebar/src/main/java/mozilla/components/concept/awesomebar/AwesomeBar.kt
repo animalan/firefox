@@ -136,7 +136,7 @@ interface AwesomeBar {
      * @property query The full query string that triggered this suggestion.
      * @property name The full display name of the stock or fund.
      * @property ticker The stock ticker symbol.
-     * @property changePercToday The percentage change today.
+     * @property todaysChangePerc The percentage change today.
      * @property lastPrice The last traded price, including currency.
      * @property exchange The index the stock belongs to.
      * @property imageUrl The URL of the stock's logo.
@@ -145,7 +145,7 @@ interface AwesomeBar {
         val query: String,
         val name: String,
         val ticker: String,
-        val changePercToday: String,
+        val todaysChangePerc: String,
         val lastPrice: String,
         val exchange: String,
         val imageUrl: String?,

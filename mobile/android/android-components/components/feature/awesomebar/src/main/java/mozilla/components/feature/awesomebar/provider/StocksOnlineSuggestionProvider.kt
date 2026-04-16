@@ -69,7 +69,7 @@ class StocksOnlineSuggestionProvider(
             query.isNotBlank() && ticker.isNotBlank() && name.isNotBlank() && exchange.isNotBlank()
 
         val formattedLastPrice = formatLastPrice(lastPrice, locale)
-        val parsedChange = parseChangePercent(changePercToday, locale)
+        val parsedChange = parseChangePercent(todaysChangePerc, locale)
 
         return if (hasRequiredFields && formattedLastPrice != null && parsedChange != null) {
             AwesomeBar.StockSuggestion(
