@@ -581,38 +581,35 @@ ScrollSnapTargetId ScrollSnapUtils::GetTargetIdFor(const nsIFrame* aFrame) {
 static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
     const ScrollSnapInfo& aSnapInfo, const nsPoint& aCurrentPosition,
     const UniquePtr<ScrollSnapTargetIds>& aLastSnapTargetIds,
-    const nsIContent* aFocusedContent) {
+    const nsIContent* aFocusedContent, const WritingMode aWM) {
   ScrollSnapTargetId targetIdForFocusedContent = ScrollSnapTargetId::None;
   if (aFocusedContent && aFocusedContent->GetPrimaryFrame()) {
     targetIdForFocusedContent =
         ScrollSnapUtils::GetTargetIdFor(aFocusedContent->GetPrimaryFrame());
   }
+  const bool isVertical = aWM.IsVertical();
 
   // Note: Below algorithm doesn't care about cases where the last snap point
   // was on an element larger than the snapport since it's not clear to us
   // what we should do for now.
   // https://github.com/w3c/csswg-drafts/issues/7438
 
-  // Build the inline (X-axis) and block (Y-axis) candidate sets from the last
-  // snap targets, per
+  // Build the inline and block candidate sets from the last snap targets, per
   // https://drafts.csswg.org/css-scroll-snap-1/#multiple-aligned-snap-areas
-  // TODO Bug 2020226: These sets assume X is the inline axis and Y is the block
-  // axis, which is incorrect for vertical writing modes.
   AutoTArray<const ScrollSnapInfo::SnapTarget*, 2> inlineSet, blockSet;
   const ScrollSnapInfo::SnapTarget* focusedTarget = nullptr;
 
   aSnapInfo.ForEachValidTargetFor(
       aCurrentPosition, [&](const SnapTarget& aTarget) -> bool {
-        if (aTarget.mSnapPoint.mX &&
-            aSnapInfo.mScrollSnapStrictnessX !=
+        if (aTarget.mSnapPoint.I(aWM) &&
+            aSnapInfo.StrictnessInline(aWM) !=
                 StyleScrollSnapStrictness::None &&
-            aLastSnapTargetIds->mIdsOnX.Contains(aTarget.mTargetId)) {
+            aLastSnapTargetIds->IdsOnInline(aWM).Contains(aTarget.mTargetId)) {
           inlineSet.AppendElement(&aTarget);
         }
-        if (aTarget.mSnapPoint.mY &&
-            aSnapInfo.mScrollSnapStrictnessY !=
-                StyleScrollSnapStrictness::None &&
-            aLastSnapTargetIds->mIdsOnY.Contains(aTarget.mTargetId)) {
+        if (aTarget.mSnapPoint.B(aWM) &&
+            aSnapInfo.StrictnessBlock(aWM) != StyleScrollSnapStrictness::None &&
+            aLastSnapTargetIds->IdsOnBlock(aWM).Contains(aTarget.mTargetId)) {
           blockSet.AppendElement(&aTarget);
         }
         if (aLastSnapTargetIds->Contains(aTarget.mTargetId) &&
@@ -624,12 +621,12 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
 
   // Step 4.1: If the focused element is in a set, it's the only candidate.
   if (focusedTarget) {
-    if (focusedTarget->mSnapPoint.mX &&
-        aSnapInfo.mScrollSnapStrictnessX != StyleScrollSnapStrictness::None) {
+    if (focusedTarget->mSnapPoint.I(aWM) &&
+        aSnapInfo.StrictnessInline(aWM) != StyleScrollSnapStrictness::None) {
       inlineSet = {focusedTarget};
     }
-    if (focusedTarget->mSnapPoint.mY &&
-        aSnapInfo.mScrollSnapStrictnessY != StyleScrollSnapStrictness::None) {
+    if (focusedTarget->mSnapPoint.B(aWM) &&
+        aSnapInfo.StrictnessBlock(aWM) != StyleScrollSnapStrictness::None) {
       blockSet = {focusedTarget};
     }
   }
@@ -656,40 +653,48 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
   Maybe<nscoord> x, y;
 
   auto pickFromInline = [&]() {
+    Maybe<nscoord>& inlineCoord = isVertical ? y : x;
+    const Maybe<nscoord>& blockCoord = isVertical ? x : y;
     for (const auto* target : effective) {
       // When effective == blockSet, targets may not have an inline snap point.
-      if (!target->mSnapPoint.mX) {
+      const auto& sp = target->mSnapPoint.I(aWM);
+      if (!sp) {
         continue;
       }
-      if (!y ||
-          target->mSnapArea.Intersects(nsRect(
-              nsPoint(*target->mSnapPoint.mX, *y), aSnapInfo.mSnapportSize))) {
-        x = target->mSnapPoint.mX;
+      if (!blockCoord || target->mSnapArea.Intersects(
+                             nsRect(isVertical ? nsPoint(*blockCoord, *sp)
+                                               : nsPoint(*sp, *blockCoord),
+                                    aSnapInfo.mSnapportSize))) {
+        inlineCoord = sp;
         return;
       }
     }
   };
 
   auto pickFromBlock = [&]() {
+    Maybe<nscoord>& blockCoord = isVertical ? x : y;
+    const Maybe<nscoord>& inlineCoord = isVertical ? y : x;
     for (const auto* target : effective) {
       // When effective == inlineSet, targets may not have a block snap point.
-      if (!target->mSnapPoint.mY) {
+      const auto& sp = target->mSnapPoint.B(aWM);
+      if (!sp) {
         continue;
       }
-      if (!x ||
-          target->mSnapArea.Intersects(nsRect(
-              nsPoint(*x, *target->mSnapPoint.mY), aSnapInfo.mSnapportSize))) {
-        y = target->mSnapPoint.mY;
+      if (!inlineCoord || target->mSnapArea.Intersects(
+                              nsRect(isVertical ? nsPoint(*sp, *inlineCoord)
+                                                : nsPoint(*inlineCoord, *sp),
+                                     aSnapInfo.mSnapportSize))) {
+        blockCoord = sp;
         return;
       }
     }
   };
 
   // Only pick snap positions for axes that have snapping enabled.
-  if (aSnapInfo.mScrollSnapStrictnessX != StyleScrollSnapStrictness::None) {
+  if (aSnapInfo.StrictnessInline(aWM) != StyleScrollSnapStrictness::None) {
     pickFromInline();
   }
-  if (aSnapInfo.mScrollSnapStrictnessY != StyleScrollSnapStrictness::None) {
+  if (aSnapInfo.StrictnessBlock(aWM) != StyleScrollSnapStrictness::None) {
     pickFromBlock();
   }
 
@@ -700,7 +705,7 @@ Maybe<SnapDestination> ScrollSnapUtils::GetSnapPointForResnap(
     const ScrollSnapInfo& aSnapInfo, const nsRect& aScrollRange,
     const nsPoint& aCurrentPosition,
     const UniquePtr<ScrollSnapTargetIds>& aLastSnapTargetIds,
-    const nsIContent* aFocusedContent) {
+    const nsIContent* aFocusedContent, const WritingMode aWritingMode) {
   if (!aLastSnapTargetIds) {
     return GetSnapPointForDestination(aSnapInfo, ScrollUnit::DEVICE_PIXELS,
                                       ScrollSnapFlags::IntendedEndPosition,
@@ -708,8 +713,9 @@ Maybe<SnapDestination> ScrollSnapUtils::GetSnapPointForResnap(
                                       aCurrentPosition);
   }
 
-  auto [x, y] = GetCandidateInLastTargets(aSnapInfo, aCurrentPosition,
-                                          aLastSnapTargetIds, aFocusedContent);
+  auto [x, y] =
+      GetCandidateInLastTargets(aSnapInfo, aCurrentPosition, aLastSnapTargetIds,
+                                aFocusedContent, aWritingMode);
   if (!x && !y) {
     // In the worst case there's no longer valid snap points previously snapped,
     // try to find new valid snap points.
