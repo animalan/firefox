@@ -30,7 +30,6 @@ def generatedLocaleListFilename = "LocalesList.kt"
 
 import com.android.build.api.variant.FilterConfiguration
 import com.google.android.gms.oss.licenses.plugin.DependencyTask
-import groovy.json.JsonOutput
 
 android {
     if (project.hasProperty("testBuildType")) {
@@ -652,37 +651,6 @@ if (project.hasProperty("coverage")) {
                 applicationIdSuffix ".coverage"
             }
         }
-    }
-}
-
-// -------------------------------------------------------------------------------------------------
-// Task for printing APK information for the requested variant
-// Taskgraph Usage: "./gradlew printVariants
-// -------------------------------------------------------------------------------------------------
-tasks.register('printVariants') {
-    def variants = project.provider { android.applicationVariants.collect { variant -> [
-            apks: variant.outputs.collect { output -> [
-                    abi: output.getFilter(FilterConfiguration.FilterType.ABI.name()),
-                    fileName: output.outputFile.name
-            ]},
-            build_type: variant.buildType.name,
-            name: variant.name,
-    ]}}
-    def outputFile = new File(projectDir, "build/printVariants.json")
-    doLast {
-        // AndroidTest is a special case not included above
-        variants.get().add([
-            apks: [[
-                abi: 'noarch',
-                fileName: 'app-debug-androidTest.apk',
-            ]],
-            build_type: 'androidTest',
-            name: 'androidTest',
-        ])
-        def json = JsonOutput.toJson(variants.get())
-        outputFile.parentFile.mkdirs()
-        outputFile.text = json
-        logger.debug("Wrote variant info to $outputFile")
     }
 }
 
