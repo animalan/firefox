@@ -122,10 +122,6 @@ class VideoStreamBufferControllerStatsObserverMock
                int min_playout_delay_ms,
                int render_delay_ms),
               (override));
-  MOCK_METHOD(void,
-              OnTimingFrameInfoUpdated,
-              (const TimingFrameInfo& info),
-              (override));
 };
 
 }  // namespace

@@ -24,7 +24,7 @@ index c02ee0c771..9c258bf486 100644
          deps += [ "sdk/android" ]
        }
 diff --git a/modules/video_coding/generic_decoder.cc b/modules/video_coding/generic_decoder.cc
-index 2320dfdffc..7849ef7f70 100644
+index dac95bfaa7..8e1a2efcdd 100644
 --- a/modules/video_coding/generic_decoder.cc
 +++ b/modules/video_coding/generic_decoder.cc
 @@ -119,9 +119,9 @@ void VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
