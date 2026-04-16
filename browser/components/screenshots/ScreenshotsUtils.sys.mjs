@@ -200,12 +200,12 @@ export var ScreenshotsUtils = {
     if (perBrowserState?.previewDialog) {
       return UIPhases.PREVIEW;
     }
+    if (perBrowserState?.hasOverlaySelection) {
+      return UIPhases.OVERLAYSELECTION;
+    }
     const buttonsPanel = this.panelForBrowser(browser);
     if (buttonsPanel && !buttonsPanel.hidden) {
       return UIPhases.INITIAL;
-    }
-    if (perBrowserState?.hasOverlaySelection) {
-      return UIPhases.OVERLAYSELECTION;
     }
     return UIPhases.CLOSED;
   },
@@ -860,6 +860,18 @@ export var ScreenshotsUtils = {
     });
 
     buttonsPanel.hidden = false;
+
+    const tab = gBrowser.getTabForBrowser(browser);
+    if (tab?.splitview) {
+      for (const siblingTab of tab.splitview.tabs) {
+        if (
+          siblingTab !== tab &&
+          this.getUIPhase(siblingTab.linkedBrowser) === UIPhases.INITIAL
+        ) {
+          this.cancel(siblingTab.linkedBrowser, "Navigation");
+        }
+      }
+    }
 
     return new Promise(resolve => {
       browser.ownerGlobal.requestAnimationFrame(() => {
