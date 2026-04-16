@@ -1334,8 +1334,12 @@ toolbar[inactive="true"] .urlbar,
 }
 
 .searchmode-switcher-popup-description {
-  color: var(--text-color-deemphasized);
   padding: var(--menuitem-padding);
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media -moz-pref("browser.nova.enabled") {
+    color: var(--text-color-deemphasized);
+  }
 }
 
 .urlbar-visually-hidden {
