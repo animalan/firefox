@@ -765,7 +765,7 @@ class Shims {
       registerShimListener(
         browser.webRequest.onBeforeRequest,
         this._ensureShimForRequestOnTab.bind(this),
-        { urls, types: [type] },
+        { urls },
         ["blocking"]
       );
     }

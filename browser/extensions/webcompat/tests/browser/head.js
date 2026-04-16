@@ -485,6 +485,17 @@ async function generateTestShims() {
       ],
     },
     {
+      id: "MochitestShimXHR",
+      platform: "all",
+      name: "Test shim for fetch blocking",
+      bug: "mochitest",
+      file: "empty-shim.txt",
+      matches: [
+        "*://itisatracker.org/browser/browser/extensions/webcompat/tests/browser/shims_test_fetch.txt",
+      ],
+      onlyIfBlockedByETP: true,
+    },
+    {
       id: "EmbedTestShim",
       platform: "desktop",
       name: "Test shim for smartblock embed unblocking",
