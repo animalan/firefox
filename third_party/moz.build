@@ -20,7 +20,7 @@ with Files('function2/**'):
     BUG_COMPONENT = ('Core', 'MFBT')
 
 with Files('gemmology/**'):
-    BUG_COMPONENT = ('Core', 'Javascript: WebAssembly')
+    BUG_COMPONENT = ('Core', 'JavaScript: WebAssembly')
 
 with Files('googletest/**'):
     BUG_COMPONENT = ('Testing', 'GTest')
