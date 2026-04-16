@@ -6961,11 +6961,6 @@ mozilla::ipc::IPCResult ContentParent::RecvWindowClose(
     return IPC_OK();
   }
   CanonicalBrowsingContext* context = aContext.get_canonical();
-
-  // FIXME Need to check that the sending process has access to the unit of
-  // related
-  //       browsing contexts of bc.
-
   if (ContentParent* cp = context->GetContentParent()) {
     (void)cp->SendWindowClose(context, aTrustedCaller);
   }
