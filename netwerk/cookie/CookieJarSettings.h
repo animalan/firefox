@@ -166,6 +166,11 @@ class CookieJarSettings final : public nsICookieJarSettings {
   // internal state and it must be sent beck to the content process.
   bool HasBeenChanged() const { return mToBeMerged; }
 
+  bool IsFixed() const { return mState == eFixed; }
+  bool HasFingerprintingRandomizationKey() const {
+    return mFingerprintingRandomKey.isSome();
+  }
+
   void UpdateIsOnContentBlockingAllowList(nsIChannel* aChannel);
   void SetIsOnContentBlockingAllowList(bool aIsOnContentBlockingAllowList) {
     mIsOnContentBlockingAllowList = aIsOnContentBlockingAllowList;
