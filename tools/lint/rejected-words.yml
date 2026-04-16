@@ -307,4 +307,5 @@ avoid-gobbledygook:
         - extensions/spellcheck/locales/en-US/hunspell/dictionary-sources/orig/en_US-custom.dic
         - extensions/spellcheck/locales/en-US/hunspell/dictionary-sources/utf8/en-US-utf8.dic
         - extensions/spellcheck/locales/en-US/hunspell/en-US.dic
+        - taskcluster/test/params
         - tools/lint/rejected-words.yml
