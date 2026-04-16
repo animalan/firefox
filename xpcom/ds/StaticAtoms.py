@@ -2018,6 +2018,7 @@ STATIC_ATOMS = [
     Atom("onMozDOMFullscreen_Exited", "onMozDOMFullscreen:Exited"),
     Atom("onMozDOMFullscreen_NewOrigin", "onMozDOMFullscreen:NewOrigin"),
     Atom("onMozDOMFullscreen_Request", "onMozDOMFullscreen:Request"),
+    Atom("onMozDOMFullscreen_WarnAboutKeyboardLock", "onMozDOMFullscreen:WarnAboutKeyboardLock"),
     Atom("onMozDOMPointerLock_Entered", "onMozDOMPointerLock:Entered"),
     Atom("onMozDOMPointerLock_Exited", "onMozDOMPointerLock:Exited"),
     Atom("onMozInvalidForm", "onMozInvalidForm"),

@@ -15790,6 +15790,7 @@ void Document::CleanupFullscreenState() {
 
   // Restore the zoom level that was in place prior to entering fullscreen.
   if (PresShell* presShell = GetPresShell()) {
+    presShell->CleanupFullscreenState();
     if (presShell->GetMobileViewportManager()) {
       presShell->SetResolutionAndScaleTo(
           mSavedResolution, ResolutionChangeOrigin::MainThreadRestore);

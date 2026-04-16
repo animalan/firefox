@@ -258,6 +258,15 @@ export class DOMFullscreenParent extends JSWindowActorParent {
         }
         break;
       }
+      case "MozDOMFullscreen:WarnAboutKeyboardLock": {
+        if (!this.hasBeenDestroyed() && this.requestOrigin) {
+          window.PointerlockFsWarning.showFullScreen(
+            this.requestOrigin.browsingContext,
+            this.fullscreenKeyboardLock == "browser"
+          );
+        }
+        break;
+      }
     }
   }
 
@@ -275,11 +284,22 @@ export class DOMFullscreenParent extends JSWindowActorParent {
       /* useCapture */ true,
       /* wantsUntrusted */ false
     );
+    aWindow.addEventListener(
+      "MozDOMFullscreen:WarnAboutKeyboardLock",
+      this,
+      /* useCapture */ true,
+      /* wantsUntrusted */ false
+    );
   }
 
   removeListeners(aWindow) {
     aWindow.removeEventListener("MozDOMFullscreen:Entered", this, true);
     aWindow.removeEventListener("MozDOMFullscreen:Exited", this, true);
+    aWindow.removeEventListener(
+      "MozDOMFullscreen:WarnAboutKeyboardLock",
+      this,
+      true
+    );
   }
 
   /**

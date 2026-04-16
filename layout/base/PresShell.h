@@ -1885,6 +1885,8 @@ class PresShell final : public nsStubDocumentObserver,
    */
   void MergeAnchorPosAnchorChanges();
 
+  void CleanupFullscreenState();
+
  private:
   ~PresShell();
 
@@ -3180,6 +3182,9 @@ class PresShell final : public nsStubDocumentObserver,
   nsIFrame* mCurrentReflowRoot = nullptr;
 #endif  // #ifdef DEBUG
 
+  bool ShouldShowFullscreenKeyboardLockWarning(
+      const WidgetKeyboardEvent& aKeyboardEvent);
+
  private:
   // IMPORTANT: The ownership implicit in the following member variables
   // has been explicitly checked.  If you add any members to this class,
@@ -3515,6 +3520,12 @@ class PresShell final : public nsStubDocumentObserver,
   // The TimeStamp of the first repeating Escape key keydown event that might
   // a long-press for exiting fullscreen.
   TimeStamp mFirstUnmatchedEscapeKeyDownForFullscreen;
+
+  // When the fullscreen keyboard lock is enabled, we want three Escape key
+  // presses within a given interval to trigger a warning about how to exit
+  // fullscreen.
+  uint8_t mEscapeKeyDownCountForFullscreenKeyboardLockWarning;
+  TimeStamp mLastEscapeKeyDownTimeForFullscreenKeyboardLockWarning;
 
   // The `SelectionNodeCache` is tightly coupled with the PresShell.
   // It should only be possible to create a cache from within a PresShell.

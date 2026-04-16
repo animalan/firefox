@@ -728,7 +728,8 @@ PresShell::PresShell(Document* aDocument)
       mHasTriedFastUnsuppress(false),
       mProcessingReflowCommands(false),
       mPendingDidDoReflow(false),
-      mHasSeenAnchorPos(false) {
+      mHasSeenAnchorPos(false),
+      mEscapeKeyDownCountForFullscreenKeyboardLockWarning(0) {
   MOZ_LOG(gLog, LogLevel::Debug, ("PresShell::PresShell this=%p", this));
   MOZ_ASSERT(aDocument);
 
@@ -9371,6 +9372,7 @@ void PresShell::EventHandler::MaybeHandleKeyboardEventBeforeDispatch(
   MOZ_ASSERT(aKeyboardEvent);
 
   if (aKeyboardEvent->mKeyCode != NS_VK_ESCAPE) {
+    mPresShell->CleanupFullscreenState();
     return;
   }
 
@@ -9390,6 +9392,13 @@ void PresShell::EventHandler::MaybeHandleKeyboardEventBeforeDispatch(
         if (!aKeyboardEvent->mIsRepeat) {
           mPresShell->mFirstUnmatchedEscapeKeyDownForFullscreen =
               aKeyboardEvent->mTimeStamp;
+
+          if (mPresShell->ShouldShowFullscreenKeyboardLockWarning(
+                  *aKeyboardEvent)) {
+            nsContentUtils::DispatchEventOnlyToChrome(
+                root, root, u"MozDOMFullscreen:WarnAboutKeyboardLock"_ns,
+                CanBubble::eYes, Cancelable::eNo, /* DefaultAction */ nullptr);
+          }
         } else if (mPresShell->mFirstUnmatchedEscapeKeyDownForFullscreen) {
           bool escapeHasBeenHeldLongEnough =
               (aKeyboardEvent->mTimeStamp -
@@ -12910,4 +12919,50 @@ void PresShell::UpdateContentRelevancyImmediately(
 
   EnsureLayoutFlush();
   UpdateRelevancyOfContentVisibilityAutoFrames();
+}
+
+void PresShell::CleanupFullscreenState() {
+  mFirstUnmatchedEscapeKeyDownForFullscreen = TimeStamp();
+  mEscapeKeyDownCountForFullscreenKeyboardLockWarning = 0;
+  mLastEscapeKeyDownTimeForFullscreenKeyboardLockWarning = TimeStamp();
+}
+
+bool PresShell::ShouldShowFullscreenKeyboardLockWarning(
+    const WidgetKeyboardEvent& aKeyboardEvent) {
+  MOZ_ASSERT(aKeyboardEvent.mMessage == eKeyDown);
+  MOZ_ASSERT(aKeyboardEvent.mKeyCode == NS_VK_ESCAPE);
+
+  if (!XRE_IsParentProcess()) {
+    // We trigger the fullscreen warning from the parent process.
+    return false;
+  }
+
+  const TimeStamp previousEscapeKeyDownTime =
+      mLastEscapeKeyDownTimeForFullscreenKeyboardLockWarning;
+  mLastEscapeKeyDownTimeForFullscreenKeyboardLockWarning =
+      aKeyboardEvent.mTimeStamp;
+
+  const bool escapeKeyDownWithinWarnInterval =
+      previousEscapeKeyDownTime &&
+      (aKeyboardEvent.mTimeStamp - previousEscapeKeyDownTime) <=
+          TimeDuration::FromMilliseconds(
+              StaticPrefs::
+                  dom_fullscreen_keyboard_lock_triple_click_warn_interval());
+  if (!escapeKeyDownWithinWarnInterval) {
+    // If the escape keys were pressed outside of the warning interval, start
+    // a new count.
+    mEscapeKeyDownCountForFullscreenKeyboardLockWarning = 1;
+    return false;
+  }
+
+  mEscapeKeyDownCountForFullscreenKeyboardLockWarning += 1;
+  if (mEscapeKeyDownCountForFullscreenKeyboardLockWarning < 3) {
+    return false;
+  }
+
+  // If the escape key has been pressed 3 or more times within the warning
+  // interval, trigger the warning and reset the counter and timestamp.
+  mEscapeKeyDownCountForFullscreenKeyboardLockWarning = 0;
+  mLastEscapeKeyDownTimeForFullscreenKeyboardLockWarning = TimeStamp();
+  return true;
 }

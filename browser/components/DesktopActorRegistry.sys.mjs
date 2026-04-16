@@ -460,6 +460,7 @@ let JSWINDOWACTORS = {
         "MozDOMFullscreen:NewOrigin": {},
         "MozDOMFullscreen:Exit": {},
         "MozDOMFullscreen:Exited": {},
+        "MozDOMFullscreen:WarnAboutKeyboardLock": {},
       },
     },
 
