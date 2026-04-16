@@ -498,7 +498,8 @@ class OutputParser {
 
           if (
             isColorTakingFunction ||
-            ANGLE_TAKING_FUNCTIONS.has(lowerCaseFunctionName)
+            ANGLE_TAKING_FUNCTIONS.has(lowerCaseFunctionName) ||
+            lowerCaseFunctionName === "cubic-bezier"
           ) {
             // The function can accept a color or an angle argument, and we know
             // it isn't special in some other way. So, we let it
@@ -625,11 +626,6 @@ class OutputParser {
                   this.#appendTextNode(functionText);
                 }
               } else if (
-                options.expectCubicBezier &&
-                lowerCaseFunctionName === "cubic-bezier"
-              ) {
-                this.#appendCubicBezier(functionText, options);
-              } else if (
                 options.expectLinearEasing &&
                 lowerCaseFunctionName === "linear"
               ) {
@@ -672,7 +668,12 @@ class OutputParser {
             options.expectCubicBezier &&
             BEZIER_KEYWORDS.has(lowerCaseTokenText)
           ) {
-            this.#appendCubicBezier(token.text, options);
+            this.#append(
+              this.#createCubicBezierContainer({
+                children: [token.text],
+                parseOptions: options,
+              }) || token.text
+            );
           } else if (
             options.expectLinearEasing &&
             lowerCaseTokenText == "linear"
@@ -784,18 +785,23 @@ class OutputParser {
           );
           break;
 
-        case "CloseParenthesis":
+        case "CloseParenthesis": {
+          // At the moment, when we're parsing a sub-section (e.g with `stopAtCloseParen`),
+          // we might not have any entry in this.#stack. So consider that this
+          // parenthesis will "close" the last stack even if there's none.
+          const isClosingTopStack = this.#stack.length <= 1;
+
+          if (!stopAtCloseParen || !isClosingTopStack) {
+            this.#appendTextNode(")");
+          }
           this.#onCloseParenthesis(options);
 
-          if (stopAtCloseParen && this.#stack.length === 0) {
+          if (stopAtCloseParen && isClosingTopStack) {
             done = true;
-            break;
           }
 
-          this.#appendTextNode(
-            text.substring(token.startOffset, token.endOffset)
-          );
           break;
+        }
 
         case "Comma":
         case "Delim":
@@ -865,13 +871,14 @@ class OutputParser {
       return;
     }
 
-    const stackEntry = this.#stack.at(-1);
+    const stackEntry = this.#stack.pop();
+    let parts = stackEntry.parts;
     if (stackEntry.lowerCaseFunctionName === "light-dark") {
-      this.#onCloseParenthesisForLightDark(stackEntry, options);
+      parts = this.#onCloseParenthesisForLightDark(stackEntry, options);
+    } else if (stackEntry.lowerCaseFunctionName === "cubic-bezier") {
+      parts = this.#onCloseParenthesisForCubicBezier(stackEntry, options);
     }
 
-    // Our job is done here, pop last stack entry
-    const { parts } = this.#stack.pop();
     // Put all the parts in the "new" last stack, or the main parsed array if there
     // is no more entry in the stack
     this.#getCurrentStackParts().push(...parts);
@@ -885,8 +892,11 @@ class OutputParser {
    * @param {object} options
    *        options passed to the parse function. @see #mergeOptions for valid options
    *        and default values
+   * @returns {Array<string|Element>} The updated parts for the stack entry that is being closed.
    */
   #onCloseParenthesisForLightDark(stackEntry, options) {
+    const stackEntryParts = stackEntry.parts;
+
     if (
       typeof options.isDarkColorScheme !== "boolean" ||
       // light-dark takes exactly two parameters, so if we don't get exactly 1 separator
@@ -896,10 +906,9 @@ class OutputParser {
       // value time (See Bug 1910845)
       stackEntry.separatorIndexes.length !== 1
     ) {
-      return;
+      return stackEntryParts;
     }
 
-    const stackEntryParts = this.#getCurrentStackParts();
     const separatorIndex = stackEntry.separatorIndexes[0];
     let startIndex;
     let endIndex;
@@ -947,7 +956,10 @@ class OutputParser {
       // after the parameter and before the closing parenthesis (which is not yet
       // included in stackEntryParts)
       for (
-        endIndex = stackEntryParts.length - 1;
+        // we don't start at the last part, but the one before that, as the last part will
+        // always be the closing bracket for the function, and it shouldn't be included
+        // in the unmatched span.
+        endIndex = stackEntryParts.length - 2;
         endIndex > separatorIndex;
         endIndex--
       ) {
@@ -975,6 +987,31 @@ class OutputParser {
       node.append(...parts);
       stackEntryParts.splice(startIndex, parts.length, node);
     }
+
+    return stackEntryParts;
+  }
+
+  /**
+   * Called when we got the closing bracket for `cubic-bezier()`
+   *
+   * @param {object} stackEntry
+   *        The last item in this.#stack
+   * @param {object} options
+   *        options passed to the parse function. @see #mergeOptions for valid options
+   *        and default values
+   * @returns {Array<string|Element>} The updated parts for the stack entry that is being closed.
+   */
+  #onCloseParenthesisForCubicBezier(stackEntry, options) {
+    if (!options.expectCubicBezier) {
+      return stackEntry.parts;
+    }
+
+    const container = this.#createCubicBezierContainer({
+      children: stackEntry.parts,
+      parseOptions: options,
+    });
+
+    return container ? [container] : stackEntry.parts;
   }
 
   /**
@@ -1032,38 +1069,48 @@ class OutputParser {
   }
 
   /**
-   * Append a cubic-bezier timing function value to the output
+   * Create an element for a cubic-bezier timing function.
+   * Returns null if the element couldn't be created
    *
-   * @param {string} bezier
-   *        The cubic-bezier timing function
    * @param {object} options
+   * @param {Array<string|Node>} options.children
+   *        Children (strings or node) of the container that will be created.
+   * @param {object} options.parseOptions
    *        Options object. For valid options and default values see
    *        #mergeOptions()
+   * @return {Node|null}
    */
-  #appendCubicBezier(bezier, options) {
+  #createCubicBezierContainer({ children, parseOptions }) {
+    let bezier = "";
+    for (const child of children) {
+      bezier += child.textContent ?? child;
+    }
+
+    if (bezier.includes("var(")) {
+      // For now, we don't support cubic-bezier with CSS variables (see Bug 2031695)
+      return null;
+    }
+
     const container = this.#createNode("span", {
       "data-bezier": bezier,
     });
 
-    if (options.bezierSwatchClass) {
+    if (parseOptions.bezierSwatchClass) {
       const swatch = this.#createNode("span", {
-        class: options.bezierSwatchClass,
+        class: parseOptions.bezierSwatchClass,
         tabindex: "0",
         role: "button",
       });
       container.appendChild(swatch);
     }
 
-    const value = this.#createNode(
-      "span",
-      {
-        class: options.bezierClass,
-      },
-      bezier
-    );
+    const valueEl = this.#createNode("span", {
+      class: parseOptions.bezierClass,
+    });
+    valueEl.append(...children);
 
-    container.appendChild(value);
-    this.#append(container);
+    container.appendChild(valueEl);
+    return container;
   }
 
   #appendLinear(text, options) {
