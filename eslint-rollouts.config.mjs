@@ -948,7 +948,7 @@ export default [
       "browser/components/urlbar/tests/browser/browser_stop_pending.js",
       "browser/components/urlbar/tests/browser/browser_suggestedIndex.js",
       "browser/components/urlbar/tests/browser/browser_suppressFocusBorder.js",
-      "browser/components/urlbar/tests/browser/browser_switchTab_closesUrlbarPopup.js",
+      "browser/components/urlbar/tests/browser-switchTab/browser_closesUrlbarPopup.js",
       "browser/components/urlbar/tests/browser/browser_switchToTab_closes_newtab.js",
       "browser/components/urlbar/tests/browser/browser_tabKeyBehavior.js",
       "browser/components/urlbar/tests/browser/browser_tabMatchesInAwesomebar.js",
