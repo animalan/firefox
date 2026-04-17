@@ -143,6 +143,14 @@ bool FilteringWrapper<Base, Policy>::getPrototype(
 }
 
 template <typename Base, typename Policy>
+bool FilteringWrapper<Base, Policy>::getPrototypeIfOrdinary(
+    JSContext* cx, JS::HandleObject wrapper, bool* isOrdinary,
+    JS::MutableHandleObject protop) const {
+  *isOrdinary = false;
+  return true;
+}
+
+template <typename Base, typename Policy>
 bool FilteringWrapper<Base, Policy>::enter(JSContext* cx, HandleObject wrapper,
                                            HandleId id, Wrapper::Action act,
                                            bool mayThrow, bool* bp) const {
