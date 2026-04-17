@@ -8650,7 +8650,7 @@ pub unsafe extern "C" fn Servo_GetCustomPropertyValue(
     style: &ComputedValues,
     name: &nsACString,
     raw_data: &PerDocumentStyleData,
-    value: &mut nsACString,
+    value: Option<&mut nsACString>,
 ) -> bool {
     let data = raw_data.borrow();
     let name = Atom::from(name.as_str_unchecked());
@@ -8660,9 +8660,12 @@ pub unsafe extern "C" fn Servo_GetCustomPropertyValue(
         Some(v) => v,
         None => return false,
     };
-    // TODO(emilio): This might want to return resolved colors and so on for example, see
-    // https://github.com/w3c/csswg-drafts/issues/10371.
-    computed_value.to_css(&mut CssWriter::new(value)).unwrap();
+
+    if let Some(value) = value {
+        // TODO(emilio): This might want to return resolved colors and so on for example, see
+        // https://github.com/w3c/csswg-drafts/issues/10371.
+        computed_value.to_css(&mut CssWriter::new(value)).unwrap();
+    }
     true
 }
 
