@@ -122,7 +122,8 @@ nsresult HappyEyeballsTransaction::WriteSegments(nsAHttpSegmentWriter* writer,
 }
 
 void HappyEyeballsTransaction::Close(nsresult reason) {
-  LOG(("HappyEyeballsTransaction::Close %p reason=%x trans=%p cancelled=%d "
+  LOG(
+      ("HappyEyeballsTransaction::Close %p reason=%x trans=%p cancelled=%d "
        "mConnectedCallbackInvoked=%d mConnectedCallback=%d",
        this, static_cast<uint32_t>(reason), mTransaction.get(), mCancelled,
        mConnectedCallbackInvoked, !!mConnectedCallback));
