@@ -188,13 +188,13 @@ private fun SuggestionTeams(
 @Composable
 private fun SportSuggestionCategory.toSportIcon(): Painter? =
     when (this) {
-        SportSuggestionCategory.BASEBALL -> painterResource(iconsR.drawable.mozac_ic_sports_baseball_32)
-        SportSuggestionCategory.BASKETBALL -> painterResource(iconsR.drawable.mozac_ic_sports_basketball_32)
-        SportSuggestionCategory.HOCKEY -> painterResource(iconsR.drawable.mozac_ic_sports_hockey_32)
-        SportSuggestionCategory.SOCCER -> painterResource(iconsR.drawable.mozac_ic_sports_soccer_32)
-        SportSuggestionCategory.FOOTBALL -> painterResource(iconsR.drawable.mozac_ic_sports_football_32)
-        SportSuggestionCategory.GOLF -> painterResource(iconsR.drawable.mozac_ic_sports_golf_32)
-        SportSuggestionCategory.RACING -> painterResource(iconsR.drawable.mozac_ic_sports_racing_32)
+        SportSuggestionCategory.BASEBALL -> painterResource(iconsR.drawable.mozac_ic_baseball_24)
+        SportSuggestionCategory.BASKETBALL -> painterResource(iconsR.drawable.mozac_ic_basketball_24)
+        SportSuggestionCategory.HOCKEY -> painterResource(iconsR.drawable.mozac_ic_hockey_24)
+        SportSuggestionCategory.SOCCER -> painterResource(iconsR.drawable.mozac_ic_soccer_ball_24)
+        SportSuggestionCategory.FOOTBALL -> painterResource(iconsR.drawable.mozac_ic_football_24)
+        SportSuggestionCategory.GOLF -> painterResource(iconsR.drawable.mozac_ic_golf_24)
+        SportSuggestionCategory.RACING -> painterResource(iconsR.drawable.mozac_ic_racing_24)
         SportSuggestionCategory.MISC -> null
     }
 
