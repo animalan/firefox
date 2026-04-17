@@ -165,7 +165,7 @@ add_task(async function test_pages() {
     });
     for (let i = 0; i < numTabPress; i++) {
       EventUtils.synthesizeKey("KEY_Tab", {}, window);
-      await waitForIdle();
+      await flakyWaitForManyIdles();
     }
     EventUtils.synthesizeKey("KEY_Enter", {}, window);
 
