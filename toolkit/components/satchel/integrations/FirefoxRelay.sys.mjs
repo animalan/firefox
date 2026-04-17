@@ -398,7 +398,6 @@ async function showReusableMasksAsync(browser, origin, error) {
               browser,
               "confirmation-hint-firefox-relay-mask-reused"
             );
-            Services.obs.notifyObservers(browser, "relay-mask-used");
             Glean.relayIntegration.reuseMaskReusePanel.record({
               value: gFlowId,
             });
@@ -509,7 +508,6 @@ async function generateUsernameAsync(browser, origin) {
     lazy.log.info(`generated Relay mask`);
     const result = await response.json();
     showConfirmation(browser, "confirmation-hint-firefox-relay-mask-created");
-    Services.obs.notifyObservers(browser, "relay-mask-used");
     return result.full_address;
   }
 
