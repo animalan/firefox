@@ -15812,7 +15812,8 @@ bool Document::PopFullscreenElement(UpdateViewport aUpdateViewport) {
   }
 
   MOZ_ASSERT(removedElement->State().HasState(ElementState::FULLSCREEN));
-  removedElement->RemoveStates(ElementState::FULLSCREEN | ElementState::MODAL);
+  removedElement->RemoveStates(ElementState::FULLSCREEN | ElementState::MODAL |
+                               ElementState::FULLSCREEN_KEYBOARD_LOCK);
   NotifyFullScreenChangedForMediaElement(*removedElement);
   // Reset iframe fullscreen flag.
   if (auto* iframe = HTMLIFrameElement::FromNode(removedElement)) {
@@ -21136,15 +21137,26 @@ void Document::GetAllInProcessDocuments(
 }
 
 void Document::SetFullscreenKeyboardLockStatus(FullscreenKeyboardLock aStatus) {
-  mFullscreenKeyboardLockStatus = aStatus;
+  Element* elem = GetFullscreenElement();
+  MOZ_ASSERT(elem || aStatus == FullscreenKeyboardLock::None);
+
+  if (elem) {
+    elem->SetStates(ElementState::FULLSCREEN_KEYBOARD_LOCK,
+                    aStatus == FullscreenKeyboardLock::Browser, false);
+  }
 }
 
 FullscreenKeyboardLock Document::GetFullscreenKeyboardLockStatus() const {
-  return mFullscreenKeyboardLockStatus;
+  Element* elem = GetFullscreenElement();
+  return (elem &&
+          elem->State().HasState(ElementState::FULLSCREEN_KEYBOARD_LOCK))
+             ? FullscreenKeyboardLock::Browser
+             : FullscreenKeyboardLock::None;
 }
 
 bool Document::HasFullscreenKeyboardLockEnabled() {
-  return mFullscreenKeyboardLockStatus == FullscreenKeyboardLock::Browser;
+  Element* elem = GetFullscreenElement();
+  return elem && elem->State().HasState(ElementState::FULLSCREEN_KEYBOARD_LOCK);
 }
 
 }  // namespace mozilla::dom
