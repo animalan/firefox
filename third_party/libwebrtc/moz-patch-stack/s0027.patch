@@ -729,10 +729,10 @@ index cb74a2710e..b1c02c5025 100644
      : content_hint(VideoTrackInterface::ContentHint::kNone) {}
  VideoOptions::~VideoOptions() = default;
 diff --git a/modules/audio_coding/BUILD.gn b/modules/audio_coding/BUILD.gn
-index d8e1e9788a..a9b85f5c54 100644
+index 0aeff4e301..45ef05b535 100644
 --- a/modules/audio_coding/BUILD.gn
 +++ b/modules/audio_coding/BUILD.gn
-@@ -364,7 +364,7 @@ rtc_library("webrtc_opus_wrapper") {
+@@ -352,7 +352,7 @@ rtc_library("webrtc_opus_wrapper") {
      deps += [ rtc_opus_dir ]
      public_configs = [ "//third_party/opus:opus_config" ]
    } else if (build_with_mozilla) {
@@ -742,7 +742,7 @@ index d8e1e9788a..a9b85f5c54 100644
  }
  
 diff --git a/modules/audio_device/BUILD.gn b/modules/audio_device/BUILD.gn
-index bad43a5c91..6091e49b7b 100644
+index a5105a8257..516a19850a 100644
 --- a/modules/audio_device/BUILD.gn
 +++ b/modules/audio_device/BUILD.gn
 @@ -30,6 +30,7 @@ rtc_source_set("audio_device_default") {
@@ -769,7 +769,7 @@ index bad43a5c91..6091e49b7b 100644
    sources = [
      "audio_device_buffer.cc",
      "audio_device_buffer.h",
-@@ -79,6 +82,7 @@ rtc_library("audio_device_buffer") {
+@@ -78,6 +81,7 @@ rtc_library("audio_device_buffer") {
      "../../system_wrappers:metrics",
    ]
  }
@@ -777,7 +777,7 @@ index bad43a5c91..6091e49b7b 100644
  
  rtc_library("audio_device_generic") {
    sources = [
-@@ -258,6 +262,7 @@ if (!build_with_chromium) {
+@@ -255,6 +259,7 @@ if (!build_with_chromium) {
  # Contains default implementations of webrtc::AudioDeviceModule for Windows,
  # Linux, Mac, iOS and Android.
  rtc_library("audio_device_impl") {
@@ -785,7 +785,7 @@ index bad43a5c91..6091e49b7b 100644
    visibility = [ "*" ]
    deps = [
      ":audio_device_buffer",
-@@ -304,9 +309,9 @@ rtc_library("audio_device_impl") {
+@@ -300,9 +305,9 @@ rtc_library("audio_device_impl") {
    sources = [ "include/fake_audio_device.h" ]
  
    if (build_with_mozilla) {
@@ -798,7 +798,7 @@ index bad43a5c91..6091e49b7b 100644
      ]
    }
  
-@@ -409,6 +414,7 @@ rtc_library("audio_device_impl") {
+@@ -405,6 +410,7 @@ rtc_library("audio_device_impl") {
      sources += [ "dummy/file_audio_device_factory.h" ]
    }
  }
@@ -806,7 +806,7 @@ index bad43a5c91..6091e49b7b 100644
  
  if (is_mac) {
    rtc_source_set("audio_device_impl_frameworks") {
-@@ -426,6 +432,7 @@ if (is_mac) {
+@@ -422,6 +428,7 @@ if (is_mac) {
    }
  }
  
@@ -814,7 +814,7 @@ index bad43a5c91..6091e49b7b 100644
  rtc_source_set("mock_audio_device") {
    visibility = [ "*" ]
    testonly = true
-@@ -444,8 +451,10 @@ rtc_source_set("mock_audio_device") {
+@@ -440,8 +447,10 @@ rtc_source_set("mock_audio_device") {
      "../../test:test_support",
    ]
  }
@@ -864,7 +864,7 @@ index 327f0fb16d..22000b5946 100644
  #include <algorithm>
  #include <array>
 diff --git a/modules/audio_processing/agc2/rnn_vad/BUILD.gn b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
-index 53c9af257b..e20f4193bf 100644
+index 2e9c473d5f..4eb8783482 100644
 --- a/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 +++ b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 @@ -116,7 +116,7 @@ rtc_source_set("vector_math") {
@@ -877,10 +877,10 @@ index 53c9af257b..e20f4193bf 100644
      } else {
        cflags = [
 diff --git a/modules/desktop_capture/BUILD.gn b/modules/desktop_capture/BUILD.gn
-index 3da5304447..d3390bf81b 100644
+index 6b15ad7b80..d2926f8468 100644
 --- a/modules/desktop_capture/BUILD.gn
 +++ b/modules/desktop_capture/BUILD.gn
-@@ -358,37 +358,12 @@ rtc_library("desktop_capture") {
+@@ -356,37 +356,12 @@ rtc_library("desktop_capture") {
      ]
      deps += [ ":desktop_capture_objc" ]
    }
@@ -918,7 +918,7 @@ index 3da5304447..d3390bf81b 100644
    }
  
    if (rtc_use_x11_extensions) {
-@@ -551,9 +526,7 @@ rtc_library("desktop_capture") {
+@@ -549,9 +524,7 @@ rtc_library("desktop_capture") {
      deps += [ "../../rtc_base:sanitizer" ]
    }
  
