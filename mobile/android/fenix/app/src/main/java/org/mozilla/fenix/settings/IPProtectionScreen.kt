@@ -250,7 +250,7 @@ private fun VpnPromoCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.ip_protection_promo_headline, stringResource(R.string.app_name)),
+                    text = stringResource(R.string.ip_protection_promo_headline, stringResource(R.string.firefox)),
                     style = FirefoxTheme.typography.headline7,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
