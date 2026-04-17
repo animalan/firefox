@@ -3087,6 +3087,7 @@ pub struct SubmittedWorkDoneClosure {
 #[cfg(target_os = "linux")]
 pub struct VkSemaphoreHandle {
     pub semaphore: vk::Semaphore,
+    queue_id: id::QueueId,
 }
 
 #[no_mangle]
@@ -3117,7 +3118,10 @@ pub extern "C" fn wgpu_vksemaphore_create_signal_semaphore(
 
         hal_queue.add_signal_semaphore(semaphore, None);
 
-        VkSemaphoreHandle { semaphore }
+        VkSemaphoreHandle {
+            semaphore,
+            queue_id,
+        }
     };
 
     Box::into_raw(Box::new(semaphore_handle))
@@ -3166,6 +3170,14 @@ pub unsafe extern "C" fn wgpu_vksemaphore_destroy(
     handle: &VkSemaphoreHandle,
 ) {
     unsafe {
+        if let Some(hal_queue) = global.queue_as_hal::<wgc::api::Vulkan>(handle.queue_id) {
+            if !hal_queue.remove_signal_semaphore(handle.semaphore) {
+                let _ = hal_queue
+                    .raw_device()
+                    .queue_wait_idle(hal_queue.as_raw());
+            }
+        }
+
         let Some(hal_device) = global.device_as_hal::<wgc::api::Vulkan>(device_id) else {
             emit_critical_invalid_note("Vulkan device");
             return;
