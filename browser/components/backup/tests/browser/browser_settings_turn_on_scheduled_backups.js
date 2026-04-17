@@ -26,7 +26,7 @@ async function setup_mockFilePicker(mockParentDir) {
 }
 
 add_setup(async () => {
-  MockFilePicker.init();
+  MockFilePicker.init(window.browsingContext);
   registerCleanupFunction(() => {
     MockFilePicker.cleanup();
   });

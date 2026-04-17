@@ -4,7 +4,7 @@
 "use strict";
 
 var MockFilePicker = SpecialPowers.MockFilePicker;
-MockFilePicker.init();
+MockFilePicker.init(window.browsingContext);
 
 /**
  * Tests that filenames are sanitized when using Save Response As

@@ -30,7 +30,7 @@ const TEST_DEFAULT_CONTENT = [
 const TEST_DEFAULT_JSON = JSON.stringify(TEST_DEFAULT_CONTENT);
 
 add_setup(async () => {
-  MockFilePicker.init();
+  MockFilePicker.init(window.browsingContext);
   TEST_PROFILE_PATH = await IOUtils.createUniqueDirectory(
     PathUtils.tempDir,
     "testBackupAW"

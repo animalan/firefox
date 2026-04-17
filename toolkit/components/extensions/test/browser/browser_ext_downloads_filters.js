@@ -7,7 +7,7 @@ async function testAppliedFilters(ext, expectedFilter, expectedFilterCount) {
   let filterCount = 0;
 
   let MockFilePicker = SpecialPowers.MockFilePicker;
-  MockFilePicker.init();
+  MockFilePicker.init(window.browsingContext);
   MockFilePicker.displayDirectory = tempDir;
   MockFilePicker.returnValue = MockFilePicker.returnCancel;
   MockFilePicker.appendFiltersCallback = function (fp, val) {

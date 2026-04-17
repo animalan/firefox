@@ -89,7 +89,11 @@ async function testUploadPrompt(confirmUpload) {
     let path = getTestDirectory();
     await SpecialPowers.spawn(browser, [{ path }], args => {
       let MockFilePicker = content.SpecialPowers.MockFilePicker;
-      MockFilePicker.init();
+      MockFilePicker.init(
+        content.browsingContext,
+        "A Mock File Picker",
+        content.SpecialPowers.Ci.nsIFilePicker.modeGetFolder
+      );
       MockFilePicker.useDirectory(args.path);
 
       let input = content.document.getElementById("filepicker");

@@ -29,7 +29,7 @@ add_setup(async function () {
     ],
   });
 
-  MockFilePicker.init();
+  MockFilePicker.init(window.browsingContext);
   MockFilePicker.useAnyFile();
   MockFilePicker.returnValue = MockFilePicker.returnOK;
 
@@ -57,10 +57,7 @@ function waitForFilePickerCancel() {
     MockFilePicker.showCallback = () => {
       MockFilePicker.showCallback = null;
       ok(true, "Saw the file picker");
-      return MockFilePicker.returnCancel;
-    };
-    MockFilePicker.afterOpenCallback = () => {
-      MockFilePicker.afterOpenCallback = null;
+      MockFilePicker.returnValue = MockFilePicker.returnCancel;
       resolve();
     };
   });

@@ -43,7 +43,7 @@ add_task(async function setOverrideInDebugger_removeOverrideInNetmonitor() {
   info("Select script.js tree node, and add override");
   await selectSourceFromSourceTree(dbg, "script.js");
 
-  const path = prepareFilePicker("script-override.js");
+  const path = prepareFilePicker("script-override.js", window);
   await triggerSourceTreeContextMenu(
     dbg,
     findSourceNodeWithText(dbg, "script.js"),

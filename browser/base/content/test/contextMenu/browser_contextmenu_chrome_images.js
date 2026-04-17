@@ -101,7 +101,7 @@ add_task(async function test_save_allowed_chrome_image() {
         url: "data:text/html;charset=utf-8," + encodeURIComponent(htmlContent),
       },
       async browser => {
-        MockFilePicker.init();
+        MockFilePicker.init(window.browsingContext);
 
         await SpecialPowers.spawn(browser, ["#test-image"], async selector => {
           const img = content.document.querySelector(selector);

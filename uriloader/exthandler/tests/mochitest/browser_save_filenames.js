@@ -59,7 +59,7 @@ const DEFAULT_FILENAME =
 const PROMISE_FILENAME_TYPE = "application/x-moz-file-promise-dest-filename";
 
 let MockFilePicker = SpecialPowers.MockFilePicker;
-MockFilePicker.init();
+MockFilePicker.init(window.browsingContext);
 
 let expectedItems;
 let sendAsAttachment = false;
