@@ -134,14 +134,20 @@ export class DOMFullscreenParent extends JSWindowActorParent {
     let window = browser.ownerGlobal;
     switch (aMessage.name) {
       case "DOMFullscreen:Request": {
-        this.fullscreenKeyboardLock = aMessage.data.fullscreenKeyboardLock;
+        const keyboardLockEnabled = Services.prefs.getBoolPref(
+          "dom.fullscreen.keyboard_lock.enabled",
+          false
+        );
+        this.fullscreenKeyboardLock = keyboardLockEnabled
+          ? aMessage.data.fullscreenKeyboardLock
+          : "none";
         this.manager.fullscreen = true;
         this.waitingForChildExitFullscreen = false;
         this.requestOrigin = this;
         this.addListeners(window);
         window.windowUtils.remoteFrameFullscreenChanged(
           browser,
-          aMessage.data.fullscreenKeyboardLock == "browser"
+          this.fullscreenKeyboardLock == "browser"
         );
         break;
       }
@@ -190,9 +196,14 @@ export class DOMFullscreenParent extends JSWindowActorParent {
       case "DOMFullscreen:UpdateKeyboardLock": {
         // Validate the received keyboardlock state before updating - an
         // infected content process could send something unexpected.
+        const keyboardLockEnabled = Services.prefs.getBoolPref(
+          "dom.fullscreen.keyboard_lock.enabled",
+          false
+        );
         let newLock =
-          aMessage.data.fullscreenKeyboardLock == "none" ||
-          aMessage.data.fullscreenKeyboardLock == "browser"
+          keyboardLockEnabled &&
+          (aMessage.data.fullscreenKeyboardLock == "none" ||
+            aMessage.data.fullscreenKeyboardLock == "browser")
             ? aMessage.data.fullscreenKeyboardLock
             : "none";
         if (this.fullscreenKeyboardLock != newLock) {
