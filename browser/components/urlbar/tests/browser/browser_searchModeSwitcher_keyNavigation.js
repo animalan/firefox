@@ -153,7 +153,7 @@ async function test_open_switcher(openKey) {
   let promiseMenuOpen = BrowserTestUtils.waitForEvent(popup, "popupshown");
 
   info(`Open the urlbar and open the switcher via keyboard (${openKey})`);
-  await focusSearchModeSwitcher();
+  await focusSwitcher();
   EventUtils.synthesizeKey(openKey);
   await promiseMenuOpen;
   Assert.ok(true, "Search mode switcher was opened");
@@ -175,7 +175,7 @@ async function test_dont_open_switcher(dontOpenKey) {
   };
   info(`Pressing key that should not open the switcher (${dontOpenKey})`);
   popup.addEventListener("popupshown", opened);
-  await focusSearchModeSwitcher();
+  await focusSwitcher();
   EventUtils.synthesizeKey(dontOpenKey);
 
   /* eslint-disable mozilla/no-arbitrary-setTimeout */
@@ -196,7 +196,7 @@ async function test_navigate_switcher(navKey, navTimes, searchMode) {
   let promiseMenuOpen = BrowserTestUtils.waitForEvent(popup, "popupshown");
 
   info("Open the urlbar and open the switcher via Enter key");
-  await focusSearchModeSwitcher();
+  await focusSwitcher();
   EventUtils.synthesizeKey("KEY_Enter");
   await promiseMenuOpen;
 
@@ -477,7 +477,7 @@ add_task(async function test_urlbar_focus_after_switcher_lost() {
   );
 
   info("Move the focus to the switcher button");
-  await focusSearchModeSwitcher();
+  await focusSwitcher();
 
   info("Move the focus to browser element");
   // We intentionally turn off this a11y check, because the following click is

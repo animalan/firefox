@@ -32,7 +32,7 @@ add_task(async function test() {
   Assert.equal(gURLBar.selectionEnd, "example.com/".length);
 
   // Now paste.
-  await UrlbarTestUtils.selectAndPaste("ex", window);
+  await selectAndPaste("ex");
 
   // Nothing should have been autofilled.
   await UrlbarTestUtils.promiseSearchComplete(window);

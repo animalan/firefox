@@ -33,7 +33,6 @@ async function testVal(urlFormatString, clobberedURLString = null) {
     "URL is not highlighted"
   );
   gBrowser.selectedBrowser.focus();
-  await UrlbarTestUtils.promisePopupClose(window);
   await UrlbarTestUtils.checkFormatting(window, urlFormatString, {
     clobberedURLString,
     additionalMsg: "with input simulation",

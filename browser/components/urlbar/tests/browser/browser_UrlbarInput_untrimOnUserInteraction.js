@@ -36,7 +36,7 @@ let tests = [
     description: "Test drag selection untrims",
     untrimmedValue: BrowserUIUtils.trimURLProtocol + "www.example.com/",
     execute() {
-      UrlbarTestUtils.selectWithMouseDrag(100, 200, window);
+      selectWithMouseDrag(100, 200);
       Assert.greater(gURLBar.selectionStart, 0, "Selection start is positive.");
       Assert.greater(
         gURLBar.selectionEnd,
@@ -50,7 +50,7 @@ let tests = [
     description: "Test double click selection untrims",
     untrimmedValue: BrowserUIUtils.trimURLProtocol + "www.example.com/",
     execute() {
-      UrlbarTestUtils.selectWithDoubleClick(200, window);
+      selectWithDoubleClick(200);
       Assert.greater(gURLBar.selectionStart, 0, "Selection start is positive.");
       Assert.greater(
         gURLBar.selectionEnd,
