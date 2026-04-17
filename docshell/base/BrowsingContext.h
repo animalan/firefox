@@ -250,6 +250,8 @@ struct EmbedderColorSchemes {
   FIELD(PrefersColorSchemeOverride, dom::PrefersColorSchemeOverride)          \
   FIELD(LanguageOverride, nsCString)                                          \
   FIELD(TimezoneOverride, nsString)                                           \
+  /* DevTools override for prefers-reduced-motion */                          \
+  FIELD(PrefersReducedMotionOverride, dom::PrefersReducedMotionOverride)      \
   /* DevTools override for forced-colors */                                   \
   FIELD(ForcedColorsOverride, dom::ForcedColorsOverride)                      \
   /* DevTools multiplier for animations playback rate */                      \
@@ -1117,6 +1119,10 @@ class BrowsingContext : public nsILoadContext, public nsWrapperCache {
     return GetForcedColorsOverride();
   }
 
+  dom::PrefersReducedMotionOverride PrefersReducedMotionOverride() const {
+    return GetPrefersReducedMotionOverride();
+  }
+
   double AnimationsPlayBackRateMultiplier() const {
     return Top()->GetAnimationsPlayBackRateMultiplier();
   }
@@ -1328,6 +1334,11 @@ class BrowsingContext : public nsILoadContext, public nsWrapperCache {
     return IsTop();
   }
 
+  bool CanSet(FieldIndex<IDX_PrefersReducedMotionOverride>,
+              dom::PrefersReducedMotionOverride, ContentParent*) {
+    return IsTop();
+  }
+
   bool CanSet(FieldIndex<IDX_AnimationsPlayBackRateMultiplier>, double&,
               ContentParent*) {
     return IsTop();
@@ -1347,6 +1358,9 @@ class BrowsingContext : public nsILoadContext, public nsWrapperCache {
 
   void DidSet(FieldIndex<IDX_ForcedColorsOverride>,
               dom::ForcedColorsOverride aOldValue);
+
+  void DidSet(FieldIndex<IDX_PrefersReducedMotionOverride>,
+              dom::PrefersReducedMotionOverride aOldValue);
 
   void DidSet(FieldIndex<IDX_AnimationsPlayBackRateMultiplier>,
               double aOldValue);
