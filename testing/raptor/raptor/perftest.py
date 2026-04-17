@@ -37,6 +37,7 @@ from cmdline import (
     FIREFOX_ANDROID_APPS,
     FIREFOX_APPS,
     GECKO_PROFILER_APPS,
+    SIMPLEPERF_APPS,
     TRACE_APPS,
 )
 from condprof.client import ProfileNotFoundError, get_profile
@@ -546,9 +547,10 @@ class Perftest(metaclass=ABCMeta):
         # Simpleperf profiling symbolication. This is currently only enabled for CI runs
         # as the dependencies for this symbolication (Samply) are
         # not available locally yet. See Bug 2028955.
-        if self.config.get("simpleperf") and self.simpleperf_profiler:
-            self.simpleperf_profiler.symbolicate()
-            self.simpleperf_profiler.clean()
+        if self.config.get("simpleperf") and self.config["app"] in SIMPLEPERF_APPS:
+            if self.simpleperf_profiler:
+                self.simpleperf_profiler.symbolicate()
+                self.simpleperf_profiler.clean()
 
         return res
 

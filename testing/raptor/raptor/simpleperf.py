@@ -13,10 +13,27 @@ import zipfile
 from pathlib import Path
 
 from logger.logger import RaptorLogger
+from mozdevice import ADBDeviceFactory
 from raptor_profiling import RaptorProfiling
 
 LOG = RaptorLogger(component="raptor-simpleperf")
 
+
+class SimpleperfBinaryNotFoundError(Exception):
+    pass
+
+
+class SimpleperfAlreadyRunningError(Exception):
+    pass
+
+
+class SimpleperfNotRunningError(Exception):
+    pass
+
+
+SIMPLEPERF_OPTIONS = (
+    "--call-graph fp --duration 1000 -f 1000 --trace-offcpu -e cpu-clock -a"
+)
 
 class SimpleperfProfile(RaptorProfiling):
     """
@@ -32,17 +49,146 @@ class SimpleperfProfile(RaptorProfiling):
 
         self.breakpad_symbol_dir = None
         self.samply_path = None
+        self.device = ADBDeviceFactory()
+        self.profiler_process = None
+        self.use_app_profiler = False
 
         if "MOZ_AUTOMATION" in os.environ:
             moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
             self.breakpad_symbol_dir = moz_fetch / "target.crashreporter-symbols"
             self.samply_path = moz_fetch / "samply" / "samply"
+            simpleperf_dir = moz_fetch / "android-simpleperf"
+        else:
+            # ~/locally/target.crashreporter-symbols
+            objdir = os.environ.get("MOZ_DEVELOPER_OBJ_DIR")
+            if objdir:
+                symbol_dir = Path(objdir, "dist", "crashreporter-symbols")
+                self.breakpad_symbol_dir = symbol_dir if symbol_dir.exists() else None
+            else:
+                self.breakpad_symbol_dir = None
 
+            # ~/samply/target/release/samply
+            self.samply_path = Path("samply")
+
+            ndk_dirs = sorted(Path.home().glob(".mozbuild/android-ndk-r*/simpleperf"))
+            if not ndk_dirs:
+                raise SimpleperfBinaryNotFoundError(
+                    "Could not find Android NDK in ~/.mozbuild"
+                )
+            simpleperf_dir = ndk_dirs[-1]
         self.dest_dir = (
             self.upload_dir
             / "browsertime-results"
             / self.test_config.get("name", "simpleperf")
         )
+
+        self.simpleperf_binary = (
+            simpleperf_dir / "bin" / "android" / "arm64" / "simpleperf"
+        )
+        self.app_profiler = simpleperf_dir / "app_profiler.py"
+
+    def _push_simpleperf_binary(self):
+        self.device.shell("rm -f /data/local/tmp/simpleperf /data/local/tmp/perf.data")
+        self.device.push(str(self.simpleperf_binary), "/data/local/tmp")
+        self.device.shell("chmod a+x /data/local/tmp/simpleperf")
+
+    def start(self, simpleperf_options=None, use_app_profiler=False):
+        LOG.info("Starting Simpleperf")
+        if self.profiler_process:
+            raise SimpleperfAlreadyRunningError("simpleperf already running")
+
+        self.device.shell("kill -9 $(pgrep simpleperf) 2>/dev/null; true")
+
+        if simpleperf_options is None:
+            simpleperf_options = SIMPLEPERF_OPTIONS
+
+        self.use_app_profiler = use_app_profiler
+
+        if use_app_profiler:
+            if not self.app_profiler.exists():
+                raise SimpleperfBinaryNotFoundError(
+                    f"app_profiler.py not found at {self.app_profiler}"
+                )
+
+            package_name = self.raptor_config.get("binary")
+
+            cmd = [
+                str(self.app_profiler),
+                "-p",
+                str(package_name),
+                "-r",
+                simpleperf_options,
+                "-o",
+                "/data/local/tmp/perf.data",
+            ]
+
+        else:
+            if not self.simpleperf_binary.exists():
+                raise SimpleperfBinaryNotFoundError(
+                    f"simpleperf binary not found at {self.simpleperf_binary}"
+                )
+
+            self._push_simpleperf_binary()
+
+            record_cmd = f"/data/local/tmp/simpleperf record {simpleperf_options} -o /data/local/tmp/perf.data"
+            cmd = ["adb", "shell", "su", "-c", record_cmd]
+
+        self.profiler_process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        LOG.info("Started Simpleperf")
+
+    def stop(self):
+        LOG.info("Stopping Simpleperf")
+        if not self.profiler_process:
+            raise SimpleperfNotRunningError("no profiler process found")
+
+        sigint = -2
+        self.device.shell(f"kill {sigint} $(pgrep simpleperf)")
+
+        for line in self.profiler_process.stdout:
+            LOG.info(f"simpleperf: {line.decode().strip()}")
+        self.profiler_process.wait()
+        LOG.info(f"simpleperf exited with code {self.profiler_process.returncode}")
+
+        self.profiler_process = None
+
+        profile_path = self.dest_dir / "perf.data"
+        self.device.pull("/data/local/tmp/perf.data", str(profile_path))
+        self.device.shell("rm -f /data/local/tmp/perf.data")
+
+        if self.use_app_profiler:
+            self._move_binary_cache()
+
+        LOG.info("Stopped Simpleperf")
+
+    def _move_binary_cache(self):
+        binary_cache = Path("binary_cache")
+        if binary_cache.exists():
+            shutil.move(str(binary_cache), str(self.dest_dir / "binary_cache"))
+        else:
+            LOG.info("binary_cache not found, skipping")
+
+    def _pull_jit_marker_files(self):
+        package_name = self.raptor_config.get("binary")
+        if not package_name:
+            LOG.warning("Package name not set. Skipping JIT/marker file pull.")
+            return
+        files_dir = f"/storage/emulated/0/Android/data/{package_name}/files"
+        try:
+            device_files = self.device.shell_output(
+                f"ls {files_dir}/jit-*.dump {files_dir}/marker-*.txt 2>/dev/null"
+            )
+            for file in device_files.splitlines():
+                file = file.strip()
+                if not file:
+                    continue
+                file_name = file.split("/")[-1]
+                self.device.pull(file, str(self.dest_dir / file_name), timeout=15)
+        except Exception as e:
+            LOG.error(f"Failed to pull JIT/marker files: {e}")
 
     def symbolicate(self):
         if not self.breakpad_symbol_dir:

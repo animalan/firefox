@@ -20,7 +20,7 @@ from benchmark import Benchmark
 from cmdline import CHROME_ANDROID_APPS, DESKTOP_APPS, FIREFOX_ANDROID_APPS
 from logger.logger import RaptorLogger
 from manifestparser.util import evaluate_list_from_string
-from perftest import GECKO_PROFILER_APPS, TRACE_APPS, Perftest
+from perftest import GECKO_PROFILER_APPS, SIMPLEPERF_APPS, TRACE_APPS, Perftest
 from results import BrowsertimeResultsHandler
 from utils import bool_from_str
 
@@ -291,6 +291,13 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             and self.config["app"] in GECKO_PROFILER_APPS + TRACE_APPS
         )
 
+    def _expose_simpleperf_state(self):
+        """Expose simpleperf state to browsertime if it is being used."""
+        return (
+            self.config.get("simpleperf")
+            and self.config["app"] in SIMPLEPERF_APPS
+        )
+
     def _compose_cmd(self, test, timeout, extra_profiler_run=False):
         """Browsertime has the following overwrite priorities(in order of highest-lowest)
         (1) User - input commandline flag.
@@ -427,6 +434,12 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             (
                 "true"
                 if self._expose_browser_profiler(extra_profiler_run, test)
+                else "false"
+            ),
+            "--browsertime.simpleperf_enabled",
+            (
+                "true"
+                if self._expose_simpleperf_state()
                 else "false"
             ),
         ]
@@ -833,7 +846,7 @@ class Browsertime(Perftest, metaclass=ABCMeta):
 
         # if simpleperf enabled, give browser more time for profiling
         if self.config["simpleperf"] is True:
-            bt_timeout += 5 * 60
+            bt_timeout += 20 * 60
 
         return bt_timeout
 
@@ -1007,6 +1020,11 @@ class Browsertime(Perftest, metaclass=ABCMeta):
 
         LOG.info("PATH: {}".format(env["PATH"]))
 
+        # Start Simpleperf profiling if enabled (before browsertime starts)
+        if self.simpleperf_profiler:
+            self.simpleperf_profiler.start()
+            LOG.info("base.py: Simpleperf Started")
+
         try:
             line_matcher = re.compile(r".*(\[.*\])\s+([a-zA-Z]+):\s+(.*)")
 
@@ -1118,6 +1136,13 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             if self.browsertime_failure:
                 self.get_failure_screenshot()
                 raise Exception(self.browsertime_failure)
+
+            if self.simpleperf_profiler:
+                try:
+                    self.simpleperf_profiler.stop()
+                    LOG.info("base.py: Simpleperf Stopped")
+                except Exception as e:
+                    LOG.error(f"Failed to stop Simpleperf profiling: {e}")
 
             # We've run the main browsertime process, now we need to run the
             # browsertime one more time if the profiler wasn't enabled already

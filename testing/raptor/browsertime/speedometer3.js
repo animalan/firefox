@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { logTest, logTask } = require("./utils/profiling");
+const { pullJitMarkerFiles } = require("./utils/simpleperf");
 const {
   initializeMeasurements,
   startMeasurements,
@@ -20,6 +21,7 @@ module.exports = logTest(
     let post_startup_delay = context.options.browsertime.post_startup_delay;
     let page_timeout = context.options.timeouts.pageLoad;
     let expose_profiler = context.options.browsertime.expose_profiler;
+    let simpleperf_enabled = context.options.browsertime.simpleperf_enabled;
 
     await initializeMeasurements(
       context,
@@ -143,6 +145,10 @@ module.exports = logTest(
       });
     }
     await finalizeMeasurements();
+
+    if (simpleperf_enabled === "true") {
+      await pullJitMarkerFiles(context, commands);
+    }
 
     return true;
   }
