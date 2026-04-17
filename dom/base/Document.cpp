@@ -16606,7 +16606,9 @@ bool Document::FullscreenElementReadyCheck(FullscreenRequest& aRequest) {
   // should change and no event should be dispatched, but we still need
   // to resolve the returned promise.
   Element* fullscreenElement = GetUnretargetedFullscreenElement();
-  if (NS_WARN_IF(elem == fullscreenElement)) {
+  if (NS_WARN_IF(elem == fullscreenElement &&
+                 aRequest.mFullscreenKeyboardLock ==
+                     GetFullscreenKeyboardLockStatus())) {
     // But this introduces behavior that we now need to account for;
     // because we can have arbitrary depth of OOP-frames, we may hit this check
     // for a process that already is fullscreen, e.g. the parent process.
@@ -16875,6 +16877,18 @@ bool Document::ApplyFullscreen(UniquePtr<FullscreenRequest> aRequest) {
   }
 
   Element* elem = aRequest->Element();
+  if (GetFullscreenElement() == elem) {
+    // We are applying fullscreen to the already fullscreen element - this must
+    // be because fullscreen was requested again with different options.
+    if (aRequest->mFullscreenKeyboardLock !=
+        GetFullscreenKeyboardLockStatus()) {
+      SetFullscreenKeyboardLockStatus(aRequest->mFullscreenKeyboardLock);
+      DispatchFullscreenUpdateKeyboardLockEvent(this);
+      aRequest->MayResolvePromise();
+      return true;
+    }
+    return false;
+  }
 
   // Hide auto popovers until the topmost auto ancestor (or document if none).
   RefPtr<nsINode> hideUntil = elem->GetTopmostPopoverAncestor(
