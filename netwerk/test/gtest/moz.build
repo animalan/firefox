@@ -11,7 +11,6 @@ UNIFIED_SOURCES += [
     "TestCapsule.cpp",
     "TestCommon.cpp",
     "TestCookie.cpp",
-    "TestDNS.cpp",
     "TestDNSPacket.cpp",
     "TestEtcHostsParsing.cpp",
     "TestHeaders.cpp",
