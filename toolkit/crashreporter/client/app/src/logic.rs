@@ -13,7 +13,7 @@ use crate::std::{
     },
 };
 use crate::{
-    async_task::AsyncTask,
+    async_task::{async_scoped_thread, block_on, AsyncTask},
     config::Config,
     memory_test::child::Memtest,
     net,
@@ -115,7 +115,10 @@ impl ReportCrash {
         if !self.config.auto_submit {
             self.run_ui();
         } else {
-            anyhow::ensure!(self.try_send().unwrap_or(false), "failed to send report");
+            anyhow::ensure!(
+                block_on(self.try_send()).unwrap_or(false),
+                "failed to send report"
+            );
         }
 
         Ok(self.attempted_to_send.load(Relaxed))
@@ -511,23 +514,23 @@ impl ReportCrash {
     }
 
     /// Restart the application and send the crash report.
-    pub fn restart(&self) {
+    pub async fn restart(&self) {
         // Get the program restarted before sending the report.
         self.restart_process();
-        let result = self.try_send();
-        self.close_window(result.is_some());
+        let result = self.try_send().await;
+        self.close_window(result.is_some()).await;
     }
 
     /// Quit and send the crash report.
-    pub fn quit(&self) {
-        let result = self.try_send();
-        self.close_window(result.is_some());
+    pub async fn quit(&self) {
+        let result = self.try_send().await;
+        self.close_window(result.is_some()).await;
     }
 
-    fn close_window(&self, report_sent: bool) {
+    async fn close_window(&self, report_sent: bool) {
         if report_sent && !self.config.auto_submit && !cfg!(test) {
             // Add a delay to allow the user to see the result.
-            std::thread::sleep(std::time::Duration::from_secs(5));
+            async_scoped_thread(|| std::thread::sleep(std::time::Duration::from_secs(5))).await;
         }
 
         self.ui().push(|r| r.close_window.fire(&()));
@@ -540,7 +543,7 @@ impl ReportCrash {
     ///
     /// Returns whether the report was received (regardless of whether the response was processed
     /// successfully), if a report could be sent at all (based on the configuration).
-    fn try_send(&self) -> Option<bool> {
+    async fn try_send(&self) -> Option<bool> {
         // Whether the user wants to submit the report or not, we record that we attempted a send
         // (so to speak), confirming that we got to the point of user input. This will retain the
         // crash files rather than deleting them. E.g., the user may want to submit it later through
@@ -614,14 +617,13 @@ impl ReportCrash {
             url,
         };
 
-        // Normally we might want to do the following asynchronously since it will block,
-        // however we don't really need the Logic thread to do anything else (the UI
-        // becomes disabled from this point onward), so we just do it here. Same goes for
-        // the `std::thread::sleep` in close_window() later on.
-        let report_response = report.send().map(Some).unwrap_or_else(|e| {
-            log::error!("failed to send report: {e:#}");
-            None
-        });
+        let report_response = async_scoped_thread(|| report.send())
+            .await
+            .map(Some)
+            .unwrap_or_else(|e| {
+                log::error!("failed to send report: {e:#}");
+                None
+            });
 
         let report_received = report_response.is_some();
         let crash_id = report_response.and_then(|response| {
