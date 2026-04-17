@@ -864,10 +864,10 @@ index 327f0fb16d..22000b5946 100644
  #include <algorithm>
  #include <array>
 diff --git a/modules/audio_processing/agc2/rnn_vad/BUILD.gn b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
-index 075e2a8110..1f3a66667a 100644
+index 53c9af257b..e20f4193bf 100644
 --- a/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 +++ b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
-@@ -121,7 +121,7 @@ rtc_source_set("vector_math") {
+@@ -116,7 +116,7 @@ rtc_source_set("vector_math") {
  if (current_cpu == "x86" || current_cpu == "x64") {
    rtc_library("vector_math_avx2") {
      sources = [ "vector_math_avx2.cc" ]

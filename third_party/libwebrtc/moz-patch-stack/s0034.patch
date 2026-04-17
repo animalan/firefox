@@ -202,10 +202,10 @@ index 773f4c20b0..c1c01ec57f 100644
      configs += [ "..:apm_debug_dump" ]
      sources = [
 diff --git a/modules/audio_processing/agc/BUILD.gn b/modules/audio_processing/agc/BUILD.gn
-index 090fbd4604..45d08ad066 100644
+index d2a4a5f05c..dd576d29fa 100644
 --- a/modules/audio_processing/agc/BUILD.gn
 +++ b/modules/audio_processing/agc/BUILD.gn
-@@ -84,7 +84,7 @@ rtc_library("legacy_agc") {
+@@ -82,7 +82,7 @@ rtc_library("legacy_agc") {
    ]
  
    if (rtc_build_with_neon) {
@@ -215,7 +215,7 @@ index 090fbd4604..45d08ad066 100644
        suppressed_configs += [ "//build/config/compiler:compiler_arm_fpu" ]
        cflags = [ "-mfpu=neon" ]
 diff --git a/modules/audio_processing/agc2/rnn_vad/BUILD.gn b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
-index 1f3a66667a..0fb06b2a86 100644
+index e20f4193bf..e4733b2d15 100644
 --- a/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 +++ b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 @@ -18,7 +18,7 @@ rtc_library("rnn_vad") {
@@ -228,7 +228,7 @@ index 1f3a66667a..0fb06b2a86 100644
      cflags = [ "-mfpu=neon" ]
    }
 diff --git a/modules/audio_processing/ns/BUILD.gn b/modules/audio_processing/ns/BUILD.gn
-index e90ef0e06a..0e96125f40 100644
+index 83cce6076e..b55e6445bd 100644
 --- a/modules/audio_processing/ns/BUILD.gn
 +++ b/modules/audio_processing/ns/BUILD.gn
 @@ -43,7 +43,7 @@ rtc_static_library("ns") {

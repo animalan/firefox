@@ -467,10 +467,10 @@ index c1c01ec57f..2a3ba6c6f8 100644
    }
  
 diff --git a/modules/audio_processing/agc/BUILD.gn b/modules/audio_processing/agc/BUILD.gn
-index 45d08ad066..2d6f3ca0b4 100644
+index dd576d29fa..178f069a62 100644
 --- a/modules/audio_processing/agc/BUILD.gn
 +++ b/modules/audio_processing/agc/BUILD.gn
-@@ -86,7 +86,7 @@ rtc_library("legacy_agc") {
+@@ -84,7 +84,7 @@ rtc_library("legacy_agc") {
    if (rtc_build_with_neon) {
      if (target_cpu != "arm64") {
        # Enable compilation for the NEON instruction set.
@@ -480,10 +480,10 @@ index 45d08ad066..2d6f3ca0b4 100644
      }
    }
 diff --git a/modules/audio_processing/agc2/BUILD.gn b/modules/audio_processing/agc2/BUILD.gn
-index 0de1c32bd7..3c3757969a 100644
+index 92276ee60c..9130b4a093 100644
 --- a/modules/audio_processing/agc2/BUILD.gn
 +++ b/modules/audio_processing/agc2/BUILD.gn
-@@ -262,7 +262,7 @@ rtc_library("vad_wrapper") {
+@@ -256,7 +256,7 @@ rtc_library("vad_wrapper") {
  
    defines = []
    if (rtc_build_with_neon && current_cpu != "arm64") {
@@ -493,7 +493,7 @@ index 0de1c32bd7..3c3757969a 100644
    }
  
 diff --git a/modules/audio_processing/agc2/rnn_vad/BUILD.gn b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
-index 0fb06b2a86..6ce62e7818 100644
+index e4733b2d15..bef9f29c99 100644
 --- a/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 +++ b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 @@ -19,7 +19,7 @@ rtc_library("rnn_vad") {
@@ -505,7 +505,7 @@ index 0fb06b2a86..6ce62e7818 100644
      cflags = [ "-mfpu=neon" ]
    }
  
-@@ -87,7 +87,7 @@ rtc_library("rnn_vad_layers") {
+@@ -84,7 +84,7 @@ rtc_library("rnn_vad_layers") {
  
    defines = []
    if (rtc_build_with_neon && current_cpu != "arm64") {
@@ -514,7 +514,7 @@ index 0fb06b2a86..6ce62e7818 100644
      cflags = [ "-mfpu=neon" ]
    }
  
-@@ -148,7 +148,7 @@ rtc_library("rnn_vad_pitch") {
+@@ -142,7 +142,7 @@ rtc_library("rnn_vad_pitch") {
  
    defines = []
    if (rtc_build_with_neon && current_cpu != "arm64") {
@@ -523,7 +523,7 @@ index 0fb06b2a86..6ce62e7818 100644
      cflags = [ "-mfpu=neon" ]
    }
  
-@@ -271,7 +271,7 @@ if (rtc_include_tests) {
+@@ -255,7 +255,7 @@ if (rtc_include_tests) {
  
      defines = []
      if (rtc_build_with_neon && current_cpu != "arm64") {
@@ -533,7 +533,7 @@ index 0fb06b2a86..6ce62e7818 100644
      }
  
 diff --git a/modules/audio_processing/ns/BUILD.gn b/modules/audio_processing/ns/BUILD.gn
-index 0e96125f40..c72b3714c4 100644
+index b55e6445bd..287afee6a1 100644
 --- a/modules/audio_processing/ns/BUILD.gn
 +++ b/modules/audio_processing/ns/BUILD.gn
 @@ -44,7 +44,7 @@ rtc_static_library("ns") {
