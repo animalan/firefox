@@ -14521,7 +14521,7 @@ const PREF_WIDGETS_HIDE_ALL_TOAST_ENABLED = "widgets.hideAllToast.enabled";
 const Widgets_PREF_LISTS_SIZE = "widgets.lists.size";
 const Widgets_PREF_FOCUS_TIMER_SIZE = "widgets.focusTimer.size";
 const Widgets_PREF_WEATHER_SIZE = "widgets.weather.size";
-const WIDGETS_FEEDBACK_URL = "https://connect.mozilla.org/t5/discussions/feedback-welcome-for-new-tab-widgets-now-available-via-firefox/td-p/108354";
+const WIDGETS_FEEDBACK_URL = "https://support.mozilla.org/kb/firefox-new-tab-widgets";
 
 // resets timer to default values (exported for testing)
 // In practice, this logic runs inside a useEffect when
@@ -14583,10 +14583,10 @@ function Widgets() {
   } = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Messages);
   const timerType = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.TimerWidget.timerType);
   const timerData = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.TimerWidget);
-  const isMaximized = prefs[PREF_WIDGETS_MAXIMIZED];
   const widgetsMayBeMaximized = prefs[PREF_WIDGETS_SYSTEM_MAXIMIZED];
   const dispatch = (0,external_ReactRedux_namespaceObject.useDispatch)();
   const novaEnabled = prefs[Widgets_PREF_NOVA_ENABLED];
+  const isMaximized = prefs[PREF_WIDGETS_MAXIMIZED];
   const nimbusListsEnabled = prefs.widgetsConfig?.listsEnabled;
   const nimbusTimerEnabled = prefs.widgetsConfig?.timerEnabled;
   const nimbusListsTrainhopEnabled = prefs.trainhopConfig?.widgets?.listsEnabled;
@@ -14597,6 +14597,7 @@ function Widgets() {
   const feedbackEnabled = prefs.trainhopConfig?.widgets?.feedbackEnabled || prefs[PREF_WIDGETS_FEEDBACK_ENABLED];
   const hideAllToastEnabled = prefs.trainhopConfig?.widgets?.hideAllToastEnabled || prefs[PREF_WIDGETS_HIDE_ALL_TOAST_ENABLED];
   const feedbackUrl = prefs.trainhopConfig?.widgets?.feedbackUrl ?? WIDGETS_FEEDBACK_URL;
+  const showWidgetsSizeToggle = nimbusMaximizedTrainhopEnabled || prefs[PREF_WIDGETS_SYSTEM_MAXIMIZED];
   const widgetsEnabled = prefs[PREF_WIDGETS_ENABLED];
   const listsEnabled = widgetsEnabled && (nimbusListsTrainhopEnabled || nimbusListsEnabled || prefs[PREF_WIDGETS_SYSTEM_LISTS_ENABLED]) && prefs[PREF_WIDGETS_LISTS_ENABLED];
   const timerEnabled = widgetsEnabled && (nimbusTimerTrainhopEnabled || nimbusTimerEnabled || prefs[PREF_WIDGETS_SYSTEM_TIMER_ENABLED]) && prefs[PREF_WIDGETS_TIMER_ENABLED];
@@ -14731,14 +14732,14 @@ function Widgets() {
     (0,external_ReactRedux_namespaceObject.batch)(() => {
       dispatch(actionCreators.SetPref(PREF_WIDGETS_MAXIMIZED, newMaximizedState));
 
-      // When Nova is enabled, drive individual widget size prefs rather than
-      // the legacy maximized flag. Widgets pinned to "small" are left
-      // untouched so users who opted them down don't get unexpectedly resized.
+      // When Nova is enabled, treat the shared header control as a toggle
+      // between the default/full widget presentation and the compact one.
+      // Lists has a true compact mode, while the other widgets currently
+      // fall back to their medium-sized presentation when minimized.
       if (novaEnabled) {
+        const listsTargetSize = newMaximizedState ? "large" : "small";
         const targetSize = newMaximizedState ? "large" : "medium";
-        if (prefs[Widgets_PREF_LISTS_SIZE] !== "small") {
-          dispatch(actionCreators.SetPref(Widgets_PREF_LISTS_SIZE, targetSize));
-        }
+        dispatch(actionCreators.SetPref(Widgets_PREF_LISTS_SIZE, listsTargetSize));
         if (prefs[Widgets_PREF_FOCUS_TIMER_SIZE] !== "small") {
           dispatch(actionCreators.SetPref(Widgets_PREF_FOCUS_TIMER_SIZE, targetSize));
         }
@@ -14773,7 +14774,10 @@ function Widgets() {
       dispatch(actionCreators.OnlyToMain({
         type: actionTypes.OPEN_LINK,
         data: {
-          url: feedbackUrl
+          url: feedbackUrl,
+          ...(novaEnabled ? {
+            where: "tab"
+          } : {})
         }
       }));
       dispatch(actionCreators.OnlyToMain({
@@ -14793,6 +14797,64 @@ function Widgets() {
       dispatch(actionCreators.SetPref(prefName, true));
     }
   }
+  function renderWidgetsTitle() {
+    if (!novaEnabled) {
+      return /*#__PURE__*/external_React_default().createElement("h1", {
+        "data-l10n-id": "newtab-widget-section-title"
+      });
+    }
+    return /*#__PURE__*/external_React_default().createElement("div", {
+      className: "widgets-title-heading"
+    }, /*#__PURE__*/external_React_default().createElement("h1", {
+      "data-l10n-id": "newtab-widget-section-title"
+    }), showWidgetsSizeToggle ? /*#__PURE__*/external_React_default().createElement("button", {
+      id: "toggle-widgets-size-button",
+      type: "button",
+      className: `widgets-expand-button${isMaximized ? " is-maximized" : ""}`,
+      "data-l10n-id": isMaximized ? "newtab-widget-section-minimize" : "newtab-widget-section-maximize",
+      onClick: handleToggleMaximizeClick,
+      onKeyDown: handleToggleMaximizeKeyDown
+    }) : null);
+  }
+  function renderWidgetsActions() {
+    if (novaEnabled) {
+      return /*#__PURE__*/external_React_default().createElement("div", {
+        className: "widgets-header-context-menu"
+      }, /*#__PURE__*/external_React_default().createElement("moz-button", {
+        className: "widgets-header-context-menu-button",
+        "data-l10n-id": "newtab-widget-section-menu-button",
+        iconSrc: "chrome://global/skin/icons/more.svg",
+        menuId: "widgets-header-context-panel",
+        type: "ghost",
+        size: "small"
+      }), /*#__PURE__*/external_React_default().createElement("panel-list", {
+        id: "widgets-header-context-panel"
+      }, /*#__PURE__*/external_React_default().createElement("panel-item", {
+        "data-l10n-id": "newtab-widget-section-menu-hide-all",
+        onClick: handleHideAllWidgetsClick
+      }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+        "data-l10n-id": "newtab-widget-section-menu-learn-more",
+        onClick: handleFeedbackClick
+      })));
+    }
+    return /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, showWidgetsSizeToggle ? /*#__PURE__*/external_React_default().createElement("moz-button", {
+      id: "toggle-widgets-size-button",
+      type: "icon ghost",
+      size: "small",
+      "data-l10n-id": isMaximized ? "newtab-widget-section-minimize" : "newtab-widget-section-maximize",
+      iconsrc: `chrome://browser/skin/${isMaximized ? "fullscreen-exit" : "fullscreen"}.svg`,
+      onClick: handleToggleMaximizeClick,
+      onKeyDown: handleToggleMaximizeKeyDown
+    }) : null, /*#__PURE__*/external_React_default().createElement("moz-button", {
+      id: "hide-all-widgets-button",
+      type: "icon ghost",
+      size: "small",
+      "data-l10n-id": "newtab-widget-section-hide-all-button",
+      iconsrc: "chrome://global/skin/icons/close.svg",
+      onClick: handleHideAllWidgetsClick,
+      onKeyDown: handleHideAllWidgetsKeyDown
+    }));
+  }
   if (!anyWidgetInRow) {
     return null;
   }
@@ -14804,31 +14866,13 @@ function Widgets() {
     className: "widgets-title-container"
   }, /*#__PURE__*/external_React_default().createElement("div", {
     className: "widgets-title-container-text"
-  }, /*#__PURE__*/external_React_default().createElement("h1", {
-    "data-l10n-id": "newtab-widget-section-title"
-  }), messageData?.content?.messageType === "WidgetMessage" && /*#__PURE__*/external_React_default().createElement(MessageWrapper, {
+  }, renderWidgetsTitle(), messageData?.content?.messageType === "WidgetMessage" && /*#__PURE__*/external_React_default().createElement(MessageWrapper, {
     dispatch: dispatch
   }, /*#__PURE__*/external_React_default().createElement(WidgetsFeatureHighlight, {
     dispatch: dispatch
-  }))), (nimbusMaximizedTrainhopEnabled || prefs[PREF_WIDGETS_SYSTEM_MAXIMIZED]) && /*#__PURE__*/external_React_default().createElement("moz-button", {
-    id: "toggle-widgets-size-button",
-    type: "icon ghost",
-    size: "small"
-    // Toggle the icon and hover text
-    ,
-    "data-l10n-id": isMaximized ? "newtab-widget-section-minimize" : "newtab-widget-section-maximize",
-    iconsrc: `chrome://browser/skin/${isMaximized ? "fullscreen-exit" : "fullscreen"}.svg`,
-    onClick: handleToggleMaximizeClick,
-    onKeyDown: handleToggleMaximizeKeyDown
-  }), /*#__PURE__*/external_React_default().createElement("moz-button", {
-    id: "hide-all-widgets-button",
-    type: "icon ghost",
-    size: "small",
-    "data-l10n-id": "newtab-widget-section-hide-all-button",
-    iconsrc: "chrome://global/skin/icons/close.svg",
-    onClick: handleHideAllWidgetsClick,
-    onKeyDown: handleHideAllWidgetsKeyDown
-  })), /*#__PURE__*/external_React_default().createElement("div", {
+  }))), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "widgets-title-actions"
+  }, renderWidgetsActions())), /*#__PURE__*/external_React_default().createElement("div", {
     className: `widgets-container${isMaximized ? " is-maximized" : ""}`
   }, listsEnabled && /*#__PURE__*/external_React_default().createElement(Lists, {
     dispatch: dispatch,
@@ -14849,7 +14893,7 @@ function Widgets() {
     handleUserInteraction,
     isMaximized,
     widgetsMayBeMaximized
-  })), feedbackEnabled && /*#__PURE__*/external_React_default().createElement("a", {
+  })), feedbackEnabled && !novaEnabled && /*#__PURE__*/external_React_default().createElement("a", {
     className: "widgets-feedback-link",
     href: feedbackUrl,
     "data-l10n-id": "newtab-widget-section-feedback",

@@ -4522,6 +4522,17 @@ dialog:dir(rtl)::after {
   margin-inline-end: auto;
   position: relative;
 }
+.widgets-section-container .widgets-title-container .widgets-title-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-medium);
+}
+.widgets-section-container .widgets-title-container .widgets-title-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-medium);
+  position: relative;
+}
 .widgets-section-container h1 {
   font-size: var(--font-size-large);
   font-weight: var(--font-weight-bold);
@@ -4546,6 +4557,70 @@ dialog:dir(rtl)::after {
 .darkWallpaper .nova-enabled .widgets-section-container #hide-all-widgets-button,
 .darkWallpaper .nova-enabled .widgets-section-container #toggle-widgets-size-button {
   color-scheme: dark;
+}
+
+.widgets-expand-button {
+  appearance: none;
+  align-items: center;
+  background-color: transparent;
+  border: 1px solid var(--newtab-primary-action-background);
+  border-radius: var(--border-radius-circle);
+  color: var(--newtab-primary-action-background);
+  cursor: pointer;
+  display: inline-flex;
+  height: var(--size-item-large);
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  width: var(--size-item-large);
+}
+.widgets-expand-button::before {
+  background-color: currentColor;
+  content: "";
+  height: var(--size-item-small);
+  mask: url("chrome://global/skin/icons/arrow-down.svg") center/contain no-repeat;
+  transition: transform 160ms ease;
+  width: var(--size-item-small);
+}
+.widgets-expand-button.is-maximized::before {
+  transform: rotate(180deg);
+}
+.widgets-expand-button:hover {
+  background-color: var(--newtab-element-secondary-hover-color);
+}
+.widgets-expand-button:active {
+  background-color: var(--newtab-element-secondary-active-color);
+}
+.widgets-expand-button:focus {
+  outline: none;
+}
+.widgets-expand-button:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widgets-expand-button::before {
+    transition: none;
+  }
+}
+.widgets-header-context-menu {
+  position: relative;
+}
+.widgets-header-context-menu .widgets-header-context-menu-button::part(button) {
+  background-color: transparent;
+}
+.widgets-header-context-menu .widgets-header-context-menu-button::part(button):hover {
+  background-color: var(--button-background-color-hover);
+}
+.widgets-header-context-menu .widgets-header-context-menu-button::part(button):active {
+  background-color: var(--button-background-color-active);
+}
+.widgets-header-context-menu panel-list {
+  min-width: 256px;
+}
+.widgets-header-context-menu panel-item::part(button) {
+  min-block-size: 30px;
 }
 
 @media (min-width: 1122px) {

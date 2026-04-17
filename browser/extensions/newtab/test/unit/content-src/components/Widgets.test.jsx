@@ -1186,6 +1186,123 @@ describe("<Widgets>", () => {
         Weather: { ...INITIAL_STATE.Weather, initialized: true },
       };
 
+      it("should render the Nova header menu instead of the footer feedback link", () => {
+        const feedbackState = {
+          ...NOVA_STATE,
+          Prefs: {
+            ...NOVA_STATE.Prefs,
+            values: {
+              ...NOVA_STATE.Prefs.values,
+              [PREF_WIDGETS_FEEDBACK_ENABLED]: true,
+            },
+          },
+        };
+        const novaWrapper = mount(
+          <WrapWithProvider state={feedbackState}>
+            <Widgets />
+          </WrapWithProvider>
+        );
+
+        assert.ok(
+          novaWrapper.find(".widgets-header-context-menu-button").exists(),
+          "should render the widgets header context menu button"
+        );
+        assert.ok(
+          !novaWrapper.find(".widgets-feedback-link").exists(),
+          "should not render the legacy footer feedback link in Nova"
+        );
+      });
+
+      it("should render both Nova header menu items", () => {
+        const menuWrapper = mount(
+          <WrapWithProvider state={NOVA_STATE}>
+            <Widgets />
+          </WrapWithProvider>
+        );
+
+        const menuButtons = menuWrapper.find(
+          "#widgets-header-context-panel panel-item"
+        );
+
+        assert.equal(menuButtons.length, 2, "should render two menu items");
+      });
+
+      it("should dispatch hide widget actions from the Nova header menu", () => {
+        const novaStore = createStore(combineReducers(reducers), NOVA_STATE);
+        sinon.spy(novaStore, "dispatch");
+        const novaWrapper = mount(
+          <Provider store={novaStore}>
+            <Widgets />
+          </Provider>
+        );
+
+        novaWrapper
+          .find(
+            "panel-item[data-l10n-id='newtab-widget-section-menu-hide-all']"
+          )
+          .prop("onClick")({
+          preventDefault: () => {},
+        });
+
+        const setPrefCalls = novaStore.dispatch
+          .getCalls()
+          .filter(call => call.args[0]?.type === at.SET_PREF);
+
+        assert.ok(
+          setPrefCalls.find(
+            call => call.args[0].data?.name === PREF_WIDGETS_LISTS_ENABLED
+          ),
+          "should disable the lists widget from the header menu"
+        );
+        assert.ok(
+          setPrefCalls.find(
+            call => call.args[0].data?.name === PREF_WIDGETS_TIMER_ENABLED
+          ),
+          "should disable the timer widget from the header menu"
+        );
+
+        novaStore.dispatch.restore();
+      });
+
+      it("should dispatch Learn more actions from the Nova header menu", () => {
+        const novaStore = createStore(combineReducers(reducers), NOVA_STATE);
+        sinon.spy(novaStore, "dispatch");
+        const novaWrapper = mount(
+          <Provider store={novaStore}>
+            <Widgets />
+          </Provider>
+        );
+
+        novaWrapper
+          .find(
+            "panel-item[data-l10n-id='newtab-widget-section-menu-learn-more']"
+          )
+          .prop("onClick")({
+          preventDefault: () => {},
+        });
+
+        const dispatched = novaStore.dispatch
+          .getCalls()
+          .map(call => call.args[0]);
+        const openLink = dispatched.find(
+          action => action.type === at.OPEN_LINK
+        );
+        const containerAction = dispatched.find(
+          action => action.type === at.WIDGETS_CONTAINER_ACTION
+        );
+
+        assert.ok(openLink, "should dispatch OPEN_LINK");
+        assert.equal(
+          openLink.data.url,
+          "https://support.mozilla.org/kb/firefox-new-tab-widgets"
+        );
+        assert.equal(openLink.data.where, "tab");
+        assert.ok(containerAction, "should dispatch WIDGETS_CONTAINER_ACTION");
+        assert.equal(containerAction.data.action_type, "feedback");
+
+        novaStore.dispatch.restore();
+      });
+
       it("should set all enabled widget size prefs to large when maximizing", () => {
         const novaStore = createStore(combineReducers(reducers), NOVA_STATE);
         sinon.spy(novaStore, "dispatch");
@@ -1220,7 +1337,7 @@ describe("<Widgets>", () => {
         novaStore.dispatch.restore();
       });
 
-      it("should set all enabled widget size prefs to medium when minimizing", () => {
+      it("should send Lists to compact mode and other widgets to medium when minimizing", () => {
         const maximizedNovaState = {
           ...NOVA_STATE,
           Prefs: {
@@ -1263,20 +1380,21 @@ describe("<Widgets>", () => {
           call => call.args[0].data?.name === "widgets.weather.size"
         );
 
-        assert.equal(listsSizeCall?.args[0].data.value, "medium");
+        assert.equal(listsSizeCall?.args[0].data.value, "small");
         assert.equal(timerSizeCall?.args[0].data.value, "medium");
         assert.equal(weatherSizeCall?.args[0].data.value, "medium");
 
         novaStore.dispatch.restore();
       });
 
-      it("should not update size prefs for widgets already in small mode", () => {
+      it("should restore Lists from compact mode when maximizing", () => {
         const smallSizeState = {
           ...NOVA_STATE,
           Prefs: {
             ...NOVA_STATE.Prefs,
             values: {
               ...NOVA_STATE.Prefs.values,
+              "widgets.maximized": false,
               "widgets.lists.size": "small",
             },
           },
@@ -1303,9 +1421,10 @@ describe("<Widgets>", () => {
         const listsSizeCall = setPrefCalls.find(
           call => call.args[0].data?.name === "widgets.lists.size"
         );
-        assert.ok(
-          !listsSizeCall,
-          "should not dispatch SetPref for small widget"
+        assert.equal(
+          listsSizeCall?.args[0].data.value,
+          "large",
+          "should dispatch SetPref for lists when restoring from compact mode"
         );
 
         novaStore.dispatch.restore();

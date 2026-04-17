@@ -443,7 +443,7 @@ export class PlacesFeed {
         this.fillSearchTopSiteTerm(action);
         break;
       case at.OPEN_LINK: {
-        this.openLink(action);
+        this.openLink(action, action.data.where);
         break;
       }
       case at.PARTNER_LINK_ATTRIBUTION:
