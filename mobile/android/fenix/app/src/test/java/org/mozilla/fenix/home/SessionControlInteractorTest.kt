@@ -275,8 +275,8 @@ class SessionControlInteractorTest {
     }
 
     @Test
-    fun `when logo is clicked, logo controller click handler is called`() {
-        interactor.onLogoClicked()
-        verify { logoController.handleLogoClicked() }
+    fun `WHEN logo is long clicked THEN logo controller click handler is called`() {
+        interactor.onLogoLongClicked()
+        verify { logoController.handleLogoLongClicked() }
     }
 }

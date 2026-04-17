@@ -191,8 +191,8 @@ class SessionControlInteractor(
     private val logoController: LogoController,
 ) : HomepageInteractor {
 
-    override fun onLogoClicked() {
-        logoController.handleLogoClicked()
+    override fun onLogoLongClicked() {
+        logoController.handleLogoLongClicked()
     }
 
     override fun onCollectionAddTabTapped(collection: TabCollection) {

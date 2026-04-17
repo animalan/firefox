@@ -18,9 +18,9 @@ class LogoController(
 ) {
 
     /**
-     * When the logo is clicked, decide whether to launch the feature.
+     * When the logo is long clicked, decide whether to launch the LongFox feature.
      */
-    fun handleLogoClicked() {
+    fun handleLogoLongClicked() {
         if (container != null && longFoxEnabled) longFoxFeature.start(container = container)
     }
 }

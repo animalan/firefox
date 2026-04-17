@@ -35,7 +35,7 @@ class LogoControllerTest {
             container = FakeViewGroup(),
             longFoxEnabled = false,
         )
-        logoController.handleLogoClicked()
+        logoController.handleLogoLongClicked()
         assertFalse(fakeLongFoxFeature.started)
     }
 
@@ -46,7 +46,7 @@ class LogoControllerTest {
             container = null,
             longFoxEnabled = true,
         )
-        logoController.handleLogoClicked()
+        logoController.handleLogoLongClicked()
         assertFalse(fakeLongFoxFeature.started)
     }
 
@@ -57,7 +57,7 @@ class LogoControllerTest {
             container = FakeViewGroup(),
             longFoxEnabled = true,
         )
-        logoController.handleLogoClicked()
+        logoController.handleLogoLongClicked()
         assertTrue(fakeLongFoxFeature.started)
     }
 }

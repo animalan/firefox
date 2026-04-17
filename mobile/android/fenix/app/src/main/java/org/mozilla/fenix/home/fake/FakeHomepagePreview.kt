@@ -96,7 +96,7 @@ internal object FakeHomepagePreview {
 
             override fun onRemoveChecklistButtonClicked() { /* no op */ }
 
-            override fun onLogoClicked() { /* no op */ }
+            override fun onLogoLongClicked() { /* no op */ }
         }
 
     internal val storiesInteractor

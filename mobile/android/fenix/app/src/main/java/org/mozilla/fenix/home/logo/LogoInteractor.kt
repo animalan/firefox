@@ -5,12 +5,12 @@
 package org.mozilla.fenix.home.logo
 
 /**
- * An interface to define interactions with the home screen logo.
+ * An interface to define interactions with the homepage logo.
  */
 interface LogoInteractor {
 
     /**
-     * Called when the logo is clicked.
+     * Called when the logo is long-clicked.
      */
-    fun onLogoClicked()
+    fun onLogoLongClicked()
 }

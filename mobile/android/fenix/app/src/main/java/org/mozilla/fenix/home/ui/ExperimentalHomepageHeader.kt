@@ -61,7 +61,9 @@ private const val NEWS_BUTTON_ANIMATION_DELAY = 500L
  * @param onStoriesTapped Callback for when the stories button is tapped.
  * @param onNewsAnimationShown Callback invoked when the news button animation starts playing.
  * @param onLogoClicked Callback for when the logo is clicked.
+ * @param onLogoLongClicked Callback for when the logo is long-clicked.
  */
+@Suppress("LongParameterList")
 @Composable
 fun ExperimentalHomepageHeader(
     wordmarkTextColor: Color?,
@@ -71,6 +73,7 @@ fun ExperimentalHomepageHeader(
     onStoriesTapped: () -> Unit,
     onNewsAnimationShown: () -> Unit,
     onLogoClicked: () -> Unit,
+    onLogoLongClicked: () -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -109,6 +112,7 @@ fun ExperimentalHomepageHeader(
             WordmarkAndLogo(
                 wordmarkTextColor = wordmarkTextColor,
                 onLogoClicked = onLogoClicked,
+                onLogoLongClicked = onLogoLongClicked,
             )
         }
     }
@@ -138,12 +142,13 @@ private fun WordmarkAndLogo(
     wordmarkTextColor: Color?,
     modifier: Modifier = Modifier,
     onLogoClicked: () -> Unit,
+    onLogoLongClicked: () -> Unit,
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        WordmarkLogo(onLogoClicked)
+        WordmarkLogo(onLogoClicked = onLogoClicked, onLogoLongClicked = onLogoLongClicked)
         WordmarkText(wordmarkTextColor)
     }
 }
@@ -231,6 +236,7 @@ private fun HomepageHeaderPreview(
                 onPrivateModeTapped = {},
                 onStoriesTapped = {},
                 onNewsAnimationShown = {},
+                onLogoLongClicked = {},
                 onLogoClicked = {},
             )
         }
