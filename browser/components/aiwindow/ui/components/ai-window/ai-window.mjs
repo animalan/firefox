@@ -1405,6 +1405,10 @@ export class AIWindow extends MozLitElement {
   }
 
   #getConversationLastMessageAndCount(role) {
+    if (!this.#conversation) {
+      return { lastMessage: null, messageCount: 0 };
+    }
+
     let lastMessage = null;
     let messageCount = 0;
     let countAtLastMatch = 0;

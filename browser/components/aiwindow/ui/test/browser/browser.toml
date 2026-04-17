@@ -113,6 +113,8 @@ skip-if = [
 
 ["browser_smartwindow_beta_badge.js"]
 
+["browser_smartwindow_classic_mode_switch.js"]
+
 ["browser_smartwindow_content.js"]
 
 ["browser_smartwindow_context_url.js"]
@@ -151,6 +153,8 @@ skip-if = [
 
 ["browser_smartwindow_shortcut.js"]
 
+["browser_smartwindow_sidebar.js"]
+
 ["browser_smartwindow_smartbar_tab_state.js"]
 
 ["browser_smartwindow_switcher_telemetry.js"]
@@ -160,10 +164,10 @@ skip-if = [
 ["browser_smartwindow_sidebar_prefs.js"]
 
 ["browser_smartwindow_tab_switching.js"]
-skip-if = [
-  "os == 'win' && os_version == '11.26200'", # Bug 2019745
-  "standalone", # Bug 2026433
-]
+
+["browser_smartwindow_tab_switching_memories.js"]
+
+["browser_smartwindow_tab_switching_starters.js"]
 
 ["browser_smartwindow_telemetry.js"]
 skip-if = [

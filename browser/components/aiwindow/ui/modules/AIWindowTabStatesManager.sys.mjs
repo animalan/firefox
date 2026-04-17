@@ -113,11 +113,13 @@ export class AIWindowTabStatesManager {
       return;
     }
     const tab = this.#window.gBrowser.selectedTab;
-    const tabUrl = tab.linkedBrowser?.currentURI?.spec ?? "";
+    const tabUrl = tab.linkedBrowser.currentURI.spec;
+    const tabState = this.#getTabState(tab);
     // AIWINDOW_URL tabs are fullpage and don't use the sidebar.
     if (
       tabUrl === lazy.AIWINDOW_URL ||
-      lazy.AIWindowUI.isSidebarOpen(this.#window)
+      lazy.AIWindowUI.isSidebarOpen(this.#window) ||
+      tabState?.state?.keepSidebarOpen === false
     ) {
       return;
     }
