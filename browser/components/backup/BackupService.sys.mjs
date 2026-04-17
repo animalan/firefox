@@ -1941,9 +1941,17 @@ export class BackupService extends EventTarget {
 
     let existingChildren = await IOUtils.getChildren(destFolder);
 
-    const FILENAME_PREFIX = `${BackupService.BACKUP_FILE_NAME}_${metadata.profileName}`;
+    // construct prefix
+    let nameParts = [BackupService.BACKUP_FILE_NAME, metadata.profileName];
+    let storeID = lazy.SelectableProfileService.storeID;
+    if (storeID) {
+      nameParts.push(storeID);
+    }
+    const FILENAME_PREFIX = nameParts.join("_");
+
     const FILENAME = `${FILENAME_PREFIX}_${archiveDateSuffix}.html`;
     let destPath = PathUtils.join(destFolder, FILENAME);
+
     lazy.logConsole.log("Moving single-file archive to ", destPath);
     await IOUtils.move(sourcePath, destPath);
 
