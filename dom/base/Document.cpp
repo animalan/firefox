@@ -15812,8 +15812,7 @@ bool Document::PopFullscreenElement(UpdateViewport aUpdateViewport) {
   }
 
   MOZ_ASSERT(removedElement->State().HasState(ElementState::FULLSCREEN));
-  removedElement->RemoveStates(ElementState::FULLSCREEN | ElementState::MODAL |
-                               ElementState::FULLSCREEN_KEYBOARD_LOCK);
+  removedElement->RemoveStates(ElementState::FULLSCREEN | ElementState::MODAL);
   NotifyFullScreenChangedForMediaElement(*removedElement);
   // Reset iframe fullscreen flag.
   if (auto* iframe = HTMLIFrameElement::FromNode(removedElement)) {
@@ -16607,9 +16606,7 @@ bool Document::FullscreenElementReadyCheck(FullscreenRequest& aRequest) {
   // should change and no event should be dispatched, but we still need
   // to resolve the returned promise.
   Element* fullscreenElement = GetUnretargetedFullscreenElement();
-  if (NS_WARN_IF(elem == fullscreenElement &&
-                 aRequest.mFullscreenKeyboardLock ==
-                     GetFullscreenKeyboardLockStatus())) {
+  if (NS_WARN_IF(elem == fullscreenElement)) {
     // But this introduces behavior that we now need to account for;
     // because we can have arbitrary depth of OOP-frames, we may hit this check
     // for a process that already is fullscreen, e.g. the parent process.
@@ -16878,18 +16875,6 @@ bool Document::ApplyFullscreen(UniquePtr<FullscreenRequest> aRequest) {
   }
 
   Element* elem = aRequest->Element();
-  if (GetFullscreenElement() == elem) {
-    // We are applying fullscreen to the already fullscreen element - this must
-    // be because fullscreen was requested again with different options.
-    if (aRequest->mFullscreenKeyboardLock !=
-        GetFullscreenKeyboardLockStatus()) {
-      SetFullscreenKeyboardLockStatus(aRequest->mFullscreenKeyboardLock);
-      DispatchFullscreenUpdateKeyboardLockEvent(this);
-      aRequest->MayResolvePromise();
-      return true;
-    }
-    return false;
-  }
 
   // Hide auto popovers until the topmost auto ancestor (or document if none).
   RefPtr<nsINode> hideUntil = elem->GetTopmostPopoverAncestor(
@@ -21137,26 +21122,15 @@ void Document::GetAllInProcessDocuments(
 }
 
 void Document::SetFullscreenKeyboardLockStatus(FullscreenKeyboardLock aStatus) {
-  Element* elem = GetFullscreenElement();
-  MOZ_ASSERT(elem || aStatus == FullscreenKeyboardLock::None);
-
-  if (elem) {
-    elem->SetStates(ElementState::FULLSCREEN_KEYBOARD_LOCK,
-                    aStatus == FullscreenKeyboardLock::Browser, false);
-  }
+  mFullscreenKeyboardLockStatus = aStatus;
 }
 
 FullscreenKeyboardLock Document::GetFullscreenKeyboardLockStatus() const {
-  Element* elem = GetFullscreenElement();
-  return (elem &&
-          elem->State().HasState(ElementState::FULLSCREEN_KEYBOARD_LOCK))
-             ? FullscreenKeyboardLock::Browser
-             : FullscreenKeyboardLock::None;
+  return mFullscreenKeyboardLockStatus;
 }
 
 bool Document::HasFullscreenKeyboardLockEnabled() {
-  Element* elem = GetFullscreenElement();
-  return elem && elem->State().HasState(ElementState::FULLSCREEN_KEYBOARD_LOCK);
+  return mFullscreenKeyboardLockStatus == FullscreenKeyboardLock::Browser;
 }
 
 }  // namespace mozilla::dom

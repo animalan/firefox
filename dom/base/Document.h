@@ -5622,6 +5622,10 @@ class Document : public nsINode,
   // non-null when this document is in fullscreen mode.
   WeakPtr<Document> mFullscreenRoot;
 
+  // Whether this document entered fullscreen with the keyboard lock enabled.
+  FullscreenKeyboardLock mFullscreenKeyboardLockStatus =
+      FullscreenKeyboardLock::None;
+
   RefPtr<DOMImplementation> mDOMImplementation;
 
   RefPtr<nsContentList> mImageMaps;
