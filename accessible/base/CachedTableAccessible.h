@@ -124,10 +124,7 @@ class CachedTableAccessible final : public TableAccessible {
       return 0;
     }
     // Verify that the cell's Accessible is valid.
-    if (!mCells[cellIdx].Acc(mAcc)) {
-      return 0;
-    }
-
+    mCells[cellIdx].Acc(mAcc);
     return mCells[cellIdx].ColExtent();
   }
 
@@ -137,10 +134,7 @@ class CachedTableAccessible final : public TableAccessible {
       return 0;
     }
     // Verify that the cell's Accessible is valid.
-    if (!mCells[cellIdx].Acc(mAcc)) {
-      return 0;
-    }
-
+    mCells[cellIdx].Acc(mAcc);
     return mCells[cellIdx].RowExtent();
   }
 
@@ -187,19 +181,16 @@ class CachedTableAccessible final : public TableAccessible {
       return false;
     }
     // Verify that the cell's Accessible is valid.
-    if (!mCells[cellIdx].Acc(mAcc)) {
-      return false;
-    }
-
+    mCells[cellIdx].Acc(mAcc);
     return mCells[cellIdx].Selected();
   }
 
   virtual uint32_t SelectedCellCount() override {
     uint32_t count = 0;
     for (auto& cell : mCells) {
-      // Verify that the cell's Accessible is valid and then check if it's
-      // selected.
-      if (cell.Acc(mAcc) && cell.Selected()) {
+      // Verify that the cell's Accessible is valid.
+      cell.Acc(mAcc);
+      if (cell.Selected()) {
         ++count;
       }
     }
@@ -230,7 +221,7 @@ class CachedTableAccessible final : public TableAccessible {
     for (auto& cell : mCells) {
       // Verify that the cell's Accessible is valid.
       Accessible* acc = cell.Acc(mAcc);
-      if (acc && cell.Selected()) {
+      if (cell.Selected()) {
         aCells->AppendElement(acc);
       }
     }
@@ -239,9 +230,9 @@ class CachedTableAccessible final : public TableAccessible {
   virtual void SelectedCellIndices(nsTArray<uint32_t>* aCells) override {
     for (uint32_t idx = 0; idx < mCells.Length(); ++idx) {
       CachedTableCellAccessible& cell = mCells[idx];
-      // Verify that the cell's Accessible is valid and then check if it's
-      // selected.
-      if (cell.Acc(mAcc) && cell.Selected()) {
+      // Verify that the cell's Accessible is valid.
+      cell.Acc(mAcc);
+      if (cell.Selected()) {
         aCells->AppendElement(idx);
       }
     }
