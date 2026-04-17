@@ -311,9 +311,21 @@ newtab-error-fallback-refresh-link = Refresh page to try again.
 
 newtab-custom-shortcuts-title = Shortcuts
 newtab-custom-shortcuts-subtitle = Sites you save or visit
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Shortcuts
     .description = Sites you save or visit
+newtab-custom-shortcuts-nova =
+    .label = Shortcuts
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } row
+           *[other] { $num } rows
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -324,9 +336,12 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Sponsored shortcuts
 newtab-custom-pocket-title = Recommended by { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Exceptional content curated by { -pocket-brand-name }, part of the { -brand-product-name } family
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
 newtab-custom-stories-toggle =
     .label = Recommended stories
     .description = Exceptional content curated by the { -brand-product-name } family
+newtab-recommended-stories-toggle =
+    .label = Recommended stories
 newtab-custom-stories-personalized-toggle =
     .label = Stories
 newtab-custom-stories-personalized-checkbox-label = Personalized stories based on your activity
@@ -360,8 +375,11 @@ newtab-custom-settings = Manage more settings
 
 newtab-wallpaper-title = Wallpapers
 newtab-wallpaper-reset = Reset to default
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
 newtab-wallpaper-upload-image = Upload an image
 newtab-wallpaper-custom-color = Choose a colour
+newtab-wallpaper-toggle-title =
+    .label = Wallpapers
 # Variables
 #   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
 newtab-wallpaper-error-max-file-size = The image exceeded the file size limit of { $file_size }MB. Please try uploading a smaller file.
@@ -384,6 +402,7 @@ newtab-wallpaper-light-fox-anniversary = A fox in a grassy field with a misty mo
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Solid colours
 newtab-wallpaper-blue = Blue
 newtab-wallpaper-light-blue = Light blue
@@ -490,7 +509,6 @@ newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Switch to Fahrenheit
 newtab-weather-menu-change-temperature-units-celsius = Switch to Celsius
-newtab-weather-menu-hide-weather-v2 = Hide weather
 newtab-weather-menu-hide-weather = Hide weather on New Tab
 newtab-weather-menu-learn-more = Learn more
 newtab-weather-menu-detect-my-location = Detect my location
@@ -658,7 +676,6 @@ newtab-widget-lists-menu-edit = Edit list name
 newtab-widget-lists-menu-create = Create a new list
 newtab-widget-lists-menu-delete = Delete this list
 newtab-widget-lists-menu-copy = Copy list to clipboard
-newtab-widget-lists-menu-hide = Hide all lists
 newtab-widget-lists-menu-learn-more = Learn more
 newtab-widget-lists-input-add-an-item =
     .placeholder = Add an item
@@ -711,7 +728,6 @@ newtab-widget-timer-reset =
     .title = Reset
 newtab-widget-timer-menu-notifications = Turn off notifications
 newtab-widget-timer-menu-notifications-on = Turn on notifications
-newtab-widget-timer-menu-hide = Hide timer
 newtab-widget-timer-menu-learn-more = Learn more
 # The title displays above a set of top news headlines.
 newtab-daily-briefing-card-title = Top Headlines

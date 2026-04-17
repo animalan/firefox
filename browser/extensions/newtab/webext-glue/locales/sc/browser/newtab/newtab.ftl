@@ -310,9 +310,21 @@ newtab-error-fallback-refresh-link = Agiorna sa pàgina pro torrare a proare.
 
 newtab-custom-shortcuts-title = Curtzadòrgios
 newtab-custom-shortcuts-subtitle = Sitos chi as sarvadu o bisitadu
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Curtzadòrgios
     .description = Sitos chi as sarvadu o bisitadu
+newtab-custom-shortcuts-nova =
+    .label = Curtzadòrgios
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } riga
+           *[other] { $num } rigas
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -323,9 +335,12 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Curtzadòrgios patrotzinados
 newtab-custom-pocket-title = Cussigiadu dae { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Cuntenutos de primore curados dae { -pocket-brand-name }, parte de sa famìlia de { -brand-product-name }
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
 newtab-custom-stories-toggle =
     .label = Istòrias cussigiadas
     .description = Cuntenutu de primore curadu dae sa famìlia de { -brand-product-name }
+newtab-recommended-stories-toggle =
+    .label = Istòrias cussigiadas
 newtab-custom-stories-personalized-toggle =
     .label = Istòrias
 newtab-custom-stories-personalized-checkbox-label = Istòrias personalizadas basadas subra de is atividades tuas
@@ -359,8 +374,11 @@ newtab-custom-settings = Gesti prus cunfiguratziones
 
 newtab-wallpaper-title = Isfundos de ischermu
 newtab-wallpaper-reset = Ripristina comente predefinidu
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
 newtab-wallpaper-upload-image = Càrriga un’immàgine
 newtab-wallpaper-custom-color = Sèbera unu colore
+newtab-wallpaper-toggle-title =
+    .label = Isfundos de ischermu
 # Variables
 #   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
 newtab-wallpaper-error-max-file-size = S’immàgine bàrigat su lìmite de mannària de archìviu de { $file_size } MB. Torra·nche a proare carrighende un’archìviu prus piticu.
@@ -383,6 +401,7 @@ newtab-wallpaper-light-fox-anniversary = Unu margiane in unu campu de erba cun u
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Colores uniformes
 newtab-wallpaper-blue = Asulu
 newtab-wallpaper-light-blue = Asulu craru
@@ -489,7 +508,6 @@ newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Passa a Fahrenheit
 newtab-weather-menu-change-temperature-units-celsius = Passa a Celsius
-newtab-weather-menu-hide-weather-v2 = Cua sa previsione
 newtab-weather-menu-hide-weather = Cua su tempus in s’ischeda noa
 newtab-weather-menu-learn-more = Àteras informatziones
 newtab-weather-menu-detect-my-location = Rileva sa positzione mia
@@ -657,7 +675,6 @@ newtab-widget-lists-menu-edit = Modifica su nòmine de sa lista
 newtab-widget-lists-menu-create = Crea una lista noa
 newtab-widget-lists-menu-delete = Cantzella custa lista
 newtab-widget-lists-menu-copy = Còpia sa lista in punta de billete
-newtab-widget-lists-menu-hide = Cua totu is listas
 newtab-widget-lists-menu-learn-more = Àteras informatziones
 newtab-widget-lists-input-add-an-item =
     .placeholder = Agiunghe un’elementu
@@ -704,7 +721,6 @@ newtab-widget-timer-reset =
     .title = Azera
 newtab-widget-timer-menu-notifications = Disativa is notìficas
 newtab-widget-timer-menu-notifications-on = Ativa is notìficas
-newtab-widget-timer-menu-hide = Cua su temporizadore
 newtab-widget-timer-menu-learn-more = Àteras informatziones
 newtab-daily-briefing-card-menu-dismiss = Iscarta
 # Variables:

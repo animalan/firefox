@@ -312,9 +312,21 @@ newtab-error-fallback-refresh-link = Prøv igen ved at genindlæse siden.
 
 newtab-custom-shortcuts-title = Genveje
 newtab-custom-shortcuts-subtitle = Gemte eller besøgte websteder
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Genveje
     .description = Gemte eller besøgte websteder
+newtab-custom-shortcuts-nova =
+    .label = Genveje
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } række
+           *[other] { $num } rækker
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -325,9 +337,12 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Sponsorerede genveje
 newtab-custom-pocket-title = Anbefalet af { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Interessant indhold udvalgt af { -pocket-brand-name }, en del af { -brand-product-name }-familien
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
 newtab-custom-stories-toggle =
     .label = Anbefalede historier
     .description = Interessant indhold udvalgt af { -brand-product-name }-holdet
+newtab-recommended-stories-toggle =
+    .label = Anbefalede historier
 newtab-custom-stories-personalized-toggle =
     .label = Historier
 newtab-custom-stories-personalized-checkbox-label = Tilpassede historier baseret på din aktivitet
@@ -361,8 +376,11 @@ newtab-custom-settings = Håndter flere indstillinger
 
 newtab-wallpaper-title = Baggrunde
 newtab-wallpaper-reset = Nulstil til standard
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
 newtab-wallpaper-upload-image = Upload et billede
 newtab-wallpaper-custom-color = Vælg en farve
+newtab-wallpaper-toggle-title =
+    .label = Baggrunde
 # Variables
 #   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
 newtab-wallpaper-error-max-file-size = Billedet overskrider grænsen for filstørrelse på { $file_size } MB. Prøv at uploade en mindre fil.
@@ -385,6 +403,7 @@ newtab-wallpaper-light-fox-anniversary = En ræv på en græsmark i et tåget bj
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Ensfarvede
 newtab-wallpaper-blue = Blå
 newtab-wallpaper-light-blue = Lyseblå
@@ -491,7 +510,6 @@ newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Skift til Fahrenheit
 newtab-weather-menu-change-temperature-units-celsius = Skift til Celsius
-newtab-weather-menu-hide-weather-v2 = Skjul vejr
 newtab-weather-menu-hide-weather = Skjul vejr på Nyt faneblad
 newtab-weather-menu-learn-more = Læs mere
 newtab-weather-menu-detect-my-location = Registrer min placering
@@ -659,7 +677,6 @@ newtab-widget-lists-menu-edit = Rediger listens navn
 newtab-widget-lists-menu-create = Opret en ny liste
 newtab-widget-lists-menu-delete = Slet denne liste
 newtab-widget-lists-menu-copy = Kopier liste til udklipsholderen
-newtab-widget-lists-menu-hide = Skjul alle lister
 newtab-widget-lists-menu-learn-more = Læs mere
 newtab-widget-lists-input-add-an-item =
     .placeholder = Tilføj et element
@@ -712,7 +729,6 @@ newtab-widget-timer-reset =
     .title = Nulstil
 newtab-widget-timer-menu-notifications = Slå notifikationer fra
 newtab-widget-timer-menu-notifications-on = Slå notifikationer til
-newtab-widget-timer-menu-hide = Skjul timer
 newtab-widget-timer-menu-learn-more = Læs mere
 # The title displays above a set of top news headlines.
 newtab-daily-briefing-card-title = Topoverskrifter

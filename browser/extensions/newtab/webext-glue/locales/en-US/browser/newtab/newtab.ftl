@@ -124,7 +124,7 @@ newtab-menu-report = Report
 newtab-menu-section-block = Block
 # "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
 # e.g. Following the travel section of stories.
-newtab-menu-section-unfollow = Unfollow topic
+newtab-menu-section-unfollow-topic = Unfollow
 
 ## Context menu options for sponsored stories and new ad formats on New Tab.
 
@@ -229,10 +229,11 @@ newtab-custom-shortcuts-toggle =
   .label = Shortcuts
   .description = Sites you save or visit
 
-newtab-custom-shortcuts-toggle-rows =
-    .label = Shortcuts
-    .description = Number of rows
+newtab-custom-shortcuts-nova =
+  .label = Shortcuts
 
+newtab-custom-row-description =
+  .description = Number of rows
 # Variables
 #   $num (number) - Number of rows to display
 #  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
@@ -241,9 +242,12 @@ newtab-custom-row-selector2 =
             [one] { $num } row
            *[other] { $num } rows
         }
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
 newtab-custom-stories-toggle =
   .label = Recommended stories
   .description = Exceptional content curated by the { -brand-product-name } family
+newtab-recommended-stories-toggle =
+  .label = Recommended stories
 newtab-custom-stories-personalized-toggle =
   .label = Stories
 newtab-custom-stories-personalized-checkbox-label = Personalized stories based on your activity
@@ -273,7 +277,9 @@ newtab-custom-settings = Manage more settings
 
 newtab-wallpaper-title = Wallpapers
 newtab-wallpaper-reset = Reset to default
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
 newtab-wallpaper-upload-image = Upload an image
+newtab-wallpaper-add-an-image = Add an image
 newtab-wallpaper-custom-color = Choose a color
 newtab-wallpaper-toggle-title =
     .label = Wallpapers
@@ -298,7 +304,9 @@ newtab-wallpaper-light-fox-anniversary = A fox in a grassy field with a misty mo
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Solid colors
+newtab-wallpaper-colors = Colors
 newtab-wallpaper-blue = Blue
 newtab-wallpaper-light-blue = Light blue
 newtab-wallpaper-light-purple = Light purple
@@ -416,8 +424,18 @@ newtab-weather-opt-in-not-now =
     .label = Not now
 newtab-weather-opt-in-yes =
     .label = Yes
+newtab-weather-opt-in-headline = Get your local weather forecast
+newtab-weather-opt-in-use-location =
+    .label = Use location
+newtab-weather-opt-in-choose-location = Choose location
 # We'll be showing static (fake) weather data if the user has not opted in to using their location
 newtab-weather-static-city = New York City
+# "Highest" here refers to the highest temperature of the day
+newtab-weather-high =
+    .aria-label = High
+# "Lowest" here refers to the lowest temperature of the day
+newtab-weather-low =
+    .aria-label = Low
 
 ## Topic Labels
 
@@ -486,7 +504,7 @@ newtab-section-confirm-block-topic-p2 = Blocked topics will no longer appear in 
 # Variables:
 #   $topic (string) - Name of topic that user is blocking
 newtab-section-block-topic-button = Block { $topic }
-newtab-section-cancel-button = Not now
+newtab-section-block-cancel-button = Cancel
 
 ## Panel in the Customize menu section to manage followed and blocked topics
 
@@ -553,11 +571,27 @@ newtab-toast-thanks-for-reporting =
     .message = Thank you for reporting this.
 newtab-toast-widgets-hidden =
     .message = Select the pencil icon to add widgets back anytime.
+# Variables:
+#   $topic (string) - Topic that the user has followed
+newtab-section-toast-follow =
+    .message = You’re now following { $topic }.
+# Variables:
+#   $topic (string) - Topic that the user has unfollowed
+newtab-section-toast-unfollow =
+    .message = You’re no longer following { $topic }.
+# Variables:
+#   $topic (string) - Topic that the user has blocked
+newtab-section-toast-block =
+    .message = You won’t see stories about { $topic } anymore.
 
 ## Strings for task / to-do list productivity widget
 
 newtab-widget-section-title = Widgets
 newtab-widget-menu-hide = Hide widget
+newtab-widget-menu-change-size = Change size
+newtab-widget-size-small = Small
+newtab-widget-size-medium = Medium
+newtab-widget-size-large = Large
 # Tooltip for hide all widgets button
 newtab-widget-section-hide-all-button =
     .title = Hide widgets

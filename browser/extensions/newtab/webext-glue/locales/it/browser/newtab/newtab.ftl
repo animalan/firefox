@@ -146,6 +146,9 @@ newtab-menu-report = Segnala
 newtab-menu-section-block = Blocca
 # "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
 # e.g. Following the travel section of stories.
+newtab-menu-section-unfollow-topic = Smetti di seguire
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
 newtab-menu-section-unfollow = Smetti di seguire l’argomento
 
 ## Context menu options for sponsored stories and new ad formats on New Tab.
@@ -317,8 +320,9 @@ newtab-custom-shortcuts-subtitle = Siti che hai salvato oppure visitato
 newtab-custom-shortcuts-toggle =
     .label = Scorciatoie
     .description = Siti che hai salvato oppure visitato
-newtab-custom-shortcuts-toggle-rows =
+newtab-custom-shortcuts-nova =
     .label = Scorciatoie
+newtab-custom-row-description =
     .description = Numero di righe
 # Variables
 #   $num (number) - Number of rows to display
@@ -339,9 +343,12 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Scorciatoie sponsorizzate
 newtab-custom-pocket-title = Consigliati da { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Contenuti eccezionali a cura di { -pocket-brand-name }, un membro della famiglia { -brand-product-name }
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
 newtab-custom-stories-toggle =
     .label = Storie consigliate
     .description = Contenuti eccezionali curati dalla famiglia di prodotti { -brand-product-name }
+newtab-recommended-stories-toggle =
+    .label = Storie consigliate
 newtab-custom-stories-personalized-toggle =
     .label = Storie
 newtab-custom-stories-personalized-checkbox-label = Storie personalizzate in base alla tua attività
@@ -375,7 +382,9 @@ newtab-custom-settings = Gestisci altre impostazioni
 
 newtab-wallpaper-title = Sfondi
 newtab-wallpaper-reset = Ripristina predefinito
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
 newtab-wallpaper-upload-image = Carica immagine
+newtab-wallpaper-add-an-image = Aggiungi un’immagine
 newtab-wallpaper-custom-color = Scegli un colore
 newtab-wallpaper-toggle-title =
     .label = Sfondi
@@ -401,7 +410,9 @@ newtab-wallpaper-light-fox-anniversary = Una volpe in un campo erboso con un pae
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Colori solidi
+newtab-wallpaper-colors = Colori
 newtab-wallpaper-blue = Blu
 newtab-wallpaper-light-blue = Blu chiaro
 newtab-wallpaper-light-purple = Viola chiaro
@@ -507,7 +518,6 @@ newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Passa a Fahrenheit
 newtab-weather-menu-change-temperature-units-celsius = Passa a Celsius
-newtab-weather-menu-hide-weather-v2 = Nascondi meteo
 newtab-weather-menu-hide-weather = Nascondi meteo in Nuova scheda
 newtab-weather-menu-learn-more = Ulteriori informazioni
 newtab-weather-menu-detect-my-location = Rileva la mia posizione
@@ -518,8 +528,18 @@ newtab-weather-opt-in-not-now =
     .label = Non adesso
 newtab-weather-opt-in-yes =
     .label = Sì
+newtab-weather-opt-in-headline = Ottieni le previsioni meteo locali
+newtab-weather-opt-in-use-location =
+    .label = Utilizza posizione
+newtab-weather-opt-in-choose-location = Scegli posizione
 # We'll be showing static (fake) weather data if the user has not opted in to using their location
 newtab-weather-static-city = New York City
+# "Highest" here refers to the highest temperature of the day
+newtab-weather-high =
+    .aria-label = Massima
+# "Lowest" here refers to the lowest temperature of the day
+newtab-weather-low =
+    .aria-label = Minima
 # Variables:
 #   $provider (string) - Service provider for weather data
 newtab-weather-see-forecast-description =
@@ -593,6 +613,7 @@ newtab-section-confirm-block-topic-p2 = Gli argomenti bloccati non verranno più
 # Variables:
 #   $topic (string) - Name of topic that user is blocking
 newtab-section-block-topic-button = Blocca { $topic }
+newtab-section-block-cancel-button = Annulla
 
 ## Strings for custom wallpaper highlight
 
@@ -656,6 +677,18 @@ newtab-toast-thanks-for-reporting =
     .message = Grazie per la segnalazione.
 newtab-toast-widgets-hidden =
     .message = Seleziona l’icona a forma di matita per ripristinare i widget in qualsiasi momento.
+# Variables:
+#   $topic (string) - Topic that the user has followed
+newtab-section-toast-follow =
+    .message = Ora stai seguendo { $topic }.
+# Variables:
+#   $topic (string) - Topic that the user has unfollowed
+newtab-section-toast-unfollow =
+    .message = Non segui più { $topic }.
+# Variables:
+#   $topic (string) - Topic that the user has blocked
+newtab-section-toast-block =
+    .message = Non verranno più visualizzate storie relative a { $topic }.
 
 ## Strings for task / to-do list productivity widget
 
@@ -675,7 +708,6 @@ newtab-widget-lists-menu-edit = Modifica nome lista
 newtab-widget-lists-menu-create = Crea nuova lista
 newtab-widget-lists-menu-delete = Elimina questa lista
 newtab-widget-lists-menu-copy = Copia lista negli appunti
-newtab-widget-lists-menu-hide = Nascondi tutte le liste
 newtab-widget-lists-menu-learn-more = Ulteriori informazioni
 newtab-widget-lists-input-add-an-item =
     .placeholder = Aggiungi un elemento
@@ -697,6 +729,10 @@ newtab-widget-lists-name-placeholder-new =
     .placeholder = Nuova lista
 newtab-widget-section-title = Widget
 newtab-widget-menu-hide = Nascondi widget
+newtab-widget-menu-change-size = Cambia dimensione
+newtab-widget-size-small = Piccola
+newtab-widget-size-medium = Media
+newtab-widget-size-large = Grande
 # Tooltip for hide all widgets button
 newtab-widget-section-hide-all-button =
     .title = Nascondi widget
@@ -728,7 +764,6 @@ newtab-widget-timer-reset =
     .title = Ripristina
 newtab-widget-timer-menu-notifications = Disattiva notifiche
 newtab-widget-timer-menu-notifications-on = Attiva le notifiche
-newtab-widget-timer-menu-hide = Nascondi timer
 newtab-widget-timer-menu-learn-more = Ulteriori informazioni
 # The title displays above a set of top news headlines.
 newtab-daily-briefing-card-title = Notizie in primo piano
@@ -773,3 +808,4 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = Questo spazio segue le tue regole
 newtab-activation-window-message-values-focus-message = { -brand-product-name } ti consente di navigare come preferisci, offrendoti un modo più personale per iniziare la tua giornata online. Rendi { -brand-product-name } davvero tuo.
+

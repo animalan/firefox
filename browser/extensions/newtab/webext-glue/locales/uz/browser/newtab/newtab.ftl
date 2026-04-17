@@ -233,3 +233,5 @@ newtab-custom-settings = Boshqa sozlamalarni boshqarish
 ## New Tab Wallpapers
 
 newtab-wallpaper-title = Fon rasmlari
+newtab-wallpaper-toggle-title =
+    .label = Fon rasmlari
