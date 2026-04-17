@@ -10214,6 +10214,19 @@ button.arrow-button:dir(rtl) {
   opacity: 1;
 }
 
+.nova-enabled .ad-banner-wrapper .ad-banner-inner.billboard {
+  --billboard-container-width: calc(12 * var(--col-width) + 11 * var(--space-medium));
+}
+.nova-enabled .ad-banner-wrapper .ad-banner-inner.billboard .ad-banner-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block-start: var(--space-small);
+}
+.nova-enabled .ad-banner-wrapper .ad-banner-inner.billboard .ad-banner-link .ad-banner-sponsored {
+  height: 19px;
+}
+
 .ads-context-menu-wrapper {
   text-align: end;
 }
@@ -10243,6 +10256,13 @@ button.arrow-button:dir(rtl) {
 
 .context-menu-open > moz-button::part(button) {
   background-color: var(--button-background-color);
+}
+
+.nova-enabled .ads-context-menu {
+  inset-inline-end: var(--space-xlarge);
+}
+.nova-enabled .context-menu-open > moz-button::part(button) {
+  background-color: var(--button-background-color-ghost-hover);
 }
 
 .promo-card-wrapper {
@@ -10734,7 +10754,7 @@ button.arrow-button:dir(rtl) {
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 .nova-enabled .top-sites {
   display: contents;
 }
@@ -10890,7 +10910,7 @@ button.arrow-button:dir(rtl) {
 }
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 .section-title-wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -11461,7 +11481,7 @@ button.arrow-button:dir(rtl) {
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 .nova-enabled .ds-card-grid:not(.ds-section-grid) .ds-card {
   --nova-stp-inset: var(--space-medium);
 }

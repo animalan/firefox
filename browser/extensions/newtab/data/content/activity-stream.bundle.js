@@ -4471,7 +4471,9 @@ function AdBannerContextMenu({
   position,
   type,
   showAdReporting,
-  toggleActive = () => {}
+  toggleActive = () => {},
+  // @nova-cleanup(remove-conditional): Remove novaEnabled, use size="small" and type="icon ghost" as default
+  novaEnabled
 }) {
   const ADBANNER_CONTEXT_MENU_OPTIONS = ["BlockAdUrl", ...(showAdReporting ? ["ReportAd"] : []), "ManageSponsoredContent", "OurSponsorsAndYourPrivacy"];
   const [showContextMenu, setShowContextMenu] = (0,external_React_namespaceObject.useState)(false);
@@ -4528,13 +4530,14 @@ function AdBannerContextMenu({
   }, /*#__PURE__*/external_React_default().createElement("div", {
     className: contextMenuClassNames
   }, /*#__PURE__*/external_React_default().createElement("moz-button", {
-    type: "icon",
-    size: "default",
+    type: novaEnabled ? "icon ghost" : "icon",
+    size: novaEnabled ? "small" : "default",
     "data-l10n-id": "newtab-menu-content-tooltip",
     "data-l10n-args": JSON.stringify({
       title: spoc.title || spoc.sponsor || spoc.alt_text
     }),
     iconsrc: "chrome://global/skin/icons/more.svg",
+    "aria-expanded": showContextMenu ? "true" : "false",
     onClick: onClick,
     onKeyDown: onKeyDown
   }), showContextMenu && /*#__PURE__*/external_React_default().createElement(LinkMenu, {
@@ -4669,6 +4672,8 @@ const AdBanner_PREF_OHTTP_UNIFIED_ADS = "unifiedAds.ohttp.enabled";
 const PREF_REPORT_ADS_ENABLED = "discoverystream.reportAds.enabled";
 const PREF_PROMOCARD_ENABLED = "discoverystream.promoCard.enabled";
 const PREF_PROMOCARD_VISIBLE = "discoverystream.promoCard.visible";
+// @nova-cleanup(remove-pref): Remove PREF_NOVA_ENABLED
+const PREF_NOVA_ENABLED = "nova.enabled";
 
 /**
  * A new banner ad that appears between rows of stories: leaderboard or billboard size.
@@ -4708,6 +4713,9 @@ const AdBanner = ({
     };
   };
   const promoCardEnabled = spoc.format === "billboard" && prefs[PREF_PROMOCARD_ENABLED] && prefs[PREF_PROMOCARD_VISIBLE];
+
+  // @nova-cleanup(remove-conditional): Remove novaEnabled check
+  const novaEnabled = prefs[PREF_NOVA_ENABLED];
   const sectionsEnabled = prefs[AdBanner_PREF_SECTIONS_ENABLED];
   const ohttpEnabled = prefs[AdBanner_PREF_OHTTP_UNIFIED_ADS];
   const showAdReporting = prefs[PREF_REPORT_ADS_ENABLED];
@@ -4757,8 +4765,11 @@ const AdBanner = ({
     rawImageSrc = `moz-cached-ohttp://newtab-image/?url=${encodeURIComponent(spoc.raw_image_src)}`;
   }
   return /*#__PURE__*/external_React_default().createElement("aside", {
-    className: adBannerWrapperClassName,
-    style: {
+    className: adBannerWrapperClassName
+    // Omit gridRow for Nova sections to ensure correct keyboard focus order.
+    // @nova-cleanup(remove-conditional): Remove novaEnabled check, keep sectionsEnabled condition
+    ,
+    style: novaEnabled && sectionsEnabled ? undefined : {
       gridRow: clampedRow
     }
   }, /*#__PURE__*/external_React_default().createElement("div", {
@@ -4805,7 +4816,8 @@ const AdBanner = ({
     position: row,
     type: type,
     showAdReporting: showAdReporting,
-    toggleActive: toggleActive
+    toggleActive: toggleActive,
+    novaEnabled: novaEnabled
   }))), promoCardEnabled && /*#__PURE__*/external_React_default().createElement(PromoCard, null));
 };
 ;// CONCATENATED MODULE: ./content-src/components/DiscoveryStreamComponents/CardGrid/CardGrid.jsx
@@ -4820,7 +4832,7 @@ const AdBanner = ({
 
 
 
-const PREF_NOVA_ENABLED = "nova.enabled";
+const CardGrid_PREF_NOVA_ENABLED = "nova.enabled";
 const PREF_SECTIONS_CARDS_ENABLED = "discoverystream.sections.cards.enabled";
 const CardGrid_PREF_SECTIONS_ENABLED = "discoverystream.sections.enabled";
 const PREF_TOPICS_ENABLED = "discoverystream.topicLabels.enabled";
@@ -5106,7 +5118,7 @@ class _CardGrid extends (external_React_default()).PureComponent {
     // Handle the case where a user has dismissed all recommendations
     const isEmpty = data.recommendations.length === 0;
     const prefs = this.props.Prefs.values;
-    const novaEnabled = prefs[PREF_NOVA_ENABLED];
+    const novaEnabled = prefs[CardGrid_PREF_NOVA_ENABLED];
     const sectionsEnabled = prefs[CardGrid_PREF_SECTIONS_ENABLED];
     const showNovaHeader = novaEnabled && !sectionsEnabled;
     return /*#__PURE__*/external_React_default().createElement("div", {
