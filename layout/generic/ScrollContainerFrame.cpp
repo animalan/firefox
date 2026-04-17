@@ -7134,8 +7134,14 @@ nsRect ScrollContainerFrame::GetUnsnappedScrolledRectInternal(
 
 nsMargin ScrollContainerFrame::GetActualScrollbarSizes(
     ScrollbarSizesOptions aOptions /* = ScrollbarSizesOptions::NONE */) const {
-  nsRect r = GetPaddingRectRelativeToSelf();
+  if (IsSingleLineTextInput(this)) {
+    // The assumption below that the scrollport usually starts in the padding
+    // rect doesn't hold for single line text inputs. Luckily we know those have
+    // no scrollbars tho.
+    return {};
+  }
 
+  nsRect r = GetPaddingRectRelativeToSelf();
   nsMargin m(mScrollPort.y - r.y, r.XMost() - mScrollPort.XMost(),
              r.YMost() - mScrollPort.YMost(), mScrollPort.x - r.x);
 
