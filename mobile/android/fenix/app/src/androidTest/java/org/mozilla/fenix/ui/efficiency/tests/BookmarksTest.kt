@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui.efficiency.tests
 
+import org.junit.Ignore
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.TestAssetHelper.getGenericAsset
@@ -18,6 +19,7 @@ class BookmarksTest : BaseTest() {
     // TODO (I. RIOS 3/20/2026): add to BaseTest for State Machine
     private val mockWebServer get() = fenixTestRule.mockWebServer
 
+    @Ignore("Covered by verifyNavigationReachability[0: BookmarksPage (TBD) — Navigation Reachability]")
     @Test
     fun verifyBookmarksSectionTest() {
         on.bookmarks.navigateToPage()

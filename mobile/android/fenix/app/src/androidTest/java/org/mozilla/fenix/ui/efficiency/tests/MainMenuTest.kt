@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.ui.efficiency.tests
 
+import org.junit.Ignore
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.TestAssetHelper.getGenericAsset
@@ -36,6 +37,7 @@ class MainMenuTest : BaseTest() {
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3080181
     @SmokeTest
+    @Ignore("Covered by verifyNavigationReachability[1: SettingsHomepagePage (TBD) — Navigation Reachability]")
     @Test
     fun verifyTheHomePageSettingsMenuItemTest() {
         on.settings.navigateToPage()
