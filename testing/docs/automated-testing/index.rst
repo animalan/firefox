@@ -357,3 +357,10 @@ that can be used in ``skip-if`` annotations.
 .. toctree::
 
    manifest-sandbox
+
+Other Topics
+------------
+
+.. toctree::
+
+   tree-closure
