@@ -2431,3 +2431,31 @@ void nsComputedDOMStyle::UnregisterPrefChangeCallbacks() {
                                    GetComputedStyleMap());
   gCallbackPrefs = nullptr;
 }
+
+bool nsComputedDOMStyle::HasLonghandProperty(
+    const nsACString& aMaybeCustomPropertyName) {
+  NonCustomCSSPropertyId id =
+      nsCSSProps::LookupProperty(aMaybeCustomPropertyName);
+
+  if (id == eCSSProperty_UNKNOWN) {
+    return false;
+  }
+
+  if (nsCSSProps::IsShorthand(id)) {
+    return false;
+  }
+
+  if (id != eCSSPropertyExtra_variable) {
+    return !!GetComputedStyleMap()->FindEntryForProperty(id);
+  }
+
+  UpdateCurrentStyleSources(id);
+  if (!mComputedStyle) {
+    return false;
+  }
+
+  const nsACString& name =
+      Substring(aMaybeCustomPropertyName, CSS_CUSTOM_NAME_PREFIX_LENGTH);
+  return Servo_GetCustomPropertyValue(
+      mComputedStyle, &name, mPresShell->StyleSet()->RawData(), nullptr);
+}
