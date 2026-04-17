@@ -1356,7 +1356,6 @@ void nsIFrame::DidSetComputedStyle(ComputedStyle* aOldComputedStyle) {
           oldDisp->IsRelativelyOrStickyPositionedStyle()) {
         RemoveProperty(NormalPositionProperty());
       }
-
     }
     if (disp->mScrollSnapAlign != oldDisp->mScrollSnapAlign) {
       ScrollSnapUtils::PostPendingResnapFor(this);
