@@ -2031,7 +2031,6 @@ bool HttpChannelParent::DoSendDeleteSelf() {
   bool rv = SendDeleteSelf();
 
   CleanupBackgroundChannel();
-  mChannel = nullptr;
 
   return rv;
 }
