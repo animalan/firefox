@@ -173,7 +173,7 @@ var gTests = [
       ]);
       is(
         document.activeElement.className,
-        "popup-notification-primary-button primary footer-button",
+        "popup-notification-primary-button",
         "popup button focus"
       );
       checkDeviceSelectors(["speaker"]);

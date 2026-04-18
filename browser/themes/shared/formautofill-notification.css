@@ -85,19 +85,6 @@
       background-image: url("chrome://browser/skin/formautofill/icon-doorhanger-menu.svg");
     }
   }
-
-  .popup-notification-primary-button {
-    color: var(--button-text-color-primary);
-    background-color: var(--color-accent-primary);
-
-    &:hover {
-      background-color: var(--color-accent-primary-hover);
-
-      &:active {
-        background-color: var(--color-accent-primary-active);
-      }
-    }
-  }
 }
 
 .address-capture-header {

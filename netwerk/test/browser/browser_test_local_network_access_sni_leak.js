@@ -195,7 +195,7 @@ add_task(async function test_lna_block_no_sni_leak() {
   let notification = popup?.owner?.panel?.childNodes?.[0];
   ok(notification, "Notification popup element is available");
   let fetchDone = waitForFetchComplete(gServer.port());
-  notification.secondaryButton.doCommand();
+  notification.secondaryButton.click();
   await fetchDone;
 
   Assert.equal(
@@ -255,7 +255,7 @@ add_task(async function test_lna_accept_receives_sni() {
   // Accept the prompt.
   let notification = popup?.owner?.panel?.childNodes?.[0];
   ok(notification, "Notification popup element is available for accept");
-  notification.button.doCommand();
+  notification.button.click();
 
   // The server is a raw TCP socket, so the TLS handshake will fail after the
   // ClientHello is sent. Wait for the SNI to be captured by the server.

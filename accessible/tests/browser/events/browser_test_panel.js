@@ -27,13 +27,19 @@ async function runTests(browser) {
   );
 
   await panelShown;
-
+  dumpTree(PopupNotifications.panel);
   ok(isAccessible(PopupNotifications.panel), "Popup panel is accessible");
   testAccessibleTree(PopupNotifications.panel, {
     ALERT: [
       { LABEL: [{ TEXT_LEAF: [] }] },
       { PUSHBUTTON: [] },
-      { PUSHBUTTON: [] },
+      {
+        TEXT_CONTAINER: [
+          {
+            PUSHBUTTON: [{ LABEL: [] }],
+          },
+        ],
+      },
     ],
   });
   // Verify the popup panel is associated with the chrome window.
