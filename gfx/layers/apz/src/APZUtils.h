@@ -181,14 +181,10 @@ enum class HandoffConsumer { Scrolling, PullToRefresh };
 namespace apz {
 
 /**
- * Is aAngle within the given threshold of the horizontal axis?
- * @param aAngle an angle in radians in the range [0, pi]
+ * Is aVector within the given threshold of the horizontal axis?
+ * Returns false if aVector is a zero vector.
  * @param aThreshold an angle in radians in the range [0, pi/2]
  */
-bool IsCloseToHorizontal(float aAngle, float aThreshold);
-
-// As above, but taking a vector instead of a pre-computed angle.
-// Returns false if aVector is a zero vector.
 // FIXME: Bug 2032315: Narrow the signature to only accept ParentLayerPoint, and
 // convert call sites that currently pass Screen coordinates to pass ParentLayer
 // instead.
@@ -198,17 +194,15 @@ bool IsCloseToHorizontal(const gfx::PointTyped<Units>& aVector,
   if (aVector == gfx::PointTyped<Units>()) {
     return false;
   }
-  return IsCloseToHorizontal(float(fabs(atan2(aVector.y, aVector.x))),
-                             aThreshold);
+  float angle = float(fabs(atan2(aVector.y, aVector.x)));
+  return angle < aThreshold || angle > (M_PI - aThreshold);
 }
 
-// Is aAngle within the given threshold of the vertical axis?
-// @param aAngle an angle in radians in the range [0, pi]
-// @param aThreshold an angle in radians in the range [0, pi/2]
-bool IsCloseToVertical(float aAngle, float aThreshold);
-
-// As above, but taking a vector instead of a pre-computed angle.
-// Returns false if aVector is a zero vector.
+/**
+ * Is aVector within the given threshold of the vertical axis?
+ * Returns false if aVector is a zero vector.
+ * @param aThreshold an angle in radians in the range [0, pi/2]
+ */
 // FIXME: Bug 2032315: Narrow the signature to only accept ParentLayerPoint, and
 // convert call sites that currently pass Screen coordinates to pass ParentLayer
 // instead.
@@ -218,8 +212,8 @@ bool IsCloseToVertical(const gfx::PointTyped<Units>& aVector,
   if (aVector == gfx::PointTyped<Units>()) {
     return false;
   }
-  return IsCloseToVertical(float(fabs(atan2(aVector.y, aVector.x))),
-                           aThreshold);
+  float angle = float(fabs(atan2(aVector.y, aVector.x)));
+  return fabs(angle - float(M_PI / 2)) < aThreshold;
 }
 
 // Returns true if a sticky layer with async translation |aTranslation| is
