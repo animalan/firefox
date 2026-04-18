@@ -6330,10 +6330,11 @@ bool ScrollContainerFrame::ReflowFinished() {
     const bool hasVerticalOverflow =
         GetOverflowAxes().contains(PhysicalAxis::Vertical) &&
         GetScrollStyles().mVertical != StyleOverflow::Hidden;
-    if (!mFirstReflow && mHasVerticalOverflowForDynamicToolbar &&
-        !hasVerticalOverflow) {
+    if (!hasVerticalOverflow &&
+        (mFirstReflow || mHasVerticalOverflowForDynamicToolbar)) {
       PresShell()->MaybeNotifyShowDynamicToolbar();
     }
+
     mHasVerticalOverflowForDynamicToolbar = hasVerticalOverflow;
 #endif  // defined(MOZ_WIDGET_ANDROID)
   }
