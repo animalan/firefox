@@ -31,6 +31,9 @@ class BackupTest(MarionetteTestCase):
             # the crash restore mechanism.
             "browser.sessionstore.resume_from_crash": True,
             "browser.newtabpage.activity-stream.testing.shouldInitializeFeeds": True,
+            # Prevent WallpaperFeed from fetching Remote Settings attachments
+            # from the CDN, which is blocked in CI test environments.
+            "browser.newtabpage.activity-stream.newtabWallpapers.enabled": False,
         })
 
         self.marionette.set_context("chrome")
