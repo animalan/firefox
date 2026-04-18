@@ -77,7 +77,6 @@ if (!build_with_mozilla) { # See Bug 1820869.
     "../../rtc_base:timeutils",
     "../../rtc_base/synchronization:mutex",
     "../../rtc_base/system:no_unique_address",
-    "../../system_wrappers",
     "../../system_wrappers:metrics",
   ]
 }
@@ -91,7 +90,6 @@ rtc_library("audio_device_generic") {
   deps = [
     ":audio_device_buffer",
     "../../api/audio:audio_device",
-    "../../rtc_base:logging",
   ]
 }
 
@@ -197,11 +195,8 @@ if (!build_with_chromium) {
       "../../common_audio",
       "../../rtc_base:buffer",
       "../../rtc_base:checks",
-      "../../rtc_base:logging",
       "../../rtc_base:macromagic",
-      "../../rtc_base:platform_thread",
       "../../rtc_base:random",
-      "../../rtc_base:rtc_event",
       "../../rtc_base:safe_conversions",
       "../../rtc_base:timeutils",
       "../../rtc_base/synchronization:mutex",
@@ -248,7 +243,6 @@ if (!build_with_chromium) {
       "../../rtc_base:platform_thread",
       "../../rtc_base:stringutils",
       "../../rtc_base:threading",
-      "../../rtc_base:timeutils",
       "../../rtc_base/synchronization:mutex",
       "../../rtc_base/system:file_wrapper",
       "//third_party/abseil-cpp/absl/strings:string_view",
@@ -460,7 +454,6 @@ if (rtc_include_tests && !build_with_chromium && !build_with_mozilla) {
       "test_audio_device_impl_test.cc",
     ]
     deps = [
-      ":audio_device",
       ":audio_device_buffer",
       ":audio_device_generic",
       ":audio_device_impl",
@@ -472,8 +465,6 @@ if (rtc_include_tests && !build_with_chromium && !build_with_mozilla) {
       "../../api/audio:create_audio_device_module",
       "../../api/environment",
       "../../api/environment:environment_factory",
-      "../../api/task_queue",
-      "../../api/task_queue:default_task_queue_factory",
       "../../api/units:time_delta",
       "../../api/units:timestamp",
       "../../common_audio",
@@ -487,7 +478,6 @@ if (rtc_include_tests && !build_with_chromium && !build_with_mozilla) {
       "../../rtc_base:task_queue_for_test",
       "../../rtc_base:timeutils",
       "../../rtc_base/synchronization:mutex",
-      "../../system_wrappers",
       "../../test:create_test_environment",
       "../../test:fileutils",
       "../../test:test_support",

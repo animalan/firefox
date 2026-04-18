@@ -171,7 +171,7 @@ index ac862c65a8..e66ed2796e 100644
    } else {
      sources += [ "spl_sqrt_floor.c" ]
 diff --git a/modules/audio_processing/aec3/BUILD.gn b/modules/audio_processing/aec3/BUILD.gn
-index f18daa8502..622a4a1b37 100644
+index 26168b1ab8..59e30cbc24 100644
 --- a/modules/audio_processing/aec3/BUILD.gn
 +++ b/modules/audio_processing/aec3/BUILD.gn
 @@ -125,7 +125,7 @@ rtc_library("aec3") {
@@ -183,7 +183,7 @@ index f18daa8502..622a4a1b37 100644
      suppressed_configs += [ "//build/config/compiler:compiler_arm_fpu" ]
      cflags = [ "-mfpu=neon" ]
    }
-@@ -164,7 +164,7 @@ rtc_library("aec3") {
+@@ -163,7 +163,7 @@ rtc_library("aec3") {
      "//third_party/abseil-cpp/absl/strings:string_view",
    ]
  
@@ -192,7 +192,7 @@ index f18daa8502..622a4a1b37 100644
      deps += [ ":aec3_avx2" ]
    }
  }
-@@ -253,7 +253,7 @@ rtc_source_set("fft_data") {
+@@ -249,7 +249,7 @@ rtc_source_set("fft_data") {
    ]
  }
  
@@ -202,10 +202,10 @@ index f18daa8502..622a4a1b37 100644
      configs += [ "..:apm_debug_dump" ]
      sources = [
 diff --git a/modules/audio_processing/agc/BUILD.gn b/modules/audio_processing/agc/BUILD.gn
-index d2a4a5f05c..dd576d29fa 100644
+index 498971fbe6..a4eefcfcef 100644
 --- a/modules/audio_processing/agc/BUILD.gn
 +++ b/modules/audio_processing/agc/BUILD.gn
-@@ -82,7 +82,7 @@ rtc_library("legacy_agc") {
+@@ -77,7 +77,7 @@ rtc_library("legacy_agc") {
    ]
  
    if (rtc_build_with_neon) {
@@ -215,7 +215,7 @@ index d2a4a5f05c..dd576d29fa 100644
        suppressed_configs += [ "//build/config/compiler:compiler_arm_fpu" ]
        cflags = [ "-mfpu=neon" ]
 diff --git a/modules/audio_processing/agc2/rnn_vad/BUILD.gn b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
-index 4eb8783482..a6d31caff1 100644
+index 5465a0e26c..7bc30c90fc 100644
 --- a/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 +++ b/modules/audio_processing/agc2/rnn_vad/BUILD.gn
 @@ -18,7 +18,7 @@ rtc_library("rnn_vad") {
@@ -228,7 +228,7 @@ index 4eb8783482..a6d31caff1 100644
      cflags = [ "-mfpu=neon" ]
    }
 diff --git a/modules/audio_processing/ns/BUILD.gn b/modules/audio_processing/ns/BUILD.gn
-index 83cce6076e..b55e6445bd 100644
+index 6324ed2bb7..55b7da56a5 100644
 --- a/modules/audio_processing/ns/BUILD.gn
 +++ b/modules/audio_processing/ns/BUILD.gn
 @@ -43,7 +43,7 @@ rtc_static_library("ns") {
