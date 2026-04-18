@@ -10,51 +10,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   pprint: "chrome://remote/content/shared/Format.sys.mjs",
 });
 
-const ERRORS = new Set([
-  "DetachedShadowRootError",
-  "ElementClickInterceptedError",
-  "ElementNotAccessibleError",
-  "ElementNotInteractableError",
-  "InsecureCertificateError",
-  "InvalidArgumentError",
-  "InvalidCookieDomainError",
-  "InvalidElementStateError",
-  "InvalidSelectorError",
-  "InvalidSessionIDError",
-  "InvalidWebExtensionError",
-  "JavaScriptError",
-  "MoveTargetOutOfBoundsError",
-  "NoSuchAlertError",
-  "NoSuchClientWindow",
-  "NoSuchElementError",
-  "NoSuchFrameError",
-  "NoSuchHandleError",
-  "NoSuchHistoryEntryError",
-  "NoSuchInterceptError",
-  "NoSuchNetworkCollectorError",
-  "NoSuchNetworkDataError",
-  "NoSuchNodeError",
-  "NoSuchRequestError",
-  "NoSuchScriptError",
-  "NoSuchShadowRootError",
-  "NoSuchUserContextError",
-  "NoSuchWebExtensionError",
-  "NoSuchWindowError",
-  "ScriptTimeoutError",
-  "SessionNotCreatedError",
-  "StaleElementReferenceError",
-  "TimeoutError",
-  "UnableToCaptureScreen",
-  "UnableToSetCookieError",
-  "UnableToSetFileInputError",
-  "UnavailableNetworkDataError",
-  "UnexpectedAlertOpenError",
-  "UnknownCommandError",
-  "UnknownError",
-  "UnsupportedOperationError",
-  "WebDriverError",
-]);
-
 const BUILTIN_ERRORS = new Set([
   "Error",
   "EvalError",
@@ -118,10 +73,21 @@ export const error = {
    *     false otherwise.
    */
   isWebDriverError(obj) {
-    // Don't use "instanceof" to compare error objects because of possible
-    // problems when the other instance was created in a different global and
-    // as such won't have the same prototype object.
-    return error.isError(obj) && "name" in obj && ERRORS.has(obj.name);
+    // Walk the prototype chain checking for WebDriverError by constructor
+    // name rather than using instanceof, which doesn't work across globals.
+    // This avoids false positives for platform errors e.g. DOMException
+    // with name "UnknownError".
+    try {
+      let proto = Object.getPrototypeOf(obj);
+      while (proto) {
+        if (proto.constructor.name === "WebDriverError") {
+          return true;
+        }
+        proto = Object.getPrototypeOf(proto);
+      }
+    } catch (e) {}
+
+    return false;
   },
 
   /**
