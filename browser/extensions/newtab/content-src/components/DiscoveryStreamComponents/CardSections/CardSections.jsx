@@ -15,8 +15,6 @@ import { shouldShowOMCHighlight } from "../../../lib/asrouter-message-utils.mjs"
 import { SectionContextMenu } from "../SectionContextMenu/SectionContextMenu";
 import { SectionFollowButton } from "../SectionFollowButton/SectionFollowButton";
 import { InterestPicker } from "../InterestPicker/InterestPicker";
-// @nova-cleanup(move-directory): Update import path after NovaInterestPicker moves to InterestPicker/
-import { InterestPicker as NovaInterestPicker } from "content-src/components/Nova/InterestPicker/InterestPicker";
 import { AdBanner } from "../AdBanner/AdBanner.jsx";
 import { PersonalizedCard } from "../PersonalizedCard/PersonalizedCard";
 import { FollowSectionButtonHighlight } from "../FeatureHighlight/FollowSectionButtonHighlight";
@@ -791,15 +789,11 @@ function CardSections({
   ) {
     const index = interestPicker.receivedFeedRank - 1;
 
-    // @nova-cleanup(remove-conditional): Remove novaEnabled check, always use NovaInterestPicker
-    const InterestPickerComponent = novaEnabled
-      ? NovaInterestPicker
-      : InterestPicker;
     sectionsToRender.splice(
       // Math.min is used here to ensure the given row stays within the bounds of the sectionsToRender array.
       Math.min(sectionsToRender.length - 1, index),
       0,
-      <InterestPickerComponent
+      <InterestPicker
         title={interestPicker.title}
         subtitle={interestPicker.subtitle}
         interests={interestPicker.sections || []}

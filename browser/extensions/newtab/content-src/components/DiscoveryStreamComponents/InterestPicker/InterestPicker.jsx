@@ -43,22 +43,24 @@ function InterestPicker({ title, subtitle, interests, receivedFeedRank }) {
   const ref = useIntersectionObserver(handleIntersection);
 
   const onKeyDown = useCallback(e => {
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-      // Arrow direction should match visual navigation direction in RTL
-      const isRTL = document.dir === "rtl";
-      const navigateToPrevious = isRTL
-        ? e.key === "ArrowRight"
-        : e.key === "ArrowLeft";
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      // prevent the page from scrolling up/down while navigating.
+      e.preventDefault();
+    }
 
-      const target = navigateToPrevious
-        ? focusedRef.current?.previousSibling
-        : focusedRef.current?.nextSibling;
-
-      const input = target?.querySelector("input");
-      if (input) {
-        input.tabIndex = 0;
-        input.focus();
-      }
+    if (
+      focusedRef.current?.nextSibling?.querySelector("input") &&
+      e.key === "ArrowDown"
+    ) {
+      focusedRef.current.nextSibling.querySelector("input").tabIndex = 0;
+      focusedRef.current.nextSibling.querySelector("input").focus();
+    }
+    if (
+      focusedRef.current?.previousSibling?.querySelector("input") &&
+      e.key === "ArrowUp"
+    ) {
+      focusedRef.current.previousSibling.querySelector("input").tabIndex = 0;
+      focusedRef.current.previousSibling.querySelector("input").focus();
     }
   }, []);
 

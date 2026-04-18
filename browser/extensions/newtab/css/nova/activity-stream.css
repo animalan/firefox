@@ -10563,27 +10563,6 @@ button.arrow-button:dir(rtl) {
   outline: var(--focus-outline);
 }
 
-.nova-enabled .inline-selection-wrapper.ds-section .topic-list {
-  grid-column: 1/-1;
-}
-.lightWallpaper .nova-enabled .inline-selection-wrapper.ds-section .topic-list moz-button {
-  color-scheme: light;
-}
-.darkWallpaper .nova-enabled .inline-selection-wrapper.ds-section .topic-list moz-button {
-  color-scheme: dark;
-}
-.nova-enabled .inline-selection-wrapper.ds-section .topic-list li.is-checked moz-button::part(button) {
-  background-color: var(--button-background-color-primary);
-  border-color: var(--button-border-color-primary);
-  color: var(--button-text-color-primary);
-}
-.nova-enabled .inline-selection-wrapper.ds-section .learn-more-copy {
-  grid-column: 1/-1;
-}
-.nova-enabled .inline-selection-wrapper.ds-section .learn-more-copy a {
-  color: var(--link-color);
-}
-
 .report-content-form {
   width: 500px;
   height: 270px;
