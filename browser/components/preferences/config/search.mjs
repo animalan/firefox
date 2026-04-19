@@ -1062,6 +1062,9 @@ SettingGroupManager.registerGroups({
         l10nId: "search-add-engine-2",
         control: "moz-button",
         iconSrc: "chrome://global/skin/icons/plus.svg",
+        controlAttrs: {
+          "search-l10n-ids": "search-filtering-for-add-engine",
+        },
       },
       {
         id: "engineList",

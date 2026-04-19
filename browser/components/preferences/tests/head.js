@@ -45,6 +45,10 @@ const nativeSelectEnabled = () =>
   Services.prefs.getBoolPref("widget.macos.native-anchored-menus", false) &&
   Services.prefs.getBoolPref("widget.macos.allow-native-select", false);
 
+const SRD_PREF_VALUE = Services.prefs.getBoolPref(
+  "browser.settings-redesign.enabled"
+);
+
 function is_element_visible(aElement, aMsg) {
   isnot(aElement, null, "Element should not be null, when checking visibility");
   ok(!BrowserTestUtils.isHidden(aElement), aMsg);

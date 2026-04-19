@@ -35,26 +35,64 @@ add_setup(async function () {
     "Sanity check: Search pane is selected by default"
   );
 
-  gTree = gBrowser.contentDocument.querySelector("#engineList");
-  gTree.scrollIntoView();
-  gTree.focus();
+  if (!SRD_PREF_VALUE) {
+    gTree = gBrowser.contentDocument.querySelector("#engineList");
+    gTree.scrollIntoView();
+    gTree.focus();
+  }
 });
 
-// The rows should be visible and checked by default.
-add_task(async function visible() {
-  await checkRowVisibility(true);
-  await forEachLocalShortcutRow(async row => {
+// The rows should be visible and checked by default. Note that in the new
+// settings redesign, the local shortcuts have no toggle.
+add_task(
+  { skip_if: () => SRD_PREF_VALUE },
+  async function test_visible_rows_legacy() {
+    await checkRowVisibility();
+    await forEachLocalShortcutRow(async row => {
+      Assert.equal(
+        gTree.view.getCellValue(
+          row,
+          gTree.columns.getNamedColumn("engineShown")
+        ),
+        "true",
+        "Row is checked initially"
+      );
+    });
+  }
+);
+
+add_task(
+  { skip_if: () => !SRD_PREF_VALUE },
+  async function test_visible_rows() {
+    let engines = await SearchService.getVisibleEngines();
+
+    let doc = gBrowser.selectedBrowser.contentDocument;
+    let engineList = doc.querySelector("moz-box-group#engineList");
+    let rowCount = engineList.children.length;
+
     Assert.equal(
-      gTree.view.getCellValue(row, gTree.columns.getNamedColumn("engineShown")),
-      "true",
-      "Row is checked initially"
+      rowCount,
+      engines.length + UrlbarUtils.LOCAL_SEARCH_MODES.length,
+      "Expected number of rows"
     );
-  });
-});
+
+    for (let row of engineList.children) {
+      let rowElem = row.children[0];
+      Assert.ok(rowElem.description, "Row shortcut is present");
+      Assert.ok(rowElem.label, "l10n label is present");
+    }
+  }
+);
 
 // Toggling the browser.urlbar.shortcuts.* prefs should toggle the corresponding
 // checkboxes in the rows.
 add_task(async function syncFromPrefs() {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   let col = gTree.columns.getNamedColumn("engineShown");
   await forEachLocalShortcutRow(async (row, shortcut) => {
     Assert.equal(
@@ -82,6 +120,12 @@ add_task(async function syncFromPrefs() {
 // Pressing the space key while a row is selected should toggle its checkbox
 // and pref.
 add_task(async function syncToPrefs_spaceKey() {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   let col = gTree.columns.getNamedColumn("engineShown");
   await forEachLocalShortcutRow(async (row, shortcut) => {
     Assert.ok(
@@ -111,6 +155,12 @@ add_task(async function syncToPrefs_spaceKey() {
 // Clicking the checkbox in a local shortcut row should toggle the checkbox and
 // pref.
 add_task(async function syncToPrefs_click() {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   let col = gTree.columns.getNamedColumn("engineShown");
   await forEachLocalShortcutRow(async (row, shortcut) => {
     Assert.ok(
@@ -143,6 +193,12 @@ add_task(async function syncToPrefs_click() {
 
 // The keyword column should not be editable according to isEditable().
 add_task(async function keywordNotEditable_isEditable() {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   await forEachLocalShortcutRow(async row => {
     Assert.ok(
       !gTree.view.isEditable(
@@ -157,6 +213,12 @@ add_task(async function keywordNotEditable_isEditable() {
 // Pressing the enter key while a row is selected shouldn't allow the keyword to
 // be edited.
 add_task(async function keywordNotEditable_enterKey() {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   let col = gTree.columns.getNamedColumn("engineKeyword");
   await forEachLocalShortcutRow(async (row, shortcut) => {
     Assert.ok(
@@ -203,6 +265,12 @@ add_task(async function keywordNotEditable_enterKey() {
 
 // Double-clicking the keyword column shouldn't allow the keyword to be edited.
 add_task(async function keywordNotEditable_click() {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   let col = gTree.columns.getNamedColumn("engineKeyword");
   await forEachLocalShortcutRow(async (row, shortcut) => {
     let tokenToKeywords = await UrlbarTokenizer.getL10nRestrictKeywords();

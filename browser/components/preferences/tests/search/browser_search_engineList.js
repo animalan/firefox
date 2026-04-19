@@ -58,15 +58,17 @@ async function engine_list_test(fn) {
       "Search pane is selected by default"
     );
     let doc = gBrowser.contentDocument;
-    let tree = doc.querySelector("#engineList");
+    let engineList = doc.querySelector(
+      SRD_PREF_VALUE ? "moz-box-group#engineList" : "#engineList"
+    );
     Assert.ok(
-      !tree.hidden,
+      !engineList.hidden,
       "The search engine list should be visible when Search is requested"
     );
-    // Scroll the treeview into view since mouse operations
-    // off screen can act confusingly.
-    tree.scrollIntoView();
-    await fn(tree, doc);
+    // Scroll the engine list into view since mouse operations off screen can
+    // act confusingly.
+    engineList.scrollIntoView();
+    await fn(engineList, doc);
     BrowserTestUtils.removeTab(gBrowser.selectedTab);
   };
 
@@ -74,6 +76,7 @@ async function engine_list_test(fn) {
   Object.defineProperty(task, "name", { value: fn.name });
   add_task(task);
 }
+
 async function selectEngine(tree, index) {
   let rect = tree.getCoordsForCellItem(
     index,
@@ -120,7 +123,20 @@ add_setup(async function () {
   // The added engines are removed in the last test.
 });
 
-engine_list_test(async function test_engine_list(tree) {
+async function test_engine_list(engineList) {
+  for (let i = 0; i < installedEngines.length; i++) {
+    let engine = installedEngines[i];
+    let row = engineList.children[i].lastChild;
+    let displayedName = row.getAttribute("label");
+    Assert.equal(
+      displayedName,
+      engine.name,
+      "Search engine " + engine.name + " displayed correctly."
+    );
+  }
+}
+
+async function test_engine_list_legacy(tree) {
   let userEngineIndex = installedEngines.length - 1;
   for (let i = 0; i < installedEngines.length; i++) {
     let engine = installedEngines[i];
@@ -135,9 +151,93 @@ engine_list_test(async function test_engine_list(tree) {
       "Only user engine name is editable."
     );
   }
-});
+}
 
-engine_list_test(async function test_change_keyword(tree) {
+engine_list_test(SRD_PREF_VALUE ? test_engine_list : test_engine_list_legacy);
+
+async function test_change_keyword(engineList) {
+  let extensionEngineIndex = installedEngines.length - 2;
+  let row = engineList.children[extensionEngineIndex].lastChild;
+  let extensionEditBtn = row.children[0].children[0];
+
+  Assert.equal(
+    row.description,
+    "testing, customkeyword",
+    "Internal keywords are displayed."
+  );
+
+  // Open new subdialog and add "keyword" as the keyword.
+  let promiseSubDialogLoaded = promiseLoadSubDialog(
+    "chrome://browser/content/search/addEngine.xhtml"
+  );
+  extensionEditBtn.click();
+  await promiseSubDialogLoaded;
+
+  let prefsWin = gBrowser.selectedBrowser.contentWindow;
+  let subDialog = prefsWin.gSubDialog;
+  let dialogDoc = subDialog._topDialog._frame.contentDocument;
+
+  let inputElem = dialogDoc.getElementById("engineAlias");
+  let acceptBtn = dialogDoc.getElementById("add-engine-dialog")._buttons.accept;
+
+  let keywordBefore = "keyword";
+  inputElem.value = keywordBefore;
+  inputElem.dispatchEvent(new Event("input", { bubbles: true }));
+  acceptBtn.click();
+
+  // Open new subdialog and add "Keyword" as the keyword (note capitalization).
+  promiseSubDialogLoaded = promiseLoadSubDialog(
+    "chrome://browser/content/search/addEngine.xhtml"
+  );
+  extensionEditBtn.click();
+  await promiseSubDialogLoaded;
+
+  // Need to re-access things, as this is a new subdialog.
+  dialogDoc = subDialog._topDialog._frame.contentDocument;
+  inputElem = dialogDoc.getElementById("engineAlias");
+  acceptBtn = dialogDoc.getElementById("add-engine-dialog")._buttons.accept;
+
+  inputElem.value = "Keyword";
+  inputElem.dispatchEvent(new Event("input", { bubbles: true }));
+  acceptBtn.click();
+  await BrowserTestUtils.waitForCondition(
+    () =>
+      inputElem.parentElement.querySelector(".error-label").textContent !=
+      "valid",
+    "Wait for error label to appear"
+  );
+  let errorLabel =
+    inputElem.parentElement.querySelector(".error-label").textContent;
+  Assert.notEqual(
+    errorLabel,
+    "valid",
+    "Should have an error message because of duplicate keywords"
+  );
+  Assert.ok(
+    acceptBtn.disabled,
+    "Should not be able to submit an invalid keyword"
+  );
+
+  // Open new subdialog and ensure keyword has not changed.
+  promiseSubDialogLoaded = promiseLoadSubDialog(
+    "chrome://browser/content/search/addEngine.xhtml"
+  );
+  extensionEditBtn.click();
+  await promiseSubDialogLoaded;
+
+  // Need to re-access things, as this is a new subdialog.
+  dialogDoc = subDialog._topDialog._frame.contentDocument;
+  inputElem = dialogDoc.getElementById("engineAlias");
+  acceptBtn = dialogDoc.getElementById("add-engine-dialog")._buttons.accept;
+
+  Assert.equal(
+    inputElem.value,
+    keywordBefore,
+    "Should not have modified original keyword"
+  );
+}
+
+async function test_change_keyword_legacy(tree) {
   let extensionEngineIndex = installedEngines.length - 2;
   Assert.equal(
     getCellText(tree, extensionEngineIndex, "engineKeyword"),
@@ -199,9 +299,19 @@ engine_list_test(async function test_change_keyword(tree) {
     "Did not modify keywords."
   );
   alertSpy.restore();
-});
+}
+
+engine_list_test(
+  SRD_PREF_VALUE ? test_change_keyword : test_change_keyword_legacy
+);
 
 engine_list_test(async function test_rename_engines(tree) {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   // Test editing name of user search engine because
   // only the names of user engines can be edited.
   let userEngineIndex = installedEngines.length - 1;
@@ -249,6 +359,12 @@ engine_list_test(async function test_rename_engines(tree) {
 });
 
 engine_list_test(async function test_remove_button_disabled_state(tree, doc) {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   let appProvidedEngines = await SearchService.getAppProvidedEngines();
   for (let i = 0; i < appProvidedEngines.length; i++) {
     let engine = appProvidedEngines[i];
@@ -266,6 +382,12 @@ engine_list_test(async function test_remove_button_disabled_state(tree, doc) {
 });
 
 engine_list_test(async function test_remove_button(tree, doc) {
+  if (SRD_PREF_VALUE) {
+    Assert.ok(true, "New settings redesign UI is enabled.");
+    // Bail early, as this test doesn't apply to the redesigned settings.
+    return;
+  }
+
   let win = tree.ownerGlobal;
   let alertSpy = sinon.stub(win, "alert");
 
