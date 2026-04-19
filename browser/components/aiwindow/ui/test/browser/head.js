@@ -395,6 +395,11 @@ async function submitSmartbar(browser, { useButton = false } = {}) {
       const button = mozButton.shadowRoot.querySelector("button");
       button.click();
     } else {
+      const inputCta = smartbar.querySelector("input-cta");
+      await ContentTaskUtils.waitForCondition(
+        () => inputCta.getAttribute("action") !== "stop",
+        "Wait for generation to complete before submitting via Enter"
+      );
       const inputField = smartbar.inputField;
       inputField.focus();
       EventUtils.synthesizeKey("KEY_Enter", {}, content);

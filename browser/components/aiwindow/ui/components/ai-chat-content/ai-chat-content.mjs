@@ -335,15 +335,13 @@ export class AIChatContent extends MozLitElement {
   }
 
   #setMessageCompleteAttr(message) {
+    this.assistantIsLoading = false;
     const assistantLastMessage = this.conversationState.findLast(
       msg => msg?.messageId === message.content.id
     );
-
-    if (!assistantLastMessage) {
-      return;
+    if (assistantLastMessage) {
+      assistantLastMessage.isLastChunk = true;
     }
-
-    assistantLastMessage.isLastChunk = true;
     this.requestUpdate();
   }
 
