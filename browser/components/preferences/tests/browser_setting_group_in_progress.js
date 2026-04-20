@@ -30,7 +30,6 @@ async function openPrefsWithSettings({ allEnabled, sectionEnabled }) {
       },
     ],
   });
-  let zoomGroup = doc.getElementById("zoomGroup");
   let legacyGroup = doc.createXULElement("groupbox");
   legacyGroup.id = "mysectionGroup";
   legacyGroup.setAttribute("data-srd-groupid", "mysection");
@@ -40,8 +39,9 @@ async function openPrefsWithSettings({ allEnabled, sectionEnabled }) {
   mysectionGroup.setAttribute("groupid", "mysection");
   mysectionGroup.setAttribute("data-category", "paneGeneral");
   mysectionGroup.hidden = true;
-  zoomGroup.parentElement.insertBefore(mysectionGroup, zoomGroup);
-  zoomGroup.parentElement.insertBefore(legacyGroup, zoomGroup);
+  let paneContainer = doc.getElementById("generalCategory").parentElement;
+  paneContainer.appendChild(mysectionGroup);
+  paneContainer.appendChild(legacyGroup);
   win.initSettingGroup("mysection");
   let paneLoaded = waitForPaneChange("general");
   EventUtils.synthesizeMouseAtCenter(

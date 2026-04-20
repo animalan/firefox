@@ -59,6 +59,7 @@ For the purposes of this telemetry a set of areas are defined:
   * ``preferences-paneSearchResults``
   * ``preferences-paneSync``
   * ``preferences-paneContainers``
+  * ``preferences-paneAccessibility``
 
 Widget Identifiers
 ------------------

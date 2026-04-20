@@ -79,6 +79,9 @@ pane-ai-controls-title = AI controls
 category-ai-controls =
     .tooltiptext = { pane-ai-controls-title }
 
+pane-accessibility-title = Accessibility
+  .title = { pane-accessibility-title }
+
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
@@ -2361,6 +2364,17 @@ preferences-connection-link-button =
 
 desktop-folder-name = Desktop
 downloads-folder-name = Downloads
+
+## Accessibility page
+
+preferences-accessibility-header =
+    .heading = Accessibility
+
+keyboard-and-scrolling-group =
+  .label = Keyboard navigation and scrolling
+
+motion-and-link-group =
+  .label = Motion and link styling
 
 ## AI controls page
 

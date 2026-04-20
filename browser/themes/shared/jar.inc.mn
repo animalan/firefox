@@ -147,6 +147,7 @@
 
   skin/classic/browser/preferences/android-menu.svg            (../shared/preferences/android-menu.svg)
   skin/classic/browser/preferences/category-general.svg        (../shared/preferences/category-general.svg)
+  skin/classic/browser/preferences/category-accessibility.svg  (../shared/preferences/category-accessibility.svg)
   skin/classic/browser/preferences/category-privacy-security.svg    (../shared/preferences/category-privacy-security.svg)
   skin/classic/browser/preferences/category-search.svg         (../shared/preferences/category-search.svg)
   skin/classic/browser/preferences/category-sync.svg           (../shared/preferences/category-sync.svg)
@@ -198,6 +199,7 @@
   skin/classic/browser/characterEncoding.svg          (../shared/icons/characterEncoding.svg)
   skin/classic/browser/chevron-animation.svg          (../shared/icons/chevron-animation.svg)
   skin/classic/browser/circle-check-dotted.svg        (../shared/icons/circle-check-dotted.svg)
+  skin/classic/browser/contrast.svg                   (../shared/icons/contrast.svg)
   skin/classic/browser/customize.svg                  (../shared/icons/customize.svg)
   skin/classic/browser/device-phone.svg               (../shared/icons/device-phone.svg)
   skin/classic/browser/device-tablet.svg              (../shared/icons/device-tablet.svg)

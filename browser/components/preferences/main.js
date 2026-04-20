@@ -32,6 +32,11 @@ ChromeUtils.defineESModuleGetters(this, {
   getMozRemoteImageURL: "moz-src:///toolkit/modules/FaviconUtils.sys.mjs",
 });
 
+ChromeUtils.importESModule(
+  "chrome://browser/content/preferences/config/accessibility.mjs",
+  { global: "current" }
+);
+
 // Constants & Enumeration Values
 const TYPE_PDF = "application/pdf";
 
@@ -152,12 +157,6 @@ Preferences.addAll([
     type: "bool",
   },
 
-  // High Contrast
-  { id: "browser.display.document_color_use", type: "int" },
-
-  // Fonts
-  { id: "font.language.group", type: "string" },
-
   // Languages
   { id: "intl.regional_prefs.use_os_locales", type: "bool" },
 
@@ -165,37 +164,8 @@ Preferences.addAll([
   { id: "privacy.spoof_english", type: "int" },
   // General tab
 
-  /* Accessibility
-   * accessibility.browsewithcaret
-     - true enables keyboard navigation and selection within web pages using a
-       visible caret, false uses normal keyboard navigation with no caret
-   * accessibility.typeaheadfind
-     - when set to true, typing outside text areas and input boxes will
-       automatically start searching for what's typed within the current
-       document; when set to false, no search action happens */
-  { id: "accessibility.browsewithcaret", type: "bool" },
-  { id: "accessibility.typeaheadfind", type: "bool" },
-  { id: "accessibility.blockautorefresh", type: "bool" },
-
-  /* Zoom */
-  { id: "browser.zoom.full", type: "bool" },
-
-  /* Browsing
-   * general.autoScroll
-     - when set to true, clicking the scroll wheel on the mouse activates a
-       mouse mode where moving the mouse down scrolls the document downward with
-       speed correlated with the distance of the cursor from the original
-       position at which the click occurred (and likewise with movement upward);
-       if false, this behavior is disabled
-   * general.smoothScroll
-     - set to true to enable finer page scrolling than line-by-line on page-up,
-       page-down, and other such page movements */
-  { id: "general.autoScroll", type: "bool" },
-  { id: "general.smoothScroll", type: "bool" },
-  { id: "widget.gtk.overlay-scrollbars.enabled", type: "bool", inverted: true },
-  { id: "layout.css.always_underline_links", type: "bool" },
+  /* Browsing */
   { id: "layout.spellcheckDefault", type: "int" },
-  { id: "accessibility.tabfocus", type: "int" },
 
   { id: "browser.ml.linkPreview.enabled", type: "bool" },
   { id: "browser.ml.linkPreview.optin", type: "bool" },
@@ -236,9 +206,6 @@ Preferences.addAll([
     type: "bool",
   },
 
-  // Media
-  { id: "media.hardwaremediakeys.enabled", type: "bool" },
-
   // Appearance
   { id: "layout.css.prefers-color-scheme.content-override", type: "int" },
 
@@ -254,10 +221,7 @@ if (AppConstants.HAVE_SHELL_SERVICE) {
 }
 
 if (AppConstants.platform === "win") {
-  Preferences.addAll([
-    { id: "browser.taskbar.previews.enable", type: "bool" },
-    { id: "ui.osk.enabled", type: "bool" },
-  ]);
+  Preferences.addAll([{ id: "browser.taskbar.previews.enable", type: "bool" }]);
 }
 
 if (AppConstants.MOZ_UPDATER) {
@@ -473,72 +437,6 @@ Preferences.addSetting({
 });
 
 Preferences.addSetting({
-  id: "useAutoScroll",
-  pref: "general.autoScroll",
-});
-Preferences.addSetting({
-  id: "useSmoothScrolling",
-  pref: "general.smoothScroll",
-});
-
-Preferences.addSetting({
-  id: "useOverlayScrollbars",
-  pref: "widget.gtk.overlay-scrollbars.enabled",
-  visible: () => AppConstants.MOZ_WIDGET_GTK,
-});
-Preferences.addSetting({
-  id: "useOnScreenKeyboard",
-  // Bug 1993053: Restore the pref to `ui.osk.enabled` after changing
-  // the PrefereceNotFoundError throwing behavior.
-  pref: AppConstants.platform == "win" ? "ui.osk.enabled" : undefined,
-  visible: () => AppConstants.platform == "win",
-});
-Preferences.addSetting({
-  id: "useCursorNavigation",
-  pref: "accessibility.browsewithcaret",
-});
-Preferences.addSetting(
-  /** @type {{ _storedFullKeyboardNavigation: number } & SettingConfig} */ ({
-    _storedFullKeyboardNavigation: -1,
-    id: "useFullKeyboardNavigation",
-    pref: "accessibility.tabfocus",
-    visible: () => AppConstants.platform == "macosx",
-    /**
-     * Returns true if any full keyboard nav is enabled and false otherwise, caching
-     * the current value to enable proper pref restoration if the checkbox is
-     * never changed.
-     *
-     * accessibility.tabfocus
-     * - an integer controlling the focusability of:
-     *     1  text controls
-     *     2  form elements
-     *     4  links
-     *     7  all of the above
-     */
-    get(prefVal) {
-      this._storedFullKeyboardNavigation = prefVal;
-      return prefVal == 7;
-    },
-    /**
-     * Returns the value of the full keyboard nav preference represented by UI,
-     * preserving the preference's "hidden" value if the preference is
-     * unchanged and represents a value not strictly allowed in UI.
-     */
-    set(checked) {
-      if (checked) {
-        return 7;
-      }
-      if (this._storedFullKeyboardNavigation != 7) {
-        // 1/2/4 values set via about:config should persist
-        return this._storedFullKeyboardNavigation;
-      }
-      // When the checkbox is unchecked, default to just text controls.
-      return 1;
-    },
-  })
-);
-
-Preferences.addSetting({
   id: "linkPreviewEnabled",
   pref: "browser.ml.linkPreview.enabled",
   deps: ["aiControlDefault", "aiControlLinkPreviews"],
@@ -562,14 +460,6 @@ Preferences.addSetting({
   pref: "browser.ml.linkPreview.longPress",
 });
 Preferences.addSetting({
-  id: "alwaysUnderlineLinks",
-  pref: "layout.css.always_underline_links",
-});
-Preferences.addSetting({
-  id: "searchStartTyping",
-  pref: "accessibility.typeaheadfind",
-});
-Preferences.addSetting({
   id: "pictureInPictureToggleEnabled",
   pref: "media.videocontrols.picture-in-picture.video-toggle.enabled",
   visible: () =>
@@ -591,16 +481,6 @@ Preferences.addSetting({
       Glean.pictureinpictureSettings.enableAutotriggerSettings.record();
     }
   },
-});
-Preferences.addSetting({
-  id: "mediaControlToggleEnabled",
-  pref: "media.hardwaremediakeys.enabled",
-  // For media control toggle button, we support it on Windows, macOS and
-  // gtk-based Linux.
-  visible: () =>
-    AppConstants.platform == "win" ||
-    AppConstants.platform == "macosx" ||
-    AppConstants.MOZ_WIDGET_GTK,
 });
 Preferences.addSetting({
   id: "playDRMContent",
@@ -2071,314 +1951,6 @@ Preferences.addSetting({
   },
 });
 
-/**
- * Helper object for managing the various zoom related settings.
- */
-const ZoomHelpers = {
-  win: window.browsingContext.topChromeWindow,
-  get FullZoom() {
-    return this.win.FullZoom;
-  },
-  get ZoomManager() {
-    return this.win.ZoomManager;
-  },
-
-  /**
-   * Set the global default zoom value.
-   *
-   * @param {number} newZoom - The new zoom
-   * @returns {Promise<void>}
-   */
-  async setDefaultZoom(newZoom) {
-    let cps2 = Cc["@mozilla.org/content-pref/service;1"].getService(
-      Ci.nsIContentPrefService2
-    );
-    let nonPrivateLoadContext = Cu.createLoadContext();
-    let resolvers = Promise.withResolvers();
-    /* Because our setGlobal function takes in a browsing context, and
-     * because we want to keep this property consistent across both private
-     * and non-private contexts, we create a non-private context and use that
-     * to set the property, regardless of our actual context.
-     */
-    cps2.setGlobal(this.FullZoom.name, newZoom, nonPrivateLoadContext, {
-      handleCompletion: resolvers.resolve,
-      handleError: resolvers.reject,
-    });
-    return resolvers.promise;
-  },
-
-  async getDefaultZoom() {
-    /** @import { ZoomUI as GlobalZoomUI } from "resource:///modules/ZoomUI.sys.mjs" */
-    /** @type {GlobalZoomUI} */
-    let ZoomUI = this.win.ZoomUI;
-    return await ZoomUI.getGlobalValue();
-  },
-
-  /**
-   * The possible zoom values.
-   *
-   * @returns {number[]}
-   */
-  get zoomValues() {
-    return this.ZoomManager.zoomValues;
-  },
-
-  toggleFullZoom() {
-    this.ZoomManager.toggleZoom();
-  },
-};
-Preferences.addSetting(
-  class extends Preferences.AsyncSetting {
-    static id = "defaultZoom";
-    /** @type {Record<"options", object[]>} */
-    optionsConfig;
-
-    /**
-     * @param {string} val - zoom value as a string
-     */
-    async set(val) {
-      ZoomHelpers.setDefaultZoom(
-        parseFloat((parseInt(val, 10) / 100).toFixed(2))
-      );
-    }
-    async get() {
-      return Math.round((await ZoomHelpers.getDefaultZoom()) * 100);
-    }
-    async getControlConfig() {
-      if (!this.optionsConfig) {
-        this.optionsConfig = {
-          options: ZoomHelpers.zoomValues.map(a => {
-            let value = Math.round(a * 100);
-            return {
-              value,
-              l10nId: "preferences-default-zoom-value",
-              l10nArgs: { percentage: value },
-            };
-          }),
-        };
-      }
-      return this.optionsConfig;
-    }
-  }
-);
-Preferences.addSetting({
-  id: "zoomTextPref",
-  pref: "browser.zoom.full",
-});
-Preferences.addSetting({
-  id: "zoomText",
-  deps: ["zoomTextPref"],
-  // Use the Setting since the ZoomManager getter may not have updated yet.
-  get: (_, { zoomTextPref }) => !zoomTextPref.value,
-  set: () => ZoomHelpers.toggleFullZoom(),
-  disabled: ({ zoomTextPref }) => zoomTextPref.locked,
-});
-Preferences.addSetting({
-  id: "zoomWarning",
-  deps: ["zoomText"],
-  visible: ({ zoomText }) => Boolean(zoomText.value),
-});
-
-/**
- * Helper object for managing font-related settings.
- */
-const FontHelpers = {
-  _enumerator: null,
-  _allFonts: null,
-
-  get enumerator() {
-    if (!this._enumerator) {
-      this._enumerator = Cc["@mozilla.org/gfx/fontenumerator;1"].createInstance(
-        Ci.nsIFontEnumerator
-      );
-    }
-    return this._enumerator;
-  },
-
-  ensurePref(prefId, type) {
-    let pref = Preferences.get(prefId);
-    if (!pref) {
-      pref = Preferences.add({ id: prefId, type });
-    }
-    return pref;
-  },
-
-  get langGroup() {
-    return Services.locale.fontLanguageGroup;
-  },
-
-  getFontTypePrefId(langGroup) {
-    return `font.default.${langGroup}`;
-  },
-
-  getFontType(langGroup) {
-    const prefId = this.getFontTypePrefId(langGroup);
-    return Services.prefs.getCharPref(prefId, "serif");
-  },
-
-  getFontPrefId(langGroup) {
-    const fontType = this.getFontType(langGroup);
-    return `font.name.${fontType}.${langGroup}`;
-  },
-
-  getSizePrefId(langGroup) {
-    return `font.size.variable.${langGroup}`;
-  },
-
-  buildFontOptions(langGroup, fontType) {
-    let fonts = this.enumerator.EnumerateFonts(langGroup, fontType);
-    let defaultFont = null;
-    if (fonts.length) {
-      defaultFont = this.enumerator.getDefaultFont(langGroup, fontType);
-    } else {
-      fonts = this.enumerator.EnumerateFonts(langGroup, "");
-      if (fonts.length) {
-        defaultFont = this.enumerator.getDefaultFont(langGroup, "");
-      }
-    }
-
-    if (!this._allFonts) {
-      this._allFonts = this.enumerator.EnumerateAllFonts();
-    }
-
-    const options = [];
-
-    if (fonts.length) {
-      if (defaultFont) {
-        options.push({
-          value: "",
-          l10nId: "fonts-label-default",
-          l10nArgs: { name: defaultFont },
-        });
-      } else {
-        options.push({
-          value: "",
-          l10nId: "fonts-label-default-unnamed",
-        });
-      }
-
-      for (const font of fonts) {
-        options.push({
-          value: font,
-          controlAttrs: { label: font },
-        });
-      }
-    }
-
-    if (this._allFonts.length > fonts.length) {
-      const fontSet = new Set(fonts);
-      for (const font of this._allFonts) {
-        if (!fontSet.has(font)) {
-          options.push({
-            value: font,
-            controlAttrs: { label: font },
-          });
-        }
-      }
-    }
-
-    return options;
-  },
-
-  fontSizeOptions: [
-    9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36,
-    40, 44, 48, 56, 64, 72,
-  ].map(size => ({ value: size, controlAttrs: { label: String(size) } })),
-};
-
-Preferences.addSetting({
-  id: "fontLanguageGroup",
-  pref: "font.language.group",
-});
-
-Preferences.addSetting({
-  id: "fontType",
-  deps: ["fontLanguageGroup"],
-  setup(emitChange, deps, setting) {
-    const handleChange = () => {
-      setting.pref = FontHelpers.ensurePref(
-        FontHelpers.getFontTypePrefId(FontHelpers.langGroup),
-        "string"
-      );
-      emitChange();
-    };
-
-    handleChange();
-    deps.fontLanguageGroup.on("change", handleChange);
-    return () => deps.fontLanguageGroup.off("change", handleChange);
-  },
-});
-
-Preferences.addSetting({
-  id: "defaultFont",
-  deps: ["fontType"],
-  optionsConfig: null,
-  setup(emitChange, deps, setting) {
-    const handleChange = () => {
-      setting.pref = FontHelpers.ensurePref(
-        FontHelpers.getFontPrefId(FontHelpers.langGroup),
-        "fontname"
-      );
-      this.optionsConfig = null;
-      emitChange();
-    };
-    handleChange();
-    deps.fontType.on("change", handleChange);
-    return () => deps.fontType.off("change", handleChange);
-  },
-  getControlConfig(config) {
-    if (!this.optionsConfig) {
-      this.optionsConfig = {
-        ...config,
-        options: FontHelpers.buildFontOptions(
-          FontHelpers.langGroup,
-          FontHelpers.getFontType(FontHelpers.langGroup)
-        ),
-      };
-    }
-    return this.optionsConfig;
-  },
-});
-
-Preferences.addSetting({
-  id: "defaultFontSize",
-  deps: ["fontLanguageGroup"],
-  setup(emitChange, deps, setting) {
-    const handleLangChange = () => {
-      setting.pref = FontHelpers.ensurePref(
-        FontHelpers.getSizePrefId(FontHelpers.langGroup),
-        "int"
-      );
-      emitChange();
-    };
-    handleLangChange();
-    deps.fontLanguageGroup.on("change", handleLangChange);
-    return () => deps.fontLanguageGroup.off("change", handleLangChange);
-  },
-  getControlConfig(config) {
-    return { ...config, options: FontHelpers.fontSizeOptions };
-  },
-});
-
-Preferences.addSetting({
-  id: "advancedFonts",
-  onUserClick: () => gMainPane.configureFonts(),
-});
-
-Preferences.addSetting({
-  id: "contrastControlSettings",
-  pref: "browser.display.document_color_use",
-});
-Preferences.addSetting({
-  id: "colors",
-  onUserClick() {
-    gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/colors.xhtml",
-      { features: "resizable=no" }
-    );
-  },
-});
-
 Preferences.addSetting({
   /** @type {{ _removeAddressDialogStrings: string[] } & SettingConfig} */
   id: "address-item",
@@ -2578,56 +2150,8 @@ function createStartupConfig(hidden = false) {
 SettingGroupManager.registerGroups({
   defaultBrowser: createDefaultBrowserConfig(),
   startup: createStartupConfig(
-    Services.prefs.getBoolPref("browser.settings-redesign.enabled", false)
+    Services.prefs.getBoolPref("browser-settings-redesign.enabled", false)
   ),
-  zoom: {
-    l10nId: "preferences-zoom-header2",
-    headingLevel: 2,
-    items: [
-      {
-        id: "defaultZoom",
-        l10nId: "preferences-default-zoom-label",
-        control: "moz-select",
-      },
-      {
-        id: "zoomText",
-        l10nId: "preferences-zoom-text-only",
-      },
-      {
-        id: "zoomWarning",
-        l10nId: "preferences-text-zoom-override-warning",
-        control: "moz-message-bar",
-        controlAttrs: {
-          type: "warning",
-        },
-      },
-    ],
-  },
-  fonts: {
-    l10nId: "preferences-fonts-header2",
-    headingLevel: 2,
-    items: [
-      {
-        id: "defaultFont",
-        l10nId: "default-font-2",
-        control: "moz-select",
-      },
-      {
-        id: "defaultFontSize",
-        l10nId: "default-font-size-2",
-        control: "moz-select",
-      },
-      {
-        id: "advancedFonts",
-        l10nId: "advanced-fonts",
-        control: "moz-box-button",
-        controlAttrs: {
-          "search-l10n-ids":
-            "fonts-window.title,fonts-langgroup-header,fonts-proportional-size,fonts-proportional-header,fonts-serif,fonts-sans-serif,fonts-monospace,fonts-langgroup-arabic.label,fonts-langgroup-armenian.label,fonts-langgroup-bengali.label,fonts-langgroup-simpl-chinese.label,fonts-langgroup-trad-chinese-hk.label,fonts-langgroup-trad-chinese.label,fonts-langgroup-cyrillic.label,fonts-langgroup-devanagari.label,fonts-langgroup-ethiopic.label,fonts-langgroup-georgian.label,fonts-langgroup-el.label,fonts-langgroup-gujarati.label,fonts-langgroup-gurmukhi.label,fonts-langgroup-japanese.label,fonts-langgroup-hebrew.label,fonts-langgroup-kannada.label,fonts-langgroup-khmer.label,fonts-langgroup-korean.label,fonts-langgroup-latin.label,fonts-langgroup-malayalam.label,fonts-langgroup-math.label,fonts-langgroup-odia.label,fonts-langgroup-sinhala.label,fonts-langgroup-tamil.label,fonts-langgroup-telugu.label,fonts-langgroup-thai.label,fonts-langgroup-tibetan.label,fonts-langgroup-canadian.label,fonts-langgroup-other.label,fonts-minsize,fonts-minsize-none.label,fonts-default-serif.label,fonts-default-sans-serif.label,fonts-allow-own.label",
-        },
-      },
-    ],
-  },
   translations: {
     inProgress: true,
     l10nId: "settings-translations-header",
@@ -2888,81 +2412,10 @@ SettingGroupManager.registerGroups({
       },
     ],
   },
-  contrast: {
-    l10nId: "preferences-contrast-control-group",
-    headingLevel: 2,
-    items: [
-      {
-        id: "contrastControlSettings",
-        control: "moz-radio-group",
-        l10nId: "preferences-contrast-control-radio-group",
-        options: [
-          {
-            id: "contrastSettingsAuto",
-            value: 0,
-            l10nId: "preferences-contrast-control-use-platform-settings",
-          },
-          {
-            id: "contrastSettingsOff",
-            value: 1,
-            l10nId: "preferences-contrast-control-off",
-          },
-          {
-            id: "contrastSettingsOn",
-            value: 2,
-            l10nId: "preferences-contrast-control-custom",
-            items: [
-              {
-                id: "colors",
-                l10nId: "preferences-colors-manage-button",
-                control: "moz-box-button",
-                controlAttrs: {
-                  "search-l10n-ids":
-                    "colors-text-and-background, colors-text.label, colors-text-background.label, colors-links-header, colors-links-unvisited.label, colors-links-visited.label",
-                },
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
   browsing: {
     l10nId: "browsing-group",
     headingLevel: 1,
     items: [
-      {
-        id: "useAutoScroll",
-        l10nId: "browsing-use-autoscroll",
-      },
-      {
-        id: "useSmoothScrolling",
-        l10nId: "browsing-use-smooth-scrolling",
-      },
-      {
-        id: "useOverlayScrollbars",
-        l10nId: "browsing-gtk-use-non-overlay-scrollbars",
-      },
-      {
-        id: "useOnScreenKeyboard",
-        l10nId: "browsing-use-onscreen-keyboard",
-      },
-      {
-        id: "useCursorNavigation",
-        l10nId: "browsing-use-cursor-navigation",
-      },
-      {
-        id: "useFullKeyboardNavigation",
-        l10nId: "browsing-use-full-keyboard-navigation",
-      },
-      {
-        id: "alwaysUnderlineLinks",
-        l10nId: "browsing-always-underline-links",
-      },
-      {
-        id: "searchStartTyping",
-        l10nId: "browsing-search-on-start-typing",
-      },
       {
         id: "pictureInPictureToggleEnabled",
         l10nId: "browsing-picture-in-picture-toggle-enabled",
@@ -2973,11 +2426,6 @@ SettingGroupManager.registerGroups({
             l10nId: "browsing-picture-in-picture-enable-when-switching-tabs",
           },
         ],
-      },
-      {
-        id: "mediaControlToggleEnabled",
-        l10nId: "browsing-media-control",
-        supportPage: "media-keyboard-control",
       },
       {
         id: "cfrRecommendations",
@@ -3438,10 +2886,12 @@ var gMainPane = {
     initSettingGroup("applications");
     initSettingGroup("drm");
     initSettingGroup("contrast");
-    initSettingGroup("websiteLanguage");
-    initSettingGroup("browsing");
     initSettingGroup("zoom");
     initSettingGroup("fonts");
+    initSettingGroup("websiteLanguage");
+    initSettingGroup("browsing");
+    initSettingGroup("keyboardAndScrolling");
+    initSettingGroup("motionAndLink");
     initSettingGroup("support");
     initSettingGroup("translations");
     initSettingGroup("spellCheck");
@@ -4555,17 +4005,6 @@ var gMainPane = {
   showTranslationsSettings() {
     gSubDialog.open(
       "chrome://browser/content/preferences/dialogs/translations.xhtml"
-    );
-  },
-
-  /**
-   * Displays the fonts dialog, where web page font names and sizes can be
-   * configured.
-   */
-  configureFonts() {
-    gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/fonts.xhtml",
-      { features: "resizable=no" }
     );
   },
 
