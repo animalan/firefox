@@ -15,9 +15,13 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import mozilla.components.support.test.robolectric.testContext
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mozilla.fenix.GleanMetrics.Events
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.BrowserFragmentDirections
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
@@ -28,6 +32,7 @@ import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.components.toolbar.ToolbarPosition.BOTTOM
 import org.mozilla.fenix.components.toolbar.ToolbarPosition.TOP
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.tabstray.redux.state.Page
 import org.mozilla.fenix.tabstray.ui.AccessPoint
 import org.robolectric.ParameterizedRobolectricTestRunner
@@ -40,6 +45,9 @@ private const val TOOLBAR_HEIGHT = 100
 
 @RunWith(ParameterizedRobolectricTestRunner::class)
 class ToolbarVerticalGesturesHandlerTest(private val scenario: Scenario) {
+    @get:Rule
+    val gleanTestRule = FenixGleanTestRule(testContext)
+
     private val toolbarLayout = spyk(View(testContext))
     private var navbarLayout: View? = null
     private val appStore = AppStore(AppState(mode = scenario.browsingMode))
@@ -91,6 +99,8 @@ class ToolbarVerticalGesturesHandlerTest(private val scenario: Scenario) {
         }
 
         if (expectedTabsTrayNavigations > 0) {
+            assertNotNull(Events.toolbarTabstraySwipe.testGetValue())
+
             verify(exactly = expectedTabsTrayNavigations) {
                 navController.navigate(
                     BrowserFragmentDirections.actionGlobalTabManagementFragment(
@@ -102,6 +112,8 @@ class ToolbarVerticalGesturesHandlerTest(private val scenario: Scenario) {
                 )
             }
         } else {
+            assertNull(Events.toolbarTabstraySwipe.testGetValue())
+
             verify(exactly = 0) { navController.navigate(any<NavDirections>(), anyNullable<NavOptions?>()) }
         }
     }

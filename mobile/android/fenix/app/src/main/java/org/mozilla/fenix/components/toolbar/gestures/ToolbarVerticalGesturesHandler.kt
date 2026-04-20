@@ -83,6 +83,8 @@ class ToolbarVerticalGesturesHandler(
         }
 
         if (isSwipeValid()) {
+            Events.toolbarTabstraySwipe.record(NoExtras())
+
             navController.nav(
                 navController.currentDestination?.id,
                 NavGraphDirections.actionGlobalTabManagementFragment(
