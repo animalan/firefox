@@ -115,6 +115,20 @@ assertThrowsInstanceOf(
 assertThrowsInstanceOf(
   () => eval('delete this.#x'),
   SyntaxError);  // deleting a private field in non-strict mode.
+assertThrowsInstanceOf(
+  () => evaluate(`
+  class C {
+    #x() {}
+    m() { delete this?.#x; }
+  }
+`, {forceFullParse: false}), SyntaxError);
+assertThrowsInstanceOf(
+  () => evaluate(`
+  class C {
+    #x() {}
+    m() { delete this.a?.b.#x; }
+  }
+`, {forceFullParse: false}), SyntaxError);
 
 class B extends class {
   constructor(o) {
