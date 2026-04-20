@@ -139,7 +139,7 @@
     <ID>ForbiddenSuppress:TabsTrayBanner.kt$@Suppress("LongParameterList", "LongMethod")</ID>
     <ID>ForbiddenSuppress:TelemetryMiddleware.kt$TelemetryMiddleware$@Suppress("TooGenericExceptionCaught", "CognitiveComplexMethod", "NestedBlockDepth", "LongMethod", "CyclomaticComplexMethod")</ID>
     <ID>ForbiddenSuppress:ThemeOnboardingPage.kt$@Suppress("LongMethod")</ID>
-    <ID>ForbiddenSuppress:ToolbarGestureHandler.kt$ToolbarGestureHandler$@Suppress("CognitiveComplexMethod")</ID>
+    <ID>ForbiddenSuppress:ToolbarHorizontalGesturesHandler.kt$ToolbarHorizontalGesturesHandler$@Suppress("CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:TopSites.kt$@Suppress( "LongMethod", "LongParameterList", "Deprecation", )</ID>
     <ID>ForbiddenSuppress:TrackingProtectionPanelView.kt$TrackingProtectionPanelView$@Suppress("CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:TranslationSettings.kt$@Suppress("LongMethod", "CognitiveComplexMethod")</ID>

@@ -43,6 +43,7 @@ import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.ReaderMode
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.store.BrowserScreenAction.ReaderModeStatusUpdated
+import org.mozilla.fenix.components.Components
 import org.mozilla.fenix.components.LensFeature
 import org.mozilla.fenix.components.QrScanFenixFeature
 import org.mozilla.fenix.components.TabCollectionStorage
@@ -53,7 +54,8 @@ import org.mozilla.fenix.components.toolbar.BrowserToolbarComposable
 import org.mozilla.fenix.components.toolbar.BrowserToolbarView
 import org.mozilla.fenix.components.toolbar.FenixBrowserToolbarView
 import org.mozilla.fenix.components.toolbar.ToolbarMenu
-import org.mozilla.fenix.components.toolbar.gestures.ToolbarGestureHandler
+import org.mozilla.fenix.components.toolbar.gestures.ToolbarHorizontalGesturesHandler
+import org.mozilla.fenix.components.toolbar.gestures.ToolbarVerticalGesturesHandler
 import org.mozilla.fenix.components.toolbar.ui.createShareBrowserAction
 import org.mozilla.fenix.compose.snackbar.Snackbar
 import org.mozilla.fenix.compose.snackbar.SnackbarState
@@ -80,6 +82,7 @@ import org.mozilla.fenix.telemetry.ACTION_SHARE_CLICKED
 import org.mozilla.fenix.telemetry.SOURCE_ADDRESS_BAR
 import org.mozilla.fenix.termsofuse.store.Surface
 import org.mozilla.fenix.theme.ThemeManager
+import org.mozilla.fenix.utils.Settings
 import mozilla.components.ui.icons.R as iconsR
 import org.mozilla.fenix.GleanMetrics.Toolbar as GleanMetricsToolbar
 
@@ -168,23 +171,9 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
 
         val context = requireContext()
         val components = context.components
+        val settings = context.settings()
 
-        if (!context.settings().isTabStripEnabled && context.settings().isSwipeToolbarToSwitchTabsEnabled) {
-            binding.gestureLayout.addGestureListener(
-                ToolbarGestureHandler(
-                    activity = requireActivity(),
-                    contentLayout = binding.browserLayout,
-                    tabPreview = binding.tabPreview,
-                    toolbarLayout = browserToolbarView.layout,
-                    navBarLayout = browserNavigationBar?.layout,
-                    store = components.core.store,
-                    selectTabUseCase = components.useCases.tabsUseCases.selectTab,
-                    onSwipeStarted = {
-                        thumbnailsFeature.get()?.requestScreenshot()
-                    },
-                ),
-            )
-        }
+        setupToolbarSwipeBehavior(settings, components)
 
         if (browserToolbarView is BrowserToolbarView) {
             updateBrowserToolbarLeadingAndNavigationActions(
@@ -214,17 +203,17 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
             view = view,
         )
 
-        if (context.settings().shouldShowOpenInAppCfr) {
+        if (settings.shouldShowOpenInAppCfr) {
             openInAppOnboardingObserver.set(
                 feature = OpenInAppOnboardingObserver(
                     context = context,
                     store = context.components.core.store,
                     lifecycleOwner = this,
                     navController = findNavController(),
-                    settings = context.settings(),
+                    settings = settings,
                     appLinksUseCases = context.components.useCases.appLinksUseCases,
                     container = binding.browserLayout as ViewGroup,
-                    shouldScrollWithTopToolbar = !context.settings().shouldUseBottomToolbar,
+                    shouldScrollWithTopToolbar = !settings.shouldUseBottomToolbar,
                 ),
                 owner = this,
                 view = view,
@@ -236,6 +225,34 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
         continuousOnboardingFeature.maybeRunContinuousOnboarding(
             activity = requireActivity(),
             launcher = continuousOnboardingDefaultBrowserLauncher,
+        )
+    }
+
+    private fun setupToolbarSwipeBehavior(settings: Settings, components: Components) {
+        if (!settings.isTabStripEnabled && settings.isSwipeToolbarToSwitchTabsEnabled) {
+            binding.gestureLayout.addGestureListener(
+                ToolbarHorizontalGesturesHandler(
+                    activity = requireActivity(),
+                    contentLayout = binding.browserLayout,
+                    tabPreview = binding.tabPreview,
+                    toolbarLayout = browserToolbarView.layout,
+                    navBarLayout = browserNavigationBar?.layout,
+                    store = components.core.store,
+                    selectTabUseCase = components.useCases.tabsUseCases.selectTab,
+                    onSwipeStarted = {
+                        thumbnailsFeature.get()?.requestScreenshot()
+                    },
+                ),
+            )
+        }
+        binding.gestureLayout.addGestureListener(
+            ToolbarVerticalGesturesHandler(
+                appStore = components.appStore,
+                toolbarLayout = browserToolbarView.layout,
+                navBarLayout = browserNavigationBar?.layout,
+                toolbarPosition = settings.toolbarPosition,
+                navController = findNavController(),
+            ),
         )
     }
 

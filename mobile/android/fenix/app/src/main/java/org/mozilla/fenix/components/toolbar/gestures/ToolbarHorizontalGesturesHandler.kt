@@ -46,7 +46,7 @@ import kotlin.math.min
  * necessary animations.
  */
 @Suppress("LargeClass", "TooManyFunctions", "LongParameterList")
-class ToolbarGestureHandler(
+class ToolbarHorizontalGesturesHandler(
     private val activity: Activity,
     private val contentLayout: View,
     private val tabPreview: TabPreview,
