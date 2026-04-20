@@ -130,6 +130,9 @@ class MockWindowsRegKey {
 
   removeValue(name) {
     this.#assertKey();
+    if (!this.key.values.has(name)) {
+      throw Components.Exception("", Cr.NS_ERROR_FAILURE);
+    }
     this.key.values.delete(name);
   }
 
@@ -139,7 +142,7 @@ class MockWindowsRegKey {
   }
 
   getChildName(index) {
-    if (!this.key || index >= this.key.values.size) {
+    if (!this.key || index >= this.key.subkeys.size) {
       throw Components.Exception("", Cr.NS_ERROR_FAILURE);
     }
     let names = Array.from(this.key.subkeys.keys());
