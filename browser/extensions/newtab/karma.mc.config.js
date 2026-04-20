@@ -319,6 +319,13 @@ module.exports = function (config) {
                 functions: 0,
                 branches: 0,
               },
+            // Coverage for this component lives in Jest (test/jest/content-src/components/DiscoveryStreamComponents/InterestPicker.test.jsx)
+            "content-src/components/Nova/InterestPicker/InterestPicker.jsx": {
+              statements: 0,
+              lines: 0,
+              functions: 0,
+              branches: 0,
+            },
             // Coverage for this component lives in Jest (test/jest/content-src/components/Widgets/Weather.test.jsx)
             "content-src/components/Widgets/Weather/Weather.jsx": {
               statements: 0,
