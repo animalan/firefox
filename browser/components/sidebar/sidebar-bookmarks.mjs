@@ -24,6 +24,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   PlacesUIUtils: "moz-src:///browser/components/places/PlacesUIUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+  SidebarTreeView:
+    "moz-src:///browser/components/sidebar/SidebarTreeView.sys.mjs",
 });
 
 const bookmarkFolderLocalization = new Localization(
@@ -122,6 +124,25 @@ export class SidebarBookmarks extends SidebarPage {
     this.searchQuery = "";
     this.searchResults = [];
     this.onSearchQuery = this.onSearchQuery.bind(this);
+    this.treeView = new lazy.SidebarTreeView(this);
+  }
+
+  get lists() {
+    const mainList = this.bookmarkList;
+    if (!mainList?.shadowRoot) {
+      return [];
+    }
+    const result = [];
+    const collect = list => {
+      result.push(list);
+      for (const nested of list.shadowRoot.querySelectorAll(
+        "sidebar-bookmark-list"
+      )) {
+        collect(nested);
+      }
+    };
+    collect(mainList);
+    return result;
   }
 
   connectedCallback() {
@@ -151,7 +172,40 @@ export class SidebarBookmarks extends SidebarPage {
   }
 
   onPrimaryAction(e) {
-    navigateToLink(e, e.originalTarget.url, { forceNewTab: false });
+    const { originalEvent } = e.detail;
+    const row = e.originalTarget;
+    const list = row.getRootNode().host;
+
+    if (originalEvent.shiftKey) {
+      list.dispatchEvent(
+        new CustomEvent("shift-select", {
+          bubbles: true,
+          composed: true,
+          detail: { row },
+        })
+      );
+      return;
+    }
+
+    const anchorEvent = new CustomEvent("set-anchor", {
+      bubbles: true,
+      composed: true,
+      detail: { guid: row.guid },
+    });
+
+    if (
+      (originalEvent.type === "click" &&
+        originalEvent.getModifierState("Accel")) ||
+      (originalEvent.type === "keydown" && originalEvent.code === "Space")
+    ) {
+      list.toggleRowSelection(row.guid);
+      list.dispatchEvent(anchorEvent);
+      return;
+    }
+
+    this.treeView.resetSelection();
+    list.dispatchEvent(anchorEvent);
+    navigateToLink(e, row.url, { forceNewTab: false });
     Glean.sidebar.link.bookmarks.add(1);
   }
 

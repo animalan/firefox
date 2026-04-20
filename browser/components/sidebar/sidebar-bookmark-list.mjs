@@ -134,6 +134,14 @@ export class SidebarBookmarkList extends SidebarTabList {
 
   handleFocusElementInRow(e) {
     if (
+      e.getModifierState("Accel") &&
+      e.key.toUpperCase() === this.selectAllShortcut
+    ) {
+      e.preventDefault();
+      this.selectAll();
+      return;
+    }
+    if (
       e.code !== "ArrowUp" &&
       e.code !== "ArrowDown" &&
       e.code !== "ArrowLeft" &&
@@ -148,6 +156,7 @@ export class SidebarBookmarkList extends SidebarTabList {
     e.preventDefault();
     const { target } = e;
     const isSummary = target.localName === "summary";
+    let nextFocusedRow = null;
     switch (e.code) {
       case "ArrowLeft":
         if (isSummary && target.parentElement?.open) {
@@ -197,6 +206,12 @@ export class SidebarBookmarkList extends SidebarTabList {
         const idx = items.indexOf(target);
         if (idx < items.length - 1) {
           items[idx + 1].focus();
+          if (
+            !isSummary &&
+            items[idx + 1].localName === "sidebar-bookmark-row"
+          ) {
+            nextFocusedRow = items[idx + 1];
+          }
         } else {
           this.#focusNextItemAfterFolder();
         }
@@ -207,10 +222,46 @@ export class SidebarBookmarkList extends SidebarTabList {
         const idx = items.indexOf(target);
         if (idx > 0) {
           this.#focusLastVisibleItem(items[idx - 1]);
+          if (
+            !isSummary &&
+            items[idx - 1].localName === "sidebar-bookmark-row"
+          ) {
+            nextFocusedRow = items[idx - 1];
+          }
         } else {
           this.#focusParentSummary();
         }
         break;
+      }
+    }
+    if (
+      (e.code === "ArrowDown" || e.code === "ArrowUp") &&
+      !e.getModifierState("Accel") &&
+      nextFocusedRow
+    ) {
+      if (e.shiftKey) {
+        this.dispatchEvent(
+          new CustomEvent("shift-select", {
+            bubbles: true,
+            composed: true,
+            detail: { row: nextFocusedRow },
+          })
+        );
+      } else {
+        this.clearSelection();
+        this.dispatchEvent(
+          new CustomEvent("clear-selection", {
+            bubbles: true,
+            composed: true,
+          })
+        );
+        this.dispatchEvent(
+          new CustomEvent("set-anchor", {
+            bubbles: true,
+            composed: true,
+            detail: { guid: nextFocusedRow.guid },
+          })
+        );
       }
     }
   }
