@@ -1502,10 +1502,10 @@ already_AddRefed<Promise> FetchBody<Derived>::ConsumeBody(
     blobStorageType = MutableBlobStorage::eCouldBeInTemporaryFile;
   }
 
-  RefPtr<Promise> promise = BodyConsumer::Create(
-      global, mMainThreadEventTarget, bodyStream, signalImpl, aType,
-      BodyBlobURISpec(), BodyLocalPath(), mimeType, mixedCaseMimeType,
-      blobStorageType, aRv);
+  RefPtr<Promise> promise =
+      BodyConsumer::Create(global, mMainThreadEventTarget, bodyStream,
+                           signalImpl, aType, BodyBlobImpl(), BodyLocalPath(),
+                           mimeType, mixedCaseMimeType, blobStorageType, aRv);
   if (NS_WARN_IF(aRv.Failed())) {
     return nullptr;
   }
@@ -1592,15 +1592,15 @@ template void FetchBody<Response>::GetMimeType(nsACString& aMimeType,
                                                nsACString& aMixedCaseMimeType);
 
 template <class Derived>
-const nsACString& FetchBody<Derived>::BodyBlobURISpec() const {
-  return DerivedClass()->BodyBlobURISpec();
+BlobImpl* FetchBody<Derived>::BodyBlobImpl() const {
+  return DerivedClass()->BodyBlobImpl();
 }
 
-template const nsACString& FetchBody<Request>::BodyBlobURISpec() const;
+template BlobImpl* FetchBody<Request>::BodyBlobImpl() const;
 
-template const nsACString& FetchBody<Response>::BodyBlobURISpec() const;
+template BlobImpl* FetchBody<Response>::BodyBlobImpl() const;
 
-template const nsACString& FetchBody<EmptyBody>::BodyBlobURISpec() const;
+template BlobImpl* FetchBody<EmptyBody>::BodyBlobImpl() const;
 
 template <class Derived>
 const nsAString& FetchBody<Derived>::BodyLocalPath() const {

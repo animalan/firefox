@@ -117,13 +117,6 @@ bool IsBlobURI(nsIURI* aUri);
 }  // namespace dom
 }  // namespace mozilla
 
-extern nsresult NS_GetBlobForBlobURI(nsIURI* aURI,
-                                     mozilla::dom::BlobImpl** aBlob);
-
-extern nsresult NS_GetBlobForBlobURISpec(const nsACString& aSpec,
-                                         mozilla::dom::BlobImpl** aBlob,
-                                         bool aAlsoIfRevoked = false);
-
 extern nsresult NS_SetChannelContentRangeForBlobURI(nsIChannel* aChannel,
                                                     nsIURI* aURI,
                                                     nsACString& aRangeHeader);
