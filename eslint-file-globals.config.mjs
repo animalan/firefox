@@ -458,6 +458,7 @@ export default [
       "testing/raptor/browsertime/throttled_pageload.js",
       "testing/raptor/browsertime/trr_performance.js",
       "testing/raptor/browsertime/utils/profiling.js",
+      "testing/raptor/browsertime/utils/simpleperf.js",
       "testing/raptor/browsertime/utils/support_measurements.js",
       "testing/raptor/browsertime/welcome.js",
       "testing/runtimes/fetch-manifest-data.js",

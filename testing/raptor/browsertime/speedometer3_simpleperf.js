@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { logTest, logTask } = require("./utils/profiling");
+const { pullJitMarkerFiles } = require("./utils/simpleperf");
 
 module.exports = logTest(
   "speedometer 3 test",
@@ -13,7 +14,6 @@ module.exports = logTest(
     const page_cycle_delay = context.options.browsertime.page_cycle_delay;
     const post_startup_delay = context.options.browsertime.post_startup_delay;
     const page_timeout = context.options.timeouts.pageLoad;
-    const url = `${context.options.browsertime.url}&suite=${suite}&iterationCount=50`;
 
     const suites = [
       "TodoMVC-JavaScript-ES5",
@@ -41,6 +41,7 @@ module.exports = logTest(
     // Browser cycle count determines which suite to run
     const suiteCount = context.index - 1;
     const suite = suites[suiteCount];
+    const url = `${context.options.browsertime.url}&suite=${suite}&iterationCount=50`;
 
     // Post startup delay
     context.log.info(
@@ -97,6 +98,11 @@ module.exports = logTest(
         );
       }
       await commands.simpleperf.stop();
+      await pullJitMarkerFiles(
+        context,
+        commands,
+        `${suite.toLowerCase()}-${context.index}`
+      );
 
       if (
         !data_exists &&
