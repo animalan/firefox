@@ -140,7 +140,7 @@ const TOKEN_CATEGORIES = [
   },
   {
     name: "space",
-    alternateNames: ["padding", "margin", "inset"],
+    alternateNames: ["padding", "margin", "inset", "gap"],
     purposes: [PURPOSE.SEMANTIC, PURPOSE.STORYBOOK],
   },
   {

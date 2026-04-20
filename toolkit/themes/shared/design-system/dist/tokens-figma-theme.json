@@ -644,6 +644,26 @@
     "dark": "rgba(21, 20, 26, 0.4)",
     "forcedColors": "{HCM Theme$CanvasText}"
   },
+  "breadcrumb/link/color": {
+    "light": "{Theme$link/color}",
+    "dark": "{Theme$link/color}",
+    "forcedColors": "{Theme$link/color}"
+  },
+  "breadcrumb/link/color/hover": {
+    "light": "{Theme$link/color/hover}",
+    "dark": "{Theme$link/color/hover}",
+    "forcedColors": "{Theme$link/color/hover}"
+  },
+  "breadcrumb/link/color/active": {
+    "light": "{Theme$link/color/active}",
+    "dark": "{Theme$link/color/active}",
+    "forcedColors": "{Theme$link/color/active}"
+  },
+  "breadcrumb/link/color/visited": {
+    "light": "{Theme$link/color/visited}",
+    "dark": "{Theme$link/color/visited}",
+    "forcedColors": "{Theme$link/color/visited}"
+  },
   "message-bar/background/color": {
     "light": "{Theme$background/color/information}",
     "dark": "{Theme$background/color/information}",
