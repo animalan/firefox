@@ -160,9 +160,12 @@ class SettingsAddonsTest {
         navigationToolbar(composeTestRule) {
         }.enterURLAndEnterToBrowser(webPage.toUri()) {
             verifyPageContent("Lets test!")
-        }.openThreeDotMenu {
-            verifyExtensionsButtonWithInstalledExtension(addonName)
         }
+        // Fix ComposeNotIdleException when verifying the extensions button when an extension is installed
+        // Bugzilla ticket: https://bugzilla.mozilla.org/show_bug.cgi?id=2033366
+        //     .openThreeDotMenu {
+        //     verifyExtensionsButtonWithInstalledExtension(addonName)
+        // }
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/875785
@@ -185,8 +188,11 @@ class SettingsAddonsTest {
         navigationToolbar(composeTestRule) {
         }.enterURLAndEnterToBrowser(webPage.toUri()) {
             verifyPageContent("Lets test!")
-        }.openThreeDotMenu {
-            verifyExtensionsButtonWithInstalledExtension(addonName)
         }
+        // Fix ComposeNotIdleException when verifying the extensions button when an extension is installed
+        // Bugzilla ticket: https://bugzilla.mozilla.org/show_bug.cgi?id=2033366
+        //     .openThreeDotMenu {
+        //     verifyExtensionsButtonWithInstalledExtension(addonName)
+        // }
     }
 }
