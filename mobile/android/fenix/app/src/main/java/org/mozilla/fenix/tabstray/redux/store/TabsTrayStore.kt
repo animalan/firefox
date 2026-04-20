@@ -28,7 +28,7 @@ class TabsTrayStore(
     TabsTrayReducer::reduce,
     middlewares,
 ) {
-    val tabGroupFormStateFlow: Flow<TabGroupFormState> = stateFlow.mapNotNull { it.tabGroupFormState }
+    val tabGroupFormStateFlow: Flow<TabGroupFormState> = stateFlow.mapNotNull { it.tabGroupState.formState }
 
     init {
         dispatch(TabsTrayAction.InitAction)
@@ -38,7 +38,7 @@ class TabsTrayStore(
      * Observe [TabsTrayStore] to listen to changes to the provided [TabsTrayItem.TabGroup].
      */
     fun observeTabGroup(tabGroup: TabsTrayItem.TabGroup): Flow<TabsTrayItem.TabGroup> = stateFlow
-        .map { it.tabGroups }
+        .map { it.tabGroupState.groups }
         .distinctUntilChanged()
         .map { it.find { group -> group.id == tabGroup.id } ?: tabGroup }
         .distinctUntilChanged()

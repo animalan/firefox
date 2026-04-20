@@ -22,10 +22,12 @@ class TabGroupReducerTest {
     @Test
     fun `WHEN NameChanged AND form state exists THEN name is updated and edited is true`() {
         val initialState = TabsTrayState(
-            tabGroupFormState = TabGroupFormState(
-                tabGroupId = "1",
-                name = "Previous name",
-                edited = false,
+            tabGroupState = TabsTrayState.TabGroupState(
+                formState = TabGroupFormState(
+                    tabGroupId = "1",
+                    name = "Previous name",
+                    edited = false,
+                ),
             ),
         )
 
@@ -36,11 +38,13 @@ class TabGroupReducerTest {
             TabGroupAction.NameChanged(newName),
         )
 
-        val initialStateForm = requireNotNull(initialState.tabGroupFormState)
+        val initialStateForm = requireNotNull(initialState.tabGroupState.formState)
         val expectedState = initialState.copy(
-            tabGroupFormState = initialStateForm.copy(
-                name = newName,
-                edited = true,
+            tabGroupState = TabsTrayState.TabGroupState(
+                formState = initialStateForm.copy(
+                    name = newName,
+                    edited = true,
+                ),
             ),
         )
 
@@ -56,7 +60,9 @@ class TabGroupReducerTest {
         )
         val initialState = TabsTrayState(
             mode = TabsTrayState.Mode.Select(selectedTabs = setOf()),
-            tabGroupFormState = formState,
+            tabGroupState = TabsTrayState.TabGroupState(
+                formState = formState,
+            ),
             backStack = listOf(
                 TabsTrayState().backStack.first(),
                 AddToTabGroup,
@@ -77,10 +83,12 @@ class TabGroupReducerTest {
     @Test
     fun `WHEN FormDismissed THEN form state is set to null and the tab group flow is closed`() {
         val initialState = TabsTrayState(
-            tabGroupFormState = TabGroupFormState(
-                tabGroupId = "1",
-                name = "Tab Group 1",
-                edited = true,
+            tabGroupState = TabsTrayState.TabGroupState(
+                formState = TabGroupFormState(
+                    tabGroupId = "1",
+                    name = "Tab Group 1",
+                    edited = true,
+                ),
             ),
             mode = TabsTrayState.Mode.Select(selectedTabs = setOf()),
             backStack = listOf(
@@ -93,7 +101,7 @@ class TabGroupReducerTest {
         val resultState = TabGroupActionReducer.reduce(initialState, TabGroupAction.FormDismissed)
 
         val expectedState = initialState.copy(
-            tabGroupFormState = null,
+            tabGroupState = initialState.tabGroupState.copy(formState = null),
             backStack = TabsTrayState().backStack,
         )
 
@@ -104,10 +112,12 @@ class TabGroupReducerTest {
     fun `WHEN FormDismissed from editing an expanded tab group THEN return to the expanded tab group`() {
         val group = createTabGroup()
         val initialState = TabsTrayState(
-            tabGroupFormState = TabGroupFormState(
-                tabGroupId = group.id,
-                name = group.title,
-                edited = true,
+            tabGroupState = TabsTrayState.TabGroupState(
+                formState = TabGroupFormState(
+                    tabGroupId = group.id,
+                    name = group.title,
+                    edited = true,
+                ),
             ),
             backStack = listOf(
                 TabsTrayState().backStack.first(),
@@ -119,7 +129,9 @@ class TabGroupReducerTest {
         val resultState = TabGroupActionReducer.reduce(initialState, TabGroupAction.FormDismissed)
 
         val expectedState = initialState.copy(
-            tabGroupFormState = null,
+            tabGroupState = initialState.tabGroupState.copy(
+                formState = null,
+            ),
             backStack = listOf(
                 TabsTrayState().backStack.first(),
                 ExpandedTabGroup(group = group),
@@ -204,7 +216,7 @@ class TabGroupReducerTest {
             action = TabGroupAction.AddToNewTabGroup,
         )
 
-        assertEquals(expectedFormState, resultState.tabGroupFormState)
+        assertEquals(expectedFormState, resultState.tabGroupState.formState)
         assertEquals(expectedBackStack, resultState.backStack)
     }
 
@@ -213,67 +225,79 @@ class TabGroupReducerTest {
         val initialFormState = TabGroupFormState(tabGroupId = "123", name = "123", theme = TabGroupTheme.Blue)
 
         val resultState = TabGroupActionReducer.reduce(
-            state = TabsTrayState(tabGroupFormState = initialFormState),
+            state = TabsTrayState(
+                tabGroupState = TabsTrayState.TabGroupState(
+                    formState = initialFormState,
+                ),
+            ),
             action = TabGroupAction.ThemeChanged(theme = TabGroupTheme.Pink),
         )
 
-        assertEquals(resultState.tabGroupFormState!!.theme, TabGroupTheme.Pink)
+        assertEquals(resultState.tabGroupState.formState!!.theme, TabGroupTheme.Pink)
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `WHEN ThemeChanged is called with null form THEN exception is thrown`() {
         val resultState = TabGroupActionReducer.reduce(
-            state = TabsTrayState(tabGroupFormState = null),
+            state = TabsTrayState(tabGroupState = TabsTrayState.TabGroupState(formState = null)),
             action = TabGroupAction.ThemeChanged(theme = TabGroupTheme.Pink),
         )
 
-        assertEquals(resultState.tabGroupFormState!!.theme, TabGroupTheme.Pink)
+        assertEquals(resultState.tabGroupState.formState!!.theme, TabGroupTheme.Pink)
     }
 
     @Test
     fun `WHEN no groups exist the default next number is 1`() {
         val resultState = TabGroupActionReducer.reduce(
-            state = TabsTrayState(tabGroups = emptyList()),
+            state = TabsTrayState(
+                tabGroupState = TabsTrayState.TabGroupState(
+                    groups = emptyList(),
+                ),
+            ),
             action = TabGroupAction.AddToNewTabGroup,
         )
 
-        assertEquals(1, resultState.tabGroupFormState!!.nextTabGroupNumber)
+        assertEquals(1, resultState.tabGroupState.formState!!.nextTabGroupNumber)
     }
 
     @Test
     fun `WHEN 1 group exists the default next number is 2`() {
         val resultState = TabGroupActionReducer.reduce(
             state = TabsTrayState(
-                tabGroups = listOf(
-                    TabsTrayItem.TabGroup(
-                        title = "Group 1",
-                        theme = TabGroupTheme.Yellow,
-                        tabs = mutableListOf(),
+                tabGroupState = TabsTrayState.TabGroupState(
+                    groups = listOf(
+                        TabsTrayItem.TabGroup(
+                            title = "Group 1",
+                            theme = TabGroupTheme.Yellow,
+                            tabs = mutableListOf(),
+                        ),
                     ),
                 ),
             ),
             action = TabGroupAction.AddToNewTabGroup,
         )
 
-        assertEquals(2, resultState.tabGroupFormState!!.nextTabGroupNumber)
+        assertEquals(2, resultState.tabGroupState.formState!!.nextTabGroupNumber)
     }
 
     @Test
     fun `WHEN 99 groups exist the default next number is 100`() {
         val resultState = TabGroupActionReducer.reduce(
             state = TabsTrayState(
-                tabGroups = List(99) {
-                    TabsTrayItem.TabGroup(
-                        title = "Group $it",
-                        theme = TabGroupTheme.Yellow,
-                        tabs = mutableListOf(),
-                    )
-                },
+                tabGroupState = TabsTrayState.TabGroupState(
+                    groups = List(99) {
+                        TabsTrayItem.TabGroup(
+                            title = "Group $it",
+                            theme = TabGroupTheme.Yellow,
+                            tabs = mutableListOf(),
+                        )
+                    },
+                ),
             ),
             action = TabGroupAction.AddToNewTabGroup,
         )
 
-        assertEquals(100, resultState.tabGroupFormState!!.nextTabGroupNumber)
+        assertEquals(100, resultState.tabGroupState.formState!!.nextTabGroupNumber)
     }
 
     @Test
@@ -305,7 +329,9 @@ class TabGroupReducerTest {
     @Test
     fun `GIVEN the user has at least 1 tab group WHEN the user clicks to add tabs to a group THEN navigate to the ADD TO GROUP flow`() {
         val initialState = TabsTrayState(
-            tabGroups = listOf(createTabGroup()),
+            tabGroupState = TabsTrayState.TabGroupState(
+                groups = listOf(createTabGroup()),
+            ),
         )
         val resultState = TabGroupActionReducer.reduce(
             state = initialState,
@@ -326,7 +352,9 @@ class TabGroupReducerTest {
             action = TabGroupAction.AddToTabGroup,
         )
         val expectedState = initialState.copy(
-            tabGroupFormState = initialState.initializeTabGroupForm(),
+            tabGroupState = initialState.tabGroupState.copy(
+                formState = initialState.initializeTabGroupForm(),
+            ),
             backStack = initialState.backStack + EditTabGroup,
         )
 
@@ -342,7 +370,9 @@ class TabGroupReducerTest {
             action = TabGroupAction.EditTabGroupClicked(group = group),
         )
         val expectedState = initialState.copy(
-            tabGroupFormState = group.initializeTabGroupForm(),
+            tabGroupState = initialState.tabGroupState.copy(
+                formState = group.initializeTabGroupForm(),
+            ),
             backStack = initialState.backStack + EditTabGroup,
         )
 

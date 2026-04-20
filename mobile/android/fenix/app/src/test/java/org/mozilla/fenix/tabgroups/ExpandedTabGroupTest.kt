@@ -33,7 +33,6 @@ class ExpandedTabGroupTest {
                 Surface {
                     ExpandedTabGroup(
                         group = fakeTabGroup(),
-                        focusedTabId = null,
                         onItemClick = {},
                         onTabClose = {},
                         onDeleteTabGroup = {},
@@ -61,7 +60,6 @@ class ExpandedTabGroupTest {
                 Surface {
                     ExpandedTabGroup(
                         group = fakeTabGroup(),
-                        focusedTabId = null,
                         onItemClick = {},
                         onTabClose = {},
                         onDeleteTabGroup = {},
@@ -88,7 +86,6 @@ class ExpandedTabGroupTest {
                     Surface {
                         ExpandedTabGroup(
                             group = fakeTabGroup(tabs = mutableListOf(tab)),
-                            focusedTabId = null,
                             onItemClick = {
                                 if (it == tab) {
                                     itemClicked = true
@@ -120,7 +117,6 @@ class ExpandedTabGroupTest {
                     Surface {
                         ExpandedTabGroup(
                             group = fakeTabGroup(tabs = mutableListOf(tab)),
-                            focusedTabId = null,
                             onItemClick = {},
                             onTabClose = {
                                 if (it == tab) {
@@ -152,7 +148,6 @@ class ExpandedTabGroupTest {
                     Surface {
                         ExpandedTabGroup(
                             group = group,
-                            focusedTabId = null,
                             onItemClick = {},
                             onTabClose = {},
                             onDeleteTabGroup = {
@@ -183,7 +178,6 @@ class ExpandedTabGroupTest {
                     Surface {
                         ExpandedTabGroup(
                             group = fakeTabGroup(),
-                            focusedTabId = null,
                             onItemClick = {},
                             onTabClose = {},
                             onDeleteTabGroup = {},

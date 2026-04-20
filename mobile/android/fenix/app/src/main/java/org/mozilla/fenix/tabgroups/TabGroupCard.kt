@@ -348,6 +348,7 @@ private data class TabGroupCardPreviewState(
                 private = false,
                 icon = null,
                 lastAccess = 0L,
+                isFocused = false,
             )
         }.toMutableList(),
     ),

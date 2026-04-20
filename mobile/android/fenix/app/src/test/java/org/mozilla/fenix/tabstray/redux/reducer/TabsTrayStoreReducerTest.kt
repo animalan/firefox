@@ -19,6 +19,7 @@ import org.mozilla.fenix.tabstray.redux.state.TabsTrayState.Mode
 import org.mozilla.fenix.tabstray.syncedtabs.SyncedTabsListItem
 import org.mozilla.fenix.tabstray.syncedtabs.generateFakeTab
 import org.mozilla.fenix.tabstray.syncedtabs.getFakeSyncedTabList
+import kotlin.collections.plus
 
 class TabsTrayStoreReducerTest {
 
@@ -58,7 +59,7 @@ class TabsTrayStoreReducerTest {
     fun `WHEN UpdateNormalTabs THEN normal tabs are added`() {
         val normalTabs = listOf(createTab("https://mozilla.org"))
         val initialState = TabsTrayState()
-        val expectedState = initialState.copy(normalTabs = normalTabs)
+        val expectedState = initialState.copy(normalTabsState = TabsTrayState.NormalTabsState(tabs = normalTabs))
 
         val resultState = TabsTrayReducer.reduce(
             initialState,
@@ -482,21 +483,31 @@ class TabsTrayStoreReducerTest {
         val expectedInactiveTabs = listOf(createTab(url = "inactive url"))
         val expectedPrivateTabs = listOf(createTab(url = "private url"))
         val expectedTabGroups = listOf(tabGroup)
+        val expectedSelectedNormalTabIndex = 5
+        val expectedSelectedPrivateTabIndex = 7
         val action = TabsTrayAction.TabDataUpdateReceived(
             tabStorageUpdate = TabStorageUpdate(
                 selectedTabId = expectedId,
                 normalTabs = expectedNormalTabs,
+                selectedNormalItemIndex = expectedSelectedNormalTabIndex,
                 inactiveTabs = expectedInactiveTabs,
-                tabGroups = expectedTabGroups,
                 privateTabs = expectedPrivateTabs,
+                selectedPrivateItemIndex = expectedSelectedPrivateTabIndex,
+                tabGroups = expectedTabGroups,
             ),
         )
         val expectedState = TabsTrayState(
             selectedTabId = expectedId,
-            normalTabs = expectedNormalTabs,
+            normalTabsState = TabsTrayState.NormalTabsState(
+                tabs = expectedNormalTabs,
+                selectedItemIndex = expectedSelectedNormalTabIndex,
+            ),
             inactiveTabs = TabsTrayState.InactiveTabsState(tabs = expectedInactiveTabs),
-            tabGroups = expectedTabGroups,
-            privateBrowsing = TabsTrayState.PrivateBrowsingState(tabs = expectedPrivateTabs),
+            privateBrowsing = TabsTrayState.PrivateBrowsingState(
+                tabs = expectedPrivateTabs,
+                selectedItemIndex = expectedSelectedPrivateTabIndex,
+            ),
+            tabGroupState = TabsTrayState.TabGroupState(groups = expectedTabGroups),
         )
         val resultState = TabsTrayReducer.reduce(state = initialState, action = action)
 
@@ -510,12 +521,12 @@ class TabsTrayStoreReducerTest {
             tabs = MutableList(size = 20) { createTab(url = "") },
         )
         val initialState = TabsTrayState(
-            normalTabs = tabs + tabGroup,
+            normalTabsState = TabsTrayState.NormalTabsState(tabs = tabs + tabGroup),
             mode = Mode.Select(
                 selectedTabs = emptySet(),
                 selectedTabGroups = emptySet(),
             ),
-            tabGroups = listOf(tabGroup),
+            tabGroupState = TabsTrayState.TabGroupState(groups = listOf(tabGroup)),
         )
         val resultState = TabsTrayReducer.reduce(
             state = initialState,
@@ -538,12 +549,12 @@ class TabsTrayStoreReducerTest {
             tabs = MutableList(size = 20) { createTab(url = "") },
         )
         val initialState = TabsTrayState(
-            normalTabs = tabs + tabGroup,
+            normalTabsState = TabsTrayState.NormalTabsState(tabs = tabs + tabGroup),
             mode = Mode.Select(
                 selectedTabs = tabGroup.tabs.toSet(),
                 selectedTabGroups = setOf(tabGroup),
             ),
-            tabGroups = listOf(tabGroup),
+            tabGroupState = TabsTrayState.TabGroupState(groups = listOf(tabGroup)),
         )
         val resultState = TabsTrayReducer.reduce(
             state = initialState,
@@ -563,12 +574,12 @@ class TabsTrayStoreReducerTest {
             tabs = MutableList(size = 20) { createTab(url = "") },
         )
         val initialState = TabsTrayState(
-            normalTabs = tabs + tabGroup,
+            normalTabsState = TabsTrayState.NormalTabsState(tabs = tabs + tabGroup),
             mode = Mode.Select(
                 selectedTabs = tabGroup.tabs.toSet() + tabs[0],
                 selectedTabGroups = setOf(tabGroup),
             ),
-            tabGroups = listOf(tabGroup),
+            tabGroupState = TabsTrayState.TabGroupState(groups = listOf(tabGroup)),
         )
         val resultState = TabsTrayReducer.reduce(
             state = initialState,

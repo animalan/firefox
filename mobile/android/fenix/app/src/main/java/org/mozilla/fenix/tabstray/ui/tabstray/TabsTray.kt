@@ -209,10 +209,10 @@ fun TabsTray(
         topBar = {
             TabsTrayBanner(
                 selectedPage = tabsTrayState.selectedPage,
-                normalTabCount = tabsTrayState.normalTabs.size + tabsTrayState.inactiveTabs.tabs.size,
+                normalTabCount = tabsTrayState.normalTabsState.tabs.size + tabsTrayState.inactiveTabs.tabs.size,
                 privateTabCount = tabsTrayState.privateBrowsing.tabs.size,
                 shouldShowTabGroupsPage = shouldShowTabGroupsPage,
-                tabGroupCount = tabsTrayState.tabGroups.size,
+                tabGroupCount = tabsTrayState.tabGroupState.groups.size,
                 syncedTabCount = syncedTabCount,
                 selectionMode = tabsTrayState.mode,
                 isInDebugMode = tabsTrayState.config.isInDebugMode,
@@ -267,9 +267,9 @@ fun TabsTray(
                 when (Page.positionToPage(position, shouldShowTabGroupsPage)) {
                     Page.NormalTabs -> {
                         NormalTabsPage(
-                            normalTabs = tabsTrayState.normalTabs,
+                            normalTabs = tabsTrayState.normalTabsState.tabs,
                             inactiveTabs = tabsTrayState.inactiveTabs.tabs,
-                            selectedTabId = tabsTrayState.selectedTabId,
+                            selectedItemIndex = tabsTrayState.normalTabsState.selectedItemIndex,
                             selectionMode = tabsTrayState.mode,
                             inactiveTabsExpanded = tabsTrayState.inactiveTabs.isExpanded,
                             displayTabsInGrid = tabsTrayState.config.displayTabsInGrid,
@@ -304,7 +304,7 @@ fun TabsTray(
                     Page.PrivateTabs -> {
                         PrivateTabsPage(
                             privateTabs = tabsTrayState.privateBrowsing.tabs,
-                            selectedTabId = tabsTrayState.selectedTabId,
+                            selectedItemIndex = tabsTrayState.privateBrowsing.selectedItemIndex,
                             selectionMode = tabsTrayState.mode,
                             displayTabsInGrid = tabsTrayState.config.displayTabsInGrid,
                             privateTabsLocked = tabsTrayState.privateBrowsing.isLocked,
@@ -369,7 +369,9 @@ private fun TabsTrayPreview(
                 selectedPage = tabTrayState.selectedPage,
                 mode = tabTrayState.mode,
                 selectedTabId = tabTrayState.selectedTabId,
-                normalTabs = tabTrayState.normalTabs,
+                normalTabsState = TabsTrayState.NormalTabsState(
+                    tabs = tabTrayState.normalTabs,
+                ),
                 inactiveTabs = TabsTrayState.InactiveTabsState(
                     tabs = tabTrayState.inactiveTabs,
                     isExpanded = tabTrayState.inactiveTabsExpanded,
@@ -409,7 +411,7 @@ private fun TabsTrayPreview(
                     val newTabs = tabsTrayStore.state.privateBrowsing.tabs - tab
                     tabsTrayStore.dispatch(TabsTrayAction.UpdatePrivateTabs(newTabs))
                 } else {
-                    val newTabs = tabsTrayStore.state.normalTabs - tab
+                    val newTabs = tabsTrayStore.state.normalTabsState.tabs - tab
                     tabsTrayStore.dispatch(TabsTrayAction.UpdateNormalTabs(newTabs))
                 }
 
@@ -507,7 +509,7 @@ private fun TabsTrayPreview(
                     url = "www.mozilla.com",
                     private = false,
                 )
-                val allTabs = tabsTrayStore.state.normalTabs + newTab
+                val allTabs = tabsTrayStore.state.normalTabsState.tabs + newTab
                 tabsTrayStore.dispatch(TabsTrayAction.UpdateNormalTabs(allTabs))
             },
             onOpenNewPrivateTabClicked = {

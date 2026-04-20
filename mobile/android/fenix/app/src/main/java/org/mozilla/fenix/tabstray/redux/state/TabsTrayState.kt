@@ -15,29 +15,27 @@ import org.mozilla.fenix.tabstray.syncedtabs.SyncedTabsListItem
  * @property selectedPage The current page in the tray can be on.
  * @property mode Whether the browser tab list is in multi-select mode or not with the set of
  * currently selected tabs.
- * @property normalTabs The list of normal [TabsTrayItem]s that do not fall under [inactiveTabs].
  * @property selectedTabId The ID of the currently selected (active) tab.
+ * @property normalTabsState The state of the normal tabs page.
  * @property inactiveTabs The state of inactive tabs, including the list of tabs and UI flags.
  * @property privateBrowsing The state of private browsing, including tabs and locking status.
- * @property tabGroups The list of [TabsTrayItem.TabGroup]s to display.
+ * @property tabGroupState The state of the tab group feature.
  * @property sync The state of Synced Tabs, including the list of tabs and sync status.
  * @property config The configuration flags for the Tabs Tray (e.g., grid display, feature flags).
  * @property tabSearchState The state of the tab search feature.
- * @property tabGroupFormState The state of the tab group edit form.
  * @property backStack The navigation history of the Tab Manager feature.
  */
 data class TabsTrayState(
     val selectedPage: Page = Page.NormalTabs,
     val mode: Mode = Mode.Normal,
-    val normalTabs: List<TabsTrayItem> = emptyList(),
     val selectedTabId: String? = null,
+    val normalTabsState: NormalTabsState = NormalTabsState(),
     val inactiveTabs: InactiveTabsState = InactiveTabsState(),
     val privateBrowsing: PrivateBrowsingState = PrivateBrowsingState(),
-    val tabGroups: List<TabsTrayItem.TabGroup> = emptyList(),
+    val tabGroupState: TabGroupState = TabGroupState(),
     val sync: SyncState = SyncState(),
     val config: TabsTrayConfig = TabsTrayConfig(),
     val tabSearchState: TabSearchState = TabSearchState(),
-    val tabGroupFormState: TabGroupFormState? = null,
     val backStack: List<TabManagerNavDestination> = listOf(TabManagerNavDestination.Root),
 ) : State {
 
@@ -101,6 +99,17 @@ data class TabsTrayState(
     }
 
     /**
+     * State specific to normal browsing mode.
+     *
+     * @property tabs The list of open normal tabs.
+     * @property selectedItemIndex The index of the selected normal tab.
+     */
+    data class NormalTabsState(
+        val tabs: List<TabsTrayItem> = emptyList(),
+        val selectedItemIndex: Int = 0,
+    )
+
+    /**
      * State specific to inactive tabs.
      *
      * @property tabs The list of tabs currently considered inactive.
@@ -119,11 +128,13 @@ data class TabsTrayState(
      * State specific to private browsing mode.
      *
      * @property tabs The list of open private tabs.
+     * @property selectedItemIndex The index of the selected private tab.
      * @property isLocked Whether Private Browsing Mode is currently locked.
      * @property showLockBanner Whether the banner to enable PBM locking should be displayed.
      */
     data class PrivateBrowsingState(
         val tabs: List<TabsTrayItem> = emptyList(),
+        val selectedItemIndex: Int = 0,
         val isLocked: Boolean = false,
         val showLockBanner: Boolean = false,
     )
@@ -161,6 +172,17 @@ data class TabsTrayState(
     )
 
     /**
+     * State specific to Tab Groups.
+     *
+     * @property groups The list of tab groups.
+     * @property formState The state of the tab group edit form.
+     */
+    data class TabGroupState(
+        val groups: List<TabsTrayItem.TabGroup> = emptyList(),
+        val formState: TabGroupFormState? = null,
+    )
+
+    /**
      * Whether the Tab Search button is visible.
      */
     val searchIconVisible: Boolean
@@ -171,7 +193,7 @@ data class TabsTrayState(
      */
     val searchIconEnabled: Boolean
         get() = when {
-            selectedPage == Page.NormalTabs && normalTabs.isNotEmpty() -> true
+            selectedPage == Page.NormalTabs && normalTabsState.tabs.isNotEmpty() -> true
             selectedPage == Page.PrivateTabs && privateBrowsing.tabs.isNotEmpty() -> true
             else -> false
         }

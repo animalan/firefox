@@ -410,7 +410,6 @@ class TabManagementFragment : DialogFragment() {
 
                                 ExpandedTabGroup(
                                     group = expandedGroup,
-                                    focusedTabId = state.selectedTabId,
                                     onItemClick = {
                                         when (it) {
                                             is TabsTrayItem.Tab -> handleTabClick(it)
@@ -463,7 +462,7 @@ class TabManagementFragment : DialogFragment() {
                                 ),
                             ) {
                                 AddToTabGroup(
-                                    tabGroups = tabsTrayStore.state.tabGroups,
+                                    tabGroups = tabsTrayStore.state.tabGroupState.groups,
                                     onAddToNewTabGroup = {
                                         tabsTrayStore.dispatch(TabGroupAction.AddToNewTabGroup)
                                     },
@@ -559,7 +558,7 @@ class TabManagementFragment : DialogFragment() {
      */
     private fun performTabClick(tab: TabsTrayItem) {
         if (tab is TabsTrayItem.Tab && shouldConsiderShowingTabSwipeCFR()) {
-            val normalTabs = tabsTrayStore.state.normalTabs
+            val normalTabs = tabsTrayStore.state.normalTabsState.tabs
             val currentTabId = tabsTrayStore.state.selectedTabId
 
             if (normalTabs.size >= 2 && currentTabId != null) {

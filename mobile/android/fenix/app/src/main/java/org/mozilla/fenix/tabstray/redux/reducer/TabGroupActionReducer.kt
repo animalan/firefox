@@ -27,7 +27,7 @@ object TabGroupActionReducer {
         action: TabGroupAction,
     ): TabsTrayState {
         return when (action) {
-            is TabGroupAction.AddToTabGroup -> if (state.tabGroups.isEmpty()) {
+            is TabGroupAction.AddToTabGroup -> if (state.tabGroupState.groups.isEmpty()) {
                 state.navigateToCreateTabGroup()
             } else {
                 state.copy(backStack = state.backStack + TabManagerNavDestination.AddToTabGroup)
@@ -36,31 +36,37 @@ object TabGroupActionReducer {
             is TabGroupAction.AddToNewTabGroup -> state.navigateToCreateTabGroup()
 
             is TabGroupAction.NameChanged -> {
-                val form = requireNotNull(state.tabGroupFormState) {
+                val form = requireNotNull(state.tabGroupState.formState) {
                     "NameChanged dispatched with no TabGroupFormState"
                 }
                 state.copy(
-                    tabGroupFormState = form.copy(
-                        name = action.name,
-                        edited = true,
+                    tabGroupState = state.tabGroupState.copy(
+                        formState = form.copy(
+                            name = action.name,
+                            edited = true,
+                        ),
                     ),
                 )
             }
 
             is TabGroupAction.ThemeChanged -> {
-                val form = requireNotNull(state.tabGroupFormState) {
+                val form = requireNotNull(state.tabGroupState.formState) {
                     "ThemeChanged dispatched with no TabGroupFormState"
                 }
                 state.copy(
-                    tabGroupFormState = form.copy(
-                        theme = action.theme,
-                        edited = true,
+                    tabGroupState = state.tabGroupState.copy(
+                        formState = form.copy(
+                            theme = action.theme,
+                            edited = true,
+                        ),
                     ),
                 )
             }
 
             TabGroupAction.FormDismissed -> state.copy(
-                tabGroupFormState = null,
+                tabGroupState = state.tabGroupState.copy(
+                    formState = null,
+                ),
                 backStack = state.backStack.popTabGroupFlow(),
             )
 
@@ -93,14 +99,18 @@ object TabGroupActionReducer {
             )
 
             is TabGroupAction.EditTabGroupClicked -> state.copy(
-                tabGroupFormState = action.group.initializeTabGroupForm(),
+                tabGroupState = state.tabGroupState.copy(
+                    formState = action.group.initializeTabGroupForm(),
+                ),
                 backStack = state.navigateToEditTabGroup(),
             )
         }
     }
 
     private fun TabsTrayState.navigateToCreateTabGroup() = copy(
-        tabGroupFormState = initializeTabGroupForm(),
+        tabGroupState = tabGroupState.copy(
+            formState = initializeTabGroupForm(),
+        ),
         backStack = navigateToEditTabGroup(),
     )
 

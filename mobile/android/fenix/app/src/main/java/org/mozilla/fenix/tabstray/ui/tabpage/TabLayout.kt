@@ -126,7 +126,7 @@ private val TabListBorderMiddleItemShape = RoundedCornerShape(4.dp)
  *
  * @param tabs The list of [TabsTrayItem] to display.
  * @param displayTabsInGrid Whether the tabs should be displayed in a grid.
- * @param selectedTabId The ID of the currently selected tab.
+ * @param selectedItemIndex The index of the currently selected tab. This will be scrolled to on first-render.
  * @param selectionMode [TabsTrayState.Mode] indicating whether the Tabs Tray is in single selection
  * or multi-selection and contains the set of selected tabs.
  * @param modifier [Modifier] to be applied to the layout.
@@ -145,7 +145,7 @@ private val TabListBorderMiddleItemShape = RoundedCornerShape(4.dp)
 fun TabLayout(
     tabs: List<TabsTrayItem>,
     displayTabsInGrid: Boolean,
-    selectedTabId: String?,
+    selectedItemIndex: Int,
     selectionMode: TabsTrayState.Mode,
     modifier: Modifier = Modifier,
     onTabClose: (TabsTrayItem.Tab) -> Unit,
@@ -158,21 +158,10 @@ fun TabLayout(
     header: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = defaultTabLayoutContentPadding(),
 ) {
-    var selectedTabIndex = -1
-    selectedTabId?.let {
-        tabs.forEachIndexed { index, tab ->
-            if (tab is TabsTrayItem.Tab && tab.id == selectedTabId) {
-                selectedTabIndex = index
-                return@forEachIndexed
-            }
-        }
-    }
-
     if (displayTabsInGrid) {
         TabGrid(
             tabs = tabs,
-            selectedTabId = selectedTabId,
-            selectedTabIndex = selectedTabIndex,
+            selectedItemIndex = selectedItemIndex,
             selectionMode = selectionMode,
             modifier = modifier,
             onTabClose = onTabClose,
@@ -188,8 +177,7 @@ fun TabLayout(
     } else {
         TabList(
             tabs = tabs,
-            selectedTabId = selectedTabId,
-            selectedTabIndex = selectedTabIndex,
+            selectedItemIndex = selectedItemIndex,
             selectionMode = selectionMode,
             modifier = modifier,
             onTabClose = onTabClose,
@@ -257,8 +245,7 @@ private fun calculateScrollDimensions(state: ScrollableState): Pair<Int, Int>? {
 @Composable
 private fun TabGrid(
     tabs: List<TabsTrayItem>,
-    selectedTabId: String?,
-    selectedTabIndex: Int,
+    selectedItemIndex: Int,
     selectionMode: TabsTrayState.Mode,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
@@ -275,7 +262,7 @@ private fun TabGrid(
 
     TabLayoutScrollHelper(
         state = gridState,
-        selectedTabIndex = selectedTabIndex,
+        selectedTabIndex = selectedItemIndex,
         bottomPadding = contentPadding.calculateBottomPadding(),
         isHeaderPresent = header != null,
     )
@@ -337,7 +324,6 @@ private fun TabGrid(
                     index = index,
                     thumbnailSizePx = thumbnailSizePx,
                     hasHeader = header != null,
-                    isSelected = tab.id == selectedTabId,
                     isInMultiSelectMode = isInMultiSelectMode,
                     isMultiSelected = selectionMode.contains(tab),
                     reorderState = reorderState,
@@ -363,7 +349,6 @@ private fun LazyGridItemScope.TabGridItemContent(
     index: Int,
     thumbnailSizePx: Int,
     hasHeader: Boolean,
-    isSelected: Boolean,
     isInMultiSelectMode: Boolean,
     isMultiSelected: Boolean,
     reorderState: GridReorderState,
@@ -395,7 +380,7 @@ private fun LazyGridItemScope.TabGridItemContent(
         swipingActive = swipingActive,
     ) { interactionState ->
         val selectionState = TabsTrayItemSelectionState(
-            isFocused = isSelected,
+            isFocused = tabsTrayItem.isFocused,
             isSelected = isMultiSelected,
             multiSelectEnabled = isInMultiSelectMode,
         )
@@ -448,8 +433,7 @@ private val BoxWithConstraintsScope.thumbnailSizePx: Int
 @Composable
 private fun TabList(
     tabs: List<TabsTrayItem>,
-    selectedTabId: String?,
-    selectedTabIndex: Int,
+    selectedItemIndex: Int,
     selectionMode: TabsTrayState.Mode,
     modifier: Modifier = Modifier,
     onTabClose: (TabsTrayItem.Tab) -> Unit,
@@ -464,7 +448,7 @@ private fun TabList(
 
     TabLayoutScrollHelper(
         state = state,
-        selectedTabIndex = selectedTabIndex,
+        selectedTabIndex = selectedItemIndex,
         bottomPadding = tabListBottomPadding,
         isHeaderPresent = header != null,
     )
@@ -549,11 +533,10 @@ private fun TabList(
                                 modifier = Modifier
                                     .tabListItemShapeStyling(
                                         tabShapeInfo = tabShapeInfo,
-                                        tabId = tab.id,
-                                        selectedTabId = selectedTabId,
+                                        tab = tab,
                                     ),
                                 selectionState = TabsTrayItemSelectionState(
-                                    isFocused = tab.id == selectedTabId,
+                                    isFocused = tab.isFocused,
                                     multiSelectEnabled = isInMultiSelectMode,
                                     isSelected = selectionMode.contains(tab),
                                 ),
@@ -669,7 +652,7 @@ private fun TabListPreview(
         Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
             TabLayout(
                 tabs = tabs,
-                selectedTabId = tabs[previewModel.value.selectedTabIndex].id,
+                selectedItemIndex = previewModel.value.selectedTabIndex,
                 selectionMode = TabsTrayState.Mode.Normal,
                 displayTabsInGrid = false,
                 onTabClose = tabs::remove,
@@ -699,8 +682,8 @@ private fun TabGridPreview(
     FirefoxTheme(theme = previewModel.theme) {
         TabLayout(
             tabs = tabs,
-            selectedTabId = tabs[previewModel.value.selectedTabIndex].id,
             selectionMode = TabsTrayState.Mode.Normal,
+            selectedItemIndex = previewModel.value.selectedTabIndex,
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
             displayTabsInGrid = true,
             onTabClose = tabs::remove,
@@ -757,7 +740,7 @@ private fun MultiSelectPreview(
     FirefoxTheme(theme = previewModel.theme) {
         TabLayout(
             tabs = tabs,
-            selectedTabId = tabs[previewModel.value.selectedTabIndex].id,
+            selectedItemIndex = previewModel.value.selectedTabIndex,
             selectionMode = TabsTrayState.Mode.Select(
                 selectedTabs = selectedTabs.toSet(),
                 selectedTabGroups = selectedTabGroups.toSet(),
@@ -874,8 +857,7 @@ private fun defaultTabLayoutContentPadding(): PaddingValues = PaddingValues(
 @Composable
 private fun Modifier.tabListItemShapeStyling(
     tabShapeInfo: TabListShapeInfo,
-    tabId: String,
-    selectedTabId: String?,
+    tab: TabsTrayItem,
 ): Modifier {
     return this
         .thenConditional(
@@ -887,6 +869,6 @@ private fun Modifier.tabListItemShapeStyling(
                 border = tabItemBorderFocused(),
                 shape = tabShapeInfo.borderShape,
             ),
-            { tabId == selectedTabId },
+            { tab.isFocused },
         )
 }

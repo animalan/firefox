@@ -93,7 +93,7 @@ fun EditTabGroup(
     tabsTrayStore: TabsTrayStore,
 ) {
     val formState by tabsTrayStore.tabGroupFormStateFlow.collectAsState(
-        initial = tabsTrayStore.state.tabGroupFormState ?: return,
+        initial = tabsTrayStore.state.tabGroupState.formState ?: return,
     )
 
     EditTabGroupContent(
@@ -435,11 +435,13 @@ private fun EditTabGroupBottomSheetPreview(
     val tabsTrayStore = remember {
         TabsTrayStore(
             initialState = TabsTrayState(
-                tabGroupFormState = TabGroupFormState(
-                    tabGroupId = null,
-                    name = "",
-                    nextTabGroupNumber = 1,
-                    edited = false,
+                tabGroupState = TabsTrayState.TabGroupState(
+                    formState = TabGroupFormState(
+                        tabGroupId = null,
+                        name = "",
+                        nextTabGroupNumber = 1,
+                        edited = false,
+                    ),
                 ),
             ),
         )

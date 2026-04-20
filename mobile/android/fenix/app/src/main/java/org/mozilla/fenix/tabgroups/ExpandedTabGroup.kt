@@ -52,9 +52,7 @@ import mozilla.components.ui.icons.R as iconsR
 
 /**
  * Renders an expanded view of a user's tab group.
- * @param group: [TabsTrayItem.TabGroup] item rendered by the card
- * @param focusedTabId: String id of the tab in focus.  This id may correspond to a tab
- * that is not inside the group.
+ * @param group: [TabsTrayItem.TabGroup] item rendered by the card.
  * @param onItemClick Invoked when the user clicks on a [TabsTrayItem] in the group.
  * @param onTabClose Invoked when the user clicks to close a [TabsTrayItem.Tab] in the group.
  * @param onDeleteTabGroup Invoked when the user clicks on delete tab group.
@@ -64,7 +62,6 @@ import mozilla.components.ui.icons.R as iconsR
 @Composable
 fun ExpandedTabGroup(
     group: TabsTrayItem.TabGroup,
-    focusedTabId: String?,
     onItemClick: (TabsTrayItem) -> Unit,
     onTabClose: (TabsTrayItem.Tab) -> Unit,
     onDeleteTabGroup: () -> Unit,
@@ -91,7 +88,7 @@ fun ExpandedTabGroup(
         TabLayout(
             tabs = group.tabs.toList(),
             displayTabsInGrid = true,
-            selectedTabId = focusedTabId,
+            selectedItemIndex = 0, // updating this in Bug 2030474
             selectionMode = TabsTrayState.Mode.Normal,
             modifier = Modifier,
             onTabClose = onTabClose,
@@ -215,7 +212,6 @@ private fun ExpandedTabGroupPreview(
             ) {
                 ExpandedTabGroup(
                     group = previewState.group,
-                    focusedTabId = previewState.selectedTabId,
                     onTabClose = {},
                     onItemClick = {},
                     onDeleteTabGroup = {},

@@ -41,7 +41,7 @@ private val EmptyPageWidth = 170.dp
  *
  * @param normalTabs The list of active tabs to display.
  * @param inactiveTabs The list of inactive tabs to display.
- * @param selectedTabId The ID of the currently selected tab.
+ * @param selectedItemIndex The index of the currently selected tab. This will be scrolled to on first-render.
  * @param selectionMode [TabsTrayState.Mode] indicating whether the Tab Manager is in single selection.
  * @param inactiveTabsExpanded Whether the Inactive Tabs section is expanded.
  * @param displayTabsInGrid Whether the normal and private tabs should be displayed in a grid.
@@ -73,7 +73,7 @@ private val EmptyPageWidth = 170.dp
 internal fun NormalTabsPage(
     normalTabs: List<TabsTrayItem>,
     inactiveTabs: List<TabsTrayItem.Tab>,
-    selectedTabId: String?,
+    selectedItemIndex: Int,
     selectionMode: TabsTrayState.Mode,
     inactiveTabsExpanded: Boolean,
     displayTabsInGrid: Boolean,
@@ -135,7 +135,7 @@ internal fun NormalTabsPage(
         TabLayout(
             tabs = normalTabs,
             displayTabsInGrid = displayTabsInGrid,
-            selectedTabId = selectedTabId,
+            selectedItemIndex = selectedItemIndex,
             selectionMode = selectionMode,
             modifier = Modifier.testTag(TabsTrayTestTag.NORMAL_TABS_LIST),
             onTabClose = onTabClose,

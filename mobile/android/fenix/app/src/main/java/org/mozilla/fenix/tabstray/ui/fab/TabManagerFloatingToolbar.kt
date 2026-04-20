@@ -162,7 +162,7 @@ private fun FloatingToolbarActions(
 
     val menuItems = generateMenuItems(
         selectedPage = state.selectedPage,
-        normalTabCount = state.normalTabs.size,
+        normalTabCount = state.normalTabsState.tabs.size,
         privateTabCount = state.privateBrowsing.tabs.size,
         onAccountSettingsClick = onAccountSettingsClick,
         onTabSettingsClick = onTabSettingsClick,
@@ -426,7 +426,9 @@ private class TabManagerFloatingToolbarParameterProvider :
                     config = TabsTrayState.TabsTrayConfig(
                         tabSearchEnabled = false,
                     ),
-                    normalTabs = listOf(createTab(url = "url")),
+                    normalTabsState = TabsTrayState.NormalTabsState(
+                        tabs = listOf(createTab(url = "url")),
+                    ),
                 ),
             ),
             TabManagerFloatingToolbarPreviewModel(
@@ -435,7 +437,9 @@ private class TabManagerFloatingToolbarParameterProvider :
                     config = TabsTrayState.TabsTrayConfig(
                         tabSearchEnabled = true,
                     ),
-                    normalTabs = emptyList(),
+                    normalTabsState = TabsTrayState.NormalTabsState(
+                        tabs = emptyList(),
+                    ),
                 ),
             ),
             TabManagerFloatingToolbarPreviewModel(
