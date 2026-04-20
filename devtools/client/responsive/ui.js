@@ -57,6 +57,7 @@ const RELOAD_NOTIFICATION_PREF =
   "devtools.responsive.reloadNotification.enabled";
 const USE_DYNAMIC_TOOLBAR_PREF = "devtools.responsive.dynamicToolbar.enabled";
 const DYNAMIC_TOOLBAR_MAX_HEIGHT = 50; // px
+const DYNAMIC_TOOLBAR_SNAP_ANIMATION_DURATION_MS = 120; // ms
 
 function debug(_msg) {
   // console.log(`RDM manager: ${_msg}`);
@@ -100,7 +101,6 @@ class ResponsiveUI extends EventEmitter {
     this.onResizeStop = this.onResizeStop.bind(this);
 
     this.onTargetAvailable = this.onTargetAvailable.bind(this);
-    this.onContentScrolled = this.onContentScrolled.bind(this);
 
     this.networkFront = null;
     // Promise resolved when the UI init has completed.
@@ -112,6 +112,9 @@ class ResponsiveUI extends EventEmitter {
     this.dynamicToolbarEnabled = Services.prefs.getBoolPref(
       USE_DYNAMIC_TOOLBAR_PREF
     );
+    this.currentDynamicToolbarHeight = 0;
+    this.dynamicToolbarSnapAnimation = null;
+    this.mouseScreenYWhilePressed = null;
   }
 
   get toolWindow() {
@@ -209,10 +212,10 @@ class ResponsiveUI extends EventEmitter {
         this.tab.linkedBrowser.browsingContext,
         DYNAMIC_TOOLBAR_MAX_HEIGHT
       );
-      InspectorUtils.setVerticalClipping(
-        this.tab.linkedBrowser.browsingContext,
-        0
-      );
+      this.setCurrentDynamicToolbarHeight(DYNAMIC_TOOLBAR_MAX_HEIGHT);
+      this.tab.linkedBrowser.addEventListener("mousedown", this);
+      this.tab.linkedBrowser.addEventListener("mousemove", this);
+      this.tab.linkedBrowser.addEventListener("mouseup", this);
     }
 
     // Create resizer handlers
@@ -356,6 +359,11 @@ class ResponsiveUI extends EventEmitter {
     }
 
     this.browserWindow.removeEventListener("FullZoomChange", this);
+
+    this.tab.linkedBrowser.removeEventListener("mousedown", this);
+    this.tab.linkedBrowser.removeEventListener("mousemove", this);
+    this.tab.linkedBrowser.removeEventListener("mouseup", this);
+
     // When discarding, the content document may already have been destroyed.
     this.rdmFrame.contentWindow?.removeEventListener("message", this);
 
@@ -506,6 +514,11 @@ class ResponsiveUI extends EventEmitter {
           reason: event.type,
         });
         break;
+      case "mousedown":
+      case "mousemove":
+      case "mouseup":
+        this.handleBrowserMouseEvent(event);
+        break;
     }
   }
 
@@ -551,6 +564,57 @@ class ResponsiveUI extends EventEmitter {
       case "update-device-modal":
         this.onUpdateDeviceModal(event);
         break;
+    }
+  }
+
+  handleBrowserMouseEvent(evt) {
+    // We only listen to mouse events in order to simulate dynamic toolbar movement.
+    if (!this.dynamicToolbarEnabled) {
+      return;
+    }
+
+    // Ignore all but real mouse event coming from physical mouse. This matches
+    // what touch-simulator.js does inside the content process.
+    if (
+      evt.button ||
+      evt.inputSource != evt.MOZ_SOURCE_MOUSE ||
+      evt.isSynthesized
+    ) {
+      return;
+    }
+
+    switch (evt.type) {
+      case "mousedown":
+        this.mouseScreenYWhilePressed = evt.screenY;
+        this.interruptDynamicToolbarSnapAnimation();
+        break;
+
+      case "mousemove": {
+        if (this.mouseScreenYWhilePressed === null) {
+          return;
+        }
+
+        const deltaY = evt.screenY - this.mouseScreenYWhilePressed;
+        this.mouseScreenYWhilePressed = evt.screenY;
+        this.setCurrentDynamicToolbarHeight(
+          this.currentDynamicToolbarHeight + deltaY
+        );
+        break;
+      }
+
+      case "mouseup": {
+        if (this.mouseScreenYWhilePressed === null) {
+          return;
+        }
+
+        const deltaY = evt.screenY - this.mouseScreenYWhilePressed;
+        this.mouseScreenYWhilePressed = null;
+        this.setCurrentDynamicToolbarHeight(
+          this.currentDynamicToolbarHeight + deltaY
+        );
+        this.startDynamicToolbarSnapAnimation();
+        break;
+      }
     }
   }
 
@@ -1114,19 +1178,89 @@ class ResponsiveUI extends EventEmitter {
     return Math.min(Math.max(value, min), max);
   }
 
-  onContentScrolled(deltaY) {
-    const currentHeight = parseInt(this.dynamicToolbar.style.height, 10);
-    const newHeight = this.clamp(
-      0,
-      DYNAMIC_TOOLBAR_MAX_HEIGHT,
-      currentHeight + deltaY
-    );
-    this.dynamicToolbar.style.height = newHeight + "px";
-    const offset = newHeight - DYNAMIC_TOOLBAR_MAX_HEIGHT;
+  setCurrentDynamicToolbarHeight(unclampedHeight) {
+    const height = this.clamp(0, DYNAMIC_TOOLBAR_MAX_HEIGHT, unclampedHeight);
+    this.currentDynamicToolbarHeight = height;
+    this.dynamicToolbar.style.height = height + "px";
+    const offset = height - DYNAMIC_TOOLBAR_MAX_HEIGHT;
     InspectorUtils.setVerticalClipping(
       this.tab.linkedBrowser.browsingContext,
       offset
     );
+  }
+
+  /**
+   * Make the dynamic toolbar snap to either fully-visible or fully-hidden, with
+   * a short animation. This animation can be interrupted with a call to
+   * interruptDynamicToolbarSnapAnimation() when a new scroll gesture starts.
+   *
+   * We use requestAnimationFrame here instead of CSS transitions so that
+   * setCurrentDynamicToolbarHeight can call setVerticalClipping in sync with
+   * the toolbar height change on each animation frame.
+   */
+  startDynamicToolbarSnapAnimation() {
+    if (
+      this.currentDynamicToolbarHeight == 0 ||
+      this.currentDynamicToolbarHeight == DYNAMIC_TOOLBAR_MAX_HEIGHT
+    ) {
+      return;
+    }
+
+    const destHeight =
+      this.currentDynamicToolbarHeight <= DYNAMIC_TOOLBAR_MAX_HEIGHT / 2
+        ? 0
+        : DYNAMIC_TOOLBAR_MAX_HEIGHT;
+    const startTimestamp = this.browserWindow.performance.now();
+    const endTimestamp =
+      startTimestamp + DYNAMIC_TOOLBAR_SNAP_ANIMATION_DURATION_MS;
+    const startHeight = this.currentDynamicToolbarHeight;
+    const endHeight = destHeight;
+    const rafHandle = this.browserWindow.requestAnimationFrame(() =>
+      this.updateDynamicToolbarSnapAnimation()
+    );
+    this.dynamicToolbarSnapAnimation = {
+      startTimestamp,
+      endTimestamp,
+      startHeight,
+      endHeight,
+      rafHandle,
+    };
+  }
+
+  updateDynamicToolbarSnapAnimation() {
+    if (this.dynamicToolbarSnapAnimation === null) {
+      return;
+    }
+
+    const { startTimestamp, endTimestamp, startHeight, endHeight } =
+      this.dynamicToolbarSnapAnimation;
+    const currentTimestamp = this.browserWindow.performance.now();
+    let t =
+      (currentTimestamp - startTimestamp) / (endTimestamp - startTimestamp);
+    t = this.clamp(0, 1, t);
+    const k = t * t * (2 - t); // smooth (similar to ease-in-out)
+    const h = k * endHeight + (1 - k) * startHeight; // lerp
+    this.setCurrentDynamicToolbarHeight(h);
+
+    if (currentTimestamp < endTimestamp) {
+      this.dynamicToolbarSnapAnimation.rafHandle =
+        this.browserWindow.requestAnimationFrame(() =>
+          this.updateDynamicToolbarSnapAnimation()
+        );
+    } else {
+      this.dynamicToolbarSnapAnimation = null;
+    }
+  }
+
+  interruptDynamicToolbarSnapAnimation() {
+    if (this.dynamicToolbarSnapAnimation === null) {
+      return;
+    }
+
+    this.browserWindow.cancelAnimationFrame(
+      this.dynamicToolbarSnapAnimation.rafHandle
+    );
+    this.dynamicToolbarSnapAnimation = null;
   }
 
   async onTargetAvailable({ targetFront, isTargetSwitching }) {
@@ -1137,10 +1271,6 @@ class ResponsiveUI extends EventEmitter {
     if (targetFront.isTopLevel) {
       await this.restoreActorState(isTargetSwitching);
       this.emitForTests("responsive-ui-target-switch-done");
-    }
-
-    if (Services.prefs.getBoolPref(USE_DYNAMIC_TOOLBAR_PREF)) {
-      targetFront.on("contentScrolled", this.onContentScrolled);
     }
   }
 
