@@ -264,9 +264,7 @@ TEST_F(ImageDecoderMetadata, AnimatedAVIF) {
 
 #ifdef MOZ_JXL
 TEST_F(ImageDecoderMetadata, AnimatedJXL) {
-  // TODO: Frame count decodes haven't been implemented for JXL yet.
-  CheckMetadata(GreenFirstFrameAnimatedJXLTestCase(), BMPWithinICO::NO,
-                /* aSkipCommon */ false, /* aSkipFrameCount */ true);
+  CheckMetadata(GreenFirstFrameAnimatedJXLTestCase());
 }
 #endif
 

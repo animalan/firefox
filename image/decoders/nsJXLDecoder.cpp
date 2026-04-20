@@ -116,22 +116,34 @@ LexerResult nsJXLDecoder::ScanForFrameCount(SourceBufferIterator& aIterator,
                                             IResumable* aOnResume) {
   MOZ_ASSERT(mScanner);
 
-  while (true) {
-    SourceBufferIterator::State state =
-        aIterator.AdvanceOrScheduleResume(SIZE_MAX, aOnResume);
+  const uint8_t* currentData = nullptr;
+  size_t currentLength = 0;
+  bool iteratorComplete = false;
 
-    if (state == SourceBufferIterator::WAITING) {
-      return LexerResult(Yield::NEED_MORE_DATA);
+  while (true) {
+    // Only fetch a new chunk when all buffered bytes have been consumed.
+    if (currentLength == 0 && !iteratorComplete) {
+      SourceBufferIterator::State state =
+          aIterator.AdvanceOrScheduleResume(SIZE_MAX, aOnResume);
+
+      if (state == SourceBufferIterator::WAITING) {
+        return LexerResult(Yield::NEED_MORE_DATA);
+      }
+
+      if (state == SourceBufferIterator::READY) {
+        currentData = reinterpret_cast<const uint8_t*>(aIterator.Data());
+        currentLength = aIterator.Length();
+      }
+
+      if (state == SourceBufferIterator::COMPLETE) {
+        iteratorComplete = true;
+      }
     }
 
-    if (state == SourceBufferIterator::READY) {
-      const uint8_t* data = reinterpret_cast<const uint8_t*>(aIterator.Data());
-      size_t length = aIterator.Length();
-      JxlDecoderStatus scanStatus =
-          jxl_decoder_process_data(mScanner.get(), &data, &length, nullptr, 0);
-      if (scanStatus == JxlDecoderStatus::Error) {
-        return LexerResult(TerminalState::FAILURE);
-      }
+    JxlDecoderStatus scanStatus = jxl_decoder_process_data(
+        mScanner.get(), &currentData, &currentLength, nullptr, 0);
+    if (scanStatus == JxlDecoderStatus::Error) {
+      return LexerResult(TerminalState::FAILURE);
     }
 
     if (!HasSize()) {
@@ -153,6 +165,8 @@ LexerResult nsJXLDecoder::ScanForFrameCount(SourceBufferIterator& aIterator,
 
     // Post animation info once we have at least one scanned frame.
     if (HasSize() && !HasAnimation()) {
+      // If we get here we know that we are animated but we haven't called
+      // PostIsAnimated yet because we return above if we are not animated.
       uint32_t scannedCount =
           jxl_decoder_get_scanned_frame_count(mScanner.get());
       if (scannedCount > 0) {
@@ -173,7 +187,10 @@ LexerResult nsJXLDecoder::ScanForFrameCount(SourceBufferIterator& aIterator,
       return LexerResult(TerminalState::SUCCESS);
     }
 
-    if (state == SourceBufferIterator::COMPLETE) {
+    // If the scanner needs more data and the iterator is exhausted with no
+    // buffered bytes remaining, finalize with what we have.
+    if (scanStatus == JxlDecoderStatus::NeedMoreData && currentLength == 0 &&
+        iteratorComplete) {
       if (!HasSize()) {
         return LexerResult(TerminalState::FAILURE);
       }
