@@ -1272,7 +1272,7 @@ tab-group > tab-split-view-wrapper {
 /* Tabs in split-view-wrapper defaults */
 #tabbrowser-tabs tab-split-view-wrapper {
   display: grid;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: 1fr 1fr;
   margin-inline: var(--space-small);
   padding: var(--space-xsmall);
   border-radius: var(--tab-border-radius);
@@ -1329,9 +1329,10 @@ tab-group > tab-split-view-wrapper {
       }
     }
 
-    /* For explicitly horizontally-oriented split-view-wrapped tabs only.
-       We do want the specificity granted by :is (vs. :where) in this case */
-    :is(#tabbrowser-tabs[orient="horizontal"], #tabbrowser-tabs[orient="vertical"][expanded]) tab-split-view-wrapper & {
+    /* Two-column split only: first/last tab margin and padding for the space between
+       columns. Same pattern for horizontal tab strips and for vertical expanded, with
+       different @container names and the same 211px min-width. */
+    #tabbrowser-tabs[orient="horizontal"] tab-split-view-wrapper & {
       &:first-child {
         .tab-background {
           margin-inline-end: 0;
@@ -1349,8 +1350,36 @@ tab-group > tab-split-view-wrapper {
           margin-inline-start: 0;
         }
 
-        .tab-content {
-          padding-inline-start: var(--space-medium);
+        @container tab-split-view-horizontal (min-width: 211px) {
+          .tab-content {
+            padding-inline-start: var(--space-medium);
+          }
+        }
+      }
+    }
+
+    #tabbrowser-tabs[orient="vertical"][expanded] tab-split-view-wrapper & {
+      &:first-child {
+        @container vertical-tabs-container (min-width: 211px) {
+          .tab-background {
+            margin-inline-end: 0;
+          }
+        }
+
+        tab-split-view-wrapper:not([hasactivetab]) & {
+          border-block-end: transparent;
+        }
+      }
+
+      &:last-child {
+        @container vertical-tabs-container (min-width: 211px) {
+          .tab-background {
+            margin-inline-start: var(--space-xxsmall);
+          }
+
+          .tab-content {
+            padding-inline-start: var(--space-medium);
+          }
         }
       }
     }
@@ -1392,7 +1421,7 @@ tab-group > tab-split-view-wrapper {
 #tabbrowser-tabs[orient="vertical"] tab-split-view-wrapper {
   border-radius: var(--tab-border-radius);
   gap: var(--space-xsmall);
-  grid-template-columns: 49.5% 49.5%;
+  grid-template-columns: 1fr 1fr;
 
   @container vertical-tabs-container (max-width: 210px) {
     grid-template-columns: 1fr;
