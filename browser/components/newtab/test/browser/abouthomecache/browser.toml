@@ -20,7 +20,6 @@ prefs = [
   "browser.newtabpage.activity-stream.discoverystream.sections.region-content-config=",
   "dom.ipc.processPrelaunch.delayMs=0",
   # Bug 1694957 is why we need dom.ipc.processPrelaunch.delayMs=0
-  "browser.newtabpage.activity-stream.newtabWallpapers.system.enabled=false",
 ]
 
 ["browser_basic_endtoend.js"]
