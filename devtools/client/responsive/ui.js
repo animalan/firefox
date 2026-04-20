@@ -56,7 +56,7 @@ const RELOAD_CONDITION_PREF_PREFIX = "devtools.responsive.reloadConditions.";
 const RELOAD_NOTIFICATION_PREF =
   "devtools.responsive.reloadNotification.enabled";
 const USE_DYNAMIC_TOOLBAR_PREF = "devtools.responsive.dynamicToolbar.enabled";
-const DYNAMIC_TOOLBAR_MAX_HEIGHT = 40; // px
+const DYNAMIC_TOOLBAR_MAX_HEIGHT = 50; // px
 
 function debug(_msg) {
   // console.log(`RDM manager: ${_msg}`);
