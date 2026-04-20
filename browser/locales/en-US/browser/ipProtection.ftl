@@ -30,7 +30,7 @@ ipprotection-title = VPN
 ipprotection-feature-introduction-title = Introducing VPN, now right inside your browser
 ipprotection-feature-introduction-link-text-2 = Use our new <a data-l10n-name="learn-more-vpn">built-in VPN</a> to hide your location and protect your data.
 
-# Used for callout in private browsing as well as users who expressed interest in privacy in onboarding
+# Used for callout for users who expressed interest in privacy in onboarding
 ipprotection-feature-introduction-title-privacy = Add another layer of privacy
 ipprotection-feature-introduction-link-text-privacy = <a data-l10n-name="learn-more-vpn">{ -brand-product-name }’s built-in VPN</a> helps protect your browsing. Choose from 5 locations to keep where you browse more private.
 
@@ -41,8 +41,10 @@ ipprotection-feature-introduction-description-private-browsing = Browse with ext
 
 # Used for callout shown on login to public wi-fi through a captive portal
 ipprotection-feature-introduction-title-captive-portal = On public Wi-Fi? Try { -brand-product-name }’s built-in VPN.
-ipprotection-feature-introduction-link-text-captive-portal = Get <a data-l10n-name="learn-more-vpn">extra privacy</a> by choosing from 5 locations to hide where you browse.
 ipprotection-feature-introduction-description-captive-portal = Browse with extra protection by hiding your location, even on public Wi-Fi.
+
+# Used for discovery callouts for both captive portal login and private browsing
+ipprotection-feature-introduction-link-text-captive-portal = Get <a data-l10n-name="learn-more-vpn">extra privacy</a> by choosing from 5 locations to hide where you browse.
 
 ## Buttons used for all feature introduction callouts
 
@@ -66,6 +68,7 @@ ipprotection-location-selection-callout-secondary-button = Dismiss
 
 ## Panel
 
+# Also used for the callout shown in private browsing
 unauthenticated-vpn-title = Try { -brand-product-name }’s built-in VPN
 
 unauthenticated-hide-location-message-3 = <a data-l10n-name="learn-more-vpn">Hide your location</a> while browsing in { -brand-product-name }.
