@@ -56,17 +56,22 @@
 }
 
 .browserContainer.responsive-mode > .browserStack {
-  --resizer-offset: 4px;
-  --browser-viewport-width: calc(var(--rdm-width) + var(--resizer-offset));
-  --browser-viewport-height: calc(var(--rdm-height) + var(--resizer-offset));
   --rdm-zoomed-width: calc(var(--rdm-width) * var(--rdm-zoom));
   --rdm-zoomed-height: calc(var(--rdm-height) * var(--rdm-zoom));
   min-height: 0;
   min-width: 0;
   overflow: auto;
   contain: size;
-  grid-template-columns: 15px 1fr [center-align] var(--browser-viewport-width) 1fr;
-  grid-template-rows: 65px [margin-top-offset] var(--browser-viewport-height);
+
+  /**
+   * The grid areas provide a reference box for the browser. The browser
+   * will fill the grid box exactly at rdm-zoom 1. If rdm-zoom is different
+   * from 1, the grid areas do not change; instead, we use a transform on the
+   * browser to make it grow beyond the grid area, and we use left/top on the
+   * resizer handles to move them in the correct spot.
+   */
+  grid-template-columns: 15px 1fr [center-align] var(--rdm-width) 1fr;
+  grid-template-rows: 65px [margin-top-offset] var(--rdm-height);
 }
 
 .browserContainer.responsive-mode > .browserStack > .rdm-dynamic-toolbar {
@@ -85,16 +90,18 @@
 }
 
 .browserContainer.responsive-mode.left-aligned > .browserStack {
-  grid-template-columns: 15px [left-align] var(--browser-viewport-width) 1fr;
+  grid-template-columns: 15px [left-align] var(--rdm-width) 1fr;
 }
 
 html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
-  grid-template-columns: 1fr [left-align] var(--browser-viewport-width) 15px;
+  grid-template-columns: 1fr [left-align] var(--rdm-width) 15px;
 }
 
 .browserContainer.responsive-mode > .browserStack > browser {
-  border: 1px solid var(--devtools-splitter-color);
-  box-shadow: 0 4px 4px 0 var(--rdm-shadow-color);
+  /* We use outline instead of border so that we don't affect the position
+  or size of the browser content. */
+  outline: 1px solid var(--devtools-splitter-color);
+  box-shadow: 0 4px 4px var(--rdm-shadow-color);
 
   transform-origin: 50% 0;
   transform: scale(var(--rdm-zoom), var(--rdm-zoom));
@@ -115,8 +122,8 @@ html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
   width: 16px;
   height: 16px;
   background-image: url("./images/grippers.svg");
-  margin-inline-end: var(--resizer-offset);
-  margin-block-end: var(--resizer-offset);
+  margin-inline-end: 1px;
+  margin-block-end: 1px;
   background-repeat: no-repeat;
   background-origin: content-box;
   cursor: nwse-resize;
@@ -132,7 +139,9 @@ html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
 }
 
 .browserContainer.responsive-mode > .browserStack > .viewport-horizontal-resize-handle {
-  width: 5px;
+  --resize-handle-thickness: 5px;
+  width: var(--resize-handle-thickness);
+  margin: 0 calc(var(--resize-handle-thickness) / -2);
   height: calc(var(--rdm-zoomed-height) - 16px);
   cursor: ew-resize;
   justify-self: right;
@@ -145,8 +154,10 @@ html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
 }
 
 .browserContainer.responsive-mode > .browserStack > .viewport-vertical-resize-handle {
+  --resize-handle-thickness: 5px;
   width: calc(var(--rdm-zoomed-width) - 16px);
-  height: 5px;
+  height: var(--resize-handle-thickness);
+  margin: calc(var(--resize-handle-thickness) / -2) 0;
   cursor: ns-resize;
   align-self: end;
   position: relative;
