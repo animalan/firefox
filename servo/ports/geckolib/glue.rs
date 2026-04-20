@@ -9021,7 +9021,7 @@ unsafe fn compute_color(
     current_color: &AbsoluteColor,
     value: &nsACString,
     loader: *mut Loader,
-) -> Option<ComputeColorResult> {
+) -> Result<ComputeColorResult, ()> {
     let mut input = ParserInput::new(value.as_str_unchecked());
     let mut input = Parser::new(&mut input);
     let reporter = loader.as_mut().and_then(|loader| {
@@ -9054,7 +9054,7 @@ unsafe fn compute_color(
     let result_color = computed.resolve_to_absolute(current_color);
     let was_current_color = computed.is_currentcolor();
 
-    Some(ComputeColorResult {
+    Ok(ComputeColorResult {
         result_color,
         was_current_color,
     })
@@ -9070,7 +9070,7 @@ pub unsafe extern "C" fn Servo_ComputeColor(
     loader: *mut Loader,
 ) -> bool {
     let current_color = AbsoluteColor::from_nscolor(current_color);
-    let Some(result) = compute_color(raw_data, &current_color, value, loader) else {
+    let Ok(result) = compute_color(raw_data, &current_color, value, loader) else {
         return false;
     };
 
@@ -9087,7 +9087,7 @@ pub unsafe extern "C" fn Servo_ComputeAbsoluteColor(
     value: &nsACString,
     result_color: &mut AbsoluteColor,
 ) -> bool {
-    if let Some(color) = compute_color(raw_data, &AbsoluteColor::BLACK, value, ptr::null_mut()) {
+    if let Ok(color) = compute_color(raw_data, &AbsoluteColor::BLACK, value, ptr::null_mut()) {
         *result_color = color.result_color;
         true
     } else {
