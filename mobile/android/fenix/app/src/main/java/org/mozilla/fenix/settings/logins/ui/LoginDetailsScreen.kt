@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -65,6 +67,7 @@ internal fun LoginDetailsScreen(store: LoginsStore) {
     val state by store.stateFlow.collectAsState()
     val detailState = state.loginsLoginDetailState ?: return
     val snackbarHostState = remember { SnackbarHostState() }
+    val scrollState = rememberScrollState()
     val deletionDialogState = state.loginDeletionDialogState
     if (deletionDialogState is LoginDeletionDialogState.Presenting) {
         LoginDeletionDialog(
@@ -93,7 +96,8 @@ internal fun LoginDetailsScreen(store: LoginsStore) {
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(FirefoxTheme.layout.space.static200))
