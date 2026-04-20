@@ -233,11 +233,14 @@ const Fill = {
     "context-stroke",
     "currentColor",
     "transparent",
+    "white",
+    "black",
   ],
   allowedTokens: [...versatileColorTokens],
   allowFunctions: ["url"],
   tokenTypes: ["icon-color"],
   aliasTokenTypes: [
+    "color",
     "background-color",
     "border-color",
     "text-color",
@@ -428,11 +431,19 @@ const Size = {
 
 /** @type {PropertyTypeConfig} */
 const Stroke = {
-  allow: ["none", "context-stroke", "currentColor", "transparent"],
+  allow: [
+    "none",
+    "context-stroke",
+    "currentColor",
+    "transparent",
+    "white",
+    "black",
+  ],
   allowFunctions: ["url"],
   allowedTokens: [...versatileColorTokens],
   tokenTypes: ["icon-color"],
   aliasTokenTypes: [
+    "color",
     "background-color",
     "border-color",
     "text-color",

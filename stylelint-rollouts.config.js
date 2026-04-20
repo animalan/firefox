@@ -173,7 +173,6 @@ module.exports = [
       "browser/themes/shared/aiWindowSidebar.css",
       "browser/themes/shared/autocomplete.css",
       "browser/themes/shared/blockedSite.css",
-      "browser/themes/shared/browser-shared.css",
       "browser/themes/shared/contextmenu.css",
       "browser/themes/shared/controlcenter/panel.css",
       "browser/themes/shared/customizableui/customizeMode.css",
