@@ -1179,6 +1179,13 @@ features:
         description: If true, Merino Manifest is enabled.
         type: Boolean
         default: false
+    defaults:
+      - channel: developer
+        value:
+          enabled: true
+      - channel: nightly
+        value:
+          enabled: true
 
   mozilla-ads-client:
     description: Feature to enable the Mozilla Ads Client for users on Firefox on Android.
