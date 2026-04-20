@@ -74,13 +74,13 @@ class ShutdownLeaks:
             self.currentTest = None
 
     def process(self):
-        failures = 0
+        unattributedFailures = 0
 
         if not self.seenShutdown:
             self.logger.error(
                 "TEST-UNEXPECTED-FAIL | ShutdownLeaks | process() called before end of test suite"
             )
-            failures += 1
+            unattributedFailures += 1
 
         if (
             self.numDocShellCreatedLogsSeen == 0
@@ -92,7 +92,7 @@ class ShutdownLeaks:
                 " something. %d created seen %d destroyed seen"
                 % (self.numDocShellCreatedLogsSeen, self.numDocShellDestroyedLogsSeen)
             )
-            failures += 1
+            unattributedFailures += 1
         else:
             self.logger.info(
                 "TEST-INFO | Confirming we saw %d DOCSHELL created and %d destroyed log"
@@ -110,7 +110,7 @@ class ShutdownLeaks:
                 " something%d created seen %d destroyed seen"
                 % (self.numDomWindowCreatedLogsSeen, self.numDomWindowDestroyedLogsSeen)
             )
-            failures += 1
+            unattributedFailures += 1
         else:
             self.logger.info(
                 "TEST-INFO | Confirming we saw %d DOMWINDOW created and %d destroyed log"
@@ -118,17 +118,16 @@ class ShutdownLeaks:
                 % (self.numDomWindowCreatedLogsSeen, self.numDomWindowDestroyedLogsSeen)
             )
 
-        errors = []
+        leakErrors = []
         for test in self._parseLeakingTests():
             for windowId in test["leakedWindows"]:
                 url = self.leakedWindows[windowId]
                 timestamp = self.windowCreationTimes.get(windowId)
-                errors.append({
+                leakErrors.append({
                     "test": test["fileName"],
                     "msg": "leaked 1 window(s) until shutdown [url = %s]" % url,
                     "time": timestamp,
                 })
-                failures += 1
 
             if test["leakedWindowsString"]:
                 self.logger.info(
@@ -138,12 +137,11 @@ class ShutdownLeaks:
 
             for docShellId in test["leakedDocShells"]:
                 timestamp = self.docShellCreationTimes.get(docShellId)
-                errors.append({
+                leakErrors.append({
                     "test": test["fileName"],
                     "msg": "leaked 1 docShell(s) until shutdown",
                     "time": timestamp,
                 })
-                failures += 1
                 self.logger.info(
                     "TEST-INFO | %s | docShell(s) leaked: %s"
                     % (
@@ -170,7 +168,7 @@ class ShutdownLeaks:
                     % (test["fileName"], test["hiddenDocShellsCount"])
                 )
 
-        return failures, errors
+        return unattributedFailures, leakErrors
 
     def _logWindow(self, line, created):
         pid = self._parseValue(line, "pid")
