@@ -222,7 +222,8 @@ const getTokenSections = () => {
 
   return Object.fromEntries(
     Object.keys(allSections)
-      .sort()
+      // moz-box interferes with box-shadow tokens, so put "box" at the end of the list
+      .sort((a, b) => (a > b || a === "box" ? 1 : -1))
       .map(key => [key, allSections[key]])
   );
 };
@@ -563,6 +564,16 @@ const shouldSkipToken = ({ overrideIdentifier, componentName, token }) => {
   // Ignore base/default tokens if a set of overrides is specified.
   if (overrideIdentifier && !token.name.includes(`-${overrideIdentifier}-`)) {
     return true;
+  }
+
+  // moz-box greedily assumes box-shadow tokens belong to it.
+  if (componentName === "box" && token.name.startsWith("box-shadow")) {
+    return true;
+  }
+
+  // Allow box-shadow tokens to pass through, since they would fail a later check due to moz-box.
+  if (!componentName && token.name.startsWith("box-shadow")) {
+    return false;
   }
 
   // Skip any tokens that don't belong to the component, if applicable.

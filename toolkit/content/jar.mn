@@ -103,6 +103,7 @@ toolkit.jar:
    content/global/elements/moz-badge.tokens.css    (widgets/moz-badge/moz-badge.tokens.css)
    content/global/elements/moz-badge.css    (widgets/moz-badge/moz-badge.css)
    content/global/elements/moz-badge.mjs    (widgets/moz-badge/moz-badge.mjs)
+   content/global/elements/moz-box.tokens.css    (widgets/moz-box.tokens.css)
    content/global/elements/moz-box-common.css    (widgets/moz-box-common.css)
    content/global/elements/moz-box-button.css    (widgets/moz-box-button/moz-box-button.css)
    content/global/elements/moz-box-button.mjs    (widgets/moz-box-button/moz-box-button.mjs)
