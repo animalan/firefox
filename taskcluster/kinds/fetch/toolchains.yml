@@ -704,12 +704,12 @@ symbol-scrapers:
         revision: c9f6fe6a16cb9bba11976d85fc924efaad643a9d
 
 xz:
-    description: xz 5.8.2 source code
+    description: xz 5.8.3 source code
     fetch:
         type: static-url
-        url: https://github.com/tukaani-project/xz/releases/download/v5.8.2/xz-5.8.2.tar.xz
-        sha256: 890966ec3f5d5cc151077879e157c0593500a522f413ac50ba26d22a9a145214
-        size: 1511132
+        url: https://github.com/tukaani-project/xz/releases/download/v5.8.3/xz-5.8.3.tar.xz
+        sha256: fff1ffcf2b0da84d308a14de513a1aa23d4e9aa3464d17e64b9714bfdd0bbfb6
+        size: 1548064
         artifact-name: xz-source.tar.zst
         strip-components: 1
         add-prefix: xz-source/
