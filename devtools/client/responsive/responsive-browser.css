@@ -71,7 +71,7 @@
    * placed correctly as a result of .rdm-screen-box's transform.
    */
   grid-template-columns: 15px 1fr [center-align] var(--rdm-width) 1fr;
-  grid-template-rows: 65px [margin-top-offset] var(--rdm-height);
+  grid-template-rows: 65px [margin-top-offset] var(--rdm-height) [below-browser] 1fr;
 }
 
 .browserContainer.responsive-mode > .browserStack > :is(browser, .rdm-screen-box) {
@@ -105,6 +105,10 @@ html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
   transform-origin: 0 0;
 }
 
+.browserContainer.responsive-mode > .browserStack > browser {
+  position: relative; /* so that .style.top moves it (for dynamic toolbar on top) */
+}
+
 .rdm-screen-box {
   --side-handle-thickness: 5px;
   --corner-handle-size: 16px;
@@ -123,6 +127,25 @@ html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
     /* But do allow mouse interactions with resizers etc */
     pointer-events: all;
   }
+}
+
+/**
+ * .rdm-browser-bottom-cover covers up any bits of the browser that stick out
+ * of the screen box when pushed down by the dynamic toolbar (when the toolbar
+ * is on the top).
+ * We'd prefer to clip off the bottom using e.g. overflow:clip, but we don't
+ * have an ancestor element in the DOM that can act as the clip.
+ *
+ * Ideally we wouldn't need to move the browser at all when the dynamic toolbar
+ * moves. This is tracked in bug 1921331.
+ */
+.rdm-browser-bottom-cover {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 0;
+  background: var(--rdm-background-color);
 }
 
 /* Resize handles */
@@ -161,11 +184,14 @@ html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
 
 .rdm-dynamic-toolbar {
   overflow: clip;
-  position: relative;
-  align-self: end;
+  display: flex;
 
   &:not(.dynamic-toolbar-enabled) {
     display: none;
+  }
+
+  &:not(.dynamic-toolbar-on-top) {
+    align-self: end;
   }
 }
 
@@ -176,6 +202,7 @@ html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
    */
   height: var(--rdm-dynamic-toolbar-max-height);
 
+  flex: 1; /* full  width */
   background: var(--theme-tab-toolbar-background);
   box-sizing: border-box;
   border: 0 solid var(--devtools-splitter-color);
@@ -186,8 +213,14 @@ html[dir="rtl"] .browserContainer.responsive-mode.left-aligned > .browserStack {
   gap: 15px;
   padding: 0 15px;
 
-  /* when on bottom */
-  border-top-width: 1px;
+  .rdm-dynamic-toolbar.dynamic-toolbar-on-top > & {
+    align-self: flex-end; /* anchor self to bottom of container */
+    border-bottom-width: 1px;
+  }
+
+  .rdm-dynamic-toolbar:not(.dynamic-toolbar-on-top) > & {
+    border-top-width: 1px;
+  }
 
   /* Skeleton UI for the URL bar */
   &::before {
