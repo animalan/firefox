@@ -365,29 +365,7 @@ class JujutsuRepository(Repository):
         if dest_branch and not ref:
             raise ValueError("Cannot specify dest_branch without specifying ref")
 
-        args = ["git", "push"]
-        if remote:
-            if remote.startswith("git@"):
-                if remote.endswith(".git"):
-                    remote = remote[:-4]
-
-                for line in self._run("git", "remote", "list").strip().splitlines():
-                    name, url = line.split(" ", 1)
-                    if url.endswith(".git"):
-                        url = url[:-4]
-
-                    if url == remote:
-                        remote = name
-                        break
-                else:
-                    raise ValueError(f"No remote configured for '{remote}'")
-
-            args.extend(["--remote", remote])
-        if ref:
-            args.extend(["-r", ref])
-        if dest_branch:
-            args.extend(["-b", dest_branch])
-        self._run(*args)
+        self._git.push(remote, ref=ref, dest_branch=dest_branch, force=force)
 
     def push_to_try(
         self,
