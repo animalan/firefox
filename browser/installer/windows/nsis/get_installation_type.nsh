@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-!ifndef DESKTOP_LAUNCHER_HELPERS_NSH
-!define DESKTOP_LAUNCHER_HELPERS_NSH
+!ifndef GET_INSTALLATION_TYPE_NSH
+!define GET_INSTALLATION_TYPE_NSH
 
 ; Looks at installation_telemetry.json to determine whether the installation
 ; was installed by the stub installer or not.
@@ -43,69 +43,3 @@ Function GetInstallationType
 FunctionEnd
 
 !endif
-
-Function GetInstallationTelemetryFromMsi
-  Pop $0
-  ClearErrors
-
-  nsJSON::Set /file /unicode "$0"
-  ${If} ${Errors}
-    SetErrors
-    Push 0
-    Return
-  ${EndIf}
-
-  nsJSON::Get /type `from_msi` /end
-  ${If} ${Errors}
-    SetErrors
-    Push 0
-    Return
-  ${EndIf}
-
-  Pop $1
-  ${If} $1 != "value"
-    SetErrors
-    Push 0
-    Return
-  ${EndIf}
-
-  nsJSON::Get `from_msi` /end
-  ${If} ${Errors}
-    SetErrors
-    Push 0
-    Return
-  ${EndIf}
-
-  Pop $1
-  ${If} $1 == "true"
-    Push 1
-  ${ElseIf} $1 == "false"
-    Push 0
-  ${Else}
-    SetErrors
-    Push 0
-  ${EndIf}
-FunctionEnd
-
-Function IsUpdateChannelEsr
-  Exch $0
-  ${If} $0 == "esr"
-    StrCpy $0 1
-  ${Else}
-    StrCpy $0 0
-  ${EndIf}
-  Exch $0
-FunctionEnd
-
-Function ShouldInstallDesktopLauncher
-  Push $0
-  ${GetParameters} $0
-  ClearErrors
-  ${GetOptions} "$0" "/DesktopLauncher" "$0"
-  ${IfNot} ${Errors}
-    StrCpy $0 1
-  ${Else}
-    StrCpy $0 0
-  ${EndIf}
-  Exch $0
-FunctionEnd
