@@ -242,6 +242,22 @@ def pass_manager(enabled, compiler, host, target, pgo, enable_fuzzing, ubsan):
 
 set_config("MOZ_PASS_MANAGER_FLAGS", pass_manager.flags)
 
+# Tracing option
+##
+
+option(
+    "--trace-compiler",
+    help="Generate compiler usage report for each C/C++ compilation unit",
+)
+with only_when("--trace-compiler"):
+
+    @depends(c_compiler.type)
+    def check_trace_compiler_validity(ct):
+        if ct not in ("clang", "clang-cl"):
+            die("--trace-compiler not supported for current target compiler")
+
+    check_and_add_flag("-ftime-trace")
+
 # Debugging options
 ##
 
