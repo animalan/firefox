@@ -749,7 +749,7 @@ tab-split-view-wrapper[dragtarget] {
   background-color: var(--lwt-accent-color);
   background-image: linear-gradient(transparent), linear-gradient(var(--toolbox-bgcolor));
   -moz-context-properties: fill;
-  fill: var(--icon-color);
+  fill: var(--tab-selected-textcolor);
   color-scheme: var(--tab-selected-color-scheme);
   border-radius: var(--border-radius-circle);
 
@@ -2805,7 +2805,7 @@ toolbar:not(#TabsToolbar) #firefox-view-button {
 
   list-style-image: url("chrome://global/skin/icons/tab-notes-12.svg");
   -moz-context-properties: fill;
-  fill: var(--icon-color);
+  fill: currentColor;
 
   /* Vertical expanded: reserve space so the note icon does not jump when the close shows.*/
   #tabbrowser-tabs[orient="vertical"][expanded] & {
