@@ -13,7 +13,7 @@ from functools import cache
 import mozpack.path as mozpath
 from manifestparser import TestManifest, combine_fields
 from mozbuild.base import MozbuildObject
-from mozbuild.testing import REFTEST_FLAVORS, TEST_MANIFESTS
+from mozbuild.testing import REFTEST_FLAVORS, TEST_MANIFESTS, install_test_files
 from mozpack.files import FileFinder
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -564,6 +564,11 @@ class BuildBackendLoader(TestLoader):
             from mozbuild.gen_test_backend import gen_test_backend
 
             gen_test_backend()
+            install_test_files(
+                mozpath.normpath(self.topsrcdir),
+                self.topobjdir,
+                "_tests",
+            )
 
         all_tests = os.path.join(self.topobjdir, "all-tests.pkl")
         test_defaults = os.path.join(self.topobjdir, "test-defaults.pkl")
