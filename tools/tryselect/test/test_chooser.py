@@ -6,6 +6,7 @@ import multiprocessing
 
 import mozunit
 import pytest
+from tryselect.selectors.chooser import ChooserConfig, resolve_artifact_state
 from tryselect.selectors.chooser.app import create_application
 
 TASKS = [
@@ -66,15 +67,19 @@ def test_try_chooser(app, queue: multiprocessing.Queue):
     for expected in expected_output:
         assert expected in response.data
 
+    # Default render should leave the artifact checkbox unchecked.
+    assert b'name="artifact" checked' not in response.data
+    assert b'name="artifact"' in response.data
+
     response = client.post("/", data={"action": "Cancel"})
     assert response.status_code == 200
     assert b"You may now close this page" in response.data
-    assert queue.get() == []
+    assert queue.get() == {"tasks": [], "use_artifact": False}
 
     response = client.post("/", data={"action": "Push", "selected-tasks": ""})
     assert response.status_code == 200
     assert b"You may now close this page" in response.data
-    assert queue.get() == []
+    assert queue.get() == {"tasks": [], "use_artifact": False}
 
     response = client.post(
         "/",
@@ -85,7 +90,136 @@ def test_try_chooser(app, queue: multiprocessing.Queue):
     )
     assert response.status_code == 200
     assert b"You may now close this page" in response.data
-    assert set(queue.get()) == set(["build-windows", "test-windows-mochitest-e10s"])
+    result = queue.get()
+    assert set(result["tasks"]) == {"build-windows", "test-windows-mochitest-e10s"}
+    assert result["use_artifact"] is False
+
+
+def test_try_chooser_artifact_initial_state(tg, queue: multiprocessing.Queue):
+    app = create_application(tg, queue, ChooserConfig(use_artifact=True))
+    app.config["TESTING"] = True
+    client = app.test_client()
+
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b'name="artifact" checked' in response.data
+
+
+def test_try_chooser_cancel_ignores_initial_artifact(tg, queue: multiprocessing.Queue):
+    app = create_application(tg, queue, ChooserConfig(use_artifact=True))
+    app.config["TESTING"] = True
+    client = app.test_client()
+
+    response = client.post("/", data={"action": "Cancel"})
+    assert response.status_code == 200
+    assert queue.get() == {"tasks": [], "use_artifact": False}
+
+
+def test_try_chooser_artifact_toggle_on(tg, queue: multiprocessing.Queue):
+    app = create_application(tg, queue, ChooserConfig(use_artifact=False))
+    app.config["TESTING"] = True
+    client = app.test_client()
+
+    response = client.post(
+        "/",
+        data={
+            "action": "Push",
+            "selected-tasks": "build-windows",
+            "artifact": "on",
+        },
+    )
+    assert response.status_code == 200
+    assert queue.get() == {"tasks": ["build-windows"], "use_artifact": True}
+
+
+def test_try_chooser_artifact_toggle_off(tg, queue: multiprocessing.Queue):
+    app = create_application(tg, queue, ChooserConfig(use_artifact=True))
+    app.config["TESTING"] = True
+    client = app.test_client()
+
+    response = client.post(
+        "/",
+        data={
+            "action": "Push",
+            "selected-tasks": "build-windows",
+        },
+    )
+    assert response.status_code == 200
+    assert queue.get() == {"tasks": ["build-windows"], "use_artifact": False}
+
+
+def test_try_chooser_pernosco_hides_checkbox(tg, queue: multiprocessing.Queue):
+    app = create_application(tg, queue, ChooserConfig(pernosco_active=True))
+    app.config["TESTING"] = True
+    client = app.test_client()
+
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b'id="artifact"' not in response.data
+    assert b'id="artifact-option"' not in response.data
+
+
+def test_try_chooser_pernosco_ignores_artifact_form_field(
+    tg, queue: multiprocessing.Queue
+):
+    app = create_application(tg, queue, ChooserConfig(pernosco_active=True))
+    app.config["TESTING"] = True
+    client = app.test_client()
+
+    response = client.post(
+        "/",
+        data={
+            "action": "Push",
+            "selected-tasks": "build-windows",
+            "artifact": "on",
+        },
+    )
+    assert response.status_code == 200
+    assert queue.get() == {"tasks": ["build-windows"], "use_artifact": False}
+
+
+@pytest.mark.parametrize(
+    "initial,final,starting_config,expected",
+    [
+        # Fresh chooser, user leaves artifact off.
+        (False, False, {}, {}),
+        # Fresh chooser, user checks artifact.
+        (
+            False,
+            True,
+            {},
+            {"use-artifact-builds": True, "disable-pgo": True},
+        ),
+        # Launched with --artifact, user keeps it on.
+        (
+            True,
+            True,
+            {"use-artifact-builds": True, "disable-pgo": True},
+            {"use-artifact-builds": True, "disable-pgo": True},
+        ),
+        # Launched with --artifact, user toggles off: both keys cleared.
+        (
+            True,
+            False,
+            {"use-artifact-builds": True, "disable-pgo": True},
+            {},
+        ),
+        # Launched with --disable-pgo (no --artifact), user left artifact off:
+        # disable-pgo is preserved.
+        (False, False, {"disable-pgo": True}, {"disable-pgo": True}),
+        # Launched with --disable-pgo, user turned artifact on.
+        (
+            False,
+            True,
+            {"disable-pgo": True},
+            {"use-artifact-builds": True, "disable-pgo": True},
+        ),
+    ],
+)
+def test_resolve_artifact_state(initial, final, starting_config, expected):
+    cfg = dict(starting_config)
+    resolve_artifact_state(cfg, initial, final)
+    assert cfg == expected
 
 
 if __name__ == "__main__":

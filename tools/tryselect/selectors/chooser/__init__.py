@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import time
 import webbrowser
+from dataclasses import dataclass
 from threading import Timer
 
 from gecko_taskgraph.target_tasks import filter_by_uncommon_try_tasks
@@ -19,6 +20,12 @@ from tryselect.push import (
 from tryselect.tasks import generate_tasks
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+
+@dataclass
+class ChooserConfig:
+    use_artifact: bool = False
+    pernosco_active: bool = False
 
 
 class ChooserParser(BaseTryParser):
@@ -80,9 +87,16 @@ def run(
 
     queue = multiprocessing.Queue()
 
+    try_config_params = try_config_params or {}
+    try_task_config = try_config_params.setdefault("try_task_config", {})
+    config = ChooserConfig(
+        use_artifact=bool(try_task_config.get("use-artifact-builds")),
+        pernosco_active=bool(try_task_config.get("pernosco")),
+    )
+
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         # we are in the reloader process, don't open the browser or do any try stuff
-        app = create_application(tg, queue)
+        app = create_application(tg, queue, config)
         app.run()
         return
 
@@ -91,20 +105,26 @@ def run(
     Timer(1, lambda: webbrowser.open(url)).start()
     print(f"Starting trychooser on {url}")
     process = multiprocessing.Process(
-        target=create_and_run_application, args=(tg, queue)
+        target=create_and_run_application,
+        args=(tg, queue, config),
     )
     process.start()
 
     metrics.mach_try.interactive_duration.start()
-    selected = queue.get()
+    result = queue.get()
     metrics.mach_try.interactive_duration.stop()
 
     # Allow the close page to render before terminating the process.
     time.sleep(1)
     process.terminate()
+
+    selected = result["tasks"]
+    use_artifact = result["use_artifact"]
     if not selected:
         print("no tasks selected")
         return
+
+    resolve_artifact_state(try_task_config, config.use_artifact, use_artifact)
 
     msg = f"Try Chooser Enhanced ({len(selected)} tasks selected)"
     return push_to_try(
@@ -121,9 +141,23 @@ def run(
     )
 
 
-def create_and_run_application(tg, queue: multiprocessing.Queue):
+def resolve_artifact_state(try_task_config, initial_use_artifact, use_artifact):
+    if use_artifact:
+        try_task_config["use-artifact-builds"] = True
+        try_task_config["disable-pgo"] = True
+        return
+
+    try_task_config.pop("use-artifact-builds", None)
+    # --artifact (task_config.Artifact) sets disable-pgo as a consequence
+    # of enabling artifact builds. If we entered the chooser with artifact
+    # on and the user toggled it off, clear disable-pgo too. An explicit
+    # --disable-pgo run leaves initial_use_artifact=False and is preserved.
+    if initial_use_artifact:
+        try_task_config.pop("disable-pgo", None)
+
+
+def create_and_run_application(tg, queue: multiprocessing.Queue, config=None):
     from .app import create_application
 
-    app = create_application(tg, queue)
-
+    app = create_application(tg, queue, config)
     app.run()
