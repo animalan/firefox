@@ -430,9 +430,7 @@ class DefaultDownloadFileUtils(
             val directoryTreeUri = directoryPath.toUri()
             val directory = DocumentFile.fromTreeUri(context, directoryTreeUri)
 
-            val file = directory?.listFiles()?.find { it.name?.equals(fileName, ignoreCase = true) == true }
-
-            file?.uri
+            directory?.findFile(fileName)?.uri
         } catch (e: SecurityException) {
             logger.error("Security error finding file in SAF directory: ${e.message}")
             null

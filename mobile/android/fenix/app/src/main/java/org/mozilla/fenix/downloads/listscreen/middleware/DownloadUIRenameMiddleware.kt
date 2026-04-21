@@ -86,14 +86,14 @@ class DownloadUIRenameMiddleware(
             }
 
             val newNameTrimmed = newName.trim()
-            if (downloadFileUtils.fileExists(download.directoryPath, newNameTrimmed)) {
-                val error = if (newNameTrimmed.equals(currentName, ignoreCase = true)) {
-                    RenameFileError.CaseOnlyNameChange(newNameTrimmed)
-                } else {
-                    RenameFileError.NameAlreadyExists(newNameTrimmed)
-                }
 
-                dispatchAction(uiStore, DownloadUIAction.RenameFileFailed(error))
+            if (downloadFileUtils.fileExists(download.directoryPath, newNameTrimmed)) {
+                dispatchAction(
+                    uiStore,
+                    DownloadUIAction.RenameFileFailed(
+                            RenameFileError.NameAlreadyExists(newNameTrimmed),
+                        ),
+                    )
                 return@launch
             }
 

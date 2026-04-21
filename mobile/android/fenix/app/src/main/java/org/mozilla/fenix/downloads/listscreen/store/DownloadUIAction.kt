@@ -208,13 +208,6 @@ sealed interface RenameFileError {
     data class NameAlreadyExists(val proposedFileName: String) : RenameFileError
 
     /**
-     * The proposed file name only differs from the current name by its casing.
-     *
-     * @property proposedFileName The name the user attempted to rename the file to.
-     */
-    data class CaseOnlyNameChange(val proposedFileName: String) : RenameFileError
-
-    /**
      * The proposed file name is not valid and has a path separator or slash.
      */
     data object InvalidFileName : RenameFileError
