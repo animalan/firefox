@@ -733,6 +733,11 @@ class BuildOutputManager(OutputManager):
 
     def _is_third_party_path(self, filepath):
         path = mozpath.normsep(filepath)
+        # Handle the case where we have relative path from Unified build
+        if not os.path.isabs(path):
+            stripped = re.sub(r"^([./\\])*[/\\]", "", path)
+            if os.path.exists(stripped):
+                path = mozpath.abspath(stripped)
         if not path.startswith(self.monitor.topsrcdir):
             return True
         if not self._third_party_dirs:
