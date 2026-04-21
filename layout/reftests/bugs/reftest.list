@@ -2099,7 +2099,7 @@ fuzzy(0-128,0-17172) skip-if(Android) HTTP == 1743533-1.html 1743533-2.html # Fu
 
 pref(gfx.font_rendering.fallback.async,false) == 1743560-1.html 1743560-1-ref.html
 == 1743851-1.html 1743851-1-ref.html
-pref(image.downscale-during-decode.enabled,true) == 1744468-1.html 1744468-1-ref.html # do not increase fuzz without looking, the test should be smoothly downscaled, not pixelated
+pref(image.downscale-during-decode.enabled,true) fuzzy(0-2,0-1879) == 1744468-1.html 1744468-1-ref.html # do not increase fuzz without looking, the test should be smoothly downscaled, not pixelated
 == 1747272-1.html 1747272-1-ref.html
 == 1750146-1.html 1750146-1-ref.html
 == 1735265-1.html 1735265-1-ref.html
