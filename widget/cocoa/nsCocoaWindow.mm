@@ -1812,6 +1812,8 @@ NSEvent* gLastDragMouseDownEvent = nil;  // [strong]
   nsAutoRetainCocoaObject kungFuDeathGrip(self);
   WidgetPointerEvent geckoEvent(true, eContextMenu, mGeckoChild,
                                 WidgetMouseEvent::eContextMenuKey);
+  geckoEvent.mTimeStamp =
+      nsCocoaUtils::GetEventTimeStamp([[NSApp currentEvent] timestamp]);
   geckoEvent.mRefPoint = {};
   mGeckoChild->DispatchInputEvent(&geckoEvent);
 }
@@ -2566,6 +2568,8 @@ static bool ShouldDispatchBackForwardCommandForMouseButton(int16_t aButton) {
         true,
         (button == MouseButton::eX2) ? nsGkAtoms::Forward : nsGkAtoms::Back,
         mGeckoChild);
+    appCommandEvent.mTimeStamp =
+        nsCocoaUtils::GetEventTimeStamp([theEvent timestamp]);
     mGeckoChild->DispatchWindowEvent(appCommandEvent);
     return;
   }
@@ -3065,6 +3069,8 @@ static gfx::IntPoint GetIntegerDeltaForEvent(NSEvent* aEvent) {
 
   WidgetContentCommandEvent contentCommandEvent(
       true, eContentCommandLookUpDictionary, mGeckoChild);
+  contentCommandEvent.mTimeStamp =
+      nsCocoaUtils::GetEventTimeStamp([event timestamp]);
   NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
   contentCommandEvent.mRefPoint = mGeckoChild->CocoaPointsToDevPixels(point);
   mGeckoChild->DispatchWindowEvent(contentCommandEvent);
@@ -4106,6 +4112,8 @@ static NSURL* GetPasteLocation(NSPasteboard* aPasteboard, bool aUseFallback) {
       if (mGeckoChild && returnType) {
         WidgetContentCommandEvent command(
             true, eContentCommandPasteTransferable, mGeckoChild, true);
+        command.mTimeStamp =
+            nsCocoaUtils::GetEventTimeStamp([[NSApp currentEvent] timestamp]);
         // This might possibly destroy our widget (and null out mGeckoChild).
         mGeckoChild->DispatchWindowEvent(command);
         if (!mGeckoChild || !command.mSucceeded || !command.mIsEnabled)
@@ -4238,6 +4246,8 @@ static NSURL* GetPasteLocation(NSPasteboard* aPasteboard, bool aUseFallback) {
 
   WidgetContentCommandEvent command(true, eContentCommandPasteTransferable,
                                     mGeckoChild);
+  command.mTimeStamp =
+      nsCocoaUtils::GetEventTimeStamp([[NSApp currentEvent] timestamp]);
   command.mTransferable = trans;
   mGeckoChild->DispatchWindowEvent(command);
 
