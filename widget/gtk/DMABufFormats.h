@@ -48,7 +48,7 @@ class DRMFormat final {
   }
   bool UseModifiers() const {
     // Don't use modifiers if we don't have any or we have an invalid one.
-    return !(mModifiers.IsEmpty() || (mModifiers.Length() == 1 ||
+    return !(mModifiers.IsEmpty() || (mModifiers.Length() == 1 &&
                                       mModifiers[0] == DRM_FORMAT_MOD_INVALID));
   }
   const uint64_t* GetModifiers(uint32_t& aModifiersNum) {

@@ -222,7 +222,7 @@ static void dmabuf_feedback_tranche_formats(
     formatTable = dmabuf->GetDMABufFeedback()
                       ? dmabuf->GetDMABufFeedback()->FormatTable()
                       : nullptr;
-    if (!formatTable->IsSet()) {
+    if (!formatTable || !formatTable->IsSet()) {
       gfxCriticalNote << "Missing DMABuf format table!";
       return;
     }
