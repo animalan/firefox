@@ -8001,6 +8001,12 @@ void PromiseObject::dumpOwnStringContent(js::GenericPrinter& out) const {}
 // Currently we only support skipping jobs when the async function is resumed
 // at least once.
 [[nodiscard]] static bool IsTopMostAsyncFunctionCall(JSContext* cx) {
+  // If there are two async resumes on the stack we can exit early
+  // without doing any further frame inspection.
+  if (cx->asyncResumeDepth > 1) {
+    return false;
+  }
+
   FrameIter iter(cx);
 
   // The current frame should be the async function.
@@ -8060,6 +8066,7 @@ void PromiseObject::dumpOwnStringContent(js::GenericPrinter& out) const {}
 
   // There should be no more frames.
   if (iter.done()) {
+    MOZ_ASSERT(cx->asyncResumeDepth <= 1);
     return true;
   }
 

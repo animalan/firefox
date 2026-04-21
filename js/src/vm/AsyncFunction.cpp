@@ -111,6 +111,8 @@ static bool AsyncFunctionResume(JSContext* cx,
     return true;
   }
 
+  AutoAsyncResumeDepth autoDepth(cx);
+
   Rooted<PromiseObject*> resultPromise(cx, generator->promise());
 
   RootedObject stack(cx);

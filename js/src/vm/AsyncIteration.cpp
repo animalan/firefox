@@ -7,6 +7,7 @@
 #include "builtin/Promise.h"  // js::PromiseHandler, js::CreatePromiseObjectForAsyncGenerator, js::AsyncFromSyncIteratorMethod, js::ResolvePromiseInternal, js::RejectPromiseInternal, js::InternalAsyncGeneratorAwait
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
 #include "js/PropertySpec.h"
+#include "vm/AsyncFunction.h"  // js::AutoAsyncResumeDepth
 #include "vm/CompletionKind.h"
 #include "vm/FunctionFlags.h"  // js::FunctionFlags
 #include "vm/GeneratorObject.h"
@@ -1230,6 +1231,8 @@ bool js::AsyncGeneratorThrow(JSContext* cx, unsigned argc, Value* vp) {
 [[nodiscard]] static bool AsyncGeneratorResume(
     JSContext* cx, Handle<AsyncGeneratorObject*> generator,
     CompletionKind completionKind, HandleValue argument) {
+  AutoAsyncResumeDepth autoDepth(cx);
+
   // Given that yield can resume again, we implement it as a loop.
   JS::Rooted<JS::Value> resumeArgument(cx, argument);
   while (true) {

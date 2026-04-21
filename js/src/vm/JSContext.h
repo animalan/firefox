@@ -974,6 +974,11 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
   // Such conditions permit optimizations around `await` expressions.
   js::ContextData<bool> canSkipEnqueuingJobs;
 
+  // Depth of nested AsyncFunctionResume / AsyncGeneratorResume calls on the
+  // C++ stack. Maintained by AutoAsyncResumeDepth. See
+  // IsTopMostAsyncFunctionCall for more details.
+  js::ContextData<uint32_t> asyncResumeDepth;
+
   js::ContextData<JS::PromiseRejectionTrackerCallback>
       promiseRejectionTrackerCallback;
   js::ContextData<void*> promiseRejectionTrackerCallbackData;
