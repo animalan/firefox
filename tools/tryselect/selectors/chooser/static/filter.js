@@ -3,12 +3,16 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const selection = $("#selection")[0];
+const selectedTasksInput = $("#selected-tasks")[0];
 const count = $("#selection-count")[0];
 const excludeFilter = $("#exclude-filter")[0];
 const pluralize = (count, noun, suffix = "s") =>
   `${count} ${noun}${count !== 1 ? suffix : ""}`;
 
 var selected = [];
+// Labels dismissed via the per-row × button. Cleared whenever apply() runs,
+// so toggling any checkbox resets the dismissals.
+var manualExcluded = new Set();
 
 var getExcludeTerms = () =>
   excludeFilter.value
@@ -29,6 +33,36 @@ $("#push")[0].addEventListener("click", () => {
   applyChunks();
 });
 
+var renderSelection = labels => {
+  let frag = document.createDocumentFragment();
+  for (let label of labels) {
+    let li = document.createElement("li");
+    li.className = "selection-item";
+    let name = document.createElement("span");
+    name.className = "selection-label";
+    name.textContent = label;
+    let remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "selection-remove";
+    remove.setAttribute("aria-label", "Remove " + label);
+    remove.textContent = "\u00d7";
+    remove.addEventListener("click", () => {
+      let idx = Array.from(selection.children).indexOf(li);
+      manualExcluded.add(label);
+      clearTimeout(excludeDebounce);
+      applyChunks();
+      let items = selection.querySelectorAll(".selection-remove");
+      items[Math.min(idx, items.length - 1)]?.focus();
+    });
+    li.appendChild(name);
+    li.appendChild(remove);
+    frag.appendChild(li);
+  }
+  selection.textContent = "";
+  selection.appendChild(frag);
+  selectedTasksInput.value = labels.join("\n");
+};
+
 var updateLabels = () => {
   $(".tab-pane.active > .filter-label").each(function () {
     let box = $("#" + this.htmlFor)[0];
@@ -38,6 +72,7 @@ var updateLabels = () => {
 };
 
 var apply = () => {
+  manualExcluded.clear();
   let filters = {};
   let kinds = [];
 
@@ -65,31 +100,29 @@ var apply = () => {
     !Object.keys(filters).length ||
     (Object.keys(filters).length == 1 && "build_type" in filters)
   ) {
-    selection.value = "";
-    count.innerHTML = "0 tasks selected";
-    return;
-  }
+    selected = [];
+  } else {
+    var taskMatches = label => {
+      let task = tasks[label];
 
-  var taskMatches = label => {
-    let task = tasks[label];
-
-    // If no box for the given kind has been checked, this task is
-    // automatically not selected.
-    if (!kinds.includes(task.kind)) {
-      return false;
-    }
-
-    for (let attr in filters) {
-      let values = filters[attr];
-      if (!(attr in task) || values.includes(task[attr])) {
-        continue;
+      // If no box for the given kind has been checked, this task is
+      // automatically not selected.
+      if (!kinds.includes(task.kind)) {
+        return false;
       }
-      return false;
-    }
-    return true;
-  };
 
-  selected = Object.keys(tasks).filter(taskMatches);
+      for (let attr in filters) {
+        let values = filters[attr];
+        if (!(attr in task) || values.includes(task[attr])) {
+          continue;
+        }
+        return false;
+      }
+      return true;
+    };
+
+    selected = Object.keys(tasks).filter(taskMatches);
+  }
   applyChunks();
 };
 
@@ -139,6 +172,10 @@ var applyChunks = () => {
     });
   }
 
-  selection.value = visible.join("\n");
+  if (manualExcluded.size) {
+    visible = visible.filter(l => !manualExcluded.has(l));
+  }
+
+  renderSelection(visible);
   count.innerText = pluralize(visible.length, "task") + " selected";
 };

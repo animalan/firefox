@@ -84,6 +84,11 @@ def test_try_chooser(app, queue: multiprocessing.Queue):
         b'<form id="submit-tasks"'
     )
 
+    # Selection list + hidden form field that carries the chosen labels.
+    assert b'<ul id="selection">' in response.data
+    assert b'id="selected-tasks"' in response.data
+    assert b'name="selected-tasks"' in response.data
+
     response = client.post("/", data={"action": "Cancel"})
     assert response.status_code == 200
     assert b"You may now close this page" in response.data
