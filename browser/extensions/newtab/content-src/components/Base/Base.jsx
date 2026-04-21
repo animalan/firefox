@@ -277,13 +277,8 @@ export class BaseContent extends React.PureComponent {
     const prefs = this.props.Prefs.values;
 
     // Check if weather widget was re-enabled from customization menu
-    // @nova-cleanup(remove-conditional): Remove novaEnabledInUpdate and weatherPref variables; replace wasWeatherDisabled/isWeatherEnabled with direct reads of prevProps/props.Prefs.values["widgets.weather.enabled"]
-    const novaEnabledInUpdate = this.props.Prefs.values["nova.enabled"];
-    const weatherPref = novaEnabledInUpdate
-      ? "widgets.weather.enabled"
-      : "showWeather";
-    const wasWeatherDisabled = !prevProps.Prefs.values[weatherPref];
-    const isWeatherEnabled = this.props.Prefs.values[weatherPref];
+    const wasWeatherDisabled = !prevProps.Prefs.values.showWeather;
+    const isWeatherEnabled = this.props.Prefs.values.showWeather;
 
     if (wasWeatherDisabled && isWeatherEnabled) {
       // If weather widget was enabled from customization menu, display opt-in dialog
@@ -721,10 +716,7 @@ export class BaseContent extends React.PureComponent {
       prefs[`newtabWallpapers.wallpaper`] ||
       prefs[`newtabWallpapers.initialWallpaper`];
     const wallpapersEnabled = prefs["newtabWallpapers.enabled"];
-    // @nova-cleanup(remove-conditional): Remove conditional; replace with prefs["widgets.weather.enabled"]
-    const weatherEnabled = novaEnabled
-      ? prefs["widgets.weather.enabled"]
-      : prefs.showWeather;
+    const weatherEnabled = prefs.showWeather;
     const { showTopicSelection } = DiscoveryStream;
     const mayShowTopicSelection =
       showTopicSelection && prefs["discoverystream.topicSelection.enabled"];
