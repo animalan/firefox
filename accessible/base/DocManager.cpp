@@ -481,6 +481,16 @@ DocAccessible* DocManager::CreateDocOrRootAccessible(Document* aDocument,
     return nullptr;
   }
 
+  // Don't create a DocAccessible for the transient about:blank that bootstraps
+  // a printing BrowsingContext. It will be replaced by a static clone (filtered
+  // above).
+  if (!aAllowStatic && aDocument->IsUncommittedInitialDocument()) {
+    dom::BrowsingContext* bc = aDocument->GetBrowsingContext();
+    if (bc && bc->Top()->GetIsPrinting()) {
+      return nullptr;
+    }
+  }
+
   if (IPCAccessibilityActive()) {
     nsIContent* ownerContent = aDocument->GetEmbedderElement();
     if (ownerContent && ownerContent->IsXULElement()) {

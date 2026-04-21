@@ -513,6 +513,10 @@ already_AddRefed<BrowsingContext> BrowsingContext::CreateDetached(
   fields.Get<IDX_TopLevelCreatedByWebContent>() =
       aOptions.topLevelCreatedByWebContent;
 
+  if (aOptions.isForPrinting && !parentBC) {
+    fields.Get<IDX_IsPrinting>() = true;
+  }
+
   if (!parentBC) {
     fields.Get<IDX_ShouldDelayMediaFromStart>() =
         StaticPrefs::media_block_autoplay_until_in_foreground();
