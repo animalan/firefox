@@ -107,6 +107,14 @@ add_task(async function testDownload_heic_Images() {
   await testAppliedFilters(".heic", Ci.nsIFilePicker.filterImages, 2);
 });
 
+add_task(async function testDownload_avif_Images() {
+  await testAppliedFilters(".avif", Ci.nsIFilePicker.filterImages, 2);
+});
+
+add_task(async function testDownload_jxl_Images() {
+  await testAppliedFilters(".jxl", Ci.nsIFilePicker.filterImages, 2);
+});
+
 add_task(async function testDownload_xml_XML() {
   await testAppliedFilters(".xml", Ci.nsIFilePicker.filterXML, 2);
 });
