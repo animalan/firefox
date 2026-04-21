@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.AddonsProvider
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.utils.Settings
@@ -45,6 +46,7 @@ class RtamoAttributionHandlerTest {
 
         coVerify { addonsProvider.getAddonByID(ADDON_RTA_TOKEN) }
         verify { settings.rtamoAddonDownloadUrl = ADDON_DOWNLOAD_URL }
+        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -60,6 +62,7 @@ class RtamoAttributionHandlerTest {
 
         coVerify(exactly = 0) { addonsProvider.getAddonByID(any()) }
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
+        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -75,6 +78,7 @@ class RtamoAttributionHandlerTest {
 
         coVerify(exactly = 0) { addonsProvider.getAddonByID(any()) }
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
+        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -90,6 +94,7 @@ class RtamoAttributionHandlerTest {
 
         coVerify(exactly = 0) { addonsProvider.getAddonByID(any()) }
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
+        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -106,6 +111,7 @@ class RtamoAttributionHandlerTest {
 
         coVerify { addonsProvider.getAddonByID(ADDON_RTA_TOKEN) }
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
+        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -122,6 +128,7 @@ class RtamoAttributionHandlerTest {
 
         coVerify { addonsProvider.getAddonByID(ADDON_RTA_TOKEN) }
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
+        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     private fun rtamoReferrer(

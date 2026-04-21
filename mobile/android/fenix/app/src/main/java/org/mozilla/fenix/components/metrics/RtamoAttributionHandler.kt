@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.components.metrics
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,8 @@ private const val EXPECTED_UTM_CONTENT_PATTERN_PREFIX = "rta%3A"
  * - `utm_content=rta%3A{<base64_addon_guid>}`.
  *
  * When detected, the addon's download URL is fetched from AMO and stored in [settings].
+ * This class also exposes a [rtamoCheckComplete] [CompletableDeferred] which informs when
+ * this handler's functionality has completed.
  *
  * @param settings The settings object used to persist RTAMO state.
  * @param addonsProvider The provider used to fetch addon download URLs from AMO.
@@ -38,6 +41,11 @@ class RtamoAttributionHandler(
 
     private val logger = Logger("RtamoAttributionHandler")
 
+    /**
+     * Signals when the RTAMO check has completed.
+     */
+    val rtamoCheckComplete = CompletableDeferred<Unit>()
+
     @Suppress("TooGenericExceptionCaught")
     override fun handleReferrer(installReferrerResponse: String?) {
         if (!installReferrerResponse.isNullOrBlank()) {
@@ -46,7 +54,10 @@ class RtamoAttributionHandler(
 
                 val isUTMSourceValid = utmParams.source == EXPECTED_UTM_SOURCE
                 val isUTMContentValid = utmParams.content.startsWith(EXPECTED_UTM_CONTENT_PATTERN_PREFIX)
-                if (!isUTMSourceValid || !isUTMContentValid) return@launch
+                if (!isUTMSourceValid || !isUTMContentValid) {
+                    rtamoCheckComplete.complete(Unit)
+                    return@launch
+                }
 
                 try {
                     val downloadUrl = addonsProvider.getAddonByID(utmParams.content)?.downloadUrl
@@ -55,8 +66,12 @@ class RtamoAttributionHandler(
                     }
                 } catch (e: Exception) {
                     logger.error("Failed to fetch RTAMO addon [${utmParams.content}]", e)
+                } finally {
+                    rtamoCheckComplete.complete(Unit)
                 }
             }
+        } else {
+            rtamoCheckComplete.complete(Unit)
         }
     }
 }
