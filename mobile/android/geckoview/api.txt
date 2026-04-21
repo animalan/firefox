@@ -3128,6 +3128,7 @@ package org.mozilla.geckoview {
     field public static final String INSTALLATION_METHOD_FROM_FILE = "install-from-file";
     field public static final String INSTALLATION_METHOD_MANAGER = "manager";
     field public static final String INSTALLATION_METHOD_ONBOARDING = "onboarding";
+    field public static final String INSTALLATION_METHOD_RTAMO = "rtamo";
   }
 
   public static interface WebExtensionController.AddonManagerDelegate {

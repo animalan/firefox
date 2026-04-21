@@ -4188,6 +4188,11 @@ class GeckoEngineTest {
             WebExtensionController.INSTALLATION_METHOD_ONBOARDING,
             InstallationMethod.ONBOARDING.toGeckoInstallationMethod(),
         )
+
+        assertEquals(
+            WebExtensionController.INSTALLATION_METHOD_RTAMO,
+            InstallationMethod.RTAMO.toGeckoInstallationMethod(),
+        )
     }
 
     @Test

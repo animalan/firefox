@@ -519,7 +519,7 @@ class OnboardingFragment : Fragment() {
             settings.rtamoAddonDownloadUrl = ""
             requireComponents.addonManager.installAddon(
                 url = downloadUrl,
-                installationMethod = InstallationMethod.ONBOARDING,
+                installationMethod = InstallationMethod.RTAMO,
             )
         }
 
