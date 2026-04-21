@@ -182,7 +182,6 @@ EXTRA_JS_MODULES += [
     "JSONFile.sys.mjs",
     "JsonSchema.sys.mjs",
     "KeywordUtils.sys.mjs",
-    "LayoutUtils.sys.mjs",
     "Log.sys.mjs",
     "LogManager.sys.mjs",
     "NewTabUtils.sys.mjs",
