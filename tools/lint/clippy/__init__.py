@@ -15,6 +15,16 @@ from mozlint.pathutils import expand_exclusions
 CLIPPY_FIX_ARGS = ("--fix", "--allow-no-vcs")
 
 
+def get_clippy_driver_flags(config):
+    """Build clippy driver flags (-W/-D) from the warn/deny lists in clippy.yml."""
+    flags = []
+    for lint in config.get("warn", []):
+        flags.extend(["-W", f"clippy::{lint}"])
+    for lint in config.get("deny", []):
+        flags.extend(["-D", f"clippy::{lint}"])
+    return flags
+
+
 def in_sorted_list(l, x):
     i = bisect.bisect_left(l, x)
     return i < len(l) and l[i] == x
@@ -187,12 +197,17 @@ def lint_gkrust(path_group, config, log, fix, root, lint_results):
     if fix:
         clippy_args.extend(CLIPPY_FIX_ARGS)
     clippy_args.extend(["--", "--message-format=json"])
+    driver_flags = get_clippy_driver_flags(config)
+    env = os.environ.copy()
+    if driver_flags:
+        env["extra_rustflags"] = " ".join(driver_flags)
     log.debug("Run clippy with = {}".format(" ".join(clippy_args)))
     completed_proc = subprocess.run(
         clippy_args,
         check=False,  # non-zero exit codes are not unexpected
         capture_output=True,
         text=True,
+        env=env,
     )
     check_clippy_ran(completed_proc, "gkrust", log)
     for l in completed_proc.stdout.splitlines():
@@ -219,6 +234,9 @@ def lint_crate(path_group, config, log, fix, root, cargo_bin, lint_results):
     ]
     if fix:
         clippy_args.extend([*CLIPPY_FIX_ARGS, "--allow-dirty"])
+    driver_flags = get_clippy_driver_flags(config)
+    if driver_flags:
+        clippy_args.extend(["--"] + driver_flags)
     log.debug("Run clippy with = {}".format(" ".join(clippy_args)))
     completed_proc = subprocess.run(
         clippy_args,
