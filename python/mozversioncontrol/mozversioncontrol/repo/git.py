@@ -402,6 +402,16 @@ class GitRepository(Repository):
             else:
                 subprocess.check_call(cmd, cwd=self.path)
 
+    def add_note(
+        self,
+        note: str,
+        content: str,
+        commit: Optional[str] = None,
+    ):
+        if not note.startswith("refs/notes/"):
+            note = f"refs/notes/{note}"
+        self._run("notes", "--ref", note, "add", "-f", "-m", content, commit or "HEAD")
+
     def set_config(self, name, value):
         self._run("config", name, value)
 

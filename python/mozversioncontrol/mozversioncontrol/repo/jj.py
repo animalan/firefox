@@ -344,6 +344,15 @@ class JujutsuRepository(Repository):
             cmd.extend(paths)
         self._run(*cmd, **run_kwargs)
 
+    def add_note(
+        self,
+        note: str,
+        content: str,
+        commit: Optional[str] = None,
+    ):
+        commit = commit or self.head_rev
+        self._git.add_note(note, content, commit)
+
     def push(
         self,
         remote: Optional[str] = None,
