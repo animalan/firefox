@@ -109,7 +109,7 @@ class TabbedBrowsingTest {
         }.openTabDrawer(composeTestRule) {
             verifyExistingOpenTabs("Test_Page_1")
             closeTab()
-            verifySnackBarText("Tab closed")
+            verifySnackBarText(composeTestRule, "Tab closed")
             clickSnackbarButton(composeTestRule, "UNDO")
         }
         browserScreen(composeTestRule) {
@@ -170,7 +170,7 @@ class TabbedBrowsingTest {
         }.openTabDrawer(composeTestRule) {
             verifyExistingOpenTabs("Test_Page_1")
             closeTab()
-            verifySnackBarText("Private tab closed")
+            verifySnackBarText(composeTestRule, "Private tab closed")
             clickSnackbarButton(composeTestRule, "UNDO")
         }
         browserScreen(composeTestRule) {

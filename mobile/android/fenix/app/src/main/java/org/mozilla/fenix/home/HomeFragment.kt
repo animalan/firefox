@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -52,6 +55,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.browser.state.store.BrowserStore
+import mozilla.components.compose.base.snackbar.Snackbar
+import mozilla.components.compose.base.snackbar.displaySnackbar
 import mozilla.components.compose.browser.toolbar.store.BrowserToolbarState
 import mozilla.components.compose.browser.toolbar.store.BrowserToolbarStore
 import mozilla.components.compose.cfr.CFRPopup
@@ -80,7 +85,6 @@ import org.mozilla.fenix.GleanMetrics.HomeScreen
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.NavGraphDirections
 import org.mozilla.fenix.R
-import org.mozilla.fenix.addons.showSnackBar
 import org.mozilla.fenix.biometricauthentication.AuthenticationStatus
 import org.mozilla.fenix.biometricauthentication.BiometricAuthenticationManager
 import org.mozilla.fenix.browser.BrowserFragmentDirections
@@ -104,7 +108,6 @@ import org.mozilla.fenix.components.components
 import org.mozilla.fenix.components.metrics.installSourcePackage
 import org.mozilla.fenix.components.toolbar.BottomToolbarContainerView
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
-import org.mozilla.fenix.compose.snackbar.Snackbar
 import org.mozilla.fenix.compose.snackbar.SnackbarState
 import org.mozilla.fenix.databinding.FragmentHomeBinding
 import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
@@ -188,6 +191,7 @@ import org.mozilla.fenix.termsofuse.store.Surface
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.trackingprotection.TrackersBlockedFeature
 import org.mozilla.fenix.utils.allowUndo
+import org.mozilla.fenix.utils.getUndoDelay
 import org.mozilla.fenix.utils.showAddSearchWidgetPromptIfSupported
 import org.mozilla.fenix.wallpapers.Wallpaper
 import java.lang.ref.WeakReference
@@ -209,6 +213,8 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
 
     private val homeViewModel: HomeScreenViewModel by activityViewModels()
 
+    private val snackbarHostState = SnackbarHostState()
+
     @VisibleForTesting
     internal var homeNavigationBar: HomeNavigationBar? = null
 
@@ -222,16 +228,13 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
     private val collectionStorageObserver = object : TabCollectionStorage.Observer {
         @SuppressLint("NotifyDataSetChanged")
         override fun onTabsAdded(tabCollection: TabCollection, sessions: List<TabSessionState>) {
-            view?.let {
-                if (sessions.size == 1) {
-                    Snackbar.make(
-                        snackBarParentView = binding.dynamicSnackbarContainer,
-                        snackbarState = SnackbarState(
-                            message = it.context.getString(R.string.create_collection_tab_saved_2),
-                            duration = SnackbarState.Duration.Preset.Long,
-                        ),
-                    ).show()
-                }
+            if (sessions.size == 1) {
+                showComposeSnackbar(
+                    SnackbarState(
+                        message = requireContext().getString(R.string.create_collection_tab_saved_2),
+                        duration = SnackbarState.Duration.Preset.Long,
+                    ),
+                )
             }
         }
     }
@@ -523,23 +526,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         bundleArgs.getString(SESSION_TO_DELETE)?.let {
             homeViewModel.sessionToDelete = it
         }
-        tabsCleanupFeature.set(
-            feature = TabsCleanupFeature(
-                context = requireContext(),
-                viewModel = homeViewModel,
-                browserStore = components.core.store,
-                browsingModeManager = browsingModeManager,
-                navController = findNavController(),
-                tabsUseCases = components.useCases.tabsUseCases,
-                fenixBrowserUseCases = components.useCases.fenixBrowserUseCases,
-                settings = components.settings,
-                snackBarParentView = binding.dynamicSnackbarContainer,
-                viewLifecycleScope = viewLifecycleOwner.lifecycleScope,
-            ),
-            owner = viewLifecycleOwner,
-            view = binding.root,
-        )
-
         thumbnailsFeature.set(
             feature = HomepageThumbnailIntegration(
                 context = requireContext(),
@@ -549,21 +535,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
             ),
             owner = this,
             view = binding.homepageView,
-        )
-
-        snackbarBinding.set(
-            feature = SnackbarBinding(
-                context = requireContext(),
-                browserStore = requireContext().components.core.store,
-                appStore = requireContext().components.appStore,
-                snackbarDelegate = FenixSnackbarDelegate(binding.dynamicSnackbarContainer),
-                navController = findNavController(),
-                tabsUseCases = requireContext().components.useCases.tabsUseCases,
-                sendTabUseCases = SendTabUseCases(requireComponents.backgroundServices.accountManager),
-                customTabSessionId = null,
-            ),
-            owner = this,
-            view = binding.root,
         )
 
         privacyNoticeBannerStore = PrivacyNoticeBannerStore(
@@ -1016,6 +987,42 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
             launcher = continuousOnboardingDefaultBrowserLauncher,
         )
 
+        tabsCleanupFeature.set(
+            feature = TabsCleanupFeature(
+                context = requireContext(),
+                viewModel = homeViewModel,
+                browserStore = requireComponents.core.store,
+                browsingModeManager = browsingModeManager,
+                navController = findNavController(),
+                tabsUseCases = requireComponents.useCases.tabsUseCases,
+                fenixBrowserUseCases = requireComponents.useCases.fenixBrowserUseCases,
+                settings = requireComponents.settings,
+                snackbarHostState = snackbarHostState,
+                viewLifecycleScope = viewLifecycleOwner.lifecycleScope,
+            ),
+            owner = viewLifecycleOwner,
+            view = view,
+        )
+
+        snackbarBinding.set(
+            feature = SnackbarBinding(
+                context = requireContext(),
+                browserStore = requireContext().components.core.store,
+                appStore = requireContext().components.appStore,
+                snackbarDelegate = FenixSnackbarDelegate(
+                    snackbarHostState = snackbarHostState,
+                    scope = viewLifecycleOwner.lifecycleScope,
+                    context = requireContext(),
+                ),
+                navController = findNavController(),
+                tabsUseCases = requireContext().components.useCases.tabsUseCases,
+                sendTabUseCases = SendTabUseCases(requireComponents.backgroundServices.accountManager),
+                customTabSessionId = null,
+            ),
+            owner = this,
+            view = view,
+        )
+
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
         requireComponents.core.engine.profiler?.addMarker(
             MarkersFragmentLifecycleCallbacks.MARKER_NAME,
@@ -1103,6 +1110,13 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
                                 navigationBarContent = homeNavigationBar?.asComposable(),
                             )
                         }
+
+                        SnackbarHost(
+                            hostState = snackbarHostState,
+                            modifier = Modifier.align(Alignment.BottomCenter),
+                        ) { snackbarData ->
+                            Snackbar(snackbarData = snackbarData)
+                        }
                     }
 
                     LaunchedEffect(Unit) {
@@ -1179,17 +1193,30 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
 
     private fun showUndoSnackbar(message: String) {
         viewLifecycleOwner.lifecycleScope.allowUndo(
-            binding.dynamicSnackbarContainer,
-            message,
-            requireContext().getString(R.string.snackbar_deleted_undo),
-            {
+            snackbarHostState = snackbarHostState,
+            message = message,
+            undoActionTitle = requireContext().getString(R.string.snackbar_deleted_undo),
+            onCancel = {
                 requireComponents.useCases.tabsUseCases.undo.invoke()
                 findNavController().navigate(
                     HomeFragmentDirections.actionGlobalBrowser(null),
                 )
             },
-            operation = { },
+            operation = {},
+            undoDelay = requireContext().getUndoDelay(),
         )
+    }
+
+    private fun showComposeSnackbar(snackbarState: SnackbarState) {
+        val snackbarData = snackbarState.toSnackbarData()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            snackbarHostState.displaySnackbar(
+                visuals = snackbarData.visuals,
+                onActionPerformed = { snackbarData.performAction() },
+                onDismissPerformed = { snackbarState.onDismiss() },
+            )
+        }
     }
 
     override fun onDestroyView() {
@@ -1232,14 +1259,13 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
                 object : AccountObserver {
                     override fun onAuthenticated(account: OAuthAccount, authType: AuthType) {
                         if (authType != AuthType.Existing) {
-                            view?.let {
-                                Snackbar.make(
-                                    snackBarParentView = binding.dynamicSnackbarContainer,
-                                    snackbarState = SnackbarState(
-                                        message = it.context.getString(R.string.onboarding_firefox_account_sync_is_on),
+                            showComposeSnackbar(
+                                SnackbarState(
+                                    message = requireContext().getString(
+                                        R.string.onboarding_firefox_account_sync_is_on,
                                     ),
-                                ).show()
-                            }
+                                ),
+                            )
                         }
                     }
                 },
@@ -1412,13 +1438,12 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
                         lastAppliedWallpaperName = wallpaperName
                     } ?: run {
                         if (!isActive) return@launch
-                        with(binding.wallpaperImageView) {
-                            isVisible = false
-                            showSnackBar(
-                                view = binding.dynamicSnackbarContainer,
-                                text = resources.getString(R.string.wallpaper_select_error_snackbar_message),
-                            )
-                        }
+                        binding.wallpaperImageView.isVisible = false
+                        showComposeSnackbar(
+                            SnackbarState(
+                                message = resources.getString(R.string.wallpaper_select_error_snackbar_message),
+                            ),
+                        )
                         // If setting a wallpaper failed reset also the contrasting text color.
                         requireContext().settings().currentWallpaperTextColor = 0L
                         lastAppliedWallpaperName = Wallpaper.DEFAULT

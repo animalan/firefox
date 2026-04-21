@@ -280,7 +280,7 @@ class CollectionTest {
             selectAddTabToCollection()
             verifyTabsSelectedCounterText(1)
             saveTabsSelectedForCollection()
-            verifySnackBarText("Tab saved")
+            verifySnackBarText(composeTestRule, "Tab saved")
             verifyTabSavedInCollection(secondWebPage.title)
         }
     }
