@@ -156,6 +156,18 @@ class ScriptLoadRequest : public nsISupports,
     return getLoadedScript()->ReferrerPolicy();
   }
 
+  nsIURI* BaseURL() const { return getLoadedScript()->BaseURL(); }
+  void SetBaseURL(nsIURI* aBaseURL) {
+    getLoadedScript()->SetBaseURL(aBaseURL);
+    FetchInfo()->SetBaseURL(aBaseURL);
+  }
+  void SetBaseURLFromChannelAndOriginalURI(nsIChannel* aChannel,
+                                           nsIURI* aOriginalURI) {
+    getLoadedScript()->SetBaseURLFromChannelAndOriginalURI(aChannel,
+                                                           aOriginalURI);
+    FetchInfo()->SetBaseURLFromChannelAndOriginalURI(aChannel, aOriginalURI);
+  }
+
   mozilla::dom::RequestPriority FetchPriority() const {
     return FetchOptions()->mFetchPriority;
   }

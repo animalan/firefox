@@ -82,6 +82,13 @@ class ScriptFetchInfo : public nsISupports {
   nsIURI* BaseURL() const { return mBaseURL; }
   void SetBaseURL(nsIURI* aBaseURL) { mBaseURL = aBaseURL; }
 
+  /*
+   * Set the mBaseURL, based on aChannel.
+   * aOriginalURI is the result of aChannel->GetOriginalURI.
+   */
+  void SetBaseURLFromChannelAndOriginalURI(nsIChannel* aChannel,
+                                           nsIURI* aOriginalURI);
+
  protected:
   virtual ~ScriptFetchInfo() = default;
 
@@ -598,14 +605,6 @@ class LoadedScriptDelegate {
   }
 
   nsIURI* URI() const { return GetLoadedScript()->GetURI(); }
-
-  nsIURI* BaseURL() const { return GetLoadedScript()->BaseURL(); }
-  void SetBaseURL(nsIURI* aBaseURL) { GetLoadedScript()->SetBaseURL(aBaseURL); }
-  void SetBaseURLFromChannelAndOriginalURI(nsIChannel* aChannel,
-                                           nsIURI* aOriginalURI) {
-    GetLoadedScript()->SetBaseURLFromChannelAndOriginalURI(aChannel,
-                                                           aOriginalURI);
-  }
 
   bool IsUnknownDataType() const {
     return GetLoadedScript()->IsUnknownDataType();

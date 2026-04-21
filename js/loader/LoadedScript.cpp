@@ -39,6 +39,22 @@ size_t ScriptFetchInfo::SizeOfIncludingThis(
          mFetchOptions->SizeOfIncludingThis(aMallocSizeOf);
 }
 
+static bool IsInternalURIScheme(nsIURI* uri) {
+  return uri->SchemeIs("moz-extension") || uri->SchemeIs("resource") ||
+         uri->SchemeIs("moz-src") || uri->SchemeIs("chrome");
+}
+
+void ScriptFetchInfo::SetBaseURLFromChannelAndOriginalURI(
+    nsIChannel* aChannel, nsIURI* aOriginalURI) {
+  // Fixup moz-extension: and resource: URIs, because the channel URI will
+  // point to file:, which won't be allowed to load.
+  if (aOriginalURI && IsInternalURIScheme(aOriginalURI)) {
+    mBaseURL = aOriginalURI;
+  } else {
+    aChannel->GetURI(getter_AddRefs(mBaseURL));
+  }
+}
+
 //////////////////////////////////////////////////////////////
 // LoadedScript
 //////////////////////////////////////////////////////////////
@@ -284,11 +300,6 @@ nsresult LoadedScript::GetScriptSource(JSContext* aCx,
   return NS_OK;
 }
 
-static bool IsInternalURIScheme(nsIURI* uri) {
-  return uri->SchemeIs("moz-extension") || uri->SchemeIs("resource") ||
-         uri->SchemeIs("moz-src") || uri->SchemeIs("chrome");
-}
-
 void LoadedScript::SetBaseURLFromChannelAndOriginalURI(nsIChannel* aChannel,
                                                        nsIURI* aOriginalURI) {
   // Fixup moz-extension: and resource: URIs, because the channel URI will
@@ -362,6 +373,9 @@ EventScript::EventScript(mozilla::dom::ReferrerPolicy aReferrerPolicy,
   // EventScripts are not using ScriptLoadRequest, and mBaseURL and mURI are
   // the same thing.
   SetBaseURL(aURI);
+  // TODO: Remove the above once LoadedScript::mBaseURL is removed.
+  // NOTE: The equivalent is already done when creating the
+  //       ScriptFetchInfo instance in the caller.
 }
 
 //////////////////////////////////////////////////////////////
