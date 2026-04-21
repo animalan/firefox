@@ -31,10 +31,7 @@ add_task(async function test_worker_generateQRMatrix() {
   const worker = new QRCodeWorker();
   let result;
   try {
-    result = await worker.post("generateQRMatrix", [
-      "https://mozilla.org",
-      "H",
-    ]);
+    result = await worker.generateQRMatrix("https://mozilla.org");
   } finally {
     await worker.terminate();
   }
@@ -74,11 +71,8 @@ add_task(async function test_worker_getLogoPlacement() {
   const worker = new QRCodeWorker();
   let placement;
   try {
-    const { dotCount } = await worker.post("generateQRMatrix", [
-      "https://mozilla.org",
-      "H",
-    ]);
-    placement = await worker.post("getLogoPlacement", [dotCount, MARGIN]);
+    const { dotCount } = await worker.generateQRMatrix("https://mozilla.org");
+    placement = await worker.getLogoPlacement(dotCount, MARGIN);
   } finally {
     await worker.terminate();
   }
@@ -115,10 +109,10 @@ add_task(async function test_worker_getLogoPlacement_small_qr() {
   const worker = new QRCodeWorker();
   let placement;
   try {
-    placement = await worker.post("getLogoPlacement", [
+    placement = await worker.getLogoPlacement(
       21, // QR version 1 = 17 + 4×1 modules
-      MARGIN,
-    ]);
+      MARGIN
+    );
   } finally {
     await worker.terminate();
   }

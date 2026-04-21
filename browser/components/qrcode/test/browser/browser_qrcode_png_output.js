@@ -126,7 +126,7 @@ add_task(async function test_qrcode_png_no_logo() {
   const worker = new QRCodeWorker();
   let dataURI;
   try {
-    dataURI = await worker.post("generateFullQRCode", [TEST_URL, false]);
+    dataURI = await worker.generateFullQRCode(TEST_URL, false);
   } finally {
     await worker.terminate();
   }
@@ -145,11 +145,8 @@ add_task(async function test_qrcode_png_logo_clear_zone() {
   const worker = new QRCodeWorker();
   let matrix, dotCount, placement;
   try {
-    ({ matrix, dotCount } = await worker.post("generateQRMatrix", [
-      TEST_URL,
-      "H",
-    ]));
-    placement = await worker.post("getLogoPlacement", [dotCount, MARGIN]);
+    ({ matrix, dotCount } = await worker.generateQRMatrix(TEST_URL));
+    placement = await worker.getLogoPlacement(dotCount, MARGIN);
   } finally {
     await worker.terminate();
   }
@@ -200,8 +197,8 @@ add_task(async function test_qrcode_png_logo_is_rendered() {
   const worker = new QRCodeWorker();
   let placement;
   try {
-    const { dotCount } = await worker.post("generateQRMatrix", [TEST_URL, "H"]);
-    placement = await worker.post("getLogoPlacement", [dotCount, MARGIN]);
+    const { dotCount } = await worker.generateQRMatrix(TEST_URL);
+    placement = await worker.getLogoPlacement(dotCount, MARGIN);
   } finally {
     await worker.terminate();
   }
@@ -240,11 +237,8 @@ add_task(async function test_qrcode_png_long_url_center_alignment_pattern() {
   const worker = new QRCodeWorker();
   let matrix, dotCount, placement;
   try {
-    ({ matrix, dotCount } = await worker.post("generateQRMatrix", [
-      LONG_TEST_URL,
-      "H",
-    ]));
-    placement = await worker.post("getLogoPlacement", [dotCount, MARGIN]);
+    ({ matrix, dotCount } = await worker.generateQRMatrix(LONG_TEST_URL));
+    placement = await worker.getLogoPlacement(dotCount, MARGIN);
   } finally {
     await worker.terminate();
   }
@@ -328,11 +322,8 @@ add_task(async function test_qrcode_png_decodability() {
     const worker = new QRCodeWorker();
     let matrix, dotCount, placement;
     try {
-      ({ matrix, dotCount } = await worker.post("generateQRMatrix", [
-        url,
-        "H",
-      ]));
-      placement = await worker.post("getLogoPlacement", [dotCount, MARGIN]);
+      ({ matrix, dotCount } = await worker.generateQRMatrix(url));
+      placement = await worker.getLogoPlacement(dotCount, MARGIN);
     } finally {
       await worker.terminate();
     }
