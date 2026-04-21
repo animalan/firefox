@@ -110,7 +110,6 @@ def get_stack_info(
     base64_patches = [
         convert_bytes_patch_to_base64(patch_bytes) for patch_bytes in patches
     ]
-    print("Patches gathered for submission.")
 
     return base_commit, base_commit_vcs, base64_patches
 
@@ -419,7 +418,6 @@ class LandoAPI:
             "patches": patches,
         }
 
-        print("Submitting patches to Lando.")
         response_json = self.post(self.lando_try_api_url, request_json_body)
 
         return response_json
@@ -517,11 +515,11 @@ def push_to_lando_try(
     duration = time.perf_counter() - push_start_time
 
     job_id = response_json["id"]
-    success_msg = f"Lando try submission success, took {duration:.1f} seconds. Landing job id: {job_id}."
-    print(success_msg)
-
     lando_api_status_url = lando_api.lando_try_status_api_url(job_id)
-    print(f"Lando Job Status API: {lando_api_status_url}")
+    success_msg = (
+        f"Lando try submission success in {duration:.1f}s: {lando_api_status_url}"
+    )
+    print(success_msg)
 
     # Send a notification only if the push took an unexpectedly long time
     if duration > 30:

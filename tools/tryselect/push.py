@@ -265,8 +265,7 @@ def push_to_try(
             job_id = push_data["lando_job_id"]
             if lando_instance and job_id:
                 print(
-                    f"Follow the progress of your build on Treeherder: "
-                    f"{TREEHERDER_LANDO_TRY_RUN_URL.format(lando_instance=lando_instance, job_id=job_id)}"
+                    f"CI run: {TREEHERDER_LANDO_TRY_RUN_URL.format(lando_instance=lando_instance, job_id=job_id)}"
                 )
 
             return push_data
