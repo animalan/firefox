@@ -39,21 +39,10 @@ export const DB_FILE_NAME = "chat-store.sqlite";
 export const PREF_BRANCH = "browser.smartwindow.chatHistory";
 
 /**
- * Model names
- * TODO: consolidate with FALLBACK_MODELS
- */
-export const MODELS = {
-  0: { modelName: "custom-model" },
-  1: { modelName: "gemini-2.5-flash-lite", ownerName: "Google" },
-  2: { modelName: "Qwen3-235B-A22B-Instruct-2507", ownerName: "Alibaba" },
-  3: { modelName: "gpt-oss-120B", ownerName: "OpenAI" },
-};
-
-/**
  * Fallback model data - matches Remote Settings shape
  * Used when Remote Settings lookup fails
  */
-const FALLBACK_MODELS = {
+export const FALLBACK_MODELS = {
   0: { model: "custom-model", ownerName: "" },
   1: {
     model: "gemini-2.5-flash-lite",

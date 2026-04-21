@@ -36,18 +36,18 @@ smart-window-model-section =
 smart-window-model-learn-link = Learn about models
 
 ## Variables:
-##   $modelName (String) - The name of the AI model
+##   $model (string) - The name of the AI model
 ##   $ownerName (String) - The name of owner of the AI model
 
 smart-window-model-fast =
     .label = Fast: Answers quickly
-    .description = Model { $modelName } by { $ownerName }
+    .description = Model { $model } by { $ownerName }
 smart-window-model-flexible =
     .label = Flexible: Solid fit for most needs
-    .description = Model { $modelName } by { $ownerName }
+    .description = Model { $model } by { $ownerName }
 smart-window-model-personal =
     .label = Personal: Most tailored answers
-    .description = Model { $modelName } by { $ownerName }
+    .description = Model { $model } by { $ownerName }
 smart-window-model-custom =
     .label = Custom: Use your own LLM
 smart-window-model-custom-name =

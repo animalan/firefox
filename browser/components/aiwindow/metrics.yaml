@@ -693,10 +693,9 @@ smart_window:
       model:
         type: string
         description: >
-          The model choice selected during firstrun, corresponding to the
-          model_choice_id in Remote Settings (1, 2, or 3). "custom" if a
-          custom model override is set. Empty string if firstrun was not
-          completed.
+          The name of the model selected during firstrun (e.g., "gemini-2.5-flash-lite").
+          "custom-model" if a custom model override is set. Empty string if firstrun
+          was not completed.
     expires: never
 
   sidebar_open:
