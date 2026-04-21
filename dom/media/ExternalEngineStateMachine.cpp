@@ -269,6 +269,7 @@ void ExternalEngineStateMachine::OnEngineInitSuccess() {
   state->mEngineInitRequest.Complete();
   mReader->UpdateMediaEngineId(mEngine->Id());
   state->mInitPromise = nullptr;
+  mIsEngineReady = true;
   if (mState.IsInitEngine()) {
     StartRunningEngine();
     return;
@@ -283,6 +284,7 @@ void ExternalEngineStateMachine::OnEngineInitFailure() {
   MOZ_ASSERT(mState.IsInitEngine() || mState.IsRecoverEngine());
   LOGE("Failed to initialize the external playback engine");
   PROFILER_MARKER_UNTYPED("EESM::OnEngineInitFailure", MEDIA_PLAYBACK);
+  mIsEngineReady = false;
   auto* state = mState.AsInitEngine();
   state->mEngineInitRequest.Complete();
   state->mInitPromise = nullptr;
@@ -419,7 +421,10 @@ RefPtr<MediaDecoder::SeekPromise> ExternalEngineStateMachine::InvokeSeek(
       [self = RefPtr<ExternalEngineStateMachine>(this), this,
        target = aTarget]() -> RefPtr<MediaDecoder::SeekPromise> {
         AssertOnTaskQueue();
-        if (!mEngine || !mEngine->IsInited()) {
+        if (mState.IsShutdownEngine()) {
+          return MediaDecoder::SeekPromise::CreateAndReject(true, __func__);
+        }
+        if (!mIsEngineReady) {
           LOG("Can't perform seek (%" PRId64 ") now, add a pending seek task",
               target.GetTime().ToMicroseconds());
           // We haven't added any pending seek before
@@ -667,6 +672,7 @@ RefPtr<ShutdownPromise> ExternalEngineStateMachine::Shutdown() {
   }
 
   LOG("Shutdown");
+  mIsEngineReady = false;
   ChangeStateTo(State::ShutdownEngine);
   ResetDecode();
 
@@ -738,8 +744,7 @@ void ExternalEngineStateMachine::BufferedRangeUpdated() {
         AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownConfirmed)) { \
       return;                                                             \
     }                                                                     \
-    /* Initialzation is not done yet, postpone the operation */           \
-    if (!mEngine || !mEngine->IsInited()) {                               \
+    if (!mIsEngineReady) {                                                \
       LOG("%s is called before init", __func__);                          \
       mPendingTasks.AppendElement(NewRunnableMethod(                      \
           __func__, this, &ExternalEngineStateMachine::Func));            \
@@ -1348,6 +1353,7 @@ void ExternalEngineStateMachine::RecoverFromCDMProcessCrashIfNeeded() {
     PROFILER_MARKER_TEXT("EESM::RecoverFromCDMProcessCrashIfNeeded",
                          MEDIA_PLAYBACK, {}, msg);
   }
+  mIsEngineReady = false;
   ChangeStateTo(State::RecoverEngine);
   if (HasVideo()) {
     mVideoDataRequest.DisconnectIfExists();
@@ -1377,6 +1383,7 @@ void ExternalEngineStateMachine::RecoverFromHardwareReset() {
     PROFILER_MARKER_TEXT("EESM::RecoverFromHardwareReset", MEDIA_PLAYBACK, {},
                          msg);
   }
+  mIsEngineReady = false;
   ChangeStateTo(State::RecoverEngine);
   if (HasVideo()) {
     mVideoDataRequest.DisconnectIfExists();
@@ -1426,7 +1433,7 @@ RefPtr<SetCDMPromise> ExternalEngineStateMachine::SetCDMProxy(
     return SetCDMPromise::CreateAndReject(NS_ERROR_FAILURE, __func__);
   }
 
-  if (!mEngine || !mEngine->IsInited()) {
+  if (!mIsEngineReady) {
     LOG("SetCDMProxy is called before init");
     mReader->SetEncryptedCustomIdent();
     mPendingTasks.AppendElement(NS_NewRunnableFunction(

@@ -353,6 +353,11 @@ class ExternalEngineStateMachine final
   nsTArray<RefPtr<nsIRunnable>> mPendingTasks;
 
   bool mHasFatalError = false;
+
+  // Set when the engine has been fully initialized (in OnEngineInitSuccess)
+  // and cleared on recovery (crash or hardware reset). Used to defer
+  // operations that require a ready engine.
+  bool mIsEngineReady = false;
 };
 
 class ExternalPlaybackEngine {
