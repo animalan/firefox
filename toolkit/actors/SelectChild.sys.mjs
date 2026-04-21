@@ -8,6 +8,7 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
+  LayoutUtils: "resource://gre/modules/LayoutUtils.sys.mjs",
 });
 
 const kStateActive = 0x00000001; // ElementState::ACTIVE
@@ -146,8 +147,7 @@ SelectContentHelper.prototype = {
   },
 
   _getBoundingContentRect() {
-    let win = this.element.documentGlobal;
-    return win.windowUtils.getElementBoundingScreenRect(this.element);
+    return lazy.LayoutUtils.getElementBoundingScreenRect(this.element);
   },
 
   _buildOptionList() {

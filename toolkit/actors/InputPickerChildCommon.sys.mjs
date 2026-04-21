@@ -2,6 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  LayoutUtils: "resource://gre/modules/LayoutUtils.sys.mjs",
+});
+
 /**
  * InputPickerChildCommon is the communication channel between the input box
  * (content) for each input types and its picker (chrome).
@@ -69,8 +74,7 @@ export class InputPickerChildCommon extends JSWindowActorChild {
    * relative to the left/top of the content area.
    */
   getBoundingContentRect(aElement) {
-    let win = aElement.documentGlobal;
-    return win.windowUtils.getElementBoundingScreenRect(aElement);
+    return lazy.LayoutUtils.getElementBoundingScreenRect(aElement);
   }
 
   /**

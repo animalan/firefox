@@ -7,6 +7,8 @@ import { WindowGlobalBiDiModule } from "chrome://remote/content/webdriver-bidi/m
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  LayoutUtils: "resource://gre/modules/LayoutUtils.sys.mjs",
+
   AnimationFramePromise: "chrome://remote/content/shared/Sync.sys.mjs",
   assertTargetInViewPort:
     "chrome://remote/content/shared/webdriver/Actions.sys.mjs",
@@ -317,12 +319,12 @@ class InputModule extends WindowGlobalBiDiModule {
     const { position } = options;
     const window = this.messageHandler.window;
 
-    return window.windowUtils.toTopLevelWidgetRect(
-      position[0],
-      position[1],
-      0,
-      0
-    );
+    return lazy.LayoutUtils.rectToTopLevelWidgetRect(window, {
+      left: position[0],
+      top: position[1],
+      height: 0,
+      width: 0,
+    });
   }
 }
 

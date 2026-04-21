@@ -5,6 +5,8 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  LayoutUtils: "resource://gre/modules/LayoutUtils.sys.mjs",
+
   accessibility:
     "chrome://remote/content/shared/webdriver/Accessibility.sys.mjs",
   AnimationFramePromise: "chrome://remote/content/shared/Sync.sys.mjs",
@@ -149,12 +151,12 @@ export class MarionetteCommandsChild extends JSWindowActorChild {
   #toBrowserWindowCoordinates(options, _context) {
     const { position } = options;
 
-    return this.contentWindow.windowUtils.toTopLevelWidgetRect(
-      position[0],
-      position[1],
-      0,
-      0
-    );
+    return lazy.LayoutUtils.rectToTopLevelWidgetRect(this.contentWindow, {
+      left: position[0],
+      top: position[1],
+      height: 0,
+      width: 0,
+    });
   }
 
   // eslint-disable-next-line complexity

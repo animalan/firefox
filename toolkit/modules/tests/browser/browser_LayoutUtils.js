@@ -7,10 +7,15 @@ add_task(async function () {
   });
 });
 
-add_task(async function test_toTopLevelWidgetRect() {
+add_task(async function test_rectToBrowserRect() {
   const tab = await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
     "data:text/html;charset=utf-8,test"
+  );
+
+  SpecialPowers.addTaskImport(
+    "LayoutUtils",
+    "resource://gre/modules/LayoutUtils.sys.mjs"
   );
 
   // Convert (12, 34) in a content document coordinates into this browser window
@@ -19,7 +24,13 @@ add_task(async function test_toTopLevelWidgetRect() {
     tab.linkedBrowser,
     [],
     () => {
-      return content.window.windowUtils.toTopLevelWidgetRect(12, 34, 0, 0);
+      /* global LayoutUtils */
+      return LayoutUtils.rectToTopLevelWidgetRect(content.window, {
+        left: 12,
+        top: 34,
+        width: 0,
+        height: 0,
+      });
     }
   );
 
@@ -47,7 +58,7 @@ add_task(async function test_toTopLevelWidgetRect() {
   );
   await mouseDownPromise;
 
-  Assert.ok(true, "windowUtils.toTopLevelWidgetRect() works as expected");
+  Assert.ok(true, "LayoutUtils.rectToBrowserRect() works as expected");
 
   BrowserTestUtils.removeTab(tab);
 });
