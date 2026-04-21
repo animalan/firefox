@@ -66,7 +66,7 @@ class NavigationToolbarExpandedTest {
             verifyToolbarPosition(bottomPosition = false)
         }
         navigationToolbar(composeTestRule) {
-            verifyNavBarPosition(true)
+            verifyNavBarPosition()
             verifyTheNavigationBarAddBookmarkButton()
             verifyTheNavigationBarShareButton()
             verifyTheNewTabButton()
@@ -90,7 +90,7 @@ class NavigationToolbarExpandedTest {
             verifyToolbarPosition(bottomPosition = false)
         }
         navigationToolbar(composeTestRule) {
-            verifyNavBarPosition(true)
+            verifyNavBarPosition()
             verifyTheNavigationBarAddBookmarkButton()
             verifyTheNavigationBarShareButton()
             verifyTheNewTabButton()
@@ -405,7 +405,7 @@ class NavigationToolbarExpandedTest {
             verifyToolbarPosition(bottomPosition = false)
         }
         navigationToolbar(composeTestRule) {
-            verifyNavBarPosition(true)
+            verifyNavBarPosition()
             verifyTheNavigationBarAddBookmarkButton()
             verifyTheNavigationBarShareButton()
             verifyTheNewTabButton()
@@ -440,7 +440,7 @@ class NavigationToolbarExpandedTest {
         navigationToolbar(composeTestRule) {
             verifyTheTabStripOpenTab("Test_Page_1")
             verifyTheTabStripCloseTabButton("Test_Page_1")
-            verifyNavBarPosition(true)
+            verifyNavBarPosition()
             verifyTheNavigationBarAddBookmarkButton()
             verifyTheNavigationBarShareButton()
             verifyTheNewTabButton(false)

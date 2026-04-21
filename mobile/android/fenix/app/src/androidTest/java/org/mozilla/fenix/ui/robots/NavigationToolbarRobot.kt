@@ -13,9 +13,11 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertAny
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -29,12 +31,10 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.pressImeActionButton
 import androidx.test.espresso.assertion.PositionAssertions.isCompletelyAbove
-import androidx.test.espresso.assertion.PositionAssertions.isCompletelyBelow
 import androidx.test.espresso.assertion.PositionAssertions.isPartiallyBelow
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.Visibility
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -45,9 +45,11 @@ import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import mozilla.components.compose.browser.toolbar.concept.BrowserToolbarTestTags.ADDRESSBAR_SEARCH_BOX
 import mozilla.components.compose.browser.toolbar.concept.BrowserToolbarTestTags.ADDRESSBAR_URL_BOX
+import mozilla.components.compose.browser.toolbar.concept.BrowserToolbarTestTags.NAVIGATION_BAR
 import mozilla.components.compose.browser.toolbar.concept.BrowserToolbarTestTags.SEARCH_SELECTOR
 import mozilla.components.compose.browser.toolbar.concept.BrowserToolbarTestTags.TABS_COUNTER
 import org.hamcrest.CoreMatchers.allOf
+import org.junit.Assert.assertTrue
 import org.mozilla.fenix.R
 import org.mozilla.fenix.helpers.Constants.LONG_CLICK_DURATION
 import org.mozilla.fenix.helpers.Constants.RETRY_COUNT
@@ -247,12 +249,13 @@ class NavigationToolbarRobot(private val composeTestRule: ComposeTestRule) {
         Log.i(TAG, "longTapNavButton: Waiting to find the nav bar $buttonDescription button.")
         mDevice.findObject(UiSelector().description("Back")).waitForExists(waitingTime)
         Log.i(TAG, "longTapNavButton: Trying to long click the nav bar $buttonDescription button.")
-        mDevice.findObject(
-            By.desc(buttonDescription)
-                .enabled(true)
-                .hasAncestor(By.res("$packageName:id/navigation_bar")),
-        )
-            .click(LONG_CLICK_DURATION)
+        composeTestRule.onNode(
+            hasContentDescription(buttonDescription)
+                .and(hasAnyAncestor(hasTestTag(NAVIGATION_BAR))),
+            useUnmergedTree = true,
+        ).performTouchInput {
+            longClick(durationMillis = LONG_CLICK_DURATION)
+        }
         Log.i(TAG, "longTapNavButton: Long clicked the nav bar $buttonDescription button.")
     }
 
@@ -273,13 +276,16 @@ class NavigationToolbarRobot(private val composeTestRule: ComposeTestRule) {
     // Verifies that the address bar is displayed separately, or merged with the navbar in landscape mode.
     fun verifyAddressBarIsDisplayedSeparately(isSeparate: Boolean, isAtTop: Boolean) {
         val addressBar = "$packageName:id/toolbar"
-        val navBar = "$packageName:id/navigation_bar"
 
         if (isSeparate) {
-            assertUIObjectExists(itemWithResId(addressBar), itemWithResId(navBar))
+            assertUIObjectExists(itemWithResId(addressBar))
+            composeTestRule.onNodeWithTag(NAVIGATION_BAR).assertIsDisplayed()
+        } else if (isAtTop) {
+            assertUIObjectExists(itemWithResId(addressBar))
+            composeTestRule.onNodeWithTag(NAVIGATION_BAR).assertIsNotDisplayed()
         } else {
-            assertUIObjectIsGone(itemWithResId(if (isAtTop) navBar else addressBar))
-            assertUIObjectExists(itemWithResId(if (isAtTop) addressBar else navBar))
+            assertUIObjectIsGone(itemWithResId(addressBar))
+            composeTestRule.onNodeWithTag(NAVIGATION_BAR).assertIsDisplayed()
         }
     }
 
@@ -297,26 +303,39 @@ class NavigationToolbarRobot(private val composeTestRule: ComposeTestRule) {
 
     fun verifyNavBarBarPosition(isAtBottom: Boolean) {
         Log.i(TAG, "verifyNavBarBarPosition: Trying to verify the toolbar navbar position is at the bottom: $isAtBottom.")
-        onView(allOf(withId(R.id.navigation_bar), isCompletelyDisplayed())).check(
-            if (isAtBottom) {
-                isPartiallyBelow(withId(R.id.engineView))
-            } else {
-                isCompletelyAbove(withId(R.id.engineView))
-            },
-        )
+        assertNavBarIsPositioned(referenceResourceId = "$packageName:id/engineView")
         Log.i(TAG, "verifyNavBarBarPosition: Verified the toolbar navbar position is at the bottom: $isAtBottom.")
     }
 
-    fun verifyNavBarPosition(isAtBottom: Boolean) {
-        Log.i(TAG, "verifyNavBarPosition: Trying to verify the toolbar navbar position is at the bottom: $isAtBottom.")
-        onView(allOf(withId(R.id.navigation_bar), isCompletelyDisplayed())).check(
-            if (isAtBottom) {
-                isCompletelyBelow(withId(R.id.composable_toolbar))
-            } else {
-                isCompletelyAbove(withId(R.id.composable_toolbar))
-            },
+    fun verifyNavBarPosition() {
+        Log.i(TAG, "verifyNavBarPosition: Trying to verify the toolbar navbar position is at the bottom.")
+        assertNavBarIsPositioned(
+            referenceResourceId = "$packageName:id/composable_toolbar",
         )
-        Log.i(TAG, "verifyNavBarPosition: Verified the toolbar navbar position is at the bottom: $isAtBottom.")
+        Log.i(TAG, "verifyNavBarPosition: Verified the toolbar navbar position is at the bottom.")
+    }
+
+    /**
+     * Asserts that the navigation bar compose node is positioned below the view
+     * identified by [referenceResourceId].
+     */
+    private fun assertNavBarIsPositioned(referenceResourceId: String) {
+        val navBarBounds = composeTestRule.onNodeWithTag(NAVIGATION_BAR)
+            .fetchSemanticsNode()
+            .boundsInWindow
+        val reference = mDevice.findObject(UiSelector().resourceId(referenceResourceId))
+
+        assertTrue(
+            "Reference view ($referenceResourceId) must be present in the view hierarchy",
+            reference.waitForExists(waitingTime),
+        )
+
+        val referenceBounds = reference.visibleBounds
+
+        assertTrue(
+            "Navigation bar is below the reference view",
+            navBarBounds.top >= referenceBounds.bottom,
+        )
     }
 
     fun verifyTheTabCounter(numberOfOpenTabs: String, isPrivateBrowsingEnabled: Boolean = false) {
