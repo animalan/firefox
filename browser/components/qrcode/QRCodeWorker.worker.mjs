@@ -437,14 +437,13 @@ class QRCodeWorkerImpl {
 
   /**
    * @param {string} url
-   * @param {string} [errorCorrectionLevel]
    * @returns {{ matrix: boolean[][], dotCount: number }}
    */
-  generateQRMatrix(url, errorCorrectionLevel = "H") {
+  generateQRMatrix(url) {
     if (!QR || !QR.encodeToMatrix) {
       throw new Error("QRCode library not available in worker");
     }
-    const { matrix, dotCount } = QR.encodeToMatrix(url, errorCorrectionLevel);
+    const { matrix, dotCount } = QR.encodeToMatrix(url, "H");
     return { matrix, dotCount };
   }
 
@@ -515,7 +514,7 @@ class QRCodeWorkerImpl {
     let matrix, dotCount, ecLevel;
     for (const level of ["H", "Q", "M", "L"]) {
       try {
-        ({ matrix, dotCount } = this.generateQRMatrix(url, level));
+        ({ matrix, dotCount } = QR.encodeToMatrix(url, level));
         ecLevel = level;
         break;
       } catch (e) {

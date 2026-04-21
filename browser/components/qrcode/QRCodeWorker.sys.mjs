@@ -40,10 +40,28 @@ export class QRCodeWorker extends BasePromiseWorker {
    * main thread.
    *
    * @param {string} url - The URL to encode in the QR code
+   * @param {boolean} [showLogo=true] - Whether to overlay the Firefox logo
    * @returns {Promise<string>} data:image/png;base64,... URI
    */
-  async generateFullQRCode(url) {
-    return this.post("generateFullQRCode", [url]);
+  async generateFullQRCode(url, showLogo = true) {
+    return this.post("generateFullQRCode", [url, showLogo]);
+  }
+
+  /**
+   * @param {string} url
+   * @returns {Promise<{matrix: boolean[][], dotCount: number}>}
+   */
+  async generateQRMatrix(url) {
+    return this.post("generateQRMatrix", [url]);
+  }
+
+  /**
+   * @param {number} dotCount - Number of QR modules per side
+   * @param {number} margin - Canvas margin in pixels
+   * @returns {Promise<object>} Logo placement data
+   */
+  async getLogoPlacement(dotCount, margin) {
+    return this.post("getLogoPlacement", [dotCount, margin]);
   }
 
   /**
