@@ -61,6 +61,11 @@ if CONFIG["OS_ARCH"] == "WINNT":
         "TestLoadLibraryUsage.cpp",
     ]
 
+if CONFIG["MOZ_BUILD_APP"] != "js":
+    SOURCES += [
+        "TestSupportsWeakPtrCycleCollection.cpp",
+    ]
+
 include("../external/tests/sources.mozbuild")
 
 if CONFIG["ENABLE_CLANG_PLUGIN_ALPHA"]:
