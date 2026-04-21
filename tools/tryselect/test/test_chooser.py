@@ -64,13 +64,16 @@ def test_try_chooser(app, queue: multiprocessing.Queue):
 
     expected_output = [
         b"""<title>Try Chooser Enhanced</title>""",
-        b"""<input class="filter" type="checkbox" id=windows name="build" value='{"build_platform": ["windows"]}' onchange="console.log('checkbox onchange triggered');apply();">""",  # noqa
-        b"""<input class="filter" type="checkbox" id=mochitest-browser-chrome name="test,mochitest,reftest,browsertime,web-platform-tests" value='{"unittest_suite": ["mochitest-browser-chrome"]}' onchange="console.log('checkbox onchange triggered');apply();">""",  # noqa
-        b"""<input class="filter" type="checkbox" id=xpcshell name="test,mochitest,reftest,browsertime,web-platform-tests" value='{"unittest_suite": ["xpcshell"]}' onchange="console.log('checkbox onchange triggered');apply();">""",  # noqa
+        b"""<input class="filter" type="checkbox" id=windows name="build" value='{"build_platform": ["windows"]}' onchange="apply();">""",  # noqa
+        b"""<input class="filter" type="checkbox" id=mochitest-browser-chrome name="test,mochitest,reftest,browsertime,web-platform-tests" value='{"unittest_suite": ["mochitest-browser-chrome"]}' onchange="apply();">""",  # noqa
+        b"""<input class="filter" type="checkbox" id=xpcshell name="test,mochitest,reftest,browsertime,web-platform-tests" value='{"unittest_suite": ["xpcshell"]}' onchange="apply();">""",  # noqa
     ]
 
     for expected in expected_output:
         assert expected in response.data
+
+    # Guard against debug leftovers creeping back into the checkbox onchange.
+    assert b"console.log" not in response.data
 
     # Default render should leave the artifact checkbox unchecked.
     assert b'name="artifact" checked' not in response.data
