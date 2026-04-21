@@ -325,7 +325,7 @@ dependencies {
     implementation libs.androidx.lifecycle.process
     implementation libs.androidx.lifecycle.viewmodel
     implementation libs.androidx.palette
-    implementation libs.androidx.preferences
+    implementation libs.androidx.preference
     implementation libs.androidx.recyclerview
     implementation libs.androidx.savedstate
     implementation libs.androidx.transition

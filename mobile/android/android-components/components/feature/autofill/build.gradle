@@ -30,7 +30,7 @@ dependencies {
     implementation libs.androidx.core.ktx
     implementation libs.androidx.fragment
     implementation libs.androidx.lifecycle.runtime
-    implementation libs.androidx.preferences
+    implementation libs.androidx.preference
     implementation libs.androidx.recyclerview
     implementation libs.kotlinx.coroutines
     implementation libs.google.material

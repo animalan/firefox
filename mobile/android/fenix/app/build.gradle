@@ -630,7 +630,6 @@ dependencies {
     implementation libs.accompanist.drawablepainter
     implementation libs.adjust
     implementation libs.androidx.activity
-    implementation libs.androidx.activity.ktx
     implementation libs.androidx.annotation
     implementation libs.androidx.appcompat
     implementation libs.androidx.biometric
@@ -668,7 +667,7 @@ dependencies {
     implementation libs.androidx.navigation3.runtime
     implementation libs.androidx.navigation3.ui
     implementation libs.androidx.paging
-    implementation libs.androidx.preferences
+    implementation libs.androidx.preference
     implementation libs.androidx.profileinstaller
     implementation libs.androidx.recyclerview
     implementation libs.androidx.swiperefreshlayout
