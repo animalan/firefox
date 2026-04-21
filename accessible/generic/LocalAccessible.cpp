@@ -152,6 +152,10 @@ ENameValueFlag LocalAccessible::Name(nsString& aName) const {
   }
 
   if (auto cssAlt = CssAltContent(mContent)) {
+    // This covers two cases:
+    // 1. The CSS content property replaces the content of an element with an
+    // image plus alt text.
+    // 2. Alt text is provided for a pseudo-element image.
     cssAlt.AppendToString(aName);
     return eNameOK;
   }

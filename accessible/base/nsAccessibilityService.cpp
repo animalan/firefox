@@ -258,13 +258,13 @@ bool nsAccessibilityService::ShouldCreateImgAccessible(
   }
 
   // If the element is not an img, not an embedded image via embed or object,
-  // and not a pseudo-element with CSS content alt text, then we should not
-  // create an accessible.
+  // and not a pseudo-element with non-empty CSS content alt text, then we
+  // should not create an accessible.
   if (!aElement->IsHTMLElement(nsGkAtoms::img) &&
       ((!aElement->IsHTMLElement(nsGkAtoms::embed) &&
         !aElement->IsHTMLElement(nsGkAtoms::object)) ||
        frame->AccessibleType() != AccType::eImageType) &&
-      !CssAltContent(aElement)) {
+      CssAltContent(aElement).IsEmpty()) {
     return false;
   }
 
@@ -1415,7 +1415,12 @@ LocalAccessible* nsAccessibilityService::CreateAccessible(
 
       return nullptr;
     }
-
+    if (cssAlt && cssAlt.IsEmpty()) {
+      if (aIsSubtreeHidden) {
+        *aIsSubtreeHidden = true;
+      }
+      return nullptr;
+    }
     newAcc = CreateAccessibleByFrameType(frame, content, aContext);
     MOZ_ASSERT(newAcc, "Accessible not created for text node!");
     document->BindToDocument(newAcc, nullptr);
@@ -1582,13 +1587,14 @@ LocalAccessible* nsAccessibilityService::CreateAccessible(
       if (aIsSubtreeHidden) {
         *aIsSubtreeHidden = true;
       }
-    } else if (auto cssAlt = CssAltContent(content)) {
-      // This is a pseudo-element without children that has CSS alt text. This
-      // only happens when there is alt text with an empty content string; e.g.
-      // content: "" / "alt"
-      // In this case, we need to expose the alt text on the pseudo-element
-      // itself, since we don't have a child to use. We create a
-      // TextLeafAccessible with the pseudo-element as the backing DOM node.
+    } else if (auto cssAlt = CssAltContent(content);
+               cssAlt && !cssAlt.IsEmpty()) {
+      // This is a pseudo-element without children that has CSS alt text which
+      // isn't empty. This only happens when there is alt text with an empty
+      // content string; e.g. content: "" / "alt" In this case, we need to
+      // expose the alt text on the pseudo-element itself, since we don't have a
+      // child to use. We create a TextLeafAccessible with the pseudo-element as
+      // the backing DOM node.
       newAcc = new TextLeafAccessible(content, document);
       nsAutoString text;
       cssAlt.AppendToString(text);
