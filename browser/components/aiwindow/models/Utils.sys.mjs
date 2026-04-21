@@ -81,6 +81,8 @@ export const MODEL_FEATURES = Object.freeze({
   REAL_TIME_CONTEXT_TAB: "real-time-context-tab",
   REAL_TIME_CONTEXT_MENTIONS: "real-time-context-mentions",
   MEMORIES_RELEVANT_CONTEXT: "memories-relevant-context",
+  DISABLE_TABLE_INSTRUCTIONS: "disable-table-instructions",
+  ENABLE_TABLE_INSTRUCTIONS: "enable-table-instructions",
 });
 
 /**
@@ -160,7 +162,7 @@ export const FEATURE_PURPOSES = Object.freeze({
  * - Old clients will continue using old major version
  */
 export const FEATURE_MAJOR_VERSIONS = Object.freeze({
-  [MODEL_FEATURES.CHAT]: 3,
+  [MODEL_FEATURES.CHAT]: 4,
   [MODEL_FEATURES.TITLE_GENERATION]: 1,
   [MODEL_FEATURES.CONVERSATION_STARTERS_SIDEBAR_SYSTEM]: 1,
   [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER]: 2,

@@ -45,7 +45,7 @@ add_setup(async function () {
 
 add_task(async function test_loadConfig_chat_feature() {
   const engine = new openAIEngine();
-  await engine.loadConfig(MODEL_FEATURES.CHAT);
+  await engine.loadConfig(MODEL_FEATURES.CHAT, 2);
   const config = engine.getConfig(engine.feature);
 
   info("Loaded config for 'chat' feature:");

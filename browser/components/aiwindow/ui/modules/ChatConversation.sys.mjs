@@ -51,6 +51,7 @@ ChromeUtils.defineLazyGetter(lazy, "console", function () {
 });
 
 const CHAT_ROLES = [MESSAGE_ROLE.USER, MESSAGE_ROLE.ASSISTANT];
+const TABLES_PREF = "browser.smartwindow.allowTables";
 
 /**
  * A conversation containing messages.
@@ -591,7 +592,20 @@ export class ChatConversation extends EventEmitter {
     this.removeSystemTimeMemoriesMessages();
 
     if (!this.messages.length) {
-      const systemPrompt = await engineInstance.loadPrompt(MODEL_FEATURES.CHAT);
+      const _systemPrompt = await engineInstance.loadPrompt(
+        MODEL_FEATURES.CHAT
+      );
+      let tableInstructions;
+      if (Services.prefs.getBoolPref(TABLES_PREF, false)) {
+        tableInstructions = await engineInstance.loadPrompt(
+          MODEL_FEATURES.ENABLE_TABLE_INSTRUCTIONS
+        );
+      } else {
+        tableInstructions = await engineInstance.loadPrompt(
+          MODEL_FEATURES.DISABLE_TABLE_INSTRUCTIONS
+        );
+      }
+      const systemPrompt = renderPrompt(_systemPrompt, { tableInstructions });
       this.addSystemMessage(SYSTEM_PROMPT_TYPE.TEXT, systemPrompt);
     }
 

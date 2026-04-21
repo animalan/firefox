@@ -32,7 +32,7 @@ const CUSTOM_PROMPT = "Hello from custom prompt!";
 
 const API_KEY = "fake-key";
 const ENDPOINT = "https://api.fake-endpoint.com/v1";
-const MAJOR_VERSION_3 = 3;
+const MAJOR_VERSION_4 = 4;
 const MAJOR_VERSION_2 = 2;
 const MAJOR_VERSION_1 = 1;
 
@@ -325,7 +325,7 @@ add_task(async function test_loadConfig_custom_endpoint_with_custom_model() {
     };
     sb.stub(openAIEngine, "getRemoteClient").returns(fakeClient);
 
-    await engine.loadConfig(MODEL_FEATURES.CHAT, MAJOR_VERSION_3);
+    await engine.loadConfig(MODEL_FEATURES.CHAT, MAJOR_VERSION_4);
 
     Assert.equal(
       engine.model,
@@ -424,8 +424,17 @@ add_task(async function test_build_with_feature() {
       .stub(openAIEngine, "_createEngine")
       .resolves(fakeEngine);
 
+    const fakeRecords = [
+      {
+        feature: MODEL_FEATURES.CHAT,
+        version: getVersionForFeature(MODEL_FEATURES.CHAT),
+        model: "some-model",
+        is_default: true,
+      },
+    ];
+
     sb.stub(openAIEngine, "getRemoteClient").returns({
-      get: sb.stub().resolves(REAL_REMOTE_SETTINGS_SNAPSHOT),
+      get: sb.stub().resolves(fakeRecords),
     });
 
     const engine = await openAIEngine.build(MODEL_FEATURES.CHAT);
@@ -640,7 +649,7 @@ add_task(
         },
         {
           feature: MODEL_FEATURES.CHAT,
-          version: getVersionForFeature(MODEL_FEATURES.CHAT),
+          version: "2.0",
           model: "default-model",
           prompts: "Default prompt",
           is_default: true,
@@ -652,7 +661,7 @@ add_task(
       });
 
       const engine = new openAIEngine();
-      await engine.loadConfig(MODEL_FEATURES.CHAT, MAJOR_VERSION_3);
+      await engine.loadConfig(MODEL_FEATURES.CHAT, MAJOR_VERSION_4);
 
       Assert.equal(
         engine.model,
@@ -864,7 +873,7 @@ add_task(async function test_custom_endpoint_override() {
       },
       {
         feature: MODEL_FEATURES.CHAT,
-        version: getVersionForFeature(MODEL_FEATURES.CHAT),
+        version: "2.0",
         model: "future-default",
         prompts: "Default prompt",
         is_default: true,
@@ -876,7 +885,7 @@ add_task(async function test_custom_endpoint_override() {
     });
 
     const engine = new openAIEngine();
-    await engine.loadConfig(MODEL_FEATURES.CHAT, MAJOR_VERSION_3);
+    await engine.loadConfig(MODEL_FEATURES.CHAT, MAJOR_VERSION_4);
 
     Assert.equal(
       engine.model,
