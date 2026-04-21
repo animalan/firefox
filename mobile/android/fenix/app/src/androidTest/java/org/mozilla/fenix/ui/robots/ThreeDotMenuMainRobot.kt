@@ -14,7 +14,6 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasContentDescription
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -47,7 +46,6 @@ import org.mozilla.fenix.helpers.MatcherHelper.assertUIObjectExists
 import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithDescription
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResId
-import org.mozilla.fenix.helpers.MatcherHelper.itemWithResIdAndDescription
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeShort
@@ -424,14 +422,6 @@ class ThreeDotMenuMainRobot(private val composeTestRule: ComposeTestRule) {
         composeTestRule.toolsMenuButton().performClick()
         composeTestRule.waitForIdle()
         Log.i(TAG, "clickTheToolsButton: Clicked the Tools menu button from the new main menu design.")
-    }
-
-    @OptIn(ExperimentalTestApi::class)
-    fun verifyExtensionsButtonWithInstalledExtension(extensionTitle: String) {
-        Log.i(TAG, "Waiting for $waitingTime until node with tag: $EXTENSIONS exists")
-        composeTestRule.waitUntilAtLeastOneExists(hasTestTag(EXTENSIONS), waitingTime)
-        Log.i(TAG, "Waited for $waitingTime until node with tag: $EXTENSIONS exists")
-        assertUIObjectExists(itemWithResIdAndDescription("mainMenu.extensions", extensionTitle))
     }
 
     @OptIn(ExperimentalTestApi::class)
