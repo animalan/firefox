@@ -315,7 +315,11 @@ static RefPtr<LocalAccessible> MaybeCreateSVGAccessible(
     // Shape elements: rect, circle, ellipse, line, path, polygon, and polyline.
     // 'use' and 'text' graphic elements require special support.
     if (MustSVGElementBeAccessible(aContent, aDocument)) {
-      return new EnumRoleAccessible<roles::GRAPHIC>(aContent, aDocument);
+      // Any accessible that could have TextLeafAccessible children must be a
+      // HyperTextAccessible to satisfy the invariant in
+      // GetTextAttributesLocalAcc.
+      return new EnumRoleHyperTextAccessible<roles::GRAPHIC>(aContent,
+                                                             aDocument);
     }
   } else if (aContent->IsSVGElement(nsGkAtoms::text)) {
     return new HyperTextAccessible(aContent->AsElement(), aDocument);
@@ -1604,15 +1608,10 @@ LocalAccessible* nsAccessibilityService::CreateAccessible(
     // accessibility property. If it's interesting we need it in the
     // accessibility hierarchy so that events or other accessibles can point to
     // it, or so that it can hold a state, etc.
-    if (content->IsHTMLElement() || content->IsMathMLElement() ||
-        content->IsSVGElement(nsGkAtoms::foreignObject)) {
-      // Interesting container which may have selectable text and/or embedded
-      // objects.
-      newAcc = new HyperTextAccessible(content, document);
-    } else {  // XUL, other SVG, etc.
-      // Interesting generic non-HTML container
-      newAcc = new AccessibleWrap(content, document);
-    }
+    // Interesting container which may have selectable text and/or embedded
+    // objects. Must be a HyperTextAccessible because children might include
+    // TextLeafAccessibles.
+    newAcc = new HyperTextAccessible(content, document);
   } else if (!newAcc && MustBeGenericAccessible(content, document)) {
     newAcc = new EnumRoleHyperTextAccessible<roles::TEXT_CONTAINER>(content,
                                                                     document);
