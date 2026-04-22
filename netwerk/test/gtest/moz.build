@@ -34,6 +34,7 @@ UNIFIED_SOURCES += [
     "TestProtocolProxyService.cpp",
     "TestReadStreamToString.cpp",
     "TestServerTimingHeader.cpp",
+    "TestSFV.cpp",
     "TestSocketTransportService.cpp",
     "TestSSLTokensCache.cpp",
     "TestStandardURL.cpp",
@@ -66,6 +67,7 @@ USE_LIBS += [
 
 LOCAL_INCLUDES += [
     "/netwerk/base",
+    "/netwerk/base/http-sfv",
     "/netwerk/cache2",
     "/netwerk/cookie",
     "/netwerk/dns",
