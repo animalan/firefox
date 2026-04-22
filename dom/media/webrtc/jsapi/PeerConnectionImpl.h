@@ -719,6 +719,7 @@ class PeerConnectionImpl final
   unsigned int mDataChannelsClosed = 0;
 
   bool mForceIceTcp;
+  Maybe<dom::RTCRtcpMuxPolicy> mRtcpMuxPolicy;
   RefPtr<MediaTransportHandler> mTransportHandler;
 
   // The JSEP negotiation session.

@@ -174,6 +174,21 @@ void JsepSessionImpl::InitTransceiver(JsepTransceiver& aTransceiver) {
   // We do not set mLevel yet, we do that either on createOffer, or setRemote
 }
 
+nsresult JsepSessionImpl::SetRtcpMuxPolicy(JsepRtcpMuxPolicy policy) {
+  mLastError.clear();
+  if (mRtcpMuxPolicy == policy) {
+    return NS_OK;
+  }
+  if (mCurrentLocalDescription) {
+    JSEP_SET_ERROR(
+        "Changing the rtcpMux policy is only supported before the "
+        "first SetLocalDescription.");
+    return NS_ERROR_UNEXPECTED;
+  }
+  mRtcpMuxPolicy = policy;
+  return NS_OK;
+}
+
 nsresult JsepSessionImpl::SetBundlePolicy(JsepBundlePolicy policy) {
   mLastError.clear();
 
@@ -1980,7 +1995,32 @@ nsresult JsepSessionImpl::ValidateRemoteDescription(const Sdp& description) {
   return NS_OK;
 }
 
+nsresult JsepSessionImpl::CheckRtcpMux(const Sdp& description) {
+  if (mRtcpMuxPolicy != kRtcpMuxRequire) {
+    return NS_OK;
+  }
+  for (size_t i = 0; i < description.GetMediaSectionCount(); ++i) {
+    const SdpMediaSection& msection = description.GetMediaSection(i);
+    if (mSdpHelper.MsectionIsDisabled(msection)) {
+      continue;
+    }
+    if (!mSdpHelper.HasRtcp(msection.GetProtocol())) {
+      continue;
+    }
+    if (!msection.GetAttributeList().HasAttribute(
+            SdpAttribute::kRtcpMuxAttribute)) {
+      JSEP_SET_ERROR(
+          "m-section at level "
+          << i << " is missing a=rtcp-mux, which is required by rtcpMuxPolicy");
+      return NS_ERROR_INVALID_ARG;
+    }
+  }
+  return NS_OK;
+}
+
 nsresult JsepSessionImpl::ValidateOffer(const Sdp& offer) {
+  nsresult rv = CheckRtcpMux(offer);
+  NS_ENSURE_SUCCESS(rv, rv);
   return mSdpHelper.ValidateTransportAttributes(offer, sdp::kOffer);
 }
 
@@ -1992,7 +2032,10 @@ nsresult JsepSessionImpl::ValidateAnswer(const Sdp& offer, const Sdp& answer) {
     return NS_ERROR_INVALID_ARG;
   }
 
-  nsresult rv = mSdpHelper.ValidateTransportAttributes(answer, sdp::kAnswer);
+  nsresult rv = CheckRtcpMux(answer);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = mSdpHelper.ValidateTransportAttributes(answer, sdp::kAnswer);
   NS_ENSURE_SUCCESS(rv, rv);
 
   for (size_t i = 0; i < offer.GetMediaSectionCount(); ++i) {
