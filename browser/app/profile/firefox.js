@@ -366,7 +366,11 @@ pref("browser.urlbar.accessibility.tabToSearch.announceResults", true);
 pref("browser.urlbar.autoFill", true);
 
 // Whether enabling adaptive history autofill.
+#ifdef NIGHTLY_BUILD
+pref("browser.urlbar.autoFill.adaptiveHistory.enabled", true);
+#else
 pref("browser.urlbar.autoFill.adaptiveHistory.enabled", false);
+#endif
 
 // Duration in ms to block after backspace penalty. Default: 2 days.
 pref("browser.urlbar.autoFill.backspaceBlockDurationMs", 172800000);

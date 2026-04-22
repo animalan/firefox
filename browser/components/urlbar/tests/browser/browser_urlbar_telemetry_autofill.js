@@ -369,6 +369,13 @@ add_task(async function other() {
 
 // Checks autofill deletion telemetry.
 add_task(async function deletion() {
+  // Raise the adaptive-history backspace threshold so that subtests which
+  // backspace through the whole autofilled value don't trip the penalty and
+  // block the origin for subsequent subtests.
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.autoFill.backspaceThreshold", 100]],
+  });
+
   await PlacesTestUtils.addVisits([
     {
       url: "http://example.com/",
@@ -481,6 +488,7 @@ add_task(async function deletion() {
   });
 
   await PlacesUtils.history.clear();
+  await SpecialPowers.popPrefEnv();
 });
 
 async function doDeletionTest({
