@@ -6,6 +6,7 @@
 #include "SocketProcessLogging.h"
 
 #include "AltServiceParent.h"
+#include "SSLTokensCache.h"
 #include "HttpTransactionParent.h"
 #include "SocketProcessHost.h"
 #include "TLSClientAuthCertSelection.h"
@@ -337,6 +338,12 @@ mozilla::ipc::IPCResult SocketProcessParent::RecvFOGData(ByteBuf&& aBuf) {
 mozilla::ipc::IPCResult SocketProcessParent::RecvGeckoTraceExport(
     ByteBuf&& aBuf) {
   recv_gecko_trace_export(aBuf.mData, aBuf.mLen);
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult SocketProcessParent::RecvSSLTokensCacheData(
+    ByteBuf&& aBuf) {
+  SSLTokensCache::DeserializeFromIPCAsync(std::move(aBuf));
   return IPC_OK();
 }
 
