@@ -5977,7 +5977,7 @@
 
 - name: dom.webnotifications.actions.enabled
   type: RelaxedAtomicBool
-  value: @IS_NIGHTLY_BUILD@
+  value: true
   mirror: always
 
 # Setting log level for notification modules.
