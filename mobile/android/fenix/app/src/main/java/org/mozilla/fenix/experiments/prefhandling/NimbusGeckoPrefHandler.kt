@@ -224,6 +224,13 @@ class NimbusGeckoPrefHandler(
 
             val (prefsWithValues, prefsToReset) = originalGeckoPrefs.partition { it.value != null }
 
+            // Stop observing the preference we are about to restore.
+            browserPrefObserverIntegration.unregisterPrefsForObservation(
+                prefs = originalGeckoPrefs.map { it.pref },
+                onSuccess = {},
+                onError = { logger.error("Error unregistering preferences from observation", it) },
+            )
+
             // Set elements that we have values we can restore back to
             val setters = createSettersFromOriginalGeckoPrefs(prefsWithValues, preferenceTypes)
             engine.value.setBrowserPrefs(

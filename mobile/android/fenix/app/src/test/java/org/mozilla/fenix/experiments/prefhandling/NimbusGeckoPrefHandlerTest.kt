@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.mockk.verifyOrder
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertNull
@@ -221,7 +222,7 @@ class NimbusGeckoPrefHandlerTest {
     }
 
     @Test
-    fun `WHEN setGeckoPrefsOriginalValues is successful on a known value THEN setBrowserPrefs is called`() = runTest {
+    fun `WHEN setGeckoPrefsOriginalValues is successful on a known value THEN prefs are unregistered from observation before setBrowserPrefs is called`() = runTest {
         val handler = makeHandler(engine = mockEngine, geckoScope = this)
         handler.preferenceTypes[TEST_PREF] = BrowserPrefType.STRING
         val originalPref = OriginalGeckoPref(
@@ -237,7 +238,10 @@ class NimbusGeckoPrefHandlerTest {
         handler.setGeckoPrefsOriginalValues(listOf(originalPref))
         testScheduler.advanceUntilIdle()
 
-        verify { mockEngine.setBrowserPrefs(any(), any(), any()) }
+        verifyOrder {
+            mockEngine.unregisterPrefsForObservation(match { it.contains(TEST_PREF) }, any(), any())
+            mockEngine.setBrowserPrefs(any(), any(), any())
+        }
     }
 
     @Test
