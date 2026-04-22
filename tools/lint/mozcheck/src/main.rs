@@ -7,7 +7,7 @@ mod common;
 #[cfg(unix)]
 mod file_perm;
 mod file_whitespace;
-mod output;
+mod license;
 mod pathutil;
 mod rejected_words;
 mod trojan_source;

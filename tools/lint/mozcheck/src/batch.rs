@@ -11,7 +11,7 @@ use serde::Deserialize;
 use crate::common;
 #[cfg(unix)]
 use crate::file_perm;
-use crate::{file_whitespace, pathutil, rejected_words, trojan_source};
+use crate::{file_whitespace, license, pathutil, rejected_words, trojan_source};
 
 #[derive(Deserialize)]
 struct BatchInput {
@@ -81,6 +81,7 @@ fn run_linter(linter: &LinterEntry, root: &str, fix: bool) {
         "trojan-source" => {
             common::par_map_lint(&files, |path| trojan_source::check_file(path, &linter.name));
         }
+        "license" => license::run(&files, fix, &linter.name, root),
         _ => {
             eprintln!("Unknown check: {}", linter.check);
         }
