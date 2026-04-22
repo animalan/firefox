@@ -447,15 +447,9 @@ class Core(
                 val readJson = { context.assets.readJSONObject("search/search_telemetry_v2.json") }
                 val providerList = withContext(Dispatchers.IO) {
                     SerpTelemetryRepository(
-                        rootStorageDirectory = context.filesDir,
                         readJson = readJson,
                         collectionName = COLLECTION_NAME,
-                        serverUrl = when (context.settings().remoteSettingsServer) {
-                            context.getString(R.string.remote_settings_server_prod) -> REMOTE_PROD_ENDPOINT_URL
-                            context.getString(R.string.remote_settings_server_dev) -> REMOTE_DEV_ENDPOINT_URL
-                            context.getString(R.string.remote_settings_server_stage) -> REMOTE_STAGE_ENDPOINT_URL
-                            else -> REMOTE_PROD_ENDPOINT_URL
-                        },
+                        remoteSettingsService = context.components.remoteSettingsService.value,
                     ).updateProviderList()
                 }
                 // Install the "ads" WebExtension to get the links in an partner page.
