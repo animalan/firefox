@@ -147,28 +147,14 @@ IonEntry::~IonEntry() {
   regionTable_ = nullptr;
 }
 
-static IonEntry& IonEntryForIonIC(JSRuntime* rt, const IonICEntry* icEntry) {
-  // The table must have an IonEntry for the IC's rejoin address.
-  auto* table = rt->jitRuntime()->getJitcodeGlobalTable();
-  auto* entry = table->lookup(icEntry->rejoinAddr());
-  MOZ_ASSERT(entry);
-  MOZ_RELEASE_ASSERT(entry->isIon());
-  return entry->asIon();
-}
-
 void* IonICEntry::canonicalNativeAddrFor(void* ptr) const { return ptr; }
 
-uint32_t IonICEntry::callStackAtAddr(JSRuntime* rt, void* ptr,
-                                     CallStackFrameInfo* results,
+uint32_t IonICEntry::callStackAtAddr(void* ptr, CallStackFrameInfo* results,
                                      uint32_t maxResults) const {
-  const IonEntry& entry = IonEntryForIonIC(rt, this);
-  return entry.callStackAtAddr(rejoinAddr(), results, maxResults);
+  return ionEntry().callStackAtAddr(rejoinAddr(), results, maxResults);
 }
 
-uint64_t IonICEntry::realmID(JSRuntime* rt) const {
-  const IonEntry& entry = IonEntryForIonIC(rt, this);
-  return entry.realmID();
-}
+uint64_t IonICEntry::realmID() const { return ionEntry().realmID(); }
 
 void* BaselineEntry::canonicalNativeAddrFor(void* ptr) const {
   // TODO: We can't yet normalize Baseline addresses until we unify
@@ -232,7 +218,7 @@ uint32_t RealmIndependentSharedEntry::callStackAtAddr(
 uint64_t RealmIndependentSharedEntry::realmID() const { return 0; }
 
 const JitcodeGlobalEntry* JitcodeGlobalTable::lookupForSampler(
-    void* ptr, JSRuntime* rt, uint64_t samplePosInBuffer) {
+    void* ptr, uint64_t samplePosInBuffer) {
   JitcodeGlobalEntry* entry = lookupInternal(ptr);
   if (!entry) {
     return nullptr;
@@ -242,8 +228,7 @@ const JitcodeGlobalEntry* JitcodeGlobalTable::lookupForSampler(
 
   // IonIC entries must keep their corresponding Ion entries alive.
   if (entry->isIonIC()) {
-    IonEntry& ionEntry = IonEntryForIonIC(rt, &entry->asIonIC());
-    ionEntry.setSamplePositionInBuffer(samplePosInBuffer);
+    entry->asIonIC().ionEntry().setSamplePositionInBuffer(samplePosInBuffer);
   }
 
   // The jitcode_ edge is weak, but no read barrier is needed here because the
@@ -370,7 +355,7 @@ uint32_t JitcodeGlobalEntry::callStackAtAddr(JSRuntime* rt, void* ptr,
     case Kind::Ion:
       return asIon().callStackAtAddr(ptr, results, maxResults);
     case Kind::IonIC:
-      return asIonIC().callStackAtAddr(rt, ptr, results, maxResults);
+      return asIonIC().callStackAtAddr(ptr, results, maxResults);
     case Kind::Baseline:
       return asBaseline().callStackAtAddr(ptr, results, maxResults);
     case Kind::BaselineInterpreter:
@@ -389,7 +374,7 @@ uint64_t JitcodeGlobalEntry::realmID(JSRuntime* rt) const {
     case Kind::Ion:
       return asIon().realmID();
     case Kind::IonIC:
-      return asIonIC().realmID(rt);
+      return asIonIC().realmID();
     case Kind::Baseline:
       return asBaseline().realmID();
     case Kind::Dummy:

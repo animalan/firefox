@@ -314,27 +314,37 @@ class IonEntry : public JitcodeGlobalEntry {
 };
 
 class IonICEntry : public JitcodeGlobalEntry {
-  // Address for this IC in the IonScript code. Most operations on IonICEntry
-  // use this to forward to the IonEntry.
+  // Address in the parent IonEntry's native code that this IC rejoins to,
+  // used as the offset when resolving call stacks.
   void* rejoinAddr_;
+
+  // Parent IonEntry, cached so we don't need a tree lookup by rejoinAddr_.
+  // The parent may be removed from the AVL tree (when executable memory is
+  // reused by a new JitCode) while this IC is still referenced from the
+  // profiler buffer, so a tree lookup is unreliable. lookupForSampler
+  // propagates sample positions through this pointer to keep the parent alive
+  // in entries_ for at least as long as this IC.
+  IonEntry* ionEntry_;
 
  public:
   IonICEntry(JitCode* code, void* nativeStartAddr, void* nativeEndAddr,
-             void* rejoinAddr)
+             void* rejoinAddr, IonEntry* ionEntry)
       : JitcodeGlobalEntry(Kind::IonIC, code, nativeStartAddr, nativeEndAddr),
-        rejoinAddr_(rejoinAddr) {
+        rejoinAddr_(rejoinAddr),
+        ionEntry_(ionEntry) {
     MOZ_ASSERT(rejoinAddr_);
+    MOZ_ASSERT(ionEntry_);
   }
 
   void* rejoinAddr() const { return rejoinAddr_; }
+  IonEntry& ionEntry() const { return *ionEntry_; }
 
   void* canonicalNativeAddrFor(void* ptr) const;
 
-  uint32_t callStackAtAddr(JSRuntime* rt, void* ptr,
-                           CallStackFrameInfo* results,
+  uint32_t callStackAtAddr(void* ptr, CallStackFrameInfo* results,
                            uint32_t maxResults) const;
 
-  uint64_t realmID(JSRuntime* rt) const;
+  uint64_t realmID() const;
 };
 
 class BaselineEntry : public JitcodeGlobalEntry {
@@ -516,7 +526,7 @@ class JitcodeGlobalTable {
 
   JitcodeGlobalEntry* lookup(void* ptr) { return lookupInternal(ptr); }
 
-  const JitcodeGlobalEntry* lookupForSampler(void* ptr, JSRuntime* rt,
+  const JitcodeGlobalEntry* lookupForSampler(void* ptr,
                                              uint64_t samplePosInBuffer);
 
   [[nodiscard]] bool addEntry(UniqueJitcodeGlobalEntry entry);

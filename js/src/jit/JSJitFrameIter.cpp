@@ -547,9 +547,7 @@ bool JSJitProfilingFrameIterator::tryInitWithTable(JitcodeGlobalTable* table,
 
   // For IonICEntry, use the corresponding IonEntry.
   if (entry->isIonIC()) {
-    entry = table->lookup(entry->asIonIC().rejoinAddr());
-    MOZ_ASSERT(entry);
-    MOZ_RELEASE_ASSERT(entry->isIon());
+    entry = &entry->asIonIC().ionEntry();
   }
 
   if (entry->isIon()) {
