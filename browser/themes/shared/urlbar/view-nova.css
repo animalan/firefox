@@ -162,7 +162,6 @@
     display: none !important;
   }
 
-  &[context-menu-trigger],
   &[row-selectable]:not([selected]):hover {
     background-color: var(--urlbarview-background-color-hover);
   }
