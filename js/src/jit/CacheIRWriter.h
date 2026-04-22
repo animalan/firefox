@@ -379,6 +379,9 @@ class MOZ_RAII CacheIRWriter : public JS::CustomAutoRooter {
   bool failed() const { return tooLarge() || oom(); }
 
   TrialInliningState trialInliningState() const { return trialInliningState_; }
+  void setTrialInliningState(TrialInliningState state) {
+    trialInliningState_ = state;
+  }
 
   uint32_t numInputOperands() const { return numInputOperands_; }
   uint32_t numOperandIds() const { return nextOperandId_; }
@@ -547,12 +550,6 @@ class MOZ_RAII CacheIRWriter : public JS::CustomAutoRooter {
     return ObjOperandId(loadArgumentFixedSlot(kind, argc, flags).id());
   }
 
-  void callScriptedFunction(ObjOperandId callee, Int32OperandId argc,
-                            CallFlags flags, uint32_t argcFixed) {
-    callScriptedFunction_(callee, argc, flags, argcFixed);
-    trialInliningState_ = TrialInliningState::Candidate;
-  }
-
   void callInlinedFunction(ObjOperandId callee, Int32OperandId argc,
                            ICScript* icScript, CallFlags flags,
                            uint32_t argcFixed) {
@@ -666,7 +663,6 @@ class MOZ_RAII CacheIRWriter : public JS::CustomAutoRooter {
     uint32_t nargsAndFlags = getter->flagsAndArgCountRaw();
     ObjOperandId callee = getterSetterCalleeOperand(getter);
     callScriptedGetterResult_(receiver, callee, sameRealm, nargsAndFlags);
-    trialInliningState_ = TrialInliningState::Candidate;
   }
 
   void callInlinedGetterResult(ValOperandId receiver, ObjOperandId callee,
@@ -694,7 +690,6 @@ class MOZ_RAII CacheIRWriter : public JS::CustomAutoRooter {
     uint32_t nargsAndFlags = setter->flagsAndArgCountRaw();
     ObjOperandId callee = getterSetterCalleeOperand(setter);
     callScriptedSetter_(receiver, callee, rhs, sameRealm, nargsAndFlags);
-    trialInliningState_ = TrialInliningState::Candidate;
   }
 
   void callInlinedSetter(ObjOperandId receiver, ObjOperandId callee,

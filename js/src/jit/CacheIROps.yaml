@@ -54,6 +54,12 @@
 # '_'. This is useful for ops that need custom CacheIRWriter logic on top of the
 # generated code.
 #
+# inlining_candidate (optional)
+# ========================
+# If true, the generated CacheIRWriter method and the generated CacheIRCloner
+# method will set the writer's TrialInliningState to Candidate to indicate that
+# this stub can be considered for inlining.
+#
 # args
 # ====
 # List of arguments encoded in the bytecode stream. There are three argument
@@ -2039,6 +2045,7 @@
   transpile: true
   cost_estimate: 3
   custom_writer: true
+  inlining_candidate: true
   args:
     receiver: ObjId
     callee: ObjId
@@ -2143,7 +2150,7 @@
   shared: false
   transpile: true
   cost_estimate: 3
-  custom_writer: true
+  inlining_candidate: true
   args:
     callee: ObjId
     argc: Int32Id
@@ -2681,6 +2688,7 @@
   transpile: true
   cost_estimate: 5
   custom_writer: true
+  inlining_candidate: true
   args:
     receiver: ValId
     callee: ObjId
