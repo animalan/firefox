@@ -449,7 +449,7 @@ class NavigationToolbarExpandedTest {
         }
     }
 
-    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3333195
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3333194
     @SmokeTest
     @Test
     fun verifyTheNewTabButtonWithTabStripEnabledTest() {

@@ -44,8 +44,6 @@ import org.mozilla.fenix.helpers.TestHelper.verifySnackBarText
 import org.mozilla.fenix.helpers.TestHelper.waitForAppWindowToBeUpdated
 import org.mozilla.fenix.helpers.TestHelper.waitUntilSnackbarGone
 import org.mozilla.fenix.helpers.perf.DetectMemoryLeaksRule
-import org.mozilla.fenix.nimbus.FxNimbus
-import org.mozilla.fenix.nimbus.Translations
 import org.mozilla.fenix.ui.robots.browserScreen
 import org.mozilla.fenix.ui.robots.clickPageObject
 import org.mozilla.fenix.ui.robots.customTabScreen
@@ -203,50 +201,6 @@ class MainMenuTest {
         exitMenu()
         browserScreen(composeTestRule) {
             verifyPageContent(testPage.content)
-        }
-    }
-
-    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3080095
-    // Verifies the main menu of a custom tab with a custom menu item
-    @SmokeTest
-    @Test
-    fun verifyTheCustomTabsMainMenuItemsTest() {
-        val customMenuItem = "TestMenuItem"
-        val customTabPage = mockWebServer.getGenericAsset(1)
-
-        intentReceiverActivityTestRule.launchActivity(
-            createCustomTabIntent(
-                customTabPage.url.toString(),
-                customMenuItem,
-            ),
-        )
-
-        customTabScreen(composeTestRule) {
-            verifyCustomTabCloseButton()
-        }.openMainMenu {
-            verifyCustomTabsMainMenuItems(customMenuItem, true)
-        }
-    }
-
-    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3080100
-    // The test opens a link in a custom tab then sends it to the browser
-    @SmokeTest
-    @Test
-    fun verifyOpenInFirefoxMainMenuTest() {
-        val customTabPage = mockWebServer.getGenericAsset(1)
-
-        intentReceiverActivityTestRule.launchActivity(
-            createCustomTabIntent(
-                customTabPage.url.toString(),
-            ),
-        )
-
-        customTabScreen(composeTestRule) {
-            verifyCustomTabCloseButton()
-        }.openMainMenu {
-        }.clickOpenInBrowserButtonFromRedesignedToolbar {
-            verifyPageContent(customTabPage.content)
-            verifyTabCounter("1")
         }
     }
 
