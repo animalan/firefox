@@ -385,7 +385,7 @@ toolkit/themes/shared/design-system/node_modules/
 ^mobile/android/annotations/bin/
 
 # Ignore generated log files under media/libvpx
-^media/libvpx/config/.*/config.log
+^media/libvpx/config/.*/config\.log
 
 # Ignore generated files resulting from building the minidump analyzer binary.
 ^toolkit/crashreporter/minidump-analyzer/target/
