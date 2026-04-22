@@ -179,6 +179,10 @@ void ScriptLoadRequest::CacheEntryRevived(LoadedScript* aLoadedScript) {
 
 void ScriptLoadRequest::SetCacheEntry(LoadedScript* aLoadedScript,
                                       ScriptFetchOptions* aFetchOptions) {
+  mFetchInfo = new ScriptFetchInfo(mKind, aLoadedScript->ReferrerPolicy(),
+                                   aLoadedScript->GetFetchOptions(),
+                                   aLoadedScript->BaseURL());
+
   switch (mKind) {
     case ScriptKind::eClassic:
       MOZ_ASSERT(aLoadedScript->IsClassicScript());
@@ -224,6 +228,9 @@ void ScriptLoadRequest::NoCacheEntryFound(
     mozilla::dom::ReferrerPolicy aReferrerPolicy,
     ScriptFetchOptions* aFetchOptions, nsIURI* aURI) {
   MOZ_ASSERT(IsCheckingCache());
+
+  mFetchInfo = new ScriptFetchInfo(mKind, aReferrerPolicy, aFetchOptions, aURI);
+
   // At the time where we check in the cache, the BaseURL() is not set, as this
   // is resolved by the network. Thus we use the aURI passed by the consumer,
   // which is the original URI used for the request, for checking the cache

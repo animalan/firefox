@@ -274,6 +274,9 @@ class ScriptLoadRequest : public nsISupports,
   bool HadPostponed() const { return mHadPostponed_; }
   void SetHadPostponed() { mHadPostponed_ = true; }
 
+  const ScriptFetchInfo* FetchInfo() const { return mFetchInfo; }
+  ScriptFetchInfo* FetchInfo() { return mFetchInfo; }
+
  public:
   // Fields.
 
@@ -340,6 +343,8 @@ class ScriptLoadRequest : public nsISupports,
 
   // The loaded script holds the data which can be shared among similar requests
   RefPtr<LoadedScript> mLoadedScript;
+
+  RefPtr<ScriptFetchInfo> mFetchInfo;
 
   // LoadContext for augmenting the load depending on the loading
   // context (DOM, Worker, etc.)
