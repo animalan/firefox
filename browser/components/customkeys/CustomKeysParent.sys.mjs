@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
-import { CustomKeys } from "resource:///modules/CustomKeys.sys.mjs";
+import { CustomKeys } from "moz-src:///browser/components/customkeys/CustomKeys.sys.mjs";
 import { ShortcutUtils } from "resource://gre/modules/ShortcutUtils.sys.mjs";
 
 const KEY_NAMES_TO_CODES = {

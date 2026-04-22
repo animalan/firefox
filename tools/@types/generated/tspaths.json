@@ -94,9 +94,6 @@
       "chrome://browser/content/backup/turn-on-scheduled-backups.mjs": [
         "../../../browser/components/backup/content/turn-on-scheduled-backups.mjs"
       ],
-      "chrome://browser/content/contentSearchHandoffUI.mjs": [
-        "../../../browser/components/search/content/contentSearchHandoffUI.mjs"
-      ],
       "chrome://browser/content/firefoxview/card-container.mjs": [
         "../../../browser/components/firefoxview/card-container.mjs"
       ],
@@ -196,11 +193,20 @@
       "chrome://browser/content/preferences/config/SettingPaneManager.mjs": [
         "../../../browser/components/preferences/config/SettingPaneManager.mjs"
       ],
+      "chrome://browser/content/preferences/config/accessibility.mjs": [
+        "../../../browser/components/preferences/config/accessibility.mjs"
+      ],
       "chrome://browser/content/preferences/config/account-sync.mjs": [
         "../../../browser/components/preferences/config/account-sync.mjs"
       ],
       "chrome://browser/content/preferences/config/home-startup.mjs": [
         "../../../browser/components/preferences/config/home-startup.mjs"
+      ],
+      "chrome://browser/content/preferences/config/privacy.mjs": [
+        "../../../browser/components/preferences/config/privacy.mjs"
+      ],
+      "chrome://browser/content/preferences/config/search.mjs": [
+        "../../../browser/components/preferences/config/search.mjs"
       ],
       "chrome://browser/content/preferences/widgets/dialog-button.mjs": [
         "../../../browser/components/preferences/widgets/dialog-button/dialog-button.mjs"
@@ -270,6 +276,9 @@
       ],
       "chrome://browser/content/sidebar/sidebar-tab-list.mjs": [
         "../../../browser/components/sidebar/sidebar-tab-list.mjs"
+      ],
+      "chrome://browser/content/tabbrowser/tab-groups-list.mjs": [
+        "../../../browser/components/tabbrowser/content/tab-groups-list.mjs"
       ],
       "chrome://browser/content/tabbrowser/tab-hover-preview.mjs": [
         "../../../browser/components/tabbrowser/content/tab-hover-preview.mjs"
@@ -739,6 +748,9 @@
       "chrome://remote/content/shared/Browser.sys.mjs": [
         "../../../remote/shared/Browser.sys.mjs"
       ],
+      "chrome://remote/content/shared/BrowsingContextUtils.sys.mjs": [
+        "../../../remote/shared/BrowsingContextUtils.sys.mjs"
+      ],
       "chrome://remote/content/shared/Capture.sys.mjs": [
         "../../../remote/shared/Capture.sys.mjs"
       ],
@@ -906,9 +918,6 @@
       ],
       "chrome://remote/content/shared/messagehandler/sessiondata/SessionDataReader.sys.mjs": [
         "../../../remote/shared/messagehandler/sessiondata/SessionDataReader.sys.mjs"
-      ],
-      "chrome://remote/content/shared/messagehandler/transports/BrowsingContextUtils.sys.mjs": [
-        "../../../remote/shared/messagehandler/transports/BrowsingContextUtils.sys.mjs"
       ],
       "chrome://remote/content/shared/messagehandler/transports/RootTransport.sys.mjs": [
         "../../../remote/shared/messagehandler/transports/RootTransport.sys.mjs"
@@ -1167,9 +1176,6 @@
       ],
       "resource:///modules/ContentCrashHandlers.sys.mjs": [
         "../../../browser/modules/ContentCrashHandlers.sys.mjs"
-      ],
-      "resource:///modules/CustomKeys.sys.mjs": [
-        "../../../browser/components/customkeys/CustomKeys.sys.mjs"
       ],
       "resource:///modules/Dedupe.sys.mjs": [
         "../../../browser/modules/Dedupe.sys.mjs"
@@ -7320,6 +7326,9 @@
       ],
       "resource://testing-common/BrowserTestUtils.sys.mjs": [
         "../../../testing/mochitest/BrowserTestUtils/BrowserTestUtils.sys.mjs"
+      ],
+      "resource://testing-common/ContentSharingMockServer.sys.mjs": [
+        "../../../browser/components/contentsharing/tests/browser/ContentSharingMockServer.sys.mjs"
       ],
       "resource://testing-common/ContentTask.sys.mjs": [
         "../../../testing/mochitest/BrowserTestUtils/ContentTask.sys.mjs"

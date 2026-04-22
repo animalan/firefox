@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { CustomKeys } = ChromeUtils.importESModule(
-  "resource:///modules/CustomKeys.sys.mjs"
+  "moz-src:///browser/components/customkeys/CustomKeys.sys.mjs"
 );
 
 var gSerialDeviceObserver = {
