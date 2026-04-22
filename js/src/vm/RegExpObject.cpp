@@ -93,6 +93,10 @@ RegExpObject* js::RegExpAlloc(JSContext* cx, NewObjectKind newKind,
     // internal slot to true. Step 5. Else, Step 5.i. Set the value of obj’s
     // [[LegacyFeaturesEnabled]] internal slot to false.
     legacyFeaturesEnabled = (!newTarget || newTarget == thisRealmRegExp);
+    if (!legacyFeaturesEnabled &&
+        !JSObject::setLegacyFeaturesDisabled(cx, regexp)) {
+      return nullptr;
+    }
   }
   regexp->setLegacyFeaturesEnabled(legacyFeaturesEnabled);
 

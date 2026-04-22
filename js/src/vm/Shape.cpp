@@ -1377,6 +1377,9 @@ void ForEachObjectFlag(ObjectFlags flags, KnownF known, UnknownF unknown) {
       case ObjectFlag::HasNonFunctionAccessor:
         known("HasNonFunctionAccessor");
         break;
+      case ObjectFlag::LegacyFeaturesDisabled:
+        known("LegacyFeaturesDisabled");
+        break;
       default:
         unknown(i);
         break;

@@ -222,6 +222,10 @@ class JSObject
     return setFlag(cx, obj, js::ObjectFlag::HasNonFunctionAccessor);
   }
 
+  static bool setLegacyFeaturesDisabled(JSContext* cx, JS::HandleObject obj) {
+    return setFlag(cx, obj, js::ObjectFlag::LegacyFeaturesDisabled);
+  }
+
   bool hasObjectFuse() const { return hasFlag(js::ObjectFlag::HasObjectFuse); }
 
   // A "qualified" varobj is the object on which "qualified" variable
