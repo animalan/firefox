@@ -2532,9 +2532,7 @@ export class GeckoDriver {
 
     await lazy.navigate.waitForNavigationCompleted(
       this,
-      () => {
-        lazy.navigate.navigateTo(browsingContext, validURL);
-      },
+      () => lazy.navigate.navigateTo(browsingContext, validURL),
       { loadEventExpected }
     );
 
@@ -3036,9 +3034,9 @@ export class GeckoDriver {
     // Switch to the top-level browsing context before navigating
     this.currentSession.contentBrowsingContext = browsingContext;
 
-    await lazy.navigate.waitForNavigationCompleted(this, () => {
-      lazy.navigate.refresh(browsingContext);
-    });
+    await lazy.navigate.waitForNavigationCompleted(this, () =>
+      lazy.navigate.refresh(browsingContext)
+    );
   }
 
   /**
