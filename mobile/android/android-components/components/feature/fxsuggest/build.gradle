@@ -42,6 +42,7 @@ dependencies {
     implementation project(':components:support-ktx')
 
     implementation ComponentsDependencies.mozilla_appservices_errorsupport
+    implementation ComponentsDependencies.mozilla_appservices_merino
     implementation ComponentsDependencies.mozilla_appservices_suggest
     implementation libs.androidx.work.runtime
     implementation libs.kotlinx.coroutines
