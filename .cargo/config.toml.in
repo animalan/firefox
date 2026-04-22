@@ -75,9 +75,9 @@ git = "https://github.com/kinetiknz/mio"
 rev = "5e8b202db39facecc343170f50a07916640a607c"
 replace-with = "vendored-sources"
 
-[source."git+https://github.com/mozilla/audioipc?rev=b52c33425baf619b6c1278c5b4c7ffa3e92b9b1e"]
+[source."git+https://github.com/mozilla/audioipc?rev=453cb88c9914b6b8dc7be63e37f482d2a2f4b97f"]
 git = "https://github.com/mozilla/audioipc"
-rev = "b52c33425baf619b6c1278c5b4c7ffa3e92b9b1e"
+rev = "453cb88c9914b6b8dc7be63e37f482d2a2f4b97f"
 replace-with = "vendored-sources"
 
 [source."git+https://github.com/mozilla/cubeb-coreaudio-rs?rev=0bb8a45a040e85d313eb18deb36570e87df3a6af"]
