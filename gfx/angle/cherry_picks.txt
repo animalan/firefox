@@ -1,3 +1,12 @@
+commit 6dd753184b4d098d47aae79b0a1654fa69f6ea7b
+Merge: 65ee3a6a5a 978f620487
+Author: Ashley Hale <ahale@mozilla.com>
+Date:   Wed Apr 15 07:04:14 2026 -0700
+
+    Merge pull request #29 from teoxoy/add-return
+    
+    Add return statement for empty bodies
+
 commit 65ee3a6a5a2172ec607841fb5f156e364e5eec3d
 Merge: 7bcb53c527 d0b02a9865
 Author: Ashley Hale <ahale@mozilla.com>
@@ -35,6 +44,12 @@ Date:   Fri Apr 10 18:26:42 2026 -0700
     Merge pull request #28 from emilio/translator-cherry-picks
     
     Translator cherry picks
+
+commit 978f620487e33269f9dfd5a027e6c932bb22015b
+Author: Teodor Tanasoaia <28601907+teoxoy@users.noreply.github.com>
+Date:   Thu Apr 9 17:44:53 2026 +0200
+
+    Add return statement for empty bodies
 
 commit b0098a1ebdb0400b515ff7a662685bda111e9e87
 Author: Emilio Cobos Álvarez <emilio@crisal.io>
