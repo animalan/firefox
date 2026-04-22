@@ -550,13 +550,6 @@ class MOZ_RAII CacheIRWriter : public JS::CustomAutoRooter {
     return ObjOperandId(loadArgumentFixedSlot(kind, argc, flags).id());
   }
 
-  void callInlinedFunction(ObjOperandId callee, Int32OperandId argc,
-                           ICScript* icScript, CallFlags flags,
-                           uint32_t argcFixed) {
-    callInlinedFunction_(callee, argc, icScript, flags, argcFixed);
-    trialInliningState_ = TrialInliningState::Inlined;
-  }
-
   void callNativeFunction(ObjOperandId calleeId, Int32OperandId argc, JSOp op,
                           JSFunction* calleeFunc, CallFlags flags,
                           uint32_t argcFixed) {
@@ -673,7 +666,6 @@ class MOZ_RAII CacheIRWriter : public JS::CustomAutoRooter {
     uint32_t nargsAndFlags = getter->flagsAndArgCountRaw();
     callInlinedGetterResult_(receiver, callee, icScript, sameRealm,
                              nargsAndFlags);
-    trialInliningState_ = TrialInliningState::Inlined;
   }
 
   void callNativeGetterResult(ValOperandId receiver, JSFunction* getter,
@@ -700,7 +692,6 @@ class MOZ_RAII CacheIRWriter : public JS::CustomAutoRooter {
     uint32_t nargsAndFlags = setter->flagsAndArgCountRaw();
     callInlinedSetter_(receiver, callee, rhs, icScript, sameRealm,
                        nargsAndFlags);
-    trialInliningState_ = TrialInliningState::Inlined;
   }
 
   void callNativeSetter(ObjOperandId receiver, JSFunction* setter,

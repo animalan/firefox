@@ -52,7 +52,9 @@
 # ========================
 # If true, the generated CacheIRWriter method will be private and has a trailing
 # '_'. This is useful for ops that need custom CacheIRWriter logic on top of the
-# generated code.
+# generated code. Note that custom writers should avoid side-effects that aren't
+# reflected in the generated CacheIR; the custom writer is not called when
+# cloning the op, so the side-effect could be lost.
 #
 # inlining_candidate (optional)
 # ========================
@@ -2251,7 +2253,6 @@
   shared: false
   transpile: true
   cost_estimate: 4
-  custom_writer: true
   args:
     callee: ObjId
     argc: Int32Id
