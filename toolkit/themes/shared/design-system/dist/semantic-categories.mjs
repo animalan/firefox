@@ -314,6 +314,10 @@ export const tokensTable = {
       name: "--promo-background-color-vibrant",
     },
     {
+      value: "var(--color-accent-primary)",
+      name: "--reorderable-list-indicator-background-color",
+    },
+    {
       value: "var(--button-background-color)",
       name: "--toggle-background-color",
     },
@@ -1123,6 +1127,7 @@ export const tokensTable = {
       value: "calc(2 * var(--size-image-xlarge))",
       name: "--promo-image-size-large",
     },
+    { value: "2px", name: "--reorderable-list-indicator-size" },
     { value: "var(--size-item-small)", name: "--toggle-height" },
     { value: "var(--size-item-large)", name: "--toggle-width" },
     {
@@ -1158,6 +1163,10 @@ export const tokensTable = {
     { value: "var(--space-small)", name: "--checkbox-margin-inline" },
     { value: "var(--space-small)", name: "--breadcrumb-gap" },
     { value: "var(--space-medium)", name: "--promo-padding" },
+    {
+      value: "var(--reorderable-list-indicator-size)",
+      name: "--reorderable-list-indicator-margin",
+    },
     { value: "1px", name: "--toggle-dot-margin" },
     { value: "calc(-1 * var(--dimension-2))", name: "--toggle-inset" },
     { value: "var(--space-large)", name: "--box-padding" },
@@ -2511,6 +2520,9 @@ export const variableLookupTable = {
     default: "light-dark(var(--color-violet-80), var(--color-violet-0))",
   },
   "promo-padding": "var(--space-medium)",
+  "reorderable-list-indicator-background-color": "var(--color-accent-primary)",
+  "reorderable-list-indicator-margin": "var(--reorderable-list-indicator-size)",
+  "reorderable-list-indicator-size": "2px",
   "toggle-background-color": "var(--button-background-color)",
   "toggle-background-color-hover": "var(--button-background-color-hover)",
   "toggle-background-color-active": "var(--button-background-color-active)",

@@ -734,6 +734,11 @@
     "dark": "{Colors$color/violet/0}",
     "forcedColors": "transparent"
   },
+  "reorderable-list/indicator/background/color": {
+    "light": "{Theme$color/accent/primary}",
+    "dark": "{Theme$color/accent/primary}",
+    "forcedColors": "{Theme$color/accent/primary}"
+  },
   "toggle/background/color": {
     "light": "{Theme$button/background/color}",
     "dark": "{Theme$button/background/color}",
