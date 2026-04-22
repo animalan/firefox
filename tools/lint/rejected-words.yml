@@ -3,9 +3,13 @@ avoid-blacklist-and-whitelist:
     description: "Use words like 'skip', 'select', 'allow' or 'deny' instead"
     level: error
     include: ['.']
-    type: regex
-    payload: (black|white)[-_]?list
+    type: external
+    payload: mozcheck:lint
+    check: rejected-words
+    regex-pattern: (black|white)[-_]?list
     ignore-case: true
+    support-files:
+        - 'tools/lint/mozcheck/**'
     # Based on codespell with idl and webidl added.
     extensions:
         - js
@@ -277,6 +281,8 @@ avoid-blacklist-and-whitelist:
         - toolkit/mozapps/extensions/test/xpinstall/head.js
         - tools/fuzzing/messagemanager/MessageManagerFuzzer.cpp
         - tools/fuzzing/messagemanager/MessageManagerFuzzer.h
+        - tools/lint/mozcheck/src/batch.rs
+        - tools/lint/mozcheck/src/rejected_words.rs
         - tools/lint/rejected-words.yml
         - widget/android/GfxInfo.cpp
         - widget/GfxInfoBase.cpp
@@ -300,9 +306,13 @@ avoid-gobbledygook:
     description: "American English colloquialism. Use 'nonsense' instead."
     level: error
     include: ['.']
-    type: regex
-    payload: \b(gobbledy)?-?gook
+    type: external
+    payload: mozcheck:lint
+    check: rejected-words
+    regex-pattern: \b(gobbledy)?-?gook
     ignore-case: true
+    support-files:
+        - 'tools/lint/mozcheck/**'
     exclude:
         - extensions/spellcheck/locales/en-US/hunspell/dictionary-sources/orig/en_US-custom.dic
         - extensions/spellcheck/locales/en-US/hunspell/dictionary-sources/utf8/en-US-utf8.dic
