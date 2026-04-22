@@ -218,9 +218,9 @@ struct AllocSpace {
   // Mark bitmap: one bit minimum per allocation, no gray bits.
   MainThreadOrGCTaskData<AtomicBitmap<MaxAllocCount>> markBits;
 
-  // Allocation start and end bitmaps: these have a bit set corresponding to the
-  // start of the allocation and to the byte after the end of allocation (except
-  // for the end of the chunk).
+  // Allocation start and end bitmaps: for every allocation these have a bit set
+  // corresponding to the start of the allocation and to the last byte of the
+  // allocation.
   MainThreadOrGCTaskData<PerAllocBitmap> allocStartBitmap;
   MainThreadOrGCTaskData<AtomicPerAllocBitmap> allocEndBitmap;
 
@@ -329,12 +329,18 @@ struct AllocSpace {
     return reinterpret_cast<void*>(startAddress() + offset);
   }
 
+  size_t endBitIndex(size_t startIndex, size_t bytes) {
+    MOZ_ASSERT(startIndex < MaxAllocCount);
+    MOZ_ASSERT(bytes != 0);
+    MOZ_ASSERT(bytes % GranularityBytes == 0);
+    size_t endIndex = startIndex + bytes / GranularityBytes - 1;
+    MOZ_ASSERT(endIndex < MaxAllocCount);
+    return endIndex;
+  }
+
   size_t findEndBit(size_t startIndex) const {
     MOZ_ASSERT(startIndex < MaxAllocCount);
-    if (startIndex + 1 == MaxAllocCount) {
-      return MaxAllocCount;
-    }
-    size_t endIndex = allocEndBitmap.ref().FindNext(startIndex + 1);
+    size_t endIndex = allocEndBitmap.ref().FindNext(startIndex);
     if (endIndex == SIZE_MAX) {
       return MaxAllocCount;
     }

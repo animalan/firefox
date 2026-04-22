@@ -287,21 +287,17 @@ MOZ_ALWAYS_INLINE void PoisonAlloc(void* alloc, uint8_t value, size_t bytes,
 template <typename D, size_t S, size_t G>
 void AllocSpace<D, S, G>::setAllocated(void* alloc, size_t bytes,
                                        bool allocated) {
-  size_t startBit = ptrToIndex(alloc);
+  MOZ_ASSERT(bytes != 0);
   MOZ_ASSERT(bytes % GranularityBytes == 0);
-  size_t endBit = startBit + bytes / GranularityBytes;
-  MOZ_ASSERT(endBit <= MaxAllocCount);
+
+  size_t startBit = ptrToIndex(alloc);
+  size_t endBit = endBitIndex(startBit, bytes);
   MOZ_ASSERT(allocStartBitmap.ref()[startBit] != allocated);
-  MOZ_ASSERT_IF(endBit != MaxAllocCount, allocStartBitmap.ref()[startBit] ==
-                                             allocEndBitmap.ref()[endBit]);
-  MOZ_ASSERT_IF(startBit + 1 < MaxAllocCount,
-                allocStartBitmap.ref().FindNext(startBit + 1) >= endBit);
+  MOZ_ASSERT(allocStartBitmap.ref()[startBit] == allocEndBitmap.ref()[endBit]);
   MOZ_ASSERT(findEndBit(startBit) >= endBit);
 
   allocStartBitmap.ref()[startBit] = allocated;
-  if (endBit != MaxAllocCount) {
-    allocEndBitmap.ref()[endBit] = allocated;
-  }
+  allocEndBitmap.ref()[endBit] = allocated;
 }
 
 template <typename D, size_t S, size_t G>
@@ -315,25 +311,17 @@ template <typename D, size_t S, size_t G>
 void AllocSpace<D, S, G>::updateEndOffset(void* alloc, size_t oldBytes,
                                           size_t newBytes) {
   MOZ_ASSERT(isAllocated(alloc));
-  MOZ_ASSERT(oldBytes % GranularityBytes == 0);
-  MOZ_ASSERT(newBytes % GranularityBytes == 0);
+  MOZ_ASSERT(newBytes != oldBytes);
 
   size_t startBit = ptrToIndex(alloc);
-  size_t oldEndBit = startBit + oldBytes / GranularityBytes;
-  MOZ_ASSERT(oldEndBit <= MaxAllocCount);
-  if (oldEndBit != MaxAllocCount) {
-    MOZ_ASSERT(allocEndBitmap.ref()[oldEndBit]);
-    allocEndBitmap.ref()[oldEndBit] = false;
-  }
+  size_t oldEndBit = endBitIndex(startBit, oldBytes);
+  MOZ_ASSERT(allocEndBitmap.ref()[oldEndBit]);
+  allocEndBitmap.ref()[oldEndBit] = false;
 
-  size_t newEndBit = startBit + newBytes / GranularityBytes;
-  MOZ_ASSERT(newEndBit <= MaxAllocCount);
-  MOZ_ASSERT_IF(startBit + 1 < MaxAllocCount,
-                allocStartBitmap.ref().FindNext(startBit + 1) >= newEndBit);
-  MOZ_ASSERT(findEndBit(startBit) >= newEndBit);
-  if (newEndBit != MaxAllocCount) {
-    allocEndBitmap.ref()[newEndBit] = true;
-  }
+  size_t newEndBit = endBitIndex(startBit, newBytes);
+  MOZ_ASSERT(allocStartBitmap.ref().FindNext(startBit + 1) > newEndBit);
+  MOZ_ASSERT(findEndBit(startBit) > newEndBit);
+  allocEndBitmap.ref()[newEndBit] = true;
 }
 
 template <typename D, size_t S, size_t G>
@@ -342,10 +330,10 @@ size_t AllocSpace<D, S, G>::allocBytes(const void* alloc) const {
 
   size_t startBit = ptrToIndex(alloc);
   size_t endBit = findEndBit(startBit);
-  MOZ_ASSERT(endBit > startBit);
-  MOZ_ASSERT(endBit <= MaxAllocCount);
+  MOZ_ASSERT(endBit >= startBit);
+  MOZ_ASSERT(endBit < MaxAllocCount);
 
-  return (endBit - startBit) * GranularityBytes;
+  return (endBit - startBit + 1) * GranularityBytes;
 }
 
 template <typename D, size_t S, size_t G>
