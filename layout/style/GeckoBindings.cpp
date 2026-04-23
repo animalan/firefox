@@ -88,9 +88,7 @@ using namespace mozilla;
 using namespace mozilla::css;
 using namespace mozilla::dom;
 
-// Definitions of the global traversal stats.
-bool ServoTraversalStatistics::sActive = false;
-ServoTraversalStatistics ServoTraversalStatistics::sSingleton;
+ServoTraversalStatistics* ServoTraversalStatistics::sSingleton = nullptr;
 
 static StaticAutoPtr<RWLock> sServoFFILock;
 

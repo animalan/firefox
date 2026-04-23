@@ -20,8 +20,7 @@ struct ServoTraversalStatistics {
   uint32_t mStylesShared = 0;
   uint32_t mStylesReused = 0;
 
-  static bool sActive;
-  static ServoTraversalStatistics sSingleton;
+  static ServoTraversalStatistics* sSingleton;
 };
 
 }  // namespace mozilla
