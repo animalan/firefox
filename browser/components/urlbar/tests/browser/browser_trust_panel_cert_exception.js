@@ -65,7 +65,15 @@ add_task(async () => {
 
   Assert.equal(
     fetchIconUrl(window.document, "trust-icon"),
-    "chrome://browser/skin/trust-icon-insecure.svg",
+    "chrome://browser/skin/trust-icon-warning.svg",
     "Trustpanel urlbar icon shows insecure"
   );
+  await UrlbarTestUtils.openTrustPanel(window);
+  Assert.ok(
+    !BrowserTestUtils.isVisible(
+      document.getElementById("trustpanel-insecure-section")
+    ),
+    "Don't show unencryped warning on self signed certs"
+  );
+  await UrlbarTestUtils.closeTrustPanel(window);
 });

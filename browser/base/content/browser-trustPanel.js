@@ -352,13 +352,16 @@ class TrustPanel {
 
   #updateUrlbarIcon() {
     let icon = document.getElementById("trust-icon-container");
-    icon.className = this.#isSecurePage() ? "secure" : "insecure";
+    icon.className =
+      this.#isSecurePage() || this.#isCertUserOverridden
+        ? "secure"
+        : "insecure";
 
     if (!this.#trackingProtectionEnabled) {
       icon.classList.add("inactive");
     }
 
-    if (this.#isAboutNetErrorPage) {
+    if (this.#isAboutNetErrorPage || this.#isCertUserOverridden) {
       icon.classList.add("warning");
     }
 
