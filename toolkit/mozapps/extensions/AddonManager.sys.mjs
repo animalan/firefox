@@ -1304,7 +1304,7 @@ var AddonManagerInternal = {
       return Promise.resolve();
     }
 
-    if (info.existingAddon.isInstalledByEnterprisePolicy) {
+    if (Services.policies?.isAddonRequiredByPolicy(info.existingAddon.id)) {
       return Promise.resolve();
     }
 
