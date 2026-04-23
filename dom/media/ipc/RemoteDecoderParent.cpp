@@ -5,6 +5,7 @@
 
 #include "RemoteCDMParent.h"
 #include "RemoteMediaManagerParent.h"
+#include "mozilla/EnumeratedRange.h"
 
 namespace mozilla {
 
@@ -86,10 +87,8 @@ mozilla::ipc::IPCResult RemoteDecoderParent::RecvInit(
               bool hardwareAccelerated =
                   self->mDecoder->IsHardwareAccelerated(hardwareReason);
               nsTArray<DecodePropertyIPDL> properties;
-              for (size_t i = 0; i < MediaDataDecoder::sPropertyNameCount;
-                   i++) {
-                MediaDataDecoder::PropertyName name =
-                    static_cast<MediaDataDecoder::PropertyName>(i);
+              for (auto name : MakeInclusiveEnumeratedRange(
+                       MediaDataDecoder::sHighestPropertyName)) {
                 if (auto v = self->mDecoder->GetDecodeProperty(name)) {
                   properties.AppendElement(
                       DecodePropertyIPDL(name, std::move(v.ref())));
