@@ -9,7 +9,6 @@
 #include <thread>
 #include <vector>
 #include <fstream>
-#include <iostream>
 #ifdef XP_WIN
 #  include <windows.h>
 #else

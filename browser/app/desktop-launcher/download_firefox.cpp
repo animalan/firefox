@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "download_firefox.h"
-#include <iostream>
 #include <optional>
 #include <string>
 #include <wchar.h>

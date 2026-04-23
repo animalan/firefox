@@ -3,6 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 api = {
+    "iostream": [
+        "cerr",
+        "cin",
+        "clog",
+        "cout",
+        "wcerr",
+        "wcin",
+        "wclog",
+        "wcout",
+    ],
     "algorithm": [
         "all_of",
         "any_of",
