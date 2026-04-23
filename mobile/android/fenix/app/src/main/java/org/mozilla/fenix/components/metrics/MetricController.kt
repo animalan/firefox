@@ -333,12 +333,18 @@ internal class ReleaseMetricController(
         }
         Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.OPTIMIZED_SUGGESTION_CARD_DISPLAYED -> {
             Awesomebar.optimizedSuggestionCardDisplayed.record(
-                Awesomebar.OptimizedSuggestionCardDisplayedExtra(cardType = value),
+                Awesomebar.OptimizedSuggestionCardDisplayedExtra(
+                    cardType = value,
+                    extra = metadata?.get("extra")?.toString(),
+                ),
             )
         }
         Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.OPTIMIZED_SUGGESTION_CARD_CLICKED -> {
             Awesomebar.optimizedSuggestionCardClicked.record(
-                Awesomebar.OptimizedSuggestionCardClickedExtra(cardType = value),
+                Awesomebar.OptimizedSuggestionCardClickedExtra(
+                    cardType = value,
+                    extra = metadata?.get("extra")?.toString(),
+                ),
             )
         }
         Component.FEATURE_CONTEXTMENU to ContextMenuFacts.Items.TEXT_SELECTION_OPTION -> {

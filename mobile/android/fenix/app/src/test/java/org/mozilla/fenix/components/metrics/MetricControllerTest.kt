@@ -868,6 +868,7 @@ class MetricControllerTest {
             Action.DISPLAY,
             AwesomeBarFacts.Items.OPTIMIZED_SUGGESTION_CARD_DISPLAYED,
             SuggestionCardType.SPORTS.value,
+            mapOf("extra" to "basketball"),
         )
 
         with(controller) {
@@ -877,6 +878,7 @@ class MetricControllerTest {
         assertNotNull(Awesomebar.optimizedSuggestionCardDisplayed.testGetValue())
         assertNotNull(Awesomebar.optimizedSuggestionCardDisplayed.testGetValue()!![0].extra)
         assertEquals("sports", Awesomebar.optimizedSuggestionCardDisplayed.testGetValue()!![0].extra!!["card_type"])
+        assertEquals("basketball", Awesomebar.optimizedSuggestionCardDisplayed.testGetValue()!![0].extra!!["extra"])
 
         // Verify optimized suggestion cards clicked
         assertNull(Awesomebar.optimizedSuggestionCardClicked.testGetValue())
@@ -885,6 +887,7 @@ class MetricControllerTest {
             Action.CLICK,
             AwesomeBarFacts.Items.OPTIMIZED_SUGGESTION_CARD_CLICKED,
             SuggestionCardType.STOCKS.value,
+            mapOf("extra" to "up"),
         )
 
         with(controller) {
@@ -894,6 +897,7 @@ class MetricControllerTest {
         assertNotNull(Awesomebar.optimizedSuggestionCardClicked.testGetValue())
         assertNotNull(Awesomebar.optimizedSuggestionCardClicked.testGetValue()!![0].extra)
         assertEquals("stocks", Awesomebar.optimizedSuggestionCardClicked.testGetValue()!![0].extra!!["card_type"])
+        assertEquals("up", Awesomebar.optimizedSuggestionCardClicked.testGetValue()!![0].extra!!["extra"])
     }
 
     @Test

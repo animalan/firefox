@@ -54,17 +54,22 @@ class SportsOnlineSuggestionProvider(
         delay(ARTIFICIAL_DELAY)
 
         val results = dataSource.fetch(text)
-
-        return results
+        val suggestions = results
             .asSequence()
-            .mapNotNull { it.toSuggestionOrNull() }
+            .mapNotNull { item ->
+                item.toSuggestionOrNull()?.let { it to item.sportCategory }
+            }
             .take(maxNumberOfSuggestions)
             .toList()
-            .also {
-                if (it.isNotEmpty()) {
-                    emitOptimizedSuggestionCardDisplayedFact(SuggestionCardType.SPORTS)
-                }
-            }
+
+        suggestions.forEach {
+            emitOptimizedSuggestionCardDisplayedFact(
+                cardType = SuggestionCardType.SPORTS,
+                extra = it.second.lowercase(),
+            )
+        }
+
+        return suggestions.map { it.first }
     }
 
     private fun AwesomeBar.SportItem.toSuggestionOrNull(): AwesomeBar.SportSuggestion? {
@@ -81,7 +86,10 @@ class SportsOnlineSuggestionProvider(
         return if (hasRequiredFields && hasAllFields) {
             AwesomeBar.SportSuggestion(
                 onSuggestionClicked = {
-                    emitOptimizedSuggestionCardClickedFact(SuggestionCardType.SPORTS)
+                    emitOptimizedSuggestionCardClickedFact(
+                        cardType = SuggestionCardType.SPORTS,
+                        extra = this.sportCategory.lowercase(),
+                    )
                     searchUseCase.invoke(query)
                 },
                 provider = this@SportsOnlineSuggestionProvider,

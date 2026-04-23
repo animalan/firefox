@@ -11611,6 +11611,10 @@ awesomebar:
         description: |
           The type of suggestion card shown. One of: stocks, flights, sports
         type: string
+      extra:
+        description: |
+          Any extra information about the card displayed.
+        type: string
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=2014705
     data_reviews:
@@ -11630,6 +11634,10 @@ awesomebar:
       card_type:
         description: |
           The type of suggestion card clicked. One of: stocks, flights, sports
+        type: string
+      extra:
+        description: |
+          Any extra information about the card clicked.
         type: string
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=2014705
