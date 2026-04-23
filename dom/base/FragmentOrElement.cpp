@@ -32,7 +32,6 @@
 #include "mozilla/dom/CustomElementRegistry.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/DocumentInlines.h"
-#include "mozilla/dom/EditContext.h"
 #include "mozilla/dom/Event.h"
 #include "mozilla/dom/NodeInfo.h"
 #include "mozilla/dom/RadioGroupContainer.h"
@@ -1389,11 +1388,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(FragmentOrElement)
   }
 
   if (tmp->IsElement()) {
-    auto* element = tmp->AsElement();
-    if (MOZ_UNLIKELY(element->HasFlag(ELEMENT_HAS_EDIT_CONTEXT))) {
-      element->ClearEditContext();
-    }
-    Element::UnlinkCustomElementRegistry(element);
+    Element::UnlinkCustomElementRegistry(tmp->AsElement());
   }
 
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
@@ -1840,10 +1835,6 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INTERNAL(FragmentOrElement)
       }
     }
     Element::TraverseCustomElementRegistry(element, cb);
-    if (MOZ_UNLIKELY(element->HasFlag(ELEMENT_HAS_EDIT_CONTEXT))) {
-      auto* editContext = EditContext::GetForElement(*element);
-      cb.NoteXPCOMChild(NS_ISUPPORTS_CAST(EventTarget*, editContext));
-    }
   }
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 

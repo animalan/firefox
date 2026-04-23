@@ -48,8 +48,6 @@ interface HTMLElement : Element {
            attribute DOMString contentEditable;
   [Pure]
   readonly attribute boolean isContentEditable;
-  [Pure, SetterThrows, Pref="dom.editcontext.enabled"]
-  attribute EditContext? editContext;
   [CEReactions, SetterThrows, Pure]
            attribute DOMString? popover;
   [CEReactions, SetterThrows, Pure]

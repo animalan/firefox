@@ -913,9 +913,6 @@ void nsINode::LastRelease() {
 
     if (Element* element = Element::FromNode(this)) {
       element->ClearAttributes();
-      if (MOZ_UNLIKELY(element->HasFlag(ELEMENT_HAS_EDIT_CONTEXT))) {
-        element->ClearEditContext();
-      }
     }
   }
 

@@ -38,7 +38,6 @@ class EventListenerManager;
 class PresState;
 namespace dom {
 class BooleanOrUnrestrictedDoubleOrString;
-class EditContext;
 class ElementInternals;
 class HTMLFormElement;
 class OwningBooleanOrUnrestrictedDoubleOrString;
@@ -298,10 +297,6 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
     SetHTMLAttr(nsGkAtoms::autocorrect, aAutocorrect ? u"on"_ns : u"off"_ns,
                 aError);
   }
-
-  mozilla::dom::EditContext* GetEditContext() const;
-  void SetEditContext(mozilla::dom::EditContext* aContext,
-                      mozilla::ErrorResult& aRv);
 
   /**
    * Determine whether an attribute is an event (onclick, etc.)
