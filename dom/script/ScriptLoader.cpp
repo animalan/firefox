@@ -3242,12 +3242,11 @@ static void Decode(JSContext* aCx, JS::CompileOptions& aCompileOptions,
 bool ScriptLoader::StartCollectingDelazifications(JSContext* aCx,
                                                   JS::Handle<JSScript*> aScript,
                                                   JS::Stencil* aStencil) {
-  bool alreadyStarted;
-  if (!JS::StartCollectingDelazifications(aCx, aScript, aStencil,
-                                          alreadyStarted)) {
+  JS::CollectDelazificationsResult result;
+  if (!JS::StartCollectingDelazifications(aCx, aScript, aStencil, result)) {
     return false;
   }
-  if (!alreadyStarted) {
+  if (result == JS::CollectDelazificationsResult::NewlyStarted) {
     AppendDelazificationCollection(aScript);
   }
   return true;
@@ -3256,12 +3255,11 @@ bool ScriptLoader::StartCollectingDelazifications(JSContext* aCx,
 bool ScriptLoader::StartCollectingDelazifications(JSContext* aCx,
                                                   JS::Handle<JSObject*> aModule,
                                                   JS::Stencil* aStencil) {
-  bool alreadyStarted;
-  if (!JS::StartCollectingDelazifications(aCx, aModule, aStencil,
-                                          alreadyStarted)) {
+  JS::CollectDelazificationsResult result;
+  if (!JS::StartCollectingDelazifications(aCx, aModule, aStencil, result)) {
     return false;
   }
-  if (!alreadyStarted) {
+  if (result == JS::CollectDelazificationsResult::NewlyStarted) {
     AppendDelazificationCollection(aModule);
   }
   return true;
