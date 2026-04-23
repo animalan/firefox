@@ -16932,6 +16932,12 @@
   value: ""
   mirror: never
 
+# Comma-separated names of remote settings lists to use for content blocking.
+- name: privacy.trackingprotection.content.protection.list_names
+  type: String
+  value: ""
+  mirror: never
+
 # Enable content classifier service annotation.
 - name: privacy.trackingprotection.content.annotation.enabled
   type: bool
@@ -16946,11 +16952,24 @@
   value: ""
   mirror: never
 
+# Comma-separated names of remote settings lists to use for content annotation.
+- name: privacy.trackingprotection.content.annotation.list_names
+  type: String
+  value: ""
+  mirror: never
+
 # When true, fire an observer notification when filter lists finish loading.
 - name: privacy.trackingprotection.content.testing
   type: bool
   value: false
   mirror: always
+
+# Log level for the content classifier remote settings client.
+# Set to "Debug" for verbose output, or one of "Info", "Warn", "Error", "Off".
+- name: privacy.trackingprotection.content.remote_settings.loglevel
+  type: String
+  value: "Warn"
+  mirror: never
 
 # Enable the "baseline" allow-list for fixing severe site breakage (e.g. blank
 # page).
