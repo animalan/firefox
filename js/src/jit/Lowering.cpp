@@ -8276,6 +8276,14 @@ void LIRGenerator::visitWeakSetHasObject(MWeakSetHasObject* ins) {
   defineReturn(lir, ins);
 }
 
+void LIRGenerator::visitNewDateObject(MNewDateObject* ins) {
+  MOZ_ASSERT(ins->utcTime()->type() == MIRType::Double);
+
+  auto* lir = new (alloc()) LNewDateObject(useRegister(ins->utcTime()), temp());
+  define(lir, ins);
+  assignSafepoint(lir, ins);
+}
+
 void LIRGenerator::visitDateFillLocalTimeSlots(MDateFillLocalTimeSlots* ins) {
   auto* lir =
       new (alloc()) LDateFillLocalTimeSlots(useRegister(ins->date()), temp());

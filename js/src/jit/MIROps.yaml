@@ -4586,6 +4586,16 @@
   folds_to: custom
   generate_lir: true
 
+- name: NewDateObject
+  operands:
+    utcTime: Double
+  arguments:
+    templateObject: JSObject*
+  result_type: Object
+  alias_set: none
+  generate_lir: true
+  lir_temps: 1
+
 - name: PostIntPtrConversion
   gen_boilerplate: false
 

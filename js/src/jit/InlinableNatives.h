@@ -82,6 +82,7 @@
   _(DataViewByteLength)                            \
   _(DataViewByteOffset)                            \
                                                    \
+  _(Date)                                          \
   _(DateGetTime)                                   \
   _(DateGetFullYear)                               \
   _(DateGetMonth)                                  \

@@ -65,6 +65,7 @@
 #include "vm/AsyncFunction.h"
 #include "vm/AsyncIteration.h"
 #include "vm/BuiltinObjectKind.h"
+#include "vm/DateObject.h"
 #include "vm/FunctionFlags.h"  // js::FunctionFlags
 #include "vm/Interpreter.h"
 #include "vm/JSAtomUtils.h"  // AtomizeString
@@ -22680,6 +22681,25 @@ void CodeGenerator::visitTimeClipCall(LTimeClipCall* ins) {
   auto temp = ToRegister(ins->temp0());
 
   masm.timeClip(time, output, temp, liveVolatileRegs(ins));
+}
+
+void CodeGenerator::visitNewDateObject(LNewDateObject* lir) {
+  FloatRegister utcTime = ToFloatRegister(lir->utcTime());
+  Register output = ToRegister(lir->output());
+  Register temp = ToRegister(lir->temp0());
+
+  JSObject* templateObj = lir->mir()->templateObject();
+
+  using Fn = JSObject* (*)(JSContext*, double);
+  auto* ool = oolCallVM<Fn, jit::NewDateObject>(lir, ArgList(utcTime),
+                                                StoreRegisterTo(output));
+
+  TemplateObject templateObject(templateObj);
+  masm.createGCObject(output, temp, templateObject, gc::Heap::Default,
+                      ool->entry());
+  masm.boxDouble(utcTime, Address(output, DateObject::offsetOfUTCTimeSlot()));
+
+  masm.bind(ool->rejoin());
 }
 
 void CodeGenerator::visitCanonicalizeNaND(LCanonicalizeNaND* ins) {

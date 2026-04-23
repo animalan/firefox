@@ -3863,6 +3863,14 @@
     time: NumberId
     result: NumberId
 
+- name: NewDateObjectResult
+  shared: true
+  transpile: true
+  cost_estimate: 5
+  args:
+    templateObject: ObjectField
+    utcTime: NumberId
+
 - name: ArrayFromArgumentsObjectResult
   shared: true
   transpile: true

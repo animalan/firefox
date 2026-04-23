@@ -19,6 +19,7 @@
 #include "jit/JitRuntime.h"
 #include "jit/mips64/Simulator-mips64.h"
 #include "jit/Simulator.h"
+#include "js/Date.h"
 #include "js/experimental/JitInfo.h"
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
 #include "js/friend/StackLimits.h"    // js::AutoCheckRecursionLimit
@@ -3286,6 +3287,15 @@ double DateParse(JSContext* cx, const JSString* str) {
 
   // ClippedTime can return non-canonical NaN, so canonicalize explicitly.
   return JS::CanonicalizeNaN(js::DateParse(cx, linear).toDouble());
+}
+
+JSObject* NewDateObject(JSContext* cx, double utcTime) {
+  auto clipped = JS::TimeClip(utcTime);
+  MOZ_ASSERT(
+      mozilla::NumbersAreBitwiseIdentical(
+          utcTime, clipped.isValid() ? clipped.toDouble() : JS::GenericNaN()),
+      "JIT code must have time-clipped the double");
+  return NewDateObjectMsec(cx, clipped);
 }
 
 JSAtom* AtomizeStringNoGC(JSContext* cx, JSString* str) {

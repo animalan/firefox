@@ -11337,6 +11337,59 @@ AttachDecision InlinableNativeIRGenerator::tryAttachDateParse() {
   return AttachDecision::Attach;
 }
 
+AttachDecision InlinableNativeIRGenerator::tryAttachDateConstructor() {
+  // Expecting no arguments or a single number or string argument.
+  if (argsLength() > 1) {
+    return AttachDecision::NoAction;
+  }
+  if (argsLength() == 1 && !arg(0).isNumber() && !arg(0).isString()) {
+    return AttachDecision::NoAction;
+  }
+
+  auto* templateObj = DateObject::createTemplateObject(cx_);
+  if (!templateObj) {
+    cx_->recoverFromOutOfMemory();
+    return AttachDecision::NoAction;
+  }
+
+  // Initialize the input operand.
+  Int32OperandId argcId = initializeInputOperand();
+
+  // Guard callee is the 'Date' function.
+  ObjOperandId calleeId = emitNativeCalleeGuard(argcId);
+
+  NumberOperandId utcTimeId;
+  if (argsLength() == 0) {
+    // Current time when no arguments are present.
+    utcTimeId = writer.dateNow();
+  } else {
+    ValOperandId argId = loadArgument(calleeId, ArgumentKind::Arg0);
+
+    if (arg(0).isNumber()) {
+      // Guard number argument.
+      NumberOperandId numId = writer.guardIsNumber(argId);
+
+      // Clip number to time.
+      utcTimeId = writer.timeClip(numId);
+    } else {
+      MOZ_ASSERT(arg(0).isString());
+
+      // Guard string argument.
+      StringOperandId strId = writer.guardToString(argId);
+      StringOperandId linearStrId = writer.linearizeString(strId);
+
+      // Parse string as date.
+      utcTimeId = writer.dateParse(linearStrId);
+    }
+  }
+
+  writer.newDateObjectResult(templateObj, utcTimeId);
+  writer.returnFromIC();
+
+  trackAttached("DateConstructor");
+  return AttachDecision::Attach;
+}
+
 AttachDecision CallIRGenerator::tryAttachFunCall(HandleFunction callee) {
   MOZ_ASSERT(callee->isNativeWithoutJitEntry());
 
@@ -13174,6 +13227,8 @@ AttachDecision InlinableNativeIRGenerator::tryAttachStub() {
         return tryAttachStringConstructor();
       case InlinableNative::Object:
         return tryAttachObjectConstructor();
+      case InlinableNative::Date:
+        return tryAttachDateConstructor();
       default:
         break;
     }
@@ -13642,6 +13697,9 @@ AttachDecision InlinableNativeIRGenerator::tryAttachStub() {
       return tryAttachMapSize();
 
     // Date natives and intrinsics.
+    case InlinableNative::Date:
+      return AttachDecision::NoAction;  // Not inlined when called as a
+                                        // function.
     case InlinableNative::DateGetTime:
       return tryAttachDateGetTime();
     case InlinableNative::DateGetFullYear:

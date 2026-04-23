@@ -4866,7 +4866,8 @@ static bool FinishDateClassInit(JSContext* cx, HandleObject ctor,
 }
 
 static const ClassSpec DateObjectClassSpec = {
-    GenericCreateConstructor<DateConstructor, 7, gc::AllocKind::FUNCTION>,
+    GenericCreateConstructor<DateConstructor, 7, gc::AllocKind::FUNCTION,
+                             &jit::JitInfo_Date>,
     GenericCreatePrototype<DateObject>,
     date_static_methods,
     nullptr,
@@ -4889,6 +4890,10 @@ const JSClass DateObject::protoClass_ = {
     JS_NULL_CLASS_OPS,
     &DateObjectClassSpec,
 };
+
+DateObject* DateObject::createTemplateObject(JSContext* cx) {
+  return NewTenuredBuiltinClassInstance<DateObject>(cx);
+}
 
 JSObject* js::NewDateObjectMsec(JSContext* cx, ClippedTime t,
                                 HandleObject proto /* = nullptr */) {

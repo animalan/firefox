@@ -708,6 +708,7 @@ int32_t Float32ToFloat16(float value);
 void DateFillLocalTimeSlots(DateObject* dateObj);
 double DateNow(JSContext* cx);
 double DateParse(JSContext* cx, const JSString* str);
+JSObject* NewDateObject(JSContext* cx, double utcTime);
 
 JSAtom* AtomizeStringNoGC(JSContext* cx, JSString* str);
 
