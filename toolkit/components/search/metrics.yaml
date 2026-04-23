@@ -577,6 +577,7 @@ browser.searchinit:
       - https://bugzil.la/1897049
       - https://bugzil.la/1933859
       - https://bugzil.la/1994584
+      - https://bugzil.la/2034308
     data_reviews:
       - https://bugzil.la/1665938
       - https://bugzil.la/1691050
@@ -588,10 +589,11 @@ browser.searchinit:
       - https://bugzil.la/1897049
       - https://bugzil.la/1933859
       - https://bugzil.la/1994584
+      - https://bugzil.la/2034308
     notification_emails:
       - fx-search-telemetry@mozilla.com
       - mbanner@mozilla.com
-    expires: 153
+    expires: 159
     unit: custom enum value
 
   secure_opensearch_engine_count:
