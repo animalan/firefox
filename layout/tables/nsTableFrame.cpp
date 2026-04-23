@@ -3116,6 +3116,14 @@ nscoord nsTableFrame::GetRowSpacing(int32_t aStartRowIndex,
   return GetRowSpacing() * (aEndRowIndex - aStartRowIndex);
 }
 
+nscoord nsTableFrame::SynthesizeFallbackBaseline(
+    mozilla::WritingMode aWM, BaselineSharingGroup aBaselineGroup) const {
+  if (aBaselineGroup == BaselineSharingGroup::Last) {
+    return 0;
+  }
+  return BSize(aWM);
+}
+
 /* virtual */
 Maybe<nscoord> nsTableFrame::GetNaturalBaselineBOffset(
     WritingMode aWM, BaselineSharingGroup aBaselineGroup,
