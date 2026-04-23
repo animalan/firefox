@@ -611,6 +611,8 @@ telemetry-python:
     when:
         files-changed:
             - 'toolkit/components/telemetry/**'
+            - '**/*metrics.yaml'
+            - '**/pings.yaml'
 
 verify-decision:
     description: verifications on Decision task output
