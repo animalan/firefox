@@ -1977,6 +1977,7 @@ static const JSFunctionSpec iterator_methods[] = {
     JS_SELF_HOSTED_FN("chunks", "IteratorChunks", 1, 0),
     JS_SELF_HOSTED_FN("windows", "IteratorWindows", 2, 0),
     JS_SELF_HOSTED_FN("join", "IteratorJoin", 1, 0),
+    JS_SELF_HOSTED_FN("includes", "IteratorIncludes", 2, 0),
 #endif
     JS_FS_END,
 };
