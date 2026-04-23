@@ -533,19 +533,21 @@ Mutex& BufferAllocator::lock() const {
 }
 
 void BufferAllocator::setMultiThreadedUse(Mutex* mutex) {
+#ifdef DEBUG
   MOZ_ASSERT(CurrentThreadCanAccessZone(zone));
   MOZ_ASSERT(!multiThreadedMutex);
   MOZ_ASSERT(majorState != State::Sweeping);
-
   multiThreadedMutex = mutex;
+#endif
 }
 
 void BufferAllocator::clearMultiThreadedUse() {
+#ifdef DEBUG
   MOZ_ASSERT(CurrentThreadCanAccessZone(zone));
   MOZ_ASSERT(multiThreadedMutex);
   MOZ_ASSERT(majorState != State::Sweeping);
-
   multiThreadedMutex = nullptr;
+#endif
 }
 
 void BufferAllocator::checkAccess() const {
@@ -562,8 +564,6 @@ void BufferAllocator::checkMainThread() const {
   MOZ_ASSERT(!multiThreadedMutex);
   MOZ_ASSERT(CurrentThreadCanAccessZone(zone));
 }
-
-bool BufferAllocator::isUsedByMainThread() const { return !multiThreadedMutex; }
 
 void* BufferAllocator::alloc(size_t bytes, bool nurseryOwned) {
   MOZ_ASSERT_IF(zone->isGCMarkingOrSweeping(), majorState == State::Marking);
@@ -2087,13 +2087,10 @@ BufferAllocator::RefillResult BufferAllocator::refillFreeLists(
     return RefillResult::Success;
   }
 
-  // If all else fails (and we're on the main thread), try waiting for any
-  // background GC activity to finish.
-  if (isUsedByMainThread()) {
-    GCRuntime* gc = &zone->runtimeFromMainThread()->gc;
-    if (gc->waitForBackgroundTasksOnAllocFailure()) {
-      return RefillResult::Retry;
-    }
+  // If all else fails, try waiting for any background GC activity to finish.
+  GCRuntime* gc = &zone->runtimeFromMainThread()->gc;
+  if (gc->waitForBackgroundTasksOnAllocFailure()) {
+    return RefillResult::Retry;
   }
 
   return RefillResult::Fail;
