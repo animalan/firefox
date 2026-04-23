@@ -5,7 +5,6 @@
 #include "download_firefox.h"
 #include <optional>
 #include <string>
-#include <wchar.h>
 #include <windows.h>
 #include <winhttp.h>
 #include "data_sink.h"

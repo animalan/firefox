@@ -17,7 +17,6 @@
 #endif
 #include <dlfcn.h>
 #include <gdk/gdkkeysyms.h>
-#include <wchar.h>
 
 #include "VsyncSource.h"
 #include "gfx2DGlue.h"
