@@ -1496,6 +1496,7 @@ export class AIWindow extends MozLitElement {
       2: "Rate limit exceeded",
       3: "Chat maximum length hit",
       4: "Account error",
+      7: "Invalid page content",
     };
     let errorText = "";
 
@@ -1546,6 +1547,11 @@ export class AIWindow extends MozLitElement {
   #handleError(error, { latency, duration }) {
     console.error(error);
     let errorCode = error.error ?? error.metadata?.errorMessage;
+    // fastly errors don't have the error attribute
+    if (error.status === 406) {
+      errorCode = 7;
+    }
+
     const newErrorMessage = {
       role: "",
       content: {

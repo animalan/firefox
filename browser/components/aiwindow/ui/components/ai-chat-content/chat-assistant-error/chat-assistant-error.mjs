@@ -15,6 +15,7 @@ const ERROR_CODES = {
   RATE_LIMIT_EXCEEDED: 2,
   CHAT_MAX_LENGTH: 3,
   ACCOUNT_ERROR: 4,
+  INVALID_PAGE_CONTENT: 7,
 };
 
 /**
@@ -115,6 +116,13 @@ export class ChatAssistantError extends MozLitElement {
           label: "smartwindow-signin-btn",
           action: this.openAccountSignIn.bind(this),
         };
+        break;
+
+      case ERROR_CODES.INVALID_PAGE_CONTENT:
+        this.errorText = {
+          header: "smartwindow-assistant-error-page-content-header",
+        };
+        this.actionButton = null;
         break;
 
       default:

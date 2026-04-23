@@ -157,6 +157,14 @@ add_task(async function test_error_status() {
       );
 
       await testErrorScenario(
+        { error: 7 },
+        "smartwindow-assistant-error-page-content-header",
+        null,
+        null,
+        null
+      );
+
+      await testErrorScenario(
         { error: "server_error" },
         "smartwindow-assistant-error-generic-header",
         null,
