@@ -2566,6 +2566,14 @@
     obj: ObjId
     result: IntPtrId
 
+- name: LinearizeString
+  shared: true
+  transpile: true
+  cost_estimate: 4
+  args:
+    str: StringId
+    result: StringId
+
 - name: LinearizeForCharAccess
   shared: true
   transpile: true

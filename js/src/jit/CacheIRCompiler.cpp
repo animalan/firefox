@@ -4703,6 +4703,49 @@ bool CacheIRCompiler::emitSpecializedBindFunctionResult(
   return true;
 }
 
+static void CallLinearizeString(MacroAssembler& masm, Register str,
+                                Register result,
+                                const LiveRegisterSet& volatileRegs,
+                                Label* fail) {
+  masm.PushRegsInMask(volatileRegs);
+
+  using Fn = JSLinearString* (*)(JSString*);
+  masm.setupUnalignedABICall(result);
+  masm.passABIArg(str);
+  masm.callWithABI<Fn, js::jit::LinearizeForCharAccessPure>();
+  masm.storeCallPointerResult(result);
+
+  LiveRegisterSet ignore;
+  ignore.add(result);
+  masm.PopRegsInMaskIgnore(volatileRegs, ignore);
+
+  masm.branchTestPtr(Assembler::Zero, result, result, fail);
+}
+
+bool CacheIRCompiler::emitLinearizeString(StringOperandId strId,
+                                          StringOperandId resultId) {
+  JitSpew(JitSpew_Codegen, "%s", __FUNCTION__);
+  Register str = allocator.useRegister(masm, strId);
+  Register result = allocator.defineRegister(masm, resultId);
+
+  FailurePath* failure;
+  if (!addFailurePath(&failure)) {
+    return false;
+  }
+
+  Label done;
+  masm.movePtr(str, result);
+
+  masm.branchIfNotRope(str, &done);
+  {
+    LiveRegisterSet volatileRegs = liveVolatileRegs();
+    CallLinearizeString(masm, str, result, volatileRegs, failure->label());
+  }
+
+  masm.bind(&done);
+  return true;
+}
+
 bool CacheIRCompiler::emitLinearizeForCharAccess(StringOperandId strId,
                                                  Int32OperandId indexId,
                                                  StringOperandId resultId) {
@@ -4727,19 +4770,7 @@ bool CacheIRCompiler::emitLinearizeForCharAccess(StringOperandId strId,
   masm.branchIfCanLoadStringChar(str, index, scratch, &done);
   {
     LiveRegisterSet volatileRegs = liveVolatileRegs();
-    masm.PushRegsInMask(volatileRegs);
-
-    using Fn = JSLinearString* (*)(JSString*);
-    masm.setupUnalignedABICall(scratch);
-    masm.passABIArg(str);
-    masm.callWithABI<Fn, js::jit::LinearizeForCharAccessPure>();
-    masm.storeCallPointerResult(result);
-
-    LiveRegisterSet ignore;
-    ignore.add(result);
-    masm.PopRegsInMaskIgnore(volatileRegs, ignore);
-
-    masm.branchTestPtr(Assembler::Zero, result, result, failure->label());
+    CallLinearizeString(masm, str, result, volatileRegs, failure->label());
   }
 
   masm.bind(&done);
@@ -4770,19 +4801,7 @@ bool CacheIRCompiler::emitLinearizeForCodePointAccess(
   masm.branchIfCanLoadStringCodePoint(str, index, scratch1, scratch2, &done);
   {
     LiveRegisterSet volatileRegs = liveVolatileRegs();
-    masm.PushRegsInMask(volatileRegs);
-
-    using Fn = JSLinearString* (*)(JSString*);
-    masm.setupUnalignedABICall(scratch1);
-    masm.passABIArg(str);
-    masm.callWithABI<Fn, js::jit::LinearizeForCharAccessPure>();
-    masm.storeCallPointerResult(result);
-
-    LiveRegisterSet ignore;
-    ignore.add(result);
-    masm.PopRegsInMaskIgnore(volatileRegs, ignore);
-
-    masm.branchTestPtr(Assembler::Zero, result, result, failure->label());
+    CallLinearizeString(masm, str, result, volatileRegs, failure->label());
   }
 
   masm.bind(&done);
