@@ -1,0 +1,8 @@
+function testGetTimeAndValueOf() {
+  for (var i = 0; i < 250; ++i) {
+    var d = new Date(i);
+    assertEq(d.getTime(), i);
+    assertEq(d.valueOf(), i);
+  }
+}
+testGetTimeAndValueOf();

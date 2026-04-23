@@ -14,11 +14,13 @@ namespace js {
 class DateTimeInfo;
 
 class DateObject : public NativeObject {
+ public:
   // Time in milliseconds since the (Unix) epoch.
   //
   // The stored value is guaranteed to be a Double.
   static const uint32_t UTC_TIME_SLOT = 0;
 
+ private:
   // Time zone cache key.
   //
   // This value is exclusively used to verify the cached slots are still valid.
