@@ -108,9 +108,7 @@ license:
         - .xhtml
         - .xml
     support-files:
-        - 'tools/lint/mozcheck/**'
-        - 'tools/lint/license/valid-licenses.txt'
+        - 'tools/lint/license/**'
     type: external
-    payload: mozcheck:lint
-    check: license
+    payload: license:lint
     find-dotfiles: true

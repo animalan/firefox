@@ -167,7 +167,6 @@ file-whitespace:
         - .yml
         - .xhtml
     support-files:
-        - 'tools/lint/mozcheck/**'
+        - 'tools/lint/file-whitespace/**'
     type: external
-    payload: mozcheck:lint
-    check: file-whitespace
+    payload: file-whitespace:lint

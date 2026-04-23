@@ -104,7 +104,6 @@ clippy:
         - toolkit/library/rust/
         - toolkit/xre/detect_win32k_conflicts/
         - tools/fuzzing/rust/
-        - tools/lint/mozcheck/
         - widget/windows/rust/
         # - tools/profiler/rust-api/
         # - xpcom/rust/gecko_logger/
