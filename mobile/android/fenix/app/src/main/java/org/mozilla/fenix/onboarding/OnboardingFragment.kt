@@ -284,7 +284,6 @@ class OnboardingFragment : Fragment() {
             },
             onFinish = {
                 onFinish(it)
-                enableSearchBarCFRForNewUser()
             },
             onImpression = {
                 telemetryRecorder.onImpression(
@@ -400,7 +399,6 @@ class OnboardingFragment : Fragment() {
             },
             onFinish = {
                 onFinish(it)
-                enableSearchBarCFRForNewUser()
             },
             onImpression = {
                 telemetryRecorder.onImpression(
@@ -529,10 +527,6 @@ class OnboardingFragment : Fragment() {
         )
 
         maybeAddMenuNotification()
-    }
-
-    private fun enableSearchBarCFRForNewUser() {
-        requireContext().settings().shouldShowSearchBarCFR = FxNimbus.features.encourageSearchCfr.value().enabled
     }
 
     private fun isNotDefaultBrowser(context: Context) =

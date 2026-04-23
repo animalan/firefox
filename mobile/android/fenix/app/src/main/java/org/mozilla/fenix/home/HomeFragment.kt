@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,9 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
@@ -53,8 +50,6 @@ import mozilla.components.compose.base.snackbar.Snackbar
 import mozilla.components.compose.base.snackbar.displaySnackbar
 import mozilla.components.compose.browser.toolbar.store.BrowserToolbarState
 import mozilla.components.compose.browser.toolbar.store.BrowserToolbarStore
-import mozilla.components.compose.cfr.CFRPopup
-import mozilla.components.compose.cfr.CFRPopupProperties
 import mozilla.components.concept.engine.utils.ABOUT_HOME_URL
 import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.AuthType
@@ -756,40 +751,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         }
     }
 
-    private fun showEncourageSearchCfr() {
-        CFRPopup(
-            anchor = toolbarView.layout,
-            properties = CFRPopupProperties(
-                popupBodyColors = listOf(
-                    getColor(requireContext(), R.color.fx_mobile_layer_color_gradient_end),
-                    getColor(requireContext(), R.color.fx_mobile_layer_color_gradient_start),
-                ),
-                popupVerticalOffset = ENCOURAGE_SEARCH_CFR_VERTICAL_OFFSET.dp,
-                dismissButtonColor = getColor(requireContext(), R.color.fx_mobile_icon_color_oncolor),
-                indicatorDirection = if (requireContext().isToolbarAtBottom()) {
-                    CFRPopup.IndicatorDirection.DOWN
-                } else {
-                    CFRPopup.IndicatorDirection.UP
-                },
-            ),
-            onDismiss = {
-                with(requireComponents.settings) {
-                    lastCfrShownTimeInMillis = System.currentTimeMillis()
-                    shouldShowSearchBarCFR = false
-                }
-            },
-            text = {
-                FirefoxTheme {
-                    Text(
-                        text = FxNimbus.features.encourageSearchCfr.value().cfrText,
-                        color = FirefoxTheme.colors.textOnColorPrimary,
-                        style = FirefoxTheme.typography.body2,
-                    )
-                }
-            },
-        ).show()
-    }
-
     @VisibleForTesting
     internal fun initializeMicrosurveyFeature(isMicrosurveyEnabled: Boolean) {
         if (isMicrosurveyEnabled) {
@@ -1303,13 +1264,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
 
         evaluateMessagesForMicrosurvey(components)
 
-        maybeShowEncourageSearchCfr(
-            canShowCfr = components.settings.canShowCfr && components.settings.cfrPopupsEnabled,
-            shouldShowCFR = components.settings.shouldShowSearchBarCFR,
-            showCfr = ::showEncourageSearchCfr,
-            recordExposure = { FxNimbus.features.encourageSearchCfr.recordExposure() },
-        )
-
         BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
             true
         BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
@@ -1318,19 +1272,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
 
     private fun evaluateMessagesForMicrosurvey(components: Components) =
         components.appStore.dispatch(MessagingAction.Evaluate(FenixMessageSurfaceId.MICROSURVEY))
-
-    @VisibleForTesting
-    internal fun maybeShowEncourageSearchCfr(
-        canShowCfr: Boolean,
-        shouldShowCFR: Boolean,
-        showCfr: () -> Unit,
-        recordExposure: () -> Unit,
-    ) {
-        if (canShowCfr && shouldShowCFR) {
-            showCfr()
-            recordExposure()
-        }
-    }
 
     override fun onPause() {
         super.onPause()
@@ -1420,7 +1361,5 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         const val FOCUS_ON_ADDRESS_BAR = "focusOnAddressBar"
         const val START_VOICE_SEARCH = "startVoiceSearch"
         private const val SESSION_TO_DELETE = "sessionToDelete"
-
-        private const val ENCOURAGE_SEARCH_CFR_VERTICAL_OFFSET = 0
     }
 }

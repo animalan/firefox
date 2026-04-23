@@ -2354,14 +2354,6 @@ class Settings(
     )
 
     /**
-     * Indicates if the search bar CFR should be displayed to the user.
-     */
-    var shouldShowSearchBarCFR by booleanPreference(
-        key = appContext.getPreferenceKey(R.string.pref_key_should_searchbar_cfr),
-        default = false,
-    )
-
-    /**
      * Indicates whether or not to use remote server search configuration.
      */
     var useRemoteSearchConfiguration by booleanPreference(
