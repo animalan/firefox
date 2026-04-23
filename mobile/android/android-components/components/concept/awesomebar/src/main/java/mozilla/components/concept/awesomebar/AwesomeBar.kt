@@ -203,7 +203,7 @@ interface AwesomeBar {
             val name: String,
             val colors: List<String>,
             val score: Int?,
-            val iconUrl: String?,
+            val icon: String?,
         )
     }
 

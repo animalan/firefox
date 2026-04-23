@@ -356,7 +356,7 @@ class SportsOnlineSuggestionProviderTest {
             name = "Minnesota Wild",
             colors = listOf("0E4431"),
             score = 3,
-            iconUrl = null,
+            icon = null,
         )
 
         val result = provider.parseTeam(team)
@@ -372,7 +372,7 @@ class SportsOnlineSuggestionProviderTest {
             name = "   ",
             colors = listOf("0E4431"),
             score = 3,
-            iconUrl = null,
+            icon = null,
         )
 
         assertNull(provider.parseTeam(team))
@@ -466,12 +466,12 @@ private val sampleHomeTeam = AwesomeBar.SportItem.Team(
     name = "Minnesota Wild",
     colors = listOf("0E4431", "AC1A2E", "EAAA00", "DDC9A3"),
     score = 3,
-    iconUrl = null,
+    icon = null,
 )
 private val sampleAwayTeam = AwesomeBar.SportItem.Team(
     key = "WPG",
     name = "Winnipeg Jets",
     colors = listOf("041E42", "004A98", "A2AAAD", "A6192E"),
     score = 4,
-    iconUrl = null,
+    icon = null,
 )
