@@ -43,8 +43,11 @@ async function test_background_update_pref(expectedEnabled, expectedLocked) {
     let shouldShowUI =
       !expectedLocked && UpdateUtils.PER_INSTALLATION_PREFS_SUPPORTED;
     await BrowserTestUtils.withNewTab("about:preferences", browser => {
+      let backgroundUpdateControl = browser.contentDocument.getElementById(
+        "setting-control-backgroundUpdate"
+      );
       is(
-        browser.contentDocument.getElementById("backgroundUpdate").hidden,
+        backgroundUpdateControl.hidden,
         !shouldShowUI,
         `When background update ${
           expectedLocked ? "is" : "isn't"

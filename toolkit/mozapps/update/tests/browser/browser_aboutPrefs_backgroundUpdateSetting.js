@@ -78,12 +78,20 @@ WARNING! This test involves background update, but background tasks are
     async perInstallationPrefsSupported => {
       let backgroundUpdateCheckbox =
         content.document.getElementById("backgroundUpdate");
+      let backgroundUpdateControl =
+        backgroundUpdateCheckbox.closest("setting-control");
+      await ContentTaskUtils.waitForMutationCondition(
+        backgroundUpdateControl,
+        { attributes: true },
+        () => backgroundUpdateControl.hidden === !perInstallationPrefsSupported
+      );
+      await backgroundUpdateCheckbox.updateComplete;
       is(
-        backgroundUpdateCheckbox.hidden,
+        backgroundUpdateControl.hidden,
         !perInstallationPrefsSupported,
         `The background update UI should ${
           perInstallationPrefsSupported ? "not" : ""
-        } be hidden when and perInstallationPrefsSupported is ` +
+        } be hidden when perInstallationPrefsSupported is ` +
           `${perInstallationPrefsSupported}`
       );
       if (perInstallationPrefsSupported) {

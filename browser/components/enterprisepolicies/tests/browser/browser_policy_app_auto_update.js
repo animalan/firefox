@@ -36,8 +36,11 @@ async function test_app_update_auto(expectedEnabled, expectedLocked) {
   );
 
   await BrowserTestUtils.withNewTab("about:preferences", browser => {
+    let settingControl = browser.contentDocument.getElementById(
+      "setting-control-installationFieldset"
+    );
     is(
-      browser.contentDocument.getElementById("updateSettingsContainer").hidden,
+      settingControl.hidden,
       expectedLocked,
       `When auto update ${
         expectedLocked ? "is" : "isn't"
