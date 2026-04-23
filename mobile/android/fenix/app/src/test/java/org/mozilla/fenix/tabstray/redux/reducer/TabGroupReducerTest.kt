@@ -303,6 +303,80 @@ class TabGroupReducerTest {
     }
 
     @Test
+    fun `WHEN creating a new tab group THEN default theme is next from most recently used theme`() {
+        val initialState = TabsTrayState(
+            tabGroupState = TabsTrayState.TabGroupState(
+                groups = listOf(
+                    TabsTrayItem.TabGroup(
+                        title = "Older",
+                        theme = TabGroupTheme.Yellow,
+                        tabs = mutableListOf(),
+                        lastModified = 1L,
+                    ),
+                    TabsTrayItem.TabGroup(
+                        title = "Newer",
+                        theme = TabGroupTheme.Red,
+                        tabs = mutableListOf(),
+                        lastModified = 2L,
+                    ),
+                ),
+            ),
+        )
+        val resultState = TabGroupActionReducer.reduce(
+            state = initialState,
+            action = TabGroupAction.AddToNewTabGroup,
+        )
+        val expectedState = initialState.copy(
+            tabGroupState = initialState.tabGroupState.copy(
+                formState = TabGroupFormState(
+                    tabGroupId = null,
+                    name = "",
+                    nextTabGroupNumber = 3,
+                    theme = TabGroupTheme.Pink,
+                    edited = false,
+                ),
+            ),
+            backStack = initialState.backStack + EditTabGroup,
+        )
+
+        assertEquals(expectedState, resultState)
+    }
+
+    @Test
+    fun `WHEN most recently used theme is last in sequence THEN default theme wraps to first theme`() {
+        val initialState = TabsTrayState(
+            tabGroupState = TabsTrayState.TabGroupState(
+                groups = listOf(
+                    TabsTrayItem.TabGroup(
+                        title = "Latest",
+                        theme = TabGroupTheme.Grey,
+                        tabs = mutableListOf(),
+                        lastModified = 5L,
+                    ),
+                ),
+            ),
+        )
+        val resultState = TabGroupActionReducer.reduce(
+            state = initialState,
+            action = TabGroupAction.AddToNewTabGroup,
+        )
+        val expectedState = initialState.copy(
+            tabGroupState = initialState.tabGroupState.copy(
+                formState = TabGroupFormState(
+                    tabGroupId = null,
+                    name = "",
+                    nextTabGroupNumber = 2,
+                    theme = TabGroupTheme.Yellow,
+                    edited = false,
+                ),
+            ),
+            backStack = initialState.backStack + EditTabGroup,
+        )
+
+        assertEquals(expectedState, resultState)
+    }
+
+    @Test
     fun `WHEN tabs are added to a group via multiselection THEN multiselection is exited and navigate back to the root`() {
         val resultState = TabGroupActionReducer.reduce(
             state = TabsTrayState(
