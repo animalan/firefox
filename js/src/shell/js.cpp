@@ -13373,6 +13373,8 @@ bool InitOptionParser(OptionParser& op) {
       !op.addBoolOption('\0', "enable-iterator-chunking",
                         "Enable Iterator Chunking") ||
       !op.addBoolOption('\0', "enable-iterator-join", "Enable Iterator.join") ||
+      !op.addBoolOption('\0', "enable-iterator-includes",
+                        "Enable Iterator.prototype.includes") ||
       !op.addBoolOption('\0', "enable-source-phase-imports",
                         "Enable source phase imports") ||
       !op.addBoolOption(
@@ -13472,6 +13474,9 @@ bool SetGlobalOptionsPreJSInit(const OptionParser& op) {
   }
   if (op.getBoolOption("enable-iterator-join")) {
     JS::Prefs::setAtStartup_experimental_iterator_join(true);
+  }
+  if (op.getBoolOption("enable-iterator-includes")) {
+    JS::Prefs::setAtStartup_experimental_iterator_includes(true);
   }
   if (op.getBoolOption("enable-error-stack-trace-limit")) {
     JS::Prefs::setAtStartup_experimental_error_stack_trace_limit(true);
