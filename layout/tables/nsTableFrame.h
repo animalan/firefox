@@ -393,9 +393,6 @@ class nsTableFrame : public nsContainerFrame {
   nscoord GetRowSpacing();
 
  public:
-  nscoord SynthesizeFallbackBaseline(
-      mozilla::WritingMode aWM,
-      BaselineSharingGroup aBaselineGroup) const override;
   Maybe<nscoord> GetNaturalBaselineBOffset(
       mozilla::WritingMode aWM, BaselineSharingGroup aBaselineGroup,
       BaselineExportContext) const override;
