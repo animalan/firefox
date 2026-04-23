@@ -12,6 +12,7 @@
 namespace mozilla::dom {
 
 class RTCRtpScriptTransformer;
+class RTCStatsTimestampMaker;
 class StructuredCloneHolder;
 struct RTCEncodedVideoFrameOptions;
 
@@ -33,7 +34,8 @@ class RTCEncodedVideoFrame final : public RTCEncodedVideoFrameData,
   explicit RTCEncodedVideoFrame(
       nsIGlobalObject* aGlobal,
       std::unique_ptr<webrtc::TransformableFrameInterface> aFrame,
-      uint64_t aCounter, RTCRtpScriptTransformer* aOwner);
+      uint64_t aCounter, RTCRtpScriptTransformer* aOwner,
+      const Maybe<RTCStatsTimestampMaker>& aTimestampMaker);
 
   explicit RTCEncodedVideoFrame(nsIGlobalObject* aGlobal,
                                 RTCEncodedVideoFrameData&& aData);

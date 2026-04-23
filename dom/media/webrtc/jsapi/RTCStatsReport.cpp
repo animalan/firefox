@@ -8,6 +8,8 @@
 #include "libwebrtcglue/SystemTime.h"
 #include "mozilla/dom/Performance.h"
 #include "mozilla/dom/PerformanceService.h"
+#include "mozilla/dom/WorkerPrivate.h"
+#include "mozilla/dom/WorkerScope.h"
 #include "nsRFPService.h"
 
 namespace mozilla::dom {
@@ -42,6 +44,16 @@ webrtc::Timestamp RTCStatsTimestamp::ToDomRealtime() const {
       (mMozTime - mState.mStartDomRealtime).ToMicroseconds());
 }
 
+DOMHighResTimeStamp RTCStatsTimestamp::ToDomNoTimeOrigin() const {
+  double realtime = ToDomRealtime().ms<double>();
+  // mRandomTimelineSeed is not set in the unit-tests.
+  if (mState.mRandomTimelineSeed) {
+    return nsRFPService::ReduceTimePrecisionAsMSecs(
+        realtime, mState.mRandomTimelineSeed, mState.mRTPCallerType);
+  }
+  return realtime;
+}
+
 DOMHighResTimeStamp RTCStatsTimestamp::ToDom() const {
   // webrtc-pc says to use performance.timeOrigin + performance.now(), but
   // keeping a Performance object around is difficult because it is
@@ -51,13 +63,6 @@ DOMHighResTimeStamp RTCStatsTimestamp::ToDom() const {
   // We are very careful to do exactly what Performance does, to avoid timestamp
   // discrepancies.
 
-  DOMHighResTimeStamp realtime = ToDomRealtime().ms<double>();
-  // mRandomTimelineSeed is not set in the unit-tests.
-  if (mState.mRandomTimelineSeed) {
-    realtime = nsRFPService::ReduceTimePrecisionAsMSecs(
-        realtime, mState.mRandomTimelineSeed, mState.mRTPCallerType);
-  }
-
   // Ugh. Performance::TimeOrigin is not constant, which means we need to
   // emulate this weird behavior so our time stamps are consistent with JS
   // timeOrigin. This is based on the code here:
@@ -66,7 +71,7 @@ DOMHighResTimeStamp RTCStatsTimestamp::ToDom() const {
   DOMHighResTimeStamp start = nsRFPService::ReduceTimePrecisionAsMSecs(
       mState.mStartWallClockRaw, 0, mState.mRTPCallerType);
 
-  return start + realtime;
+  return start + ToDomNoTimeOrigin();
 }
 
 /* static */ RTCStatsTimestamp RTCStatsTimestamp::FromMozTime(
@@ -148,6 +153,13 @@ RTCStatsTimestampMaker RTCStatsTimestampMaker::Create(
     return RTCStatsTimestampMaker::Create();
   }
   return RTCStatsTimestampMaker::Create(aWindow->GetPerformance());
+}
+
+/* static */
+RTCStatsTimestampMaker RTCStatsTimestampMaker::Create(
+    const WorkerPrivate& aWorkerPrivate) {
+  return RTCStatsTimestampMaker::Create(
+      aWorkerPrivate.GlobalScope()->GetPerformance());
 }
 
 RTCStatsTimestamp RTCStatsTimestampMaker::GetNow() const {

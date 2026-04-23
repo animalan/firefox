@@ -11,6 +11,7 @@
 
 namespace mozilla::dom {
 
+class RTCStatsTimestampMaker;
 class StructuredCloneHolder;
 struct RTCEncodedAudioFrameOptions;
 
@@ -30,7 +31,8 @@ class RTCEncodedAudioFrame final : public RTCEncodedAudioFrameData,
   explicit RTCEncodedAudioFrame(
       nsIGlobalObject* aGlobal,
       std::unique_ptr<webrtc::TransformableFrameInterface> aFrame,
-      uint64_t aCounter, RTCRtpScriptTransformer* aOwner);
+      uint64_t aCounter, RTCRtpScriptTransformer* aOwner,
+      const Maybe<RTCStatsTimestampMaker>& aTimestampMaker);
 
   explicit RTCEncodedAudioFrame(nsIGlobalObject* aGlobal,
                                 RTCEncodedAudioFrameData&& aData);

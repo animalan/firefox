@@ -70,6 +70,8 @@ struct RTCStatsTimestampState {
  * - Ntp        : Monotonic, ntp epoch (00:00:00 UTC on 1 January 1900).
  * - DomRealtime: Monotonic, performance.timeOrigin epoch. Corresponds to
  *                performance.now().
+ * - DomNoTimeOrigin: Like DomRealtime but in milliseconds. Has reduced
+ *                precision.
  * - Dom        : Like 1Jan1970 but in milliseconds, as the timestamps by
  *                webrtc-pc. Corresponds to Performance.timeOrigin +
  *                Performance.now(). Has reduced precision.
@@ -85,6 +87,7 @@ class RTCStatsTimestamp {
   webrtc::Timestamp To1Jan1970() const;
   webrtc::Timestamp ToNtp() const;
   webrtc::Timestamp ToDomRealtime() const;
+  DOMHighResTimeStamp ToDomNoTimeOrigin() const;
   DOMHighResTimeStamp ToDom() const;
 
   static RTCStatsTimestamp FromMozTime(const RTCStatsTimestampMaker& aMaker,
@@ -112,6 +115,7 @@ class RTCStatsTimestampMaker {
   static RTCStatsTimestampMaker Create();
   static RTCStatsTimestampMaker Create(Performance* aPerformance);
   static RTCStatsTimestampMaker Create(nsPIDOMWindowInner* aWindow);
+  static RTCStatsTimestampMaker Create(const WorkerPrivate& aWorkerPrivate);
 
   RTCStatsTimestamp GetNow() const;
 
