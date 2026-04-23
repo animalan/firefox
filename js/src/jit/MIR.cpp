@@ -13,6 +13,7 @@
 #include <bit>
 #include <utility>
 
+#include "builtin/Date.h"
 #include "builtin/Math.h"
 #include "builtin/Number.h"
 #include "builtin/RegExp.h"
@@ -7719,6 +7720,30 @@ MDefinition* MToIntegerIndex::foldsTo(TempAllocator& alloc) {
   }
 
   return this;
+}
+
+MDefinition* MDateParse::foldsTo(TempAllocator& alloc) {
+  auto* string = this->string();
+  if (!string->isConstant()) {
+    return this;
+  }
+  JSOffThreadAtom* str = string->toConstant()->toString();
+
+  ParsedDate parsed;
+  if (!DateParse(str, &parsed)) {
+    // Can't parse as date, always NaN.
+    return MConstant::NewDouble(alloc, JS::GenericNaN());
+  }
+  auto [date, isLocalTime] = parsed;
+
+  if (isLocalTime) {
+    auto* localTime = MConstant::NewInt64(alloc, date);
+    block()->insertBefore(this, localTime);
+    return MLocalTimeToUTC::New(alloc, localTime);
+  }
+
+  MOZ_ASSERT(JS::TimeClip(date).isValid());
+  return MConstant::NewDouble(alloc, double(date));
 }
 
 MDefinition* MTimeClip::foldsTo(TempAllocator& alloc) {

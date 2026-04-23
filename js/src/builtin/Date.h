@@ -20,6 +20,8 @@ class JSLinearString;
 
 namespace js {
 
+class JSOffThreadAtom;
+
 /*
  * These functions provide a C interface to the date/time object
  */
@@ -41,6 +43,22 @@ JS::ClippedTime DateNow(JSContext* cx);
  */
 JS::ClippedTime DateParse(JSContext* cx, const JSLinearString* str);
 
+struct ParsedDate final {
+  /**
+   * Parsed date in milliseconds since the epoch.
+   */
+  int64_t date;
+
+  /**
+   * `true` if |date| is a local time. Otherwise `false` for UTC time.
+   */
+  bool isLocalTime;
+};
+
+/**
+ * Returns the result of calling |Date.parse|.
+ */
+bool DateParse(const JSOffThreadAtom* str, ParsedDate* result);
 
 /**
  * Convert from local time to UTC time.

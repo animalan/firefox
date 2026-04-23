@@ -4573,6 +4573,7 @@
   # because it seems wasteful to use one of the few remaining bits for it, this
   # instruction can neither be marked as movable nor implement congruentTo.
   alias_set: none
+  folds_to: custom
   possibly_calls: true
   generate_lir: true
   lir_temps: 1
