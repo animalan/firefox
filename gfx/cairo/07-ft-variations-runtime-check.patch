@@ -1,4 +1,6 @@
-diff --git a/gfx/cairo/cairo/src/cairo-ft-font.c b/gfx/cairo/cairo/src/cairo-ft-font.c
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Look up FreeType variation APIs at runtime
+
 --- a/gfx/cairo/cairo/src/cairo-ft-font.c
 +++ b/gfx/cairo/cairo/src/cairo-ft-font.c
 @@ -74,6 +74,7 @@

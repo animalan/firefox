@@ -1,12 +1,6 @@
-# HG changeset patch
-# User Jonathan Kew <jkew@mozilla.com>
-# Date 1713888724 -3600
-#      Tue Apr 23 17:12:04 2024 +0100
-# Node ID 575933bf80efb0d5f1f9c1cb257837b62c75c64e
-# Parent  ccbfe29b41b8479213bb9f22f6eb22e01879ad7c
-Apply cairo/06-shared-ft-face.patch (with update in cairo-ft-font.c)
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Integrate cairo-ft-font with Gecko SharedFTFace
 
-diff --git a/gfx/cairo/cairo/src/cairo-ft-font.c b/gfx/cairo/cairo/src/cairo-ft-font.c
 --- a/gfx/cairo/cairo/src/cairo-ft-font.c
 +++ b/gfx/cairo/cairo/src/cairo-ft-font.c
 @@ -114,6 +114,24 @@
@@ -376,7 +370,6 @@ diff --git a/gfx/cairo/cairo/src/cairo-ft-font.c b/gfx/cairo/cairo/src/cairo-ft-
  
      _cairo_ft_unscaled_font_unlock_face (scaled_font->unscaled);
  }
-diff --git a/gfx/cairo/cairo/src/cairo-ft.h b/gfx/cairo/cairo/src/cairo-ft.h
 --- a/gfx/cairo/cairo/src/cairo-ft.h
 +++ b/gfx/cairo/cairo/src/cairo-ft.h
 @@ -55,7 +55,8 @@

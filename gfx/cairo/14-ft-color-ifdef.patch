@@ -1,19 +1,6 @@
-Guard FT_COLOR_H and related FreeType/fontconfig symbols for builds targeting older FreeType
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Guard FT_COLOR_H and related FreeType/fontconfig symbols for builds targeting older FreeType
 
-diff --git a/gfx/cairo/cairo/src/cairo-ft-private.h b/gfx/cairo/cairo/src/cairo-ft-private.h
---- a/gfx/cairo/cairo/src/cairo-ft-private.h
-+++ b/gfx/cairo/cairo/src/cairo-ft-private.h
-@@ -43,7 +43,9 @@
- 
- #if CAIRO_HAS_FT_FONT
- 
-+#ifdef FT_COLOR_H
- #include FT_COLOR_H
-+#endif
- 
- CAIRO_BEGIN_DECLS
- 
-diff --git a/gfx/cairo/cairo/src/cairo-ft-font.c b/gfx/cairo/cairo/src/cairo-ft-font.c
 --- a/gfx/cairo/cairo/src/cairo-ft-font.c
 +++ b/gfx/cairo/cairo/src/cairo-ft-font.c
 @@ -60,9 +60,18 @@
@@ -125,4 +112,16 @@ diff --git a/gfx/cairo/cairo/src/cairo-ft-font.c b/gfx/cairo/cairo/src/cairo-ft-
 +#endif
      return FALSE;
  }
+ 
+--- a/gfx/cairo/cairo/src/cairo-ft-private.h
++++ b/gfx/cairo/cairo/src/cairo-ft-private.h
+@@ -43,7 +43,9 @@
+ 
+ #if CAIRO_HAS_FT_FONT
+ 
++#ifdef FT_COLOR_H
+ #include FT_COLOR_H
++#endif
+ 
+ CAIRO_BEGIN_DECLS
  

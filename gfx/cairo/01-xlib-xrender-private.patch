@@ -1,4 +1,6 @@
-diff --git a/gfx/cairo/cairo/src/cairo-xlib-xrender-private.h b/gfx/cairo/cairo/src/cairo-xlib-xrender-private.h
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Work around lack of full configure support for xrender
+
 --- a/gfx/cairo/cairo/src/cairo-xlib-xrender-private.h
 +++ b/gfx/cairo/cairo/src/cairo-xlib-xrender-private.h
 @@ -96,6 +96,10 @@
@@ -12,7 +14,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-xlib-xrender-private.h b/gfx/cairo/cairo/
  #if !HAVE_XRENDERCREATESOLIDFILL
  #define XRenderCreateSolidFill				_int_consume
  #endif
-@@ -132,6 +136,7 @@ typedef struct _XConicalGradient {
+@@ -132,6 +136,7 @@
  } XConicalGradient;
  #endif
  

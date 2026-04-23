@@ -1,15 +1,9 @@
-# HG changeset patch
-# User Jonathan Kew <jkew@mozilla.com>
-# Date 1628081557 0
-#      Wed Aug 04 12:52:37 2021 +0000
-# Node ID 2635200eb5ec6f6eff1ecd0fad1ef029f0b994af
-# Parent  99c4916f4a924ede94aee9044fe3f753d2e2be2d
-Bug 1892913 - patch 14 - Add cairo-quartz-surface named-destination support from bug 1722300 patch 3.
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Add named-destination support to cairo-quartz-surface
 
-diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/cairo-quartz-surface.c
 --- a/gfx/cairo/cairo/src/cairo-quartz-surface.c
 +++ b/gfx/cairo/cairo/src/cairo-quartz-surface.c
-@@ -2192,24 +2192,13 @@ static cairo_status_t
+@@ -2192,24 +2192,13 @@
  }
  
  static cairo_int_status_t
@@ -37,7 +31,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
  
      /* We only process the 'begin' tag, and expect a rect attribute;
         using the extents of the drawing operations enclosed by the begin/end
-@@ -2223,11 +2212,24 @@ static cairo_int_status_t
+@@ -2223,11 +2212,24 @@
  
      num_rects = _cairo_array_num_elements (&link_attrs.rects);
      if (num_rects > 0) {
@@ -67,7 +61,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
  
          for (i = 0; i < num_rects; i++) {
              CGRect link_rect;
-@@ -2241,12 +2243,19 @@ static cairo_int_status_t
+@@ -2241,12 +2243,19 @@
                              rectf.width,
                              rectf.height);
  
@@ -89,7 +83,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
      _cairo_array_fini (&link_attrs.rects);
      free (link_attrs.dest);
      free (link_attrs.uri);
-@@ -2255,6 +2264,74 @@ static cairo_int_status_t
+@@ -2255,6 +2264,74 @@
      return status;
  }
  

@@ -1,8 +1,9 @@
-diff --git a/gfx/cairo/cairo/src/cairo-cff-subset.c b/gfx/cairo/cairo/src/cairo-cff-subset.c
-index 24dd8cba06c8..8cdc571804e2 100644
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Range-check FDSelect value during CFF subsetting
+
 --- a/gfx/cairo/cairo/src/cairo-cff-subset.c
 +++ b/gfx/cairo/cairo/src/cairo-cff-subset.c
-@@ -1865,6 +1865,10 @@ cairo_cff_font_subset_fontdict (cairo_cff_font_t  *font)
+@@ -1876,6 +1876,10 @@
  	}
  
          fd = font->fdselect[gid];

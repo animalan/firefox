@@ -1,8 +1,9 @@
-diff --git a/gfx/cairo/cairo/src/cairo-tor-scan-converter.c b/gfx/cairo/cairo/src/cairo-tor-scan-converter.c
-index 901303f3e428..26ec5581d8df 100644
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Catch potential failure during add_polygon
+
 --- a/gfx/cairo/cairo/src/cairo-tor-scan-converter.c
 +++ b/gfx/cairo/cairo/src/cairo-tor-scan-converter.c
-@@ -1829,6 +1829,7 @@ _cairo_tor_scan_converter_add_polygon (void		*converter,
+@@ -1830,6 +1830,7 @@
  				       const cairo_polygon_t *polygon)
  {
      cairo_tor_scan_converter_t *self = converter;
@@ -10,7 +11,7 @@ index 901303f3e428..26ec5581d8df 100644
      int i;
  
  #if 0
-@@ -1837,6 +1838,9 @@ _cairo_tor_scan_converter_add_polygon (void		*converter,
+@@ -1838,6 +1839,9 @@
      fclose (file);
  #endif
  

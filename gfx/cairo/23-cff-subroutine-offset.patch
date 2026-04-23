@@ -1,8 +1,9 @@
-diff --git a/gfx/cairo/cairo/src/cairo-cff-subset.c b/gfx/cairo/cairo/src/cairo-cff-subset.c
-index 8cdc571804e2..a215bb8d79a1 100644
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Check subroutine offset in private dict
+
 --- a/gfx/cairo/cairo/src/cairo-cff-subset.c
 +++ b/gfx/cairo/cairo/src/cairo-cff-subset.c
-@@ -929,6 +929,8 @@ cairo_cff_font_read_private_dict (cairo_cff_font_t   *font,
+@@ -930,6 +930,8 @@
      if (operand) {
          decode_integer (operand, &offset);
          p = ptr + offset;

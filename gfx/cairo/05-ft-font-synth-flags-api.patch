@@ -1,7 +1,9 @@
-diff --git a/gfx/cairo/cairo/src/cairo-ft-font.c b/gfx/cairo/cairo/src/cairo-ft-font.c
+From: Lee Salzman <lsalzman@mozilla.com>
+Subject: Add synth_flags parameter to cairo_ft_font_face_create_for_ft_face
+
 --- a/gfx/cairo/cairo/src/cairo-ft-font.c
 +++ b/gfx/cairo/cairo/src/cairo-ft-font.c
-@@ -3736,7 +3736,8 @@ cairo_ft_font_face_create_for_pattern (F
+@@ -4480,7 +4480,8 @@
   **/
  cairo_font_face_t *
  cairo_ft_font_face_create_for_ft_face (FT_Face         face,
@@ -11,7 +13,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-ft-font.c b/gfx/cairo/cairo/src/cairo-ft-
  {
      cairo_ft_unscaled_font_t *unscaled;
      cairo_font_face_t *font_face;
-@@ -3748,7 +3749,7 @@ cairo_ft_font_face_create_for_ft_face (F
+@@ -4492,7 +4493,7 @@
  	return (cairo_font_face_t *)&_cairo_font_face_nil;
  
      ft_options.load_flags = load_flags;
@@ -20,10 +22,9 @@ diff --git a/gfx/cairo/cairo/src/cairo-ft-font.c b/gfx/cairo/cairo/src/cairo-ft-
      _cairo_font_options_init_default (&ft_options.base);
  
      font_face = _cairo_ft_font_face_create (unscaled, &ft_options);
-diff --git a/gfx/cairo/cairo/src/cairo-ft.h b/gfx/cairo/cairo/src/cairo-ft.h
 --- a/gfx/cairo/cairo/src/cairo-ft.h
 +++ b/gfx/cairo/cairo/src/cairo-ft.h
-@@ -54,7 +54,8 @@ CAIRO_BEGIN_DECLS
+@@ -54,7 +54,8 @@
  
  cairo_public cairo_font_face_t *
  cairo_ft_font_face_create_for_ft_face (FT_Face         face,

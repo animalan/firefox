@@ -1,6 +1,6 @@
-Support for LINK tags in the quartz-surface backend.
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Add LINK tag support to the quartz-surface backend
 
-diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/cairo-quartz-surface.c
 --- a/gfx/cairo/cairo/src/cairo-quartz-surface.c
 +++ b/gfx/cairo/cairo/src/cairo-quartz-surface.c
 @@ -48,6 +48,7 @@
@@ -11,7 +11,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
  
  #include <dlfcn.h>
  
-@@ -2190,6 +2191,70 @@ static cairo_status_t
+@@ -2190,6 +2191,70 @@
      return CAIRO_STATUS_SUCCESS;
  }
  
@@ -82,7 +82,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
  // XXXtodo implement show_page; need to figure out how to handle begin/end
  
  static const cairo_surface_backend_t cairo_quartz_surface_backend = {
-@@ -2226,7 +2291,7 @@ static const cairo_surface_backend_t cai
+@@ -2226,7 +2291,7 @@
      NULL, /* has_show_text_glyphs */
      NULL, /* show_text_glyphs */
      NULL, /* get_supported_mime_types */

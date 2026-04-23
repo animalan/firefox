@@ -1,17 +1,12 @@
-Revert cairo-quartz-*.[ch] to the pre-1.18.0 Mozilla-maintained state.
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Revert cairo-quartz-*.[ch] to the pre-1.18.0 Mozilla-maintained state
 
-Per Bug 1901043, Bug 1908587, and Bug 1970983, the quartz backend was rolled
-back to the version that preceded cairo 1.18.0; upstream changes to the quartz
-code after 1.17.8 are not carried into the Mozilla tree.
-
-This patch is the last in the cairo patch series and applies on top of the
-Mozilla-local quartz patches (08, 09, 10, 11, 13, 15, 16, 19) once those have
-been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
-
-    pristine 1.18.4 quartz
-  + 08, 09, 10, 11, 13, 15, 16, 19
-  + 25 (this patch)
-  = pre-1.18.0 + Mozilla quartz customizations (the in-tree state)
+The quartz backend is pinned to the version that preceded cairo 1.18.0;
+upstream changes to the quartz code after 1.17.8 are not carried into the
+Mozilla tree. This patch is the last in the series and must be applied on top
+of all earlier patches. It restores the pre-1.18.0 Mozilla-maintained state
+of cairo-quartz-font.c, cairo-quartz-image-surface.c, cairo-quartz-image.h,
+cairo-quartz-private.h, cairo-quartz.h, and cairo-quartz-surface.c.
 
 --- a/gfx/cairo/cairo/src/cairo-quartz-font.c
 +++ b/gfx/cairo/cairo/src/cairo-quartz-font.c
@@ -2002,11 +1997,11 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      /* SURFACE is the only type we'll handle here */
 -    assert (source->type == CAIRO_PATTERN_TYPE_SURFACE);
 +    assert (apattern->type == CAIRO_PATTERN_TYPE_SURFACE);
-+
-+    spattern = (cairo_surface_pattern_t *) apattern;
-+    pat_surf = spattern->surface;
  
 -    if (pat_surf->type != CAIRO_SURFACE_TYPE_RECORDING)
++    spattern = (cairo_surface_pattern_t *) apattern;
++    pat_surf = spattern->surface;
++
 +    if (pat_surf->type != CAIRO_SURFACE_TYPE_RECORDING) {
 +	is_bounded = _cairo_surface_get_extents (pat_surf, &extents);
  	assert (is_bounded);
@@ -2275,7 +2270,10 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
 -							 solid->color.green,
 -							 solid->color.blue,
 -							 solid->color.alpha);
+-
  
+-	CGContextSetStrokeColorWithColor (state->cgDrawContext, color);
+-	CGContextSetFillColorWithColor (state->cgDrawContext, color);
 +	CGContextSetRGBStrokeColor (state->cgDrawContext,
 +				    solid->color.red,
 +				    solid->color.green,
@@ -2287,9 +2285,6 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
 +				  solid->color.blue,
 +				  solid->color.alpha);
  
--	CGContextSetStrokeColorWithColor (state->cgDrawContext, color);
--	CGContextSetFillColorWithColor (state->cgDrawContext, color);
--
 -	CGColorRelease (color);
  	state->action = DO_DIRECT;
  	return CAIRO_STATUS_SUCCESS;
@@ -2334,9 +2329,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
 +	    return status;
 +
 +	state->image = img;
- 
--    if (source->type == CAIRO_PATTERN_TYPE_SURFACE)
--	return _cairo_quartz_setup_pattern_source (state, source, surface, clip, op);
++
 +	if (state->filter == kCGInterpolationNone && _cairo_matrix_is_translation (&m)) {
 +	    m.x0 = -ceil (m.x0 - 0.5);
 +	    m.y0 = -ceil (m.y0 - 0.5);
@@ -2374,7 +2367,9 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
 +	    state->action = DO_IMAGE;
 +	    return CAIRO_STATUS_SUCCESS;
 +	}
-+
+ 
+-    if (source->type == CAIRO_PATTERN_TYPE_SURFACE)
+-	return _cairo_quartz_setup_pattern_source (state, source, surface, clip, op);
 +	CGContextSetRGBFillColor (state->cgDrawContext, 0, 0, 0, 1);
 +
 +	/* Quartz seems to tile images at pixel-aligned regions only -- this
@@ -2766,13 +2761,8 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
  	 * surfaces with alpha without creating a temporary mask. */
  	need_temp = ! (mask_surf->content & CAIRO_CONTENT_ALPHA);
      }
-@@ -2055,20 +2094,24 @@
- 			 cairo_scaled_font_t *scaled_font,
- 			 cairo_glyph_t *glyphs,
- 			 int num_glyphs,
--			 cairo_bool_t overlap)
-+			 cairo_bool_t overlap,
-+			 cairo_bool_t permit_subpixel_antialiasing)
+@@ -2059,15 +2098,17 @@
+ 			 cairo_bool_t permit_subpixel_antialiasing)
  {
      CGAffineTransform textTransform, invTextTransform;
 -    CGGlyph glyphs_static[CAIRO_STACK_ARRAY_LENGTH (CGPoint)];
@@ -2793,11 +2783,8 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
 +    int i;
  
      cairo_bool_t didForceFontSmoothing = FALSE;
-+    cairo_antialias_t effective_antialiasing;
- 
-     if (cairo_scaled_font_get_type (scaled_font) != CAIRO_FONT_TYPE_QUARTZ)
- 	return CAIRO_INT_STATUS_UNSUPPORTED;
-@@ -2084,18 +2127,54 @@
+     cairo_antialias_t effective_antialiasing;
+@@ -2086,26 +2127,54 @@
  	CGContextSetTextDrawingMode (state.cgMaskContext, kCGTextClip);
      }
  
@@ -2810,12 +2797,14 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
 +        CGContextSetFont (state.cgMaskContext, cgfref);
 +        CGContextSetFontSize (state.cgMaskContext, 1.0);
 +    }
-+
-+    effective_antialiasing = scaled_font->options.antialias;
-+    if (effective_antialiasing == CAIRO_ANTIALIAS_SUBPIXEL &&
-+        !permit_subpixel_antialiasing) {
-+        effective_antialiasing = CAIRO_ANTIALIAS_GRAY;
-+    }
+ 
+     effective_antialiasing = scaled_font->options.antialias;
+     if (effective_antialiasing == CAIRO_ANTIALIAS_SUBPIXEL &&
+         !permit_subpixel_antialiasing) {
+         effective_antialiasing = CAIRO_ANTIALIAS_GRAY;
+     }
+-
+-    _cairo_quartz_set_antialiasing (state.cgMaskContext, effective_antialiasing);
 +    switch (effective_antialiasing) {
 +	case CAIRO_ANTIALIAS_SUBPIXEL:
 +	case CAIRO_ANTIALIAS_BEST:
@@ -2858,7 +2847,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      }
  
      /* scale(1,-1) * scaled_font->scale */
-@@ -2112,35 +2191,72 @@
+@@ -2122,35 +2191,72 @@
  					      -scaled_font->scale_inverse.yy,
  					      0.0, 0.0);
  
@@ -2944,7 +2933,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
  
      return rv;
  }
-@@ -2243,7 +2359,7 @@
+@@ -2253,7 +2359,7 @@
  
      ND ((stderr, "%p _cairo_quartz_surface_intersect_clip_path path: %p\n", surface, path));
  
@@ -2953,7 +2942,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
  	return CAIRO_STATUS_SUCCESS;
  
      if (path == NULL) {
-@@ -2415,7 +2531,7 @@
+@@ -2425,7 +2531,7 @@
  
  // XXXtodo implement show_page; need to figure out how to handle begin/end
  
@@ -2962,7 +2951,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      CAIRO_SURFACE_TYPE_QUARTZ,
      _cairo_quartz_surface_finish,
  
-@@ -2446,9 +2562,10 @@
+@@ -2456,9 +2562,10 @@
      _cairo_quartz_surface_fill,
      NULL,  /* fill-stroke */
      _cairo_quartz_surface_glyphs,
@@ -2976,7 +2965,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      _cairo_quartz_surface_tag   /* tag */
  };
  
-@@ -2460,8 +2577,10 @@
+@@ -2470,8 +2577,10 @@
  {
      cairo_quartz_surface_t *surface;
  
@@ -2988,20 +2977,20 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      if (unlikely (surface == NULL))
  	return (cairo_quartz_surface_t*) _cairo_surface_create_in_error (_cairo_error (CAIRO_STATUS_NO_MEMORY));
  
-@@ -2481,8 +2600,11 @@
+@@ -2491,8 +2600,11 @@
      surface->extents.width = width;
      surface->extents.height = height;
      surface->virtual_extents = surface->extents;
 +    surface->imageData = NULL;
 +    surface->imageSurfaceEquiv = NULL;
-+
  
 -    if (_cairo_quartz_is_zero_surface (&surface->base)) {
++
 +    if (IS_EMPTY (surface)) {
  	surface->cgContext = NULL;
  	surface->cgContextBaseCTM = CGAffineTransformIdentity;
  	surface->base.is_clear = TRUE;
-@@ -2497,6 +2619,8 @@
+@@ -2507,6 +2619,8 @@
      surface->cgContext = cgContext;
      surface->cgContextBaseCTM = CGContextGetCTM (cgContext);
  
@@ -3010,7 +2999,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      return surface;
  }
  
-@@ -2532,9 +2656,10 @@
+@@ -2542,9 +2656,10 @@
  					    unsigned int width,
  					    unsigned int height)
  {
@@ -3024,7 +3013,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      if (likely (!surf->base.status))
  	CGContextRetain (cgContext);
  
-@@ -2542,19 +2667,86 @@
+@@ -2552,19 +2667,86 @@
  }
  
  /**
@@ -3119,7 +3108,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
   * All Cairo operations, including those that require software
   * rendering, will succeed on this surface.
   *
-@@ -2571,7 +2763,7 @@
+@@ -2581,7 +2763,7 @@
      CGContextRef cgc;
      CGColorSpaceRef cgColorspace;
      CGBitmapInfo bitinfo;
@@ -3128,7 +3117,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      int stride;
      int bitsPerComponent;
  
-@@ -2586,7 +2778,7 @@
+@@ -2596,7 +2778,7 @@
      if (format == CAIRO_FORMAT_ARGB32 ||
  	format == CAIRO_FORMAT_RGB24)
      {
@@ -3137,7 +3126,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
  	bitinfo = kCGBitmapByteOrder32Host;
  	if (format == CAIRO_FORMAT_ARGB32)
  	    bitinfo |= kCGImageAlphaPremultipliedFirst;
-@@ -2614,6 +2806,16 @@
+@@ -2624,6 +2806,16 @@
       * so we don't have to anything special on allocation.
       */
      stride = (stride + 15) & ~15;
@@ -3154,7 +3143,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      cgc = CGBitmapContextCreate (imageData,
  				 width,
  				 height,
-@@ -2624,9 +2826,7 @@
+@@ -2634,9 +2826,7 @@
      CGColorSpaceRelease (cgColorspace);
  
      if (!cgc) {
@@ -3165,7 +3154,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
  	return _cairo_surface_create_in_error (_cairo_error (CAIRO_STATUS_NO_MEMORY));
      }
  
-@@ -2638,16 +2838,19 @@
+@@ -2648,16 +2838,19 @@
  						  width, height);
      if (surf->base.status) {
  	CGContextRelease (cgc);
@@ -3189,7 +3178,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
      return &surf->base;
  }
  
-@@ -2675,14 +2878,8 @@
+@@ -2685,14 +2878,8 @@
      if (surface && _cairo_surface_is_quartz (surface)) {
  	cairo_quartz_surface_t *quartz = (cairo_quartz_surface_t *) surface;
  	return quartz->cgContext;
@@ -3206,7 +3195,7 @@ been applied to pristine 1.18.4 upstream sources. The cumulative effect is:
  }
  
  /**
-@@ -2699,109 +2896,111 @@
+@@ -2709,109 +2896,111 @@
      return surface->backend == &cairo_quartz_surface_backend;
  }
  

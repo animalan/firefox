@@ -62,7 +62,7 @@ VERSIONS:
 
 24-cff-fdselect-range-check.patch: add bounds check in cff_fdselect_read to avoid out-of-bounds read
 
-25-quartz-revert-to-pre-1.18.0.patch: revert cairo-quartz-*.[ch] to the pre-1.18.0 Mozilla state (Bug 1901043 + Bug 1908587 + Bug 1970983); applies on top of the Mozilla-local quartz patches (08, 09, 10, 11, 13, 15, 16, 19)
+25-quartz-revert-to-pre-1.18.0.patch: revert cairo-quartz-*.[ch] to the pre-1.18.0 Mozilla state (Bug 1901043 + Bug 1908587 + Bug 1970983); must be applied last, on top of all earlier patches (00-24)
 
 ==== pixman patches ====
 

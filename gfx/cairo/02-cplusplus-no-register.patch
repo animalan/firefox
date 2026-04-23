@@ -1,7 +1,9 @@
-diff --git a/gfx/cairo/cairo/src/cairoint.h b/gfx/cairo/cairo/src/cairoint.h
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Avoid 'register' keyword for C++ compatibility
+
 --- a/gfx/cairo/cairo/src/cairoint.h
 +++ b/gfx/cairo/cairo/src/cairoint.h
-@@ -190,7 +190,11 @@ static inline int cairo_const
+@@ -178,7 +178,11 @@
  #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
      return __builtin_popcount (mask);
  #else

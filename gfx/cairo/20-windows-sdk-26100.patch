@@ -1,6 +1,8 @@
-diff -r a3d508507022 gfx/cairo/cairo/src/cairo-compiler-private.h
---- a/gfx/cairo/cairo/src/cairo-compiler-private.h	Mon Feb 24 15:57:17 2025 +0000
-+++ b/gfx/cairo/cairo/src/cairo-compiler-private.h	Mon Feb 24 23:54:13 2025 -0500
+From: Ryan VanderMeulen <rvandermeulen@mozilla.com>
+Subject: Fix cairo build bustage with Windows SDK 26100
+
+--- a/gfx/cairo/cairo/src/cairo-compiler-private.h
++++ b/gfx/cairo/cairo/src/cairo-compiler-private.h
 @@ -144,7 +144,7 @@
  #define unlikely(expr) (expr)
  #endif

@@ -1,7 +1,9 @@
-diff --git a/gfx/cairo/cairo/src/cairo-polygon-intersect.c b/gfx/cairo/cairo/src/cairo-polygon-intersect.c
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Avoid potential null-deref crash in active_edges
+
 --- a/gfx/cairo/cairo/src/cairo-polygon-intersect.c
 +++ b/gfx/cairo/cairo/src/cairo-polygon-intersect.c
-@@ -1167,7 +1167,7 @@ active_edges (cairo_bo_edge_t		*left,
+@@ -1167,7 +1167,7 @@
  	    } while (1);
  
  	    right = left->next;
@@ -10,7 +12,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-polygon-intersect.c b/gfx/cairo/cairo/src
  		if unlikely ((right->deferred.other))
  		    edges_end (right, top, polygon);
  
-@@ -1179,7 +1179,9 @@ active_edges (cairo_bo_edge_t		*left,
+@@ -1179,7 +1179,9 @@
  		}
  
  		right = right->next;

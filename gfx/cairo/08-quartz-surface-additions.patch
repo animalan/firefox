@@ -1,9 +1,9 @@
-Add cairo_quartz_surface_get_image.
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Add cairo_quartz_surface_get_image
 
-diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/cairo-quartz-surface.c
 --- a/gfx/cairo/cairo/src/cairo-quartz-surface.c
 +++ b/gfx/cairo/cairo/src/cairo-quartz-surface.c
-@@ -409,6 +409,7 @@ static CGBlendMode
+@@ -409,6 +409,7 @@
          default:
  	    ASSERT_NOT_REACHED;
      }
@@ -11,7 +11,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
  }
  
  static cairo_int_status_t
-@@ -998,7 +999,7 @@ static cairo_int_status_t
+@@ -998,7 +999,7 @@
  	_cairo_surface_get_extents (&surface->base, &pattern_extents);
      }
  
@@ -20,7 +20,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
  	int x, y;
  
  	if (op == CAIRO_OPERATOR_SOURCE &&
-@@ -1402,6 +1403,97 @@ static cairo_int_status_t
+@@ -1402,6 +1403,97 @@
  
  
  /*
@@ -118,7 +118,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
   * Cairo surface backend implementations
   */
  
-@@ -2478,3 +2570,15 @@ cairo_status_t
+@@ -2478,3 +2570,15 @@
      CGImageRelease (image);
      return CAIRO_STATUS_SUCCESS;
  }
@@ -134,10 +134,9 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
 +
 +    return (cairo_surface_t *)image;
 +}
-diff --git a/gfx/cairo/cairo/src/cairo-quartz.h b/gfx/cairo/cairo/src/cairo-quartz.h
 --- a/gfx/cairo/cairo/src/cairo-quartz.h
 +++ b/gfx/cairo/cairo/src/cairo-quartz.h
-@@ -57,6 +57,9 @@ cairo_quartz_surface_create_for_cg_conte
+@@ -57,6 +57,9 @@
  cairo_public CGContextRef
  cairo_quartz_surface_get_cg_context (cairo_surface_t *surface);
  

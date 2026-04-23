@@ -1,7 +1,9 @@
-diff --git a/gfx/cairo/cairo/src/win32/cairo-win32-surface.c b/gfx/cairo/cairo/src/win32/cairo-win32-surface.c
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Invert sign of delta-y when computing glyph advances for ExtTextOutW
+
 --- a/gfx/cairo/cairo/src/win32/cairo-win32-surface.c
 +++ b/gfx/cairo/cairo/src/win32/cairo-win32-surface.c
-@@ -347,7 +347,8 @@ cairo_int_status_t
+@@ -309,7 +309,8 @@
              next_logical_y = _cairo_lround (next_user_y);
  
              dxy_buf[j] = _cairo_lround (next_logical_x - logical_x);

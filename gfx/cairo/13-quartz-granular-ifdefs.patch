@@ -1,6 +1,6 @@
-Build fixes for iOS.
+From: Mike Hommey <mh+mozilla@glandium.org>
+Subject: Build fixes for iOS
 
-diff --git a/gfx/cairo/cairo/src/cairo-quartz-font.c b/gfx/cairo/cairo/src/cairo-quartz-font.c
 --- a/gfx/cairo/cairo/src/cairo-quartz-font.c
 +++ b/gfx/cairo/cairo/src/cairo-quartz-font.c
 @@ -65,7 +65,9 @@
@@ -13,7 +13,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-font.c b/gfx/cairo/cairo/src/cairo
  
  static cairo_bool_t _cairo_quartz_font_symbol_lookup_done = FALSE;
  /* Cairo's transformations assume a unit-scaled font. */
-@@ -92,7 +94,9 @@ quartz_font_ensure_symbols(void)
+@@ -92,7 +94,9 @@
      CGContextGetAllowsFontSmoothingPtr =
  	dlsym (RTLD_DEFAULT, "CGContextGetAllowsFontSmoothing");
  
@@ -23,7 +23,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-font.c b/gfx/cairo/cairo/src/cairo
  
      _cairo_quartz_font_symbol_lookup_done = TRUE;
  }
-@@ -795,6 +799,7 @@ CTFontRef
+@@ -806,6 +810,7 @@
  /*
   * compat with old ATSUI backend
   */
@@ -31,13 +31,12 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-font.c b/gfx/cairo/cairo/src/cairo
  
  /**
   * cairo_quartz_font_face_create_for_atsu_font_id:
-@@ -838,3 +843,5 @@ cairo_atsui_font_face_create_for_atsu_fo
+@@ -849,3 +854,5 @@
  {
      return cairo_quartz_font_face_create_for_atsu_font_id (font_id);
  }
 +
 +#endif /* CAIRO_HAS_QUARTZ_ATSUFONTID */
-diff --git a/gfx/cairo/cairo/src/cairo-quartz-image.h b/gfx/cairo/cairo/src/cairo-quartz-image.h
 --- a/gfx/cairo/cairo/src/cairo-quartz-image.h
 +++ b/gfx/cairo/cairo/src/cairo-quartz-image.h
 @@ -40,8 +40,6 @@
@@ -49,7 +48,6 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-image.h b/gfx/cairo/cairo/src/cair
  CAIRO_BEGIN_DECLS
  
  cairo_public cairo_surface_t *
-diff --git a/gfx/cairo/cairo/src/cairo-quartz.h b/gfx/cairo/cairo/src/cairo-quartz.h
 --- a/gfx/cairo/cairo/src/cairo-quartz.h
 +++ b/gfx/cairo/cairo/src/cairo-quartz.h
 @@ -40,7 +40,14 @@
@@ -67,7 +65,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz.h b/gfx/cairo/cairo/src/cairo-quar
  
  CAIRO_BEGIN_DECLS
  
-@@ -69,8 +76,10 @@ cairo_quartz_surface_get_image (cairo_su
+@@ -69,8 +76,10 @@
  cairo_public cairo_font_face_t *
  cairo_quartz_font_face_create_for_cgfont (CGFontRef font);
  

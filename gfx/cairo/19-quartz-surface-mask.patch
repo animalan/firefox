@@ -1,17 +1,9 @@
-# HG changeset patch
-# User Jonathan Kew <jkew@mozilla.com>
-# Date 1717237382 -3600
-#      Sat Jun 01 11:23:02 2024 +0100
-# Node ID d5f7b9fd904e04406c56899c5cac9248b122ea35
-# Parent  c8d3e447c892474e061c9ffd22ec1823f06ecffa
-Bug 1900028 - Handle CAIRO_FORMAT_A8 in _cairo_surface_to_cgimage for masking operations.
+From: Jonathan Kew <jkew@mozilla.com>
+Subject: Handle CAIRO_FORMAT_A8 in _cairo_surface_to_cgimage for masking operations
 
-Differential Revision: https://phabricator.services.mozilla.com/D212354
-
-diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/cairo-quartz-surface.c
 --- a/gfx/cairo/cairo/src/cairo-quartz-surface.c
 +++ b/gfx/cairo/cairo/src/cairo-quartz-surface.c
-@@ -684,6 +684,55 @@ CairoQuartzCreateGradientFunction (const
+@@ -684,6 +684,55 @@
  			     &gradient_callbacks);
  }
  
@@ -67,7 +59,7 @@ diff --git a/gfx/cairo/cairo/src/cairo-quartz-surface.c b/gfx/cairo/cairo/src/ca
  static cairo_status_t
  _cairo_surface_to_cgimage (cairo_surface_t       *source,
  			   cairo_rectangle_int_t *extents,
-@@ -742,13 +791,48 @@ static cairo_status_t
+@@ -742,13 +791,48 @@
  						      &image_extra);
  	if (unlikely (status))
  	    return status;
