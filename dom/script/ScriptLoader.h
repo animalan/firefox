@@ -530,7 +530,8 @@ class ScriptLoader final : public JS::loader::ScriptLoaderInterface {
                            const nsAString& aSourceText);
 
   enum class CacheBehavior : uint8_t {
-    DoNothing,
+    DoNothingDisabled,
+    DoNothingExisting,
     Insert,
     Evict,
   };

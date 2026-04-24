@@ -3528,7 +3528,7 @@ void ScriptLoader::InstantiateClassicScriptFromAny(
 ScriptLoader::CacheBehavior ScriptLoader::GetCacheBehavior(
     ScriptLoadRequest* aRequest) {
   if (!mCache) {
-    return CacheBehavior::DoNothing;
+    return CacheBehavior::DoNothingDisabled;
   }
 
   if (aRequest->ExpirationTime().IsExpired()) {
@@ -3560,7 +3560,7 @@ ScriptLoader::CacheBehavior ScriptLoader::GetCacheBehavior(
       return CacheBehavior::Insert;
     }
 
-    return CacheBehavior::DoNothing;
+    return CacheBehavior::DoNothingExisting;
   }
 
   return CacheBehavior::Insert;
@@ -3578,10 +3578,20 @@ void ScriptLoader::TryCacheRequest(ScriptLoadRequest* aRequest) {
 
   CacheBehavior cacheBehavior = GetCacheBehavior(aRequest);
 
-  if (cacheBehavior == CacheBehavior::DoNothing) {
-    if (!aRequest->PassedConditionForEitherCache()) {
+  if (cacheBehavior == CacheBehavior::DoNothingDisabled) {
+    // If the in-memory cache is not enabled, the disk cache is handled by
+    // ScriptLoader, and it needs the stencil if this script is going to be
+    // saved to the disk cache.
+    if (!aRequest->PassedConditionForDiskCache()) {
       aRequest->ClearStencil();
     }
+    return;
+  }
+
+  if (cacheBehavior == CacheBehavior::DoNothingExisting) {
+    // If there's a compatible cache entry, we'll keep the existing entry,
+    // and the current request's stencil is no longer necessary.
+    aRequest->ClearStencil();
     return;
   }
 
@@ -3613,6 +3623,10 @@ void ScriptLoader::TryCacheRequest(ScriptLoadRequest* aRequest) {
          aRequest->URI()->GetSpecOrDefault().get()));
     TRACE_FOR_TEST(aRequest, "memorycache:saved");
   } else {
+    // The server response is not cacheable.
+    // Evict any existing cache, and also clear the current request's
+    // stencil, which is no longer necessary.
+
     MOZ_ASSERT(cacheBehavior == CacheBehavior::Evict);
     ScriptHashKey key(this, aRequest, aRequest->ReferrerPolicy(),
                       aRequest->FetchOptions(), loadedScript->GetURI());
@@ -3620,9 +3634,7 @@ void ScriptLoader::TryCacheRequest(ScriptLoadRequest* aRequest) {
     LOG(("ScriptLoader (%p): Evicting in-memory cache for %s.", this,
          aRequest->URI()->GetSpecOrDefault().get()));
 
-    if (!aRequest->PassedConditionForEitherCache()) {
-      aRequest->ClearStencil();
-    }
+    aRequest->ClearStencil();
     TRACE_FOR_TEST(aRequest, "memorycache:evict");
   }
 }
