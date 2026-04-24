@@ -804,11 +804,6 @@
     "dark": "{Theme$background/color/canvas}",
     "forcedColors": "{Theme$button/background/color}"
   },
-  "visual-picker-item/border/color": {
-    "light": "{Theme$border/color/interactive}",
-    "dark": "{Theme$border/color/interactive}",
-    "forcedColors": "{Theme$border/color/interactive}"
-  },
   "box/border": {
     "light": "{Primitives$box/border/width} solid {Theme$box/border/color}",
     "dark": "{Primitives$box/border/width} solid {Theme$box/border/color}",

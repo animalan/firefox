@@ -622,10 +622,6 @@ export const tokensTable = {
       },
       name: "--toggle-border-color-active",
     },
-    {
-      value: "var(--border-color-interactive)",
-      name: "--visual-picker-item-border-color",
-    },
     { value: "var(--border-color)", name: "--box-border-color" },
   ],
   "border-radius": [
@@ -643,10 +639,6 @@ export const tokensTable = {
     },
     { value: "var(--border-radius-medium)", name: "--promo-border-radius" },
     { value: "var(--border-radius-circle)", name: "--toggle-border-radius" },
-    {
-      value: "var(--border-radius-medium)",
-      name: "--visual-picker-item-border-radius",
-    },
     { value: "var(--border-radius-medium)", name: "--box-border-radius" },
     {
       value: "calc(var(--box-border-radius) - var(--box-border-width))",
@@ -663,11 +655,6 @@ export const tokensTable = {
     { value: "var(--border-width)", name: "--message-bar-border-width" },
     { value: "var(--border-width)", name: "--promo-border-width" },
     { value: "var(--border-width)", name: "--toggle-border-width" },
-    { value: "var(--border-width)", name: "--visual-picker-item-border-width" },
-    {
-      value: "calc(var(--border-width) * 3)",
-      name: "--visual-picker-item-border-width-checked",
-    },
     { value: "var(--border-width)", name: "--box-border-width" },
   ],
   "box-shadow": [
@@ -2581,10 +2568,6 @@ export const variableLookupTable = {
   "toggle-dot-transform-x":
     "calc(var(--toggle-width) - 2 * var(--toggle-dot-margin) - 2px - var(--toggle-dot-width))",
   "toggle-inset": "calc(-1 * var(--dimension-2))",
-  "visual-picker-item-border-color": "var(--border-color-interactive)",
-  "visual-picker-item-border-radius": "var(--border-radius-medium)",
-  "visual-picker-item-border-width": "var(--border-width)",
-  "visual-picker-item-border-width-checked": "calc(var(--border-width) * 3)",
   "box-border": "var(--box-border-width) solid var(--box-border-color)",
   "box-border-width": "var(--border-width)",
   "box-border-color": "var(--border-color)",
