@@ -172,7 +172,7 @@ class FetchBody : public FetchBodyBase, public AbortFollower {
   already_AddRefed<ReadableStream> GetBody(JSContext* aCx, ErrorResult& aRv);
   void GetMimeType(nsACString& aMimeType, nsACString& aMixedCaseMimeType);
 
-  const nsACString& BodyBlobURISpec() const;
+  BlobImpl* BodyBlobImpl() const;
 
   const nsAString& BodyLocalPath() const;
 
@@ -281,9 +281,9 @@ class EmptyBody final : public FetchBody<EmptyBody> {
 
   void GetBody(nsIInputStream** aStream, int64_t* aBodyLength = nullptr);
 
-  using FetchBody::BodyBlobURISpec;
+  using FetchBody::BodyBlobImpl;
 
-  const nsACString& BodyBlobURISpec() const { return EmptyCString(); }
+  BlobImpl* BodyBlobImpl() const { return nullptr; }
 
   using FetchBody::BodyLocalPath;
 

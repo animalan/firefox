@@ -916,52 +916,22 @@ bool BlobURLProtocolHandler::IsBlobURLBroadcastPrincipal(
 }  // namespace dom
 }  // namespace mozilla
 
-nsresult NS_GetBlobForBlobURI(nsIURI* aURI, mozilla::dom::BlobImpl** aBlob) {
-  *aBlob = nullptr;
-  MOZ_ASSERT(NS_IsMainThread(),
-             "without locking gDataTable is main-thread only");
-  mozilla::dom::DataInfo* info =
-      mozilla::dom::GetDataInfoFromURI(aURI, false /* aAlsoIfRevoked */);
-  if (!info) {
-    return NS_ERROR_DOM_BAD_URI;
-  }
-
-  RefPtr<mozilla::dom::BlobImpl> blob = info->mBlobImpl;
-  blob.forget(aBlob);
-  return NS_OK;
-}
-
-nsresult NS_GetBlobForBlobURISpec(const nsACString& aSpec,
-                                  mozilla::dom::BlobImpl** aBlob,
-                                  bool aAlsoIfRevoked) {
-  *aBlob = nullptr;
-  MOZ_ASSERT(NS_IsMainThread(),
-             "without locking gDataTable is main-thread only");
-
-  mozilla::dom::DataInfo* info =
-      mozilla::dom::GetDataInfo(aSpec, aAlsoIfRevoked);
-  if (!info || !info->mBlobImpl) {
-    return NS_ERROR_DOM_BAD_URI;
-  }
-
-  RefPtr<mozilla::dom::BlobImpl> blob = info->mBlobImpl;
-  blob.forget(aBlob);
-  return NS_OK;
-}
-
 // Blob requests may specify a range header. We parse, validate, and
 // store that info here, and save it on the nsIBaseChannel, where it
 // can be accessed by BlobURLInputStream::StoreBlobImplStream.
 nsresult NS_SetChannelContentRangeForBlobURI(nsIChannel* aChannel, nsIURI* aURI,
                                              nsACString& aRangeHeader) {
+  MOZ_ASSERT(NS_IsMainThread(),
+             "without locking gDataTable is main-thread only");
   MOZ_ASSERT(aChannel);
   MOZ_ASSERT(aURI);
-  RefPtr<mozilla::dom::BlobImpl> blobImpl;
-  if (NS_FAILED(NS_GetBlobForBlobURI(aURI, getter_AddRefs(blobImpl)))) {
+  mozilla::dom::DataInfo* info =
+      mozilla::dom::GetDataInfoFromURI(aURI, false /* aAlsoIfRevoked */);
+  if (!info) {
     return NS_BINDING_FAILED;
   }
   mozilla::IgnoredErrorResult result;
-  int64_t size = static_cast<int64_t>(blobImpl->GetSize(result));
+  int64_t size = static_cast<int64_t>(info->mBlobImpl->GetSize(result));
   if (result.Failed()) {
     return NS_ERROR_NO_CONTENT;
   }
@@ -975,9 +945,8 @@ nsresult NS_SetChannelContentRangeForBlobURI(nsIChannel* aChannel, nsIURI* aURI,
 namespace mozilla::dom {
 
 bool IsBlobURI(nsIURI* aUri) {
-  StaticMutexAutoLock lock(sMutex);
-  mozilla::dom::DataInfo* info = GetDataInfoFromURI(aUri);
-  return info != nullptr;
+  RefPtr<BlobURL> blobURL = do_QueryObject(aUri);
+  return blobURL != nullptr;
 }
 
 }  // namespace mozilla::dom

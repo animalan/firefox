@@ -545,6 +545,8 @@ nsresult BlobURLInputStream::StoreBlobImplStream(
 
   mChannel->SetContentLength(mBlobSize);
 
+  mChannel->SetBackingBlob(blobImpl);
+
   nsCOMPtr<nsIInputStream> inputStream;
   blobImpl->CreateInputStream(getter_AddRefs(inputStream), errorResult);
 

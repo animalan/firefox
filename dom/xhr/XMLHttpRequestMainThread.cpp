@@ -37,6 +37,7 @@
 #include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/dom/AutoSuppressEventHandlingAndSuspend.h"
 #include "mozilla/dom/BlobBinding.h"
+#include "mozilla/dom/BlobURLChannel.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/dom/DOMString.h"
 #include "mozilla/dom/DocGroup.h"
@@ -93,6 +94,7 @@
 #include "nsIWindowWatcher.h"
 #include "nsMimeTypes.h"
 #include "nsNetUtil.h"
+#include "nsQueryObject.h"
 #include "nsReadableUtils.h"
 #include "nsSandboxFlags.h"
 #include "nsStreamListenerWrapper.h"
@@ -1777,30 +1779,6 @@ nsresult XMLHttpRequestMainThread::StreamReaderFunc(
 
 namespace {
 
-void GetBlobURIFromChannel(nsIRequest* aRequest, nsIURI** aURI) {
-  MOZ_ASSERT(aRequest);
-  MOZ_ASSERT(aURI);
-
-  *aURI = nullptr;
-
-  nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
-  if (!channel) {
-    return;
-  }
-
-  nsCOMPtr<nsIURI> uri;
-  nsresult rv = channel->GetURI(getter_AddRefs(uri));
-  if (NS_FAILED(rv)) {
-    return;
-  }
-
-  if (!dom::IsBlobURI(uri)) {
-    return;
-  }
-
-  uri.forget(aURI);
-}
-
 nsresult GetLocalFileFromChannel(nsIRequest* aRequest, nsIFile** aFile) {
   MOZ_ASSERT(aRequest);
   MOZ_ASSERT(aFile);
@@ -1900,11 +1878,9 @@ XMLHttpRequestMainThread::OnDataAvailable(nsIRequest* request,
 
   if (mResponseType == XMLHttpRequestResponseType::Blob) {
     nsCOMPtr<nsIFile> localFile;
-    nsCOMPtr<nsIURI> blobURI;
-    GetBlobURIFromChannel(request, getter_AddRefs(blobURI));
-    if (blobURI) {
+    if (RefPtr<BlobURLChannel> blobChan = do_QueryObject(request)) {
       RefPtr<BlobImpl> blobImpl;
-      rv = NS_GetBlobForBlobURI(blobURI, getter_AddRefs(blobImpl));
+      rv = blobChan->GetBackingBlob(getter_AddRefs(blobImpl));
       if (NS_SUCCEEDED(rv)) {
         mResponseBlobImpl = blobImpl;
       }

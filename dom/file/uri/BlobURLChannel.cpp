@@ -15,6 +15,8 @@
 
 using namespace mozilla::dom;
 
+NS_IMPL_ISUPPORTS_INHERITED(BlobURLChannel, nsBaseChannel, BlobURLChannel)
+
 BlobURLChannel::BlobURLChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo)
     : mContentStreamOpened(false) {
   SetURI(aURI);
@@ -29,6 +31,20 @@ BlobURLChannel::BlobURLChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo)
 }
 
 BlobURLChannel::~BlobURLChannel() = default;
+
+nsresult BlobURLChannel::GetBackingBlob(BlobImpl** aBlobImpl) {
+  NS_ENSURE_ARG(aBlobImpl);
+  NS_ENSURE_TRUE(mBlobImpl, NS_ERROR_NOT_AVAILABLE);
+  *aBlobImpl = do_AddRef(mBlobImpl).take();
+  return NS_OK;
+}
+
+nsresult BlobURLChannel::SetBackingBlob(BlobImpl* aBlobImpl) {
+  NS_ENSURE_ARG(aBlobImpl);
+  NS_ENSURE_FALSE(mBlobImpl, NS_ERROR_ALREADY_INITIALIZED);
+  mBlobImpl = aBlobImpl;
+  return NS_OK;
+}
 
 NS_IMETHODIMP
 BlobURLChannel::SetContentType(const nsACString& aContentType) {

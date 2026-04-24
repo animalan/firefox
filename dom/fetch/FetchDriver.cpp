@@ -17,6 +17,8 @@
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/TaskQueue.h"
+#include "mozilla/dom/BlobURL.h"
+#include "mozilla/dom/BlobURLChannel.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/FetchPriority.h"
@@ -54,35 +56,13 @@
 #include "nsNetUtil.h"
 #include "nsPrintfCString.h"
 #include "nsProxyRelease.h"
+#include "nsQueryObject.h"
 #include "nsStreamUtils.h"
 #include "nsStringStream.h"
 
 namespace mozilla::dom {
 
 namespace {
-
-void GetBlobURISpecFromChannel(nsIRequest* aRequest, nsCString& aBlobURISpec) {
-  MOZ_ASSERT(aRequest);
-
-  aBlobURISpec.SetIsVoid(true);
-
-  nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
-  if (!channel) {
-    return;
-  }
-
-  nsCOMPtr<nsIURI> uri;
-  nsresult rv = NS_GetFinalChannelURI(channel, getter_AddRefs(uri));
-  if (NS_FAILED(rv)) {
-    return;
-  }
-
-  if (!dom::IsBlobURI(uri)) {
-    return;
-  }
-
-  uri->GetSpec(aBlobURISpec);
-}
 
 bool ShouldCheckSRI(const InternalRequest& aRequest,
                     const InternalResponse& aResponse) {
@@ -1310,6 +1290,15 @@ FetchDriver::OnStartRequest(nsIRequest* aRequest) {
     response->SetBody(pipeInputStream, contentLength);
   }
 
+  RefPtr<mozilla::dom::BlobURLChannel> bc = do_QueryObject(aRequest);
+  if (bc) {
+    RefPtr<mozilla::dom::BlobImpl> blobImpl;
+    rv = bc->GetBackingBlob(getter_AddRefs(blobImpl));
+    if (!NS_WARN_IF(NS_FAILED(rv))) {
+      response->SetBodyBlobImpl(blobImpl);
+    }
+  }
+
   // If the request is a file channel, then remember the local path to
   // that file so we can later create File blobs rather than plain ones.
   nsCOMPtr<nsIFileChannel> fc = do_QueryInterface(aRequest);
@@ -1320,14 +1309,6 @@ FetchDriver::OnStartRequest(nsIRequest* aRequest) {
       nsAutoString path;
       file->GetPath(path);
       response->SetBodyLocalPath(path);
-    }
-  } else {
-    // If the request is a blob URI, then remember that URI so that we
-    // can later just use that blob instance instead of cloning it.
-    nsCString blobURISpec;
-    GetBlobURISpecFromChannel(aRequest, blobURISpec);
-    if (!blobURISpec.IsVoid()) {
-      response->SetBodyBlobURISpec(blobURISpec);
     }
   }
 

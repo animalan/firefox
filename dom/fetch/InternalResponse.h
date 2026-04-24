@@ -189,15 +189,13 @@ class InternalResponse final : public AtomicSafeRefCounted<InternalResponse> {
     GetUnfilteredBody(aStream, aBodySize);
   }
 
-  void SetBodyBlobURISpec(nsACString& aBlobURISpec) {
-    mBodyBlobURISpec = aBlobURISpec;
-  }
+  void SetBodyBlobImpl(BlobImpl* aBlobImpl) { mBodyBlobImpl = aBlobImpl; }
 
-  const nsACString& BodyBlobURISpec() const {
+  BlobImpl* BodyBlobImpl() const {
     if (mWrappedResponse) {
-      return mWrappedResponse->BodyBlobURISpec();
+      return mWrappedResponse->BodyBlobImpl();
     }
-    return mBodyBlobURISpec;
+    return mBodyBlobImpl;
   }
 
   void SetBodyLocalPath(nsAString& aLocalPath) { mBodyLocalPath = aLocalPath; }
@@ -368,7 +366,7 @@ class InternalResponse final : public AtomicSafeRefCounted<InternalResponse> {
   const nsCString mStatusText;
   RefPtr<InternalHeaders> mHeaders;
   nsCOMPtr<nsIInputStream> mBody;
-  nsCString mBodyBlobURISpec;
+  RefPtr<BlobImpl> mBodyBlobImpl;
   nsString mBodyLocalPath;
   int64_t mBodySize;
   // It's used to passed to the CacheResponse to generate padding size. Once, we
