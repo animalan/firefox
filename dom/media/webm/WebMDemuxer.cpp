@@ -516,6 +516,8 @@ nsresult WebMDemuxer::ReadMetadata() {
           static_cast<gfx::CICP::TransferCharacteristics>(
               params.transfer_characteristics));
 
+      mInfo.mVideo.mHDRMetadata = ParseWebMMasteringMetadata(params);
+
       // Picture region, taking into account cropping, before scaling
       // to the display size.
       unsigned int cropH = params.crop_right + params.crop_left;
