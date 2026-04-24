@@ -24,6 +24,7 @@
 #include "nsTArray.h"
 #include "nsWeakReference.h"
 #include "nsXULAppAPI.h"
+#include <atomic>
 
 class nsIFile;
 class nsIPrefOverrideMap;

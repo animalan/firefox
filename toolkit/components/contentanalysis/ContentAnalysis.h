@@ -20,6 +20,7 @@
 #include "nsTHashSet.h"
 #include "nsTStringHasher.h"
 
+#include <atomic>
 #include <regex>
 
 #ifdef XP_WIN
