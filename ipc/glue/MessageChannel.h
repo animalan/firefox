@@ -15,6 +15,7 @@
 #endif  // defined(XP_WIN)
 
 #include <functional>
+#include <stack>
 
 #include "MessageLink.h"  // for HasResultCodes
 #include "mozilla/ipc/ScopedPort.h"

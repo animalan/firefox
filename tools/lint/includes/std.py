@@ -133,9 +133,6 @@ api = {
         "try_to_lock_t",
         "unique_lock",
     ],
-    "stack": [
-        "stack",
-    ],
     "bitset": [
         "bitset",
     ],

@@ -13,8 +13,6 @@
 #include "mozilla/layers/WebRenderScrollDataWrapper.h"
 #include "apz/src/APZCTreeManager.h"
 
-#include <stack>
-
 using mozilla::layers::APZCTreeManager;
 using mozilla::layers::APZUpdater;
 using mozilla::layers::LayersId;
