@@ -19,6 +19,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
@@ -74,6 +75,7 @@ import org.mozilla.fenix.helpers.SessionLoadedIdlingResource
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeShort
+import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeVeryShort
 import org.mozilla.fenix.helpers.TestHelper.appContext
 import org.mozilla.fenix.helpers.TestHelper.appName
 import org.mozilla.fenix.helpers.TestHelper.mDevice
@@ -1164,13 +1166,6 @@ class BrowserRobot(private val composeTestRule: ComposeTestRule) {
         Log.i(TAG, "fillPdfForm: Clicked PDF form check box")
     }
 
-    fun refreshPageFromRedesignedToolbar() {
-        assertUIObjectExists(itemWithDescription(getStringResource(R.string.browser_menu_refresh)))
-        Log.i(TAG, "refreshPageFromRedesignedToolbar: Trying to click the \"Refresh\" button")
-        itemWithDescription(getStringResource(R.string.browser_menu_refresh)).click()
-        Log.i(TAG, "refreshPageFromRedesignedToolbar: Clicked the \"Refresh\" button")
-    }
-
     fun goToPreviousPageFromRedesignedToolbar() {
         Log.i(TAG, "goToPreviousPageFromRedesignedToolbar: Trying to click the \"Back\" button")
         itemWithDescription(getStringResource(R.string.browser_menu_back)).click()
@@ -1370,16 +1365,33 @@ class BrowserRobot(private val composeTestRule: ComposeTestRule) {
 
     class Transition(private val composeTestRule: ComposeTestRule) {
         fun openThreeDotMenu(interact: ThreeDotMenuMainRobot.() -> Unit): ThreeDotMenuMainRobot.Transition {
+            val menuButton = itemWithDescription(getStringResource(R.string.content_description_menu))
+            Log.i(TAG, "openThreeDotMenu: Waiting for main menu button to exist")
+            menuButton.waitForExists(waitingTime)
+            mDevice.waitForIdle()
             Log.i(TAG, "openThreeDotMenu: Trying to click main menu button")
-            itemWithDescription(getStringResource(R.string.content_description_menu)).click()
+            menuButton.click()
             Log.i(TAG, "openThreeDotMenu: Clicked main menu button")
+            if (!itemWithResId("$packageName:id/design_bottom_sheet").waitForExists(waitingTime)) {
+                // Click may have been swallowed by in-progress page navigation; drain and retry.
+                Log.i(TAG, "openThreeDotMenu: Bottom sheet did not appear, draining idle and retrying")
+                mDevice.waitForIdle()
+                if (!itemWithResId("$packageName:id/design_bottom_sheet").waitForExists(waitingTimeVeryShort)) {
+                    menuButton.click()
+                    Log.i(TAG, "openThreeDotMenu: Retried click on main menu button")
+                }
+            }
             assertUIObjectExists(itemWithResId("$packageName:id/design_bottom_sheet"))
 
             ThreeDotMenuMainRobot(composeTestRule).interact()
             return ThreeDotMenuMainRobot.Transition(composeTestRule)
         }
 
+        @OptIn(ExperimentalTestApi::class)
         fun openSearch(interact: SearchRobot.() -> Unit): SearchRobot.Transition {
+            Log.i(TAG, "openSearch: Waiting for $waitingTime until the URL bar exists")
+            composeTestRule.waitUntilAtLeastOneExists(hasTestTag(ADDRESSBAR_URL_BOX), waitingTime)
+            Log.i(TAG, "openSearch: Waited for $waitingTime until the URL bar exists")
             Log.i(TAG, "openSearch: Trying to click navigation toolbar")
             itemWithResId(ADDRESSBAR_URL_BOX).click()
             Log.i(TAG, "openSearch: Clicked navigation toolbar")
@@ -1650,10 +1662,18 @@ class BrowserRobot(private val composeTestRule: ComposeTestRule) {
             return ShareOverlayRobot.Transition()
         }
 
+        @OptIn(ExperimentalTestApi::class)
         fun closeWebCompatReporter(interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
-            Log.i(TAG, "clickShareButtonFromRedesignedToolbar: Trying to click the \"Navigate back\" button")
-            itemWithDescription("Navigate back").click()
-            Log.i(TAG, "clickShareButtonFromRedesignedToolbar: Clicked the \"Navigate back\" button")
+            val backDescription = "Navigate back"
+            Log.i(TAG, "closeWebCompatReporter: Waiting for $waitingTime until the \"Navigate back\" button exists")
+            composeTestRule.waitUntilAtLeastOneExists(
+                hasContentDescription(backDescription, substring = true),
+                waitingTime,
+            )
+            Log.i(TAG, "closeWebCompatReporter: Waited for $waitingTime until the \"Navigate back\" button exists")
+            Log.i(TAG, "closeWebCompatReporter: Trying to click the \"Navigate back\" button")
+            composeTestRule.onNodeWithContentDescription(backDescription, substring = true).performClick()
+            Log.i(TAG, "closeWebCompatReporter: Clicked the \"Navigate back\" button")
 
             BrowserRobot(composeTestRule).interact()
             return BrowserRobot.Transition(composeTestRule)

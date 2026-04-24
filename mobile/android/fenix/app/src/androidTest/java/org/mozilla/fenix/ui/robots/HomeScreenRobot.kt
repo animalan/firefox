@@ -31,6 +31,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.waitUntilAtLeastOneExists
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.PositionAssertions.isPartiallyBelow
@@ -628,15 +629,23 @@ class HomeScreenRobot(private val composeTestRule: ComposeTestRule) {
         }
 
         fun openThreeDotMenu(interact: ThreeDotMenuMainRobot.() -> Unit): ThreeDotMenuMainRobot.Transition {
+            val menuButton = itemWithDescription(getStringResource(R.string.content_description_menu))
+            Log.i(TAG, "openThreeDotMenu: Waiting for main menu button to exist")
+            menuButton.waitForExists(waitingTime)
+            mDevice.waitForIdle()
             Log.i(TAG, "openThreeDotMenu: Trying to click main menu button")
-            itemWithDescription(getStringResource(R.string.content_description_menu)).click()
+            menuButton.click()
             Log.i(TAG, "openThreeDotMenu: Clicked main menu button")
 
             ThreeDotMenuMainRobot(composeTestRule).interact()
             return ThreeDotMenuMainRobot.Transition(composeTestRule)
         }
 
+        @OptIn(ExperimentalTestApi::class)
         fun openSearch(interact: SearchRobot.() -> Unit): SearchRobot.Transition {
+            Log.i(TAG, "openSearch: Waiting for $waitingTime until the URL bar exists")
+            composeTestRule.waitUntilAtLeastOneExists(hasTestTag(ADDRESSBAR_URL_BOX), waitingTime)
+            Log.i(TAG, "openSearch: Waited for $waitingTime until the URL bar exists")
             Log.i(TAG, "openSearch: Trying to click navigation toolbar")
             itemWithResId(ADDRESSBAR_URL_BOX).click()
             Log.i(TAG, "openSearch: Clicked navigation toolbar")

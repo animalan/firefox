@@ -34,7 +34,7 @@ import org.mozilla.fenix.helpers.TestHelper.waitUntilSnackbarGone
 class TranslationsRobot(private val composeTestRule: ComposeTestRule) {
 
     @OptIn(ExperimentalTestApi::class)
-    fun verifyTranslationSheetIsDisplayed(isDisplayed: Boolean, isRedesignedToolbarEnabled: Boolean = false) {
+    fun verifyTranslationSheetIsDisplayed(isDisplayed: Boolean) {
         Log.i(TAG, "verifyTranslationSheetIsDisplayed: Trying to verify the Translations sheet is displayed $isDisplayed.")
         if (isDisplayed) {
             for (i in 1..RETRY_COUNT) {
@@ -47,15 +47,9 @@ class TranslationsRobot(private val composeTestRule: ComposeTestRule) {
                     if (i == RETRY_COUNT) {
                         throw e
                     } else {
-                        if (isRedesignedToolbarEnabled) {
-                            browserScreen(composeTestRule) {
-                                refreshPageFromRedesignedToolbar()
-                            }
-                        } else {
-                            browserScreen(composeTestRule) {
-                            }.openThreeDotMenu {
-                            }.clickRefreshButton {
-                            }
+                        browserScreen(composeTestRule) {
+                        }.openThreeDotMenu {
+                        }.clickRefreshButton {
                         }
                     }
                 }

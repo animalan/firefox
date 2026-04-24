@@ -25,6 +25,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.espresso.AppNotIdleException
 import androidx.test.espresso.Espresso.onView
@@ -444,20 +445,24 @@ class NavigationToolbarRobot(private val composeTestRule: ComposeTestRule) {
     class Transition(private val composeTestRule: ComposeTestRule) {
         private lateinit var sessionLoadedIdlingResource: SessionLoadedIdlingResource
 
+        @OptIn(ExperimentalTestApi::class)
         fun enterURLAndEnterToBrowser(
             url: Uri,
             interact: BrowserRobot.() -> Unit,
         ): BrowserRobot.Transition {
+            Log.i(TAG, "enterURLAndEnterToBrowser: Waiting for $waitingTime until the URL bar exists")
+            composeTestRule.waitUntilAtLeastOneExists(hasTestTag(ADDRESSBAR_URL_BOX), waitingTime)
+            Log.i(TAG, "enterURLAndEnterToBrowser: Waited for $waitingTime until the URL bar exists")
             Log.i(TAG, "enterURLAndEnterToBrowser: Trying to click navigation toolbar")
-            itemWithResId("ADDRESSBAR_URL_BOX").click()
+            itemWithResId(ADDRESSBAR_URL_BOX).click()
             Log.i(TAG, "enterURLAndEnterToBrowser: Clicked navigation toolbar")
 
-            Log.i(TAG, "enterURLAndEnterToBrowser: Waiting for compose rule to be idle")
-            composeTestRule.waitForIdle()
-            Log.i(TAG, "enterURLAndEnterToBrowser: Waited for compose rule to be idle")
+            Log.i(TAG, "enterURLAndEnterToBrowser: Waiting for search box to appear")
+            composeTestRule.waitUntilAtLeastOneExists(hasTestTag(ADDRESSBAR_SEARCH_BOX), waitingTime)
+            Log.i(TAG, "enterURLAndEnterToBrowser: Search box appeared")
 
             Log.i(TAG, "enterURLAndEnterToBrowser: Trying to set toolbar text to: $url")
-            itemWithResId("ADDRESSBAR_SEARCH_BOX").setText(url.toString())
+            composeTestRule.onNodeWithTag(ADDRESSBAR_SEARCH_BOX).performTextReplacement(url.toString())
             Log.i(TAG, "enterURLAndEnterToBrowser: Toolbar text was set to: $url")
 
             Log.i(TAG, "enterURLAndEnterToBrowser: Waiting for compose rule to be idle")
@@ -465,7 +470,7 @@ class NavigationToolbarRobot(private val composeTestRule: ComposeTestRule) {
             Log.i(TAG, "enterURLAndEnterToBrowser: Waited for compose rule to be idle")
 
             runCatching {
-                Log.i(TAG, "enterURLAndEnterToBrowser: Trying to perform Compose IME action perform on the toolbar")
+                Log.i(TAG, "enterURLAndEnterToBrowser: Trying to perform Compose IME action on the toolbar")
                 composeTestRule.onNodeWithTag(ADDRESSBAR_SEARCH_BOX).performImeAction()
                 Log.i(TAG, "enterURLAndEnterToBrowser: Compose IME action performed on the toolbar")
             }.onFailure { throwable ->
@@ -602,21 +607,27 @@ class NavigationToolbarRobot(private val composeTestRule: ComposeTestRule) {
             return SearchRobot.Transition(composeTestRule)
         }
 
+        @OptIn(ExperimentalTestApi::class)
         fun clickTranslateButton(
             isPageTranslated: Boolean = false,
             originalLanguage: String = "",
             translatedLanguage: String = "",
             interact: TranslationsRobot.() -> Unit,
         ): TranslationsRobot.Transition {
-            if (isPageTranslated) {
-                Log.i(TAG, "clickTranslateButton: Trying to click the translate button")
-                itemWithDescription("Page translated from $originalLanguage to $translatedLanguage.").click()
-                Log.i(TAG, "clickTranslateButton: Clicked the translate button")
+            val buttonDescription = if (isPageTranslated) {
+                "Page translated from $originalLanguage to $translatedLanguage."
             } else {
-                Log.i(TAG, "clickTranslateButton: Trying to click the translate button")
-                itemWithDescription(getStringResource(R.string.browser_toolbar_translate)).click()
-                Log.i(TAG, "clickTranslateButton: Clicked the translate button")
+                getStringResource(R.string.browser_toolbar_translate)
             }
+            Log.i(TAG, "clickTranslateButton: Waiting for $waitingTime until the translate button exists")
+            composeTestRule.waitUntilAtLeastOneExists(
+                hasContentDescription(buttonDescription, substring = true),
+                waitingTime,
+            )
+            Log.i(TAG, "clickTranslateButton: Waited for $waitingTime until the translate button exists")
+            Log.i(TAG, "clickTranslateButton: Trying to click the translate button")
+            composeTestRule.onNodeWithContentDescription(buttonDescription, substring = true).performClick()
+            Log.i(TAG, "clickTranslateButton: Clicked the translate button")
 
             TranslationsRobot(composeTestRule).interact()
             return TranslationsRobot.Transition(composeTestRule)
