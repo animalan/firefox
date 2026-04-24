@@ -97,6 +97,7 @@ class BookmarkFragment : Fragment(), SystemInsetsPaddedFragment {
 
                 val store by fragmentStore(
                     BookmarksState.default.copy(
+                        showBookmarksImport = requireContext().settings().importBookmarksFeatureFlagEnabled,
                         sortOrder = BookmarksListSortOrder.fromString(
                             value = requireContext().settings().bookmarkListSortOrder,
                             default = BookmarksListSortOrder.Alphabetical(true),

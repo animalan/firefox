@@ -38,6 +38,9 @@ internal class BookmarksTelemetryMiddleware : Middleware<BookmarksState, Bookmar
             SearchClicked -> { BookmarksManagement.searchIconTapped.record(NoExtras()) }
             BackClicked -> state.handleBackClick()
             EditBookmarkAction.DeleteClicked -> { recordEditDeleteMetrics() }
+            RootOverflowMenuClicked,
+            RootOverflowMenuDismissed,
+            ImportFileClicked,
             EditBookmarkAction.FolderClicked,
             is EditBookmarkAction.TitleChanged,
             is EditBookmarkAction.URLChanged,

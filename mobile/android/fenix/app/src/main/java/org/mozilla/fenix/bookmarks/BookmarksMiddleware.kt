@@ -365,6 +365,9 @@ internal class BookmarksMiddleware(
                     }
                 }
             }
+            RootOverflowMenuClicked,
+            RootOverflowMenuDismissed,
+            ImportFileClicked,
             SelectFolderAction.SearchClicked,
             SelectFolderAction.SearchDismissed,
             is InitEditLoaded,
