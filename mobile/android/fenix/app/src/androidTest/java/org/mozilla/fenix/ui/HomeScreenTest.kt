@@ -51,11 +51,7 @@ class HomeScreenTest {
     @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=2028550")
     @Test
     fun homeScreenItemsTest() {
-        // Workaround to make sure the Pocket articles are populated before starting the test.
         homeScreen(retryableComposeTestRule.current) {
-        }.openThreeDotMenu {
-        }.clickSettingsButton {
-        }.goBack(retryableComposeTestRule.current) {
             verifyHomeWordmark()
             verifyHomePrivateBrowsingButton()
             verifyExistingTopSitesTabs("Wikipedia")
