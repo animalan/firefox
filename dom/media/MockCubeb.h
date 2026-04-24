@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <thread>
 #include <utility>
 
 #include "AudioDeviceInfo.h"

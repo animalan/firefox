@@ -22,6 +22,7 @@
 
 #include <atomic>
 #include <queue>
+#include <thread>
 
 #include "content_decryption_module.h"
 #include "WMFH264Decoder.h"

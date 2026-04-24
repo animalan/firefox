@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <thread>
 
 #include "BigEndian.h"
 #include "ClearKeyUtils.h"

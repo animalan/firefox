@@ -3,15 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 api = {
-    "thread": [
-        "get_id",
-        "jthread",
-        "sleep_for",
-        "sleep_until",
-        "this_thread",
-        "thread",
-        "yield",
-    ],
     "queue": [
         "priority_queue",
         "queue",
