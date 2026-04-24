@@ -562,8 +562,9 @@ class OpenPGMPServiceChild : public mozilla::Runnable {
         mEndpoint(std::move(aEndpoint)) {}
 
   NS_IMETHOD Run() override {
-    RefPtr<GeckoMediaPluginServiceChild> gmp =
-        GeckoMediaPluginServiceChild::GetSingleton();
+    // Use the actor's cached back-pointer rather than GetSingleton() to
+    // avoid an unnecessary sync dispatch to the main thread.
+    RefPtr<GeckoMediaPluginServiceChild> gmp = mGMPServiceChild->Service();
     MOZ_RELEASE_ASSERT(gmp);
     MOZ_ASSERT(!gmp->mServiceChild);
     if (mEndpoint.Bind(mGMPServiceChild.get())) {
@@ -589,7 +590,7 @@ bool GMPServiceChild::Create(Endpoint<PGMPServiceChild>&& aGMPService) {
 
   MOZ_ASSERT(!gmp->mServiceChild);
 
-  RefPtr<GMPServiceChild> serviceChild(new GMPServiceChild());
+  RefPtr<GMPServiceChild> serviceChild(new GMPServiceChild(gmp));
 
   nsCOMPtr<nsIThread> gmpThread;
   nsresult rv = gmp->GetThread(getter_AddRefs(gmpThread));
@@ -602,12 +603,12 @@ bool GMPServiceChild::Create(Endpoint<PGMPServiceChild>&& aGMPService) {
 }
 
 ipc::IPCResult GMPServiceChild::RecvBeginShutdown() {
-  RefPtr<GeckoMediaPluginServiceChild> service =
-      GeckoMediaPluginServiceChild::GetSingleton();
-  MOZ_ASSERT(service && service->mServiceChild.get() == this);
-  if (service) {
-    service->BeginShutdown();
-  }
+  // Use the cached back-pointer to avoid GetSingleton()'s sync dispatch to
+  // the main thread. At xpcom-shutdown-threads, the main thread may already
+  // be sync-dispatching to us (for PGMPServiceChild::Close), which would
+  // otherwise deadlock.
+  MOZ_ASSERT(mService && mService->mServiceChild.get() == this);
+  mService->BeginShutdown();
   return IPC_OK();
 }
 
