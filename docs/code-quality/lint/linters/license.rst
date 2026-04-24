@@ -26,14 +26,11 @@ This linter is enabled on most of the whole code base.
 Autofix
 -------
 
-This linter provides a ``--fix`` option. The python script is doing the change itself
-and will use the right header MPL-2 header depending on the language.
-It will add the license at the right place in case the file is a script (ie starting with ``!#``
-or a XML file ``<?xml>``).
+This linter provides a ``--fix`` option that adds the right MPL-2 header at the right place depending on the script or source language.
 
 
 Sources
 -------
 
-* `Configuration (YAML) <https://searchfox.org/mozilla-central/source/tools/lint/license.yml>`_
-* `Source <https://searchfox.org/mozilla-central/source/tools/lint/license/__init__.py>`_
+* :searchfox:`Configuration (YAML) <tools/lint/license.yml>`
+* :searchfox:`Source (Rust) <tools/lint/mozcheck/src/license.rs>`

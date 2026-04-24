@@ -16,7 +16,7 @@ regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 glob = "0.3"
-scraper = "0.22"
+tl = "0.7"
 globset = "0.4"
 ignore = "0.4"
 rayon = "1"
