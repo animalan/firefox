@@ -1214,7 +1214,7 @@ export var UnsubmittedCrashHandler = {
         label: {
           "l10n-id": requestedByDevs
             ? "requested-crash-reports-message-new"
-            : "pending-crash-reports-message",
+            : "pending-crash-reports-message-new",
           "l10n-args": { reportCount: reportIDs.length },
         },
         image: TABCRASHED_ICON_URI,
