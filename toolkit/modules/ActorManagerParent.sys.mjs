@@ -466,6 +466,15 @@ let JSWINDOWACTORS = {
     allFrames: true,
   },
 
+  OpenSearchLoader: {
+    child: {
+      esModuleURI:
+        "moz-src:///toolkit/components/search/OpenSearchLoaderChild.sys.mjs",
+    },
+    matches: ["about:blank"],
+    messageManagerGroups: ["opensearch"],
+  },
+
   PageExtractor: {
     parent: {
       esModuleURI: "resource://gre/actors/PageExtractorParent.sys.mjs",
