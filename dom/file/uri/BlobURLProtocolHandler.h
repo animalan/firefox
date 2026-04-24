@@ -47,11 +47,17 @@ class BlobURLProtocolHandler final : public nsIProtocolHandler,
   static nsresult AddDataEntry(BlobImpl*, nsIPrincipal*,
                                const nsCString& aPartitionKey,
                                nsACString& aUri);
-  // IPC only
-  static void AddDataEntry(
-      const nsACString& aURI, nsIPrincipal* aPrincipal,
-      const nsCString& aPartitionKey, BlobImpl* aBlobImpl,
-      const Maybe<ContentParentId>& aContentParentId = Nothing());
+  // IPC only (parent process)
+  static void AddDataEntryParent(const nsACString& aURI,
+                                 nsIPrincipal* aPrincipal,
+                                 const nsCString& aPartitionKey,
+                                 BlobImpl* aBlobImpl,
+                                 const ContentParentId& aContentParentId);
+
+  // IPC only (content process)
+  static void AddDataEntryChild(const nsACString& aURI,
+                                nsIPrincipal* aPrincipal,
+                                const nsCString& aPartitionKey);
 
   // These methods revoke a list of blobURLs. Because some operations could
   // still be in progress, the revoking consists in marking the blobURL as

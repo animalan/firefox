@@ -302,7 +302,6 @@ union GetFilesResponseResult
 struct BlobURLRegistrationData
 {
   nsCString url;
-  IPCBlob blob;
   nsIPrincipal principal;
   nsCString partitionKey;
   bool revoked;
@@ -896,8 +895,9 @@ child:
 
     async GetFilesResponse(nsID aID, GetFilesResponseResult aResult);
 
-    async BlobURLRegistration(nsCString aURI, IPCBlob aBlob,
-                              nullable nsIPrincipal aPrincipal, nsCString aPartitionKey);
+    async BlobURLRegistration(nsCString aURI,
+                              nullable nsIPrincipal aPrincipal,
+                              nsCString aPartitionKey);
 
     async BlobURLUnregistration(nsCString[] aURIs);
 

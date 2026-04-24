@@ -58,6 +58,8 @@ struct DataInfo {
     MOZ_ASSERT(aPrincipal);
   }
 
+  // NOTE: This may not be present within content processes, if the BlobURL was
+  // created within a different process.
   RefPtr<BlobImpl> mBlobImpl;
 
   nsCOMPtr<nsIPrincipal> mPrincipal;
@@ -165,17 +167,18 @@ class BlobURLsReporter final : public nsIMemoryReporter {
     // Determine number of URLs per mozilla::dom::BlobImpl, to handle the case
     // where it's > 1.
     for (const auto& entry : *gDataTable) {
-      mozilla::dom::BlobImpl* blobImpl = entry.GetWeak()->mBlobImpl;
-      MOZ_ASSERT(blobImpl);
-
-      refCounts.LookupOrInsert(blobImpl, 0) += 1;
+      if (mozilla::dom::BlobImpl* blobImpl = entry.GetWeak()->mBlobImpl) {
+        refCounts.LookupOrInsert(blobImpl, 0) += 1;
+      }
     }
 
     for (const auto& entry : *gDataTable) {
       nsCStringHashKey::KeyType key = entry.GetKey();
       mozilla::dom::DataInfo* info = entry.GetWeak();
       mozilla::dom::BlobImpl* blobImpl = info->mBlobImpl;
-      MOZ_ASSERT(blobImpl);
+      if (!blobImpl) {
+        continue;
+      }
 
       constexpr auto desc =
           "A blob URL allocated with URL.createObjectURL; the referenced "
@@ -487,9 +490,8 @@ class ReleasingTimerHolder final : public Runnable,
 NS_IMPL_ISUPPORTS_INHERITED(ReleasingTimerHolder, Runnable, nsITimerCallback,
                             nsIAsyncShutdownBlocker)
 
-template <typename T>
 static void AddDataEntryInternal(
-    const nsACString& aURI, T aObject, nsIPrincipal* aPrincipal,
+    const nsACString& aURI, BlobImpl* aBlobImpl, nsIPrincipal* aPrincipal,
     const nsCString& aPartitionKey,
     Maybe<ContentParentId> aContentParentId = Nothing()) {
   MOZ_ASSERT(NS_IsMainThread(), "changing gDataTable is main-thread only");
@@ -500,7 +502,7 @@ static void AddDataEntryInternal(
 
   mozilla::UniquePtr<mozilla::dom::DataInfo> info =
       mozilla::MakeUnique<mozilla::dom::DataInfo>(
-          aObject, aPrincipal, aPartitionKey, aContentParentId);
+          aBlobImpl, aPrincipal, aPartitionKey, aContentParentId);
   BlobURLsReporter::GetJSStackForBlob(info.get());
 
   gDataTable->InsertOrUpdate(aURI, std::move(info));
@@ -539,14 +541,24 @@ nsresult BlobURLProtocolHandler::AddDataEntry(mozilla::dom::BlobImpl* aBlobImpl,
 }
 
 /* static */
-void BlobURLProtocolHandler::AddDataEntry(
+void BlobURLProtocolHandler::AddDataEntryParent(
     const nsACString& aURI, nsIPrincipal* aPrincipal,
     const nsCString& aPartitionKey, mozilla::dom::BlobImpl* aBlobImpl,
-    const Maybe<ContentParentId>& aContentParentId) {
+    const ContentParentId& aContentParentId) {
+  MOZ_ASSERT(XRE_IsParentProcess());
   MOZ_ASSERT(aPrincipal);
   MOZ_ASSERT(aBlobImpl);
   AddDataEntryInternal(aURI, aBlobImpl, aPrincipal, aPartitionKey,
-                       aContentParentId);
+                       Some(aContentParentId));
+}
+
+/* static */
+void BlobURLProtocolHandler::AddDataEntryChild(const nsACString& aURI,
+                                               nsIPrincipal* aPrincipal,
+                                               const nsCString& aPartitionKey) {
+  MOZ_ASSERT(XRE_IsContentProcess());
+  MOZ_ASSERT(aPrincipal);
+  AddDataEntryInternal(aURI, nullptr, aPrincipal, aPartitionKey);
 }
 
 /* static */
@@ -554,6 +566,7 @@ bool BlobURLProtocolHandler::ForEachBlobURL(
     std::function<bool(mozilla::dom::BlobImpl*, nsIPrincipal*, const nsCString&,
                        const nsACString&, bool aRevoked)>&& aCb) {
   MOZ_ASSERT(NS_IsMainThread());
+  MOZ_ASSERT(XRE_IsParentProcess());
 
   if (!gDataTable) {
     return false;
