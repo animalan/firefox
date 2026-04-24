@@ -4,14 +4,21 @@
 
 @import url("chrome://global/skin/design-system/toolbar.css");
 
-:root {
-  &:where([customtitlebar]) {
-    --toolbox-bgcolor: ActiveCaption;
-    --toolbox-textcolor: CaptionText;
-    --toolbox-bgcolor-inactive: InactiveCaption;
-    --toolbox-textcolor-inactive: InactiveCaptionText;
+@layer tokens-foundation {
+  /* These tokens are declared inside of tokens-foundation layer so that the
+   * tokens-browser-theme layer can override them with design-system colors
+   * on platforms where the native theme is not active (e.g. macOS). */
+  :root {
+    &:where([customtitlebar]) {
+      --toolbox-bgcolor: ActiveCaption;
+      --toolbox-textcolor: CaptionText;
+      --toolbox-bgcolor-inactive: InactiveCaption;
+      --toolbox-textcolor-inactive: InactiveCaptionText;
+    }
   }
+}
 
+:root {
   --sidebar-background-color: -moz-sidebar;
   --sidebar-text-color: -moz-sidebartext;
   --sidebar-border-color: -moz-sidebarborder;

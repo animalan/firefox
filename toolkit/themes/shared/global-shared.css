@@ -34,8 +34,6 @@
 
   --popup-notification-body-width: calc(31em - calc(2 * var(--panel-padding)));
 
-  --input-border-color: var(--border-color-interactive);
-
   &[lwtheme] {
     &[lwt-icon-fill-attention="dark"] {
       --toolbarbutton-icon-fill-attention-text: var(--toolbarbutton-icon-fill-attention-text-light);
