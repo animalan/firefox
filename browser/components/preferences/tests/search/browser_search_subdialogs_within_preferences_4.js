@@ -16,7 +16,7 @@ add_task(async function () {
   await openPreferencesViaOpenPreferencesAPI("paneGeneral", {
     leaveOpen: true,
   });
-  await evaluateSearchResults("updates have been installed", "updates");
+  await evaluateSearchResults("updates have been installed", "updateApp");
   BrowserTestUtils.removeTab(gBrowser.selectedTab);
 });
 

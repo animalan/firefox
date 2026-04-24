@@ -55,7 +55,3 @@ browser.jar:
    content/browser/preferences/widgets/sync-device-name.mjs          (widgets/sync-device-name/sync-device-name.mjs)
    content/browser/preferences/widgets/sync-engines-list.mjs          (widgets/sync-engine-list/sync-engines-list.mjs)
    content/browser/preferences/widgets/sync-engines-list.css          (widgets/sync-engine-list/sync-engines-list.css)
-   content/browser/preferences/widgets/update-information.mjs          (widgets/update-information/update-information.mjs)
-   content/browser/preferences/widgets/update-information.css          (widgets/update-information/update-information.css)
-   content/browser/preferences/widgets/update-state.mjs          (widgets/update-state/update-state.mjs)
-   content/browser/preferences/widgets/update-state.css          (widgets/update-state/update-state.css)
