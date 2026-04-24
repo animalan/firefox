@@ -35,10 +35,6 @@ using namespace mozilla::ipc;
 namespace mozilla {
 namespace net {
 
-#if defined(XP_MACOSX) || defined(XP_IOS)
-static bool sAppleFastDatapathProbeAllowed = true;
-#endif
-
 #if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
 bool SocketProcessHost::sLaunchWithMacSandbox = false;
 #endif
@@ -180,10 +176,6 @@ void SocketProcessHost::InitAfterConnect(bool aSucceeded) {
   }
 #endif  // XP_LINUX && MOZ_SANDBOX
 
-#if defined(XP_MACOSX) || defined(XP_IOS)
-  attributes.mAppleFastDatapathProbeAllowed() = sAppleFastDatapathProbeAllowed;
-#endif
-
   (void)GetActor()->SendInit(attributes);
 
   (void)GetActor()->SendInitProfiler(
@@ -218,12 +210,6 @@ void SocketProcessHost::Shutdown() {
 
 void SocketProcessHost::OnChannelClosed() {
   MOZ_ASSERT(NS_IsMainThread());
-
-#if defined(XP_MACOSX) || defined(XP_IOS)
-  if (!mShutdownRequested && !mAppleFastDatapathProbeResultReceived) {
-    sAppleFastDatapathProbeAllowed = false;
-  }
-#endif
 
   mChannelClosed = true;
 
