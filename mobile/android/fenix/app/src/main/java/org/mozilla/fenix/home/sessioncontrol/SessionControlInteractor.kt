@@ -439,6 +439,10 @@ class SessionControlInteractor(
         sportsController.handleSkippedFollowTeam()
     }
 
+    override fun onSportsWidgetDismissed() {
+        sportsController.handleSportsWidgetDismissed()
+    }
+
     override fun onPrivacyReportTapped() {
         Homepage.privacyReportTapped.record(NoExtras())
     }
