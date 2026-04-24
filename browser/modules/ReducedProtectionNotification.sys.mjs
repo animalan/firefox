@@ -50,18 +50,12 @@ export const ReducedProtectionNotification = {
     lazy.EveryWindow.registerCallback(
       "reduced-protection-notification",
       win => {
-        if (
-          lazy.PrivateBrowsingUtils.isWindowPrivate(win) &&
-          !lazy.PrivateBrowsingUtils.permanentPrivateBrowsing
-        ) {
+        if (lazy.PrivateBrowsingUtils.isWindowPrivate(win)) {
           win.gBrowser?.addTabsProgressListener(this);
         }
       },
       win => {
-        if (
-          lazy.PrivateBrowsingUtils.isWindowPrivate(win) &&
-          !lazy.PrivateBrowsingUtils.permanentPrivateBrowsing
-        ) {
+        if (lazy.PrivateBrowsingUtils.isWindowPrivate(win)) {
           win.gBrowser?.removeTabsProgressListener(this);
         }
       }
