@@ -6,6 +6,8 @@ UNIFIED_SOURCES = [
     "TestGfxInfo.cpp",
     "TestTimeConverter.cpp",
     "TestTouchResampler.cpp",
+    "TestWidgetMouseEventCtors.cpp",
+    "TestWidgetTouchEventCtors.cpp",
 ]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
