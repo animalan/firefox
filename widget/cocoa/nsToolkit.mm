@@ -4,6 +4,7 @@
 
 #include "nsToolkit.h"
 
+#include <ctype.h>
 #include <stdlib.h>
 
 #include <mach/mach_port.h>

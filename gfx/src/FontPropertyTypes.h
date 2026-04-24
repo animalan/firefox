@@ -11,6 +11,8 @@
 #include <cstdint>
 #include <utility>
 
+#include <ctype.h>
+
 #include "mozilla/Assertions.h"
 #include "mozilla/ServoStyleConsts.h"
 #include "nsString.h"

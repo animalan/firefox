@@ -81,6 +81,9 @@
 #  include <sys/stat.h>
 #  include <unistd.h>
 #endif
+#ifdef XP_UNIX
+#  include <ctype.h>
+#endif
 #ifdef XP_IOS
 #  include "UIKitDirProvider.h"
 #endif
