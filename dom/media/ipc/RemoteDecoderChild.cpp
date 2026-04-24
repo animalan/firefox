@@ -235,7 +235,7 @@ RefPtr<mozilla::ShutdownPromise> RemoteDecoderChild::Shutdown() {
       mThread, __func__,
       [self](
           PRemoteDecoderChild::ShutdownPromise::ResolveOrRejectValue&& aValue) {
-        self->mShutdownPromise.Resolve(aValue.IsResolve(), __func__);
+        self->mShutdownPromise.ResolveIfExists(aValue.IsResolve(), __func__);
       });
   return mShutdownPromise.Ensure(__func__);
 }
