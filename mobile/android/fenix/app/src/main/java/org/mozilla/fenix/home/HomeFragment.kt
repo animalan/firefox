@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -144,7 +143,6 @@ import org.mozilla.fenix.home.topsites.TopSitesBinding
 import org.mozilla.fenix.home.topsites.controller.DefaultTopSiteController
 import org.mozilla.fenix.home.topsites.getTopSitesConfig
 import org.mozilla.fenix.home.ui.Homepage
-import org.mozilla.fenix.home.ui.MiddleSearchHomepage
 import org.mozilla.fenix.home.ui.WallpaperBackground
 import org.mozilla.fenix.messaging.DefaultMessageController
 import org.mozilla.fenix.messaging.FenixMessageSurfaceId
@@ -1033,40 +1031,19 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
                             )
                         }
 
-                        if (settings.enableHomepageSearchBar) {
-                            MiddleSearchHomepage(
-                                state = HomepageState.build(
-                                    appState = appState.value,
-                                    privacyNoticeBannerState = privacyNoticeBannerState.value,
-                                    settings = settings,
-                                    browsingModeManager = browsingModeManager,
-                                ),
-                                interactor = sessionControlInteractor,
-                                onMiddleSearchBarVisibilityChanged = { isVisible ->
-                                    // Hide the main address bar in the toolbar when the middle search is
-                                    // visible (and vice versa)
-                                    toolbarView.updateAddressBarVisibility(!isVisible)
-                                },
-                                onTopSitesItemBound = {
-                                    StartupTimeline.onTopSitesItemBound(activity = (requireActivity() as HomeActivity))
-                                },
-                                navigationBarContent = homeNavigationBar?.asComposable(),
-                            )
-                        } else {
-                            Homepage(
-                                state = HomepageState.build(
-                                    appState = appState.value,
-                                    privacyNoticeBannerState = privacyNoticeBannerState.value,
-                                    settings = settings,
-                                    browsingModeManager = browsingModeManager,
-                                ),
-                                interactor = sessionControlInteractor,
-                                onTopSitesItemBound = {
-                                    StartupTimeline.onTopSitesItemBound(activity = (requireActivity() as HomeActivity))
-                                },
-                                navigationBarContent = homeNavigationBar?.asComposable(),
-                            )
-                        }
+                        Homepage(
+                            state = HomepageState.build(
+                                appState = appState.value,
+                                privacyNoticeBannerState = privacyNoticeBannerState.value,
+                                settings = settings,
+                                browsingModeManager = browsingModeManager,
+                            ),
+                            interactor = sessionControlInteractor,
+                            onTopSitesItemBound = {
+                                StartupTimeline.onTopSitesItemBound(activity = (requireActivity() as HomeActivity))
+                            },
+                            navigationBarContent = homeNavigationBar?.asComposable(),
+                        )
 
                         SnackbarHost(
                             hostState = snackbarHostState,
