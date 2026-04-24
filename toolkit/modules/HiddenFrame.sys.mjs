@@ -176,6 +176,7 @@ export const HiddenBrowserManager = new (class HiddenBrowserManager {
     browser.style.height = `${BACKGROUND_HEIGHT}px`;
     browser.style.minHeight = `${BACKGROUND_HEIGHT}px`;
     browser.setAttribute("maychangeremoteness", "true");
+    browser.setAttribute("nodefaultsrc", "true");
     if (messageManagerGroup) {
       browser.setAttribute("messagemanagergroup", messageManagerGroup);
     }
