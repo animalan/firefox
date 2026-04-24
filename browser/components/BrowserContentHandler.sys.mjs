@@ -873,11 +873,17 @@ nsBrowserContentHandler.prototype = {
             // greater or equal to minVersion set by the experiment.
             if (nimbusOverrideUrl && versionMatch) {
               try {
-                let uri = Services.io.newURI(nimbusOverrideUrl);
-                // Only allow https://www.mozilla.org and https://www.mozilla.com
+                let uri = Services.io.newURI(
+                  nimbusOverrideUrl.split("|")[0].trim()
+                );
+                // Only allow https://www.mozilla.org, https://www.mozilla.com, and https://www.firefox.com
                 if (
                   uri.scheme === "https" &&
-                  ["www.mozilla.org", "www.mozilla.com"].includes(uri.host)
+                  [
+                    "www.mozilla.org",
+                    "www.mozilla.com",
+                    "www.firefox.com",
+                  ].includes(uri.host)
                 ) {
                   nimbusWNP = uri.spec;
                 } else {
