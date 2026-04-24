@@ -3175,12 +3175,12 @@ static bool EvaluateInner(JSContext* cx, HandleString code,
     }
 
     if (saveBytecodeWithDelazifications) {
-      bool alreadyStarted;
-      if (!JS::StartCollectingDelazifications(cx, script, stencil,
-                                              alreadyStarted)) {
+      JS::CollectDelazificationsResult result;
+      if (!JS::StartCollectingDelazifications(cx, script, stencil, result)) {
         return false;
       }
-      MOZ_ASSERT(!alreadyStarted);
+      MOZ_ASSERT(result == JS::CollectDelazificationsResult::NewlyStarted ||
+                 result == JS::CollectDelazificationsResult::NotSupported);
     }
 
     if (execute) {
