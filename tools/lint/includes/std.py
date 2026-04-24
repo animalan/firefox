@@ -3,6 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 api = {
+    "deque": [
+        "deque",
+    ],
     "chrono": [
         "April",
         "August",
