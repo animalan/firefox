@@ -177,7 +177,6 @@
 #include "mozilla/LateWriteChecks.h"
 
 #include <stdlib.h>
-#include <locale.h>
 
 #ifdef XP_UNIX
 #  include <errno.h>
