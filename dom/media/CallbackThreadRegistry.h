@@ -9,8 +9,6 @@
 #include <mozilla/DataMutex.h>
 #include <nsTArray.h>
 
-#include <thread>
-
 namespace mozilla {
 
 // This class is a singleton that tracks various callback threads and makes
