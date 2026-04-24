@@ -126,6 +126,14 @@ class UpdateState extends MozLitElement {
     this.transfer = "";
   }
 
+  update(changedProperties) {
+    super.update(changedProperties);
+    if (changedProperties.has("transfer") && this.value === "downloading") {
+      // Dispatched so tests can observe transfer property updates during downloads.
+      this.dispatchEvent(new CustomEvent("update-state:downloading"));
+    }
+  }
+
   get manualURL() {
     if (window.IS_STORYBOOK) {
       return new URL("https://www.mozilla.org/firefox/");
