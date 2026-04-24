@@ -56,15 +56,20 @@ class BrotliWrapper {
   BrotliWrapper() = default;
   ~BrotliWrapper() { BrotliDecoderStateCleanup(&mState); }
 
-  bool Init(nsIRequest* aRequest) {
+  bool Init(nsIRequest* aRequest, nsHTTPCompressConv::CompressMode aMode) {
     if (!BrotliDecoderStateInit(&mState, nullptr, nullptr, nullptr)) {
       return false;
+    }
+
+    if (aMode != nsHTTPCompressConv::HTTP_COMPRESS_BROTLI_DICTIONARY) {
+      return true;
     }
 
     nsCOMPtr<nsIHttpChannel> httpchannel(do_QueryInterface(aRequest));
     if (!httpchannel) {
       return false;
     }
+
     if (NS_SUCCEEDED(httpchannel->GetDecompressDictionary(
             getter_AddRefs(mDictionary))) &&
         mDictionary) {
@@ -86,6 +91,7 @@ class BrotliWrapper {
         }
       }
     }
+
     return true;
   }
 
@@ -884,7 +890,7 @@ nsHTTPCompressConv::OnDataAvailable(nsIRequest* request, nsIInputStream* iStr,
     case HTTP_COMPRESS_BROTLI_DICTIONARY: {
       if (!mBrotli) {
         mBrotli = MakeUnique<BrotliWrapper>();
-        if (!mBrotli->Init(request)) {
+        if (!mBrotli->Init(request, mMode)) {
           return NS_ERROR_FAILURE;
         }
       }
