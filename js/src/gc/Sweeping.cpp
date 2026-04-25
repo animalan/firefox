@@ -1956,7 +1956,9 @@ void GCRuntime::beginSweepPhase(AutoGCSession& session) {
 #endif
 
 #ifdef JS_GC_ZEAL
-  computeNonIncrementalMarkingForValidation(session);
+  if (hasZealMode(ZealMode::IncrementalMarkingValidator) && isIncremental) {
+    computeNonIncrementalMarkingForValidation(session);
+  }
 #endif
 
   gcstats::AutoPhase ap(stats(), gcstats::PhaseKind::SWEEP);
