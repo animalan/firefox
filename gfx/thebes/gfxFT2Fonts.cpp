@@ -19,7 +19,6 @@
 #include "gfxFT2Utils.h"
 #include "gfxFT2FontList.h"
 #include "gfxTextRun.h"
-#include <locale.h>
 #include "nsTArray.h"
 #include "nsCRT.h"
 #include "nsXULAppAPI.h"
