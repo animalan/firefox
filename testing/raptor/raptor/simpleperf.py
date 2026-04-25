@@ -31,9 +31,8 @@ class SimpleperfNotRunningError(Exception):
     pass
 
 
-SIMPLEPERF_OPTIONS = (
-    "--call-graph fp --duration 1000 -f 1000 --trace-offcpu -e cpu-clock -a"
-)
+SIMPLEPERF_OPTIONS = "--call-graph fp -f 1000 --trace-offcpu -e cpu-clock -a -z=6 --user-buffer-size 1024MB"
+
 
 class SimpleperfProfile(RaptorProfiling):
     """
@@ -76,6 +75,12 @@ class SimpleperfProfile(RaptorProfiling):
                     "Could not find Android NDK in ~/.mozbuild"
                 )
             simpleperf_dir = ndk_dirs[-1]
+
+            self.breakpad_symbol_dir = Path(
+                "/Users/animalan/locally/target.crashreporter-symbols"
+            )
+            self.samply_path = Path("/Users/animalan/samply/target/release/samply")
+
         self.dest_dir = (
             self.upload_dir
             / "browsertime-results"
@@ -138,6 +143,7 @@ class SimpleperfProfile(RaptorProfiling):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
+
         LOG.info("Started Simpleperf")
 
     def stop(self):
@@ -150,7 +156,16 @@ class SimpleperfProfile(RaptorProfiling):
 
         for line in self.profiler_process.stdout:
             LOG.info(f"simpleperf: {line.decode().strip()}")
-        self.profiler_process.wait()
+
+        try:
+            for line in self.profiler_process.stdout:
+                LOG.info(f"simpleperf: {line.decode().strip()}")
+            self.profiler_process.wait(timeout=600)
+        except subprocess.TimeoutExpired:
+            LOG.warning("Profiler post-processing did not complete, killing it")
+            self.profiler_process.kill()
+            self.profiler_process.wait()
+
         LOG.info(f"simpleperf exited with code {self.profiler_process.returncode}")
 
         self.profiler_process = None
@@ -277,12 +292,13 @@ class SimpleperfProfile(RaptorProfiling):
                             zipf.write(profile, arcname=path_in_zip)
                             profile.unlink(missing_ok=True)
             finally:
-                perf_file.unlink(missing_ok=True)
-                if perf_file.parent.exists():
-                    for marker in perf_file.parent.glob("marker-*.txt"):
-                        marker.unlink(missing_ok=True)
-                    for jitdump in perf_file.parent.rglob("jit-*.dump"):
-                        jitdump.unlink(missing_ok=True)
+                x = 1
+                # perf_file.unlink(missing_ok=True)
+                # if perf_file.parent.exists():
+                #     for marker in perf_file.parent.glob("marker-*.txt"):
+                #         marker.unlink(missing_ok=True)
+                #     for jitdump in perf_file.parent.rglob("jit-*.dump"):
+                #         jitdump.unlink(missing_ok=True)
 
         if "MOZ_AUTOMATION" in os.environ:
             if profile_archive.exists():
@@ -293,5 +309,6 @@ class SimpleperfProfile(RaptorProfiling):
                 LOG.error(f"Failed to archive profiles to {profile_archive}")
 
     def clean(self):
-        if self.breakpad_symbol_dir and self.breakpad_symbol_dir.exists():
-            shutil.rmtree(self.breakpad_symbol_dir)
+        x = 1
+        # if self.breakpad_symbol_dir and self.breakpad_symbol_dir.exists():
+        #     shutil.rmtree(self.breakpad_symbol_dir)

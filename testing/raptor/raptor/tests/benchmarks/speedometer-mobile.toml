@@ -19,7 +19,7 @@ unit = "score"
 ["speedometer2"]
 
 ["speedometer3"]
-browser_cycles = 5
+browser_cycles = 3
 owner = "Performance Team"
 cold = true
 host_from_parent = false
