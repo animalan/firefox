@@ -3833,7 +3833,11 @@ void ScriptLoader::RegisterForDiskCache(ScriptLoadRequest* aRequest) {
   MOZ_DIAGNOSTIC_ASSERT(!aRequest->isInList());
   MOZ_ASSERT(!IsWebExtensionRequest(aRequest),
              "Web extension scripts are not compatible with the disk cache");
-  mDiskCacheQueue.AppendElement(aRequest->getLoadedScript());
+
+  LoadedScript* loadedScript = aRequest->getLoadedScript();
+  loadedScript->ConvertToCachedStencil(aRequest->ReferrerPolicy(),
+                                       aRequest->BaseURL());
+  mDiskCacheQueue.AppendElement(loadedScript);
 }
 
 void ScriptLoader::LoadEventFired() {
