@@ -213,7 +213,7 @@ void ScriptLoadRequest::SetCacheEntry(LoadedScript* aLoadedScript,
       mState = State::Fetching;
       break;
     case ScriptKind::eEvent:
-      MOZ_ASSERT_UNREACHABLE("eEvent is only for ModuleImportReferrerInfo");
+      MOZ_ASSERT_UNREACHABLE("EventScripts are not using ScriptLoadRequest");
       break;
   }
 }
@@ -241,7 +241,7 @@ void ScriptLoadRequest::NoCacheEntryFound(
       mLoadedScript = new ModuleScript(aURI, mFetchInfo);
       break;
     case ScriptKind::eEvent:
-      MOZ_ASSERT_UNREACHABLE("eEvent is only for ModuleImportReferrerInfo");
+      MOZ_ASSERT_UNREACHABLE("EventScripts are not using ScriptLoadRequest");
       break;
   }
   mState = State::Fetching;

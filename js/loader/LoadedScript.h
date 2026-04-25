@@ -23,6 +23,7 @@
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsICacheInfoChannel.h"  // nsICacheInfoChannel
+#include "nsIMemoryReporter.h"
 
 #include "jsapi.h"
 #include "ResolvedModuleSet.h"
@@ -42,6 +43,7 @@ void HostReleaseScriptFetchInfo(const Value& aPrivate);
 
 class ClassicScript;
 class ModuleScript;
+class EventScript;
 class LoadContextBase;
 
 // Information required to fetch scripts or module graphs.
@@ -66,7 +68,7 @@ class ScriptFetchInfo : public nsISupports {
   void SetForModulePreload(bool aValue) { mIsForModulePreload = aValue; }
 
   bool IsForModuleScript() const { return mKind == ScriptKind::eModule; }
-  bool IsForEvent() const { return mKind == ScriptKind::eEvent; }
+  bool IsForEventScript() const { return mKind == ScriptKind::eEvent; }
 
   mozilla::dom::ReferrerPolicy ReferrerPolicy() const {
     return mReferrerPolicy;
@@ -114,7 +116,7 @@ class ScriptFetchInfo : public nsISupports {
   RefPtr<ScriptFetchOptions> mFetchOptions;
 
   // The base URL used for resolving relative module imports.
-  // This field is unused for Event script, and in that case the loader's base
+  // This field is unused for EventScript, and in that case the loader's base
   // URL should be used.
   //
   // This field can be overwritten based on the response.
@@ -131,7 +133,7 @@ class ScriptFetchInfo : public nsISupports {
 // As the LoadedScript can be shared, using the SharedSubResourceCache, it is
 // exposed to the memory reporter such that sharing might be accounted for
 // properly.
-class LoadedScript : public nsISupports {
+class LoadedScript : public nsIMemoryReporter {
  protected:
   LoadedScript(ScriptKind aKind, nsIURI* aURI);
 
@@ -143,10 +145,17 @@ class LoadedScript : public nsISupports {
   virtual ~LoadedScript();
 
  public:
+  // When the memory should be reported, register it using RegisterMemoryReport,
+  // and make sure to call SizeOfIncludingThis in the enclosing container.
+  //
+  // Each reported script would be listed under
+  // `explicit/js/script/loaded-script/<kind>`.
+  void RegisterMemoryReport();
   size_t SizeOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf) const;
 
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS;
+  NS_DECL_NSIMEMORYREPORTER;
   NS_DECL_CYCLE_COLLECTION_CLASS(LoadedScript)
 
   uint16_t ClampedRefCountForTelemetry() const {
@@ -159,6 +168,7 @@ class LoadedScript : public nsISupports {
 
   bool IsClassicScript() const { return mKind == ScriptKind::eClassic; }
   bool IsModuleScript() const { return mKind == ScriptKind::eModule; }
+  bool IsEventScript() const { return mKind == ScriptKind::eEvent; }
   bool IsImportMapScript() const { return mKind == ScriptKind::eImportMap; }
 
   inline ClassicScript* AsClassicScript();
@@ -687,6 +697,13 @@ class ClassicScript final : public LoadedScript {
   explicit ClassicScript(nsIURI* aURI);
 
   friend class ScriptLoadRequest;
+};
+
+class EventScript final : public LoadedScript {
+  ~EventScript() = default;
+
+ public:
+  explicit EventScript(nsIURI* aURI);
 };
 
 class ImportMapScript final : public LoadedScript {
