@@ -27,16 +27,12 @@ class VRManagerParent final : public PVRManagerParent {
 
  public:
   explicit VRManagerParent(ipc::EndpointProcInfo aChildProcess,
-                           dom::ContentParentId aChildId, uint32_t aNamespace,
-                           bool aIsContentChild);
+                           dom::ContentParentId aChildId, bool aIsContentChild);
 
-  static already_AddRefed<VRManagerParent> CreateSameProcess(
-      uint32_t aNamespace);
-  static bool CreateForGPUProcess(Endpoint<PVRManagerParent>&& aEndpoint,
-                                  uint32_t aNamespace);
+  static already_AddRefed<VRManagerParent> CreateSameProcess();
+  static bool CreateForGPUProcess(Endpoint<PVRManagerParent>&& aEndpoint);
   static bool CreateForContent(Endpoint<PVRManagerParent>&& aEndpoint,
-                               dom::ContentParentId aChildId,
-                               uint32_t aNamespace);
+                               dom::ContentParentId aChildId);
   static void Shutdown();
 
   bool IsSameProcess() const;
@@ -91,7 +87,6 @@ class VRManagerParent final : public PVRManagerParent {
   // Keep the VRManager alive, until we have destroyed ourselves.
   RefPtr<VRManager> mVRManagerHolder;
   dom::ContentParentId mChildId;
-  uint32_t mNamespace;
   bool mHaveEventListener;
   bool mHaveControllerListener;
   bool mIsContentChild;

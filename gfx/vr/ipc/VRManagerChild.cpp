@@ -43,9 +43,8 @@ static TimeDuration sAverageFrameInterval;
 
 void ReleaseVRManagerParentSingleton() { sVRManagerParentSingleton = nullptr; }
 
-VRManagerChild::VRManagerChild(uint32_t aNamespace)
-    : mNamespace(aNamespace),
-      mRuntimeCapabilities(VRDisplayCapabilityFlags::Cap_None),
+VRManagerChild::VRManagerChild()
+    : mRuntimeCapabilities(VRDisplayCapabilityFlags::Cap_None),
       mFrameRequestCallbackCounter(0),
       mWaitingForEnumeration(false),
       mBackend(layers::LayersBackend::LAYERS_NONE) {
@@ -104,11 +103,10 @@ TimeStamp VRManagerChild::GetIdleDeadlineHint(TimeStamp aDefault) {
 }
 
 /* static */
-bool VRManagerChild::InitForContent(Endpoint<PVRManagerChild>&& aEndpoint,
-                                    uint32_t aNamespace) {
+bool VRManagerChild::InitForContent(Endpoint<PVRManagerChild>&& aEndpoint) {
   MOZ_ASSERT(NS_IsMainThread());
 
-  RefPtr<VRManagerChild> child(new VRManagerChild(aNamespace));
+  RefPtr<VRManagerChild> child(new VRManagerChild());
   if (!aEndpoint.Bind(child)) {
     return false;
   }
@@ -117,23 +115,22 @@ bool VRManagerChild::InitForContent(Endpoint<PVRManagerChild>&& aEndpoint,
 }
 
 /*static*/
-void VRManagerChild::InitSameProcess(uint32_t aNamespace) {
+void VRManagerChild::InitSameProcess() {
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(!sVRManagerChildSingleton);
 
-  sVRManagerChildSingleton = new VRManagerChild(aNamespace);
-  sVRManagerParentSingleton = VRManagerParent::CreateSameProcess(aNamespace);
+  sVRManagerChildSingleton = new VRManagerChild();
+  sVRManagerParentSingleton = VRManagerParent::CreateSameProcess();
   sVRManagerChildSingleton->Open(sVRManagerParentSingleton, CompositorThread(),
                                  mozilla::ipc::ChildSide);
 }
 
 /* static */
-void VRManagerChild::InitWithGPUProcess(Endpoint<PVRManagerChild>&& aEndpoint,
-                                        uint32_t aNamespace) {
+void VRManagerChild::InitWithGPUProcess(Endpoint<PVRManagerChild>&& aEndpoint) {
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(!sVRManagerChildSingleton);
 
-  sVRManagerChildSingleton = new VRManagerChild(aNamespace);
+  sVRManagerChildSingleton = new VRManagerChild();
   if (!aEndpoint.Bind(sVRManagerChildSingleton)) {
     MOZ_CRASH("Couldn't Open() Compositor channel.");
   }

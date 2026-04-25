@@ -69,9 +69,9 @@ parent:
 
   async InitCompositorManager(Endpoint<PCompositorManagerParent> endpoint, uint32_t aNamespace);
   async InitVsyncBridge(Endpoint<PVsyncBridgeParent> endpoint);
-  async InitImageBridge(Endpoint<PImageBridgeParent> endpoint, uint32_t aNamespace);
+  async InitImageBridge(Endpoint<PImageBridgeParent> endpoint);
   async InitVideoBridge(Endpoint<PVideoBridgeParent> endpoint, VideoBridgeSource aSource);
-  async InitVRManager(Endpoint<PVRManagerParent> endpoint, uint32_t aNamespace);
+  async InitVRManager(Endpoint<PVRManagerParent> endpoint);
   async InitUiCompositorController(LayersId rootLayerTreeId, Endpoint<PUiCompositorControllerParent> endpoint);
   async InitAPZInputBridge(LayersId layersId,
                            Endpoint<PAPZInputBridgeParent> endpoint);
@@ -87,8 +87,8 @@ parent:
 
   // Create a new content-process compositor bridge.
   async NewContentCompositorManager(Endpoint<PCompositorManagerParent> endpoint, ContentParentId childId, uint32_t aNamespace);
-  async NewContentImageBridge(Endpoint<PImageBridgeParent> endpoint, ContentParentId childId, uint32_t aNamespace);
-  async NewContentVRManager(Endpoint<PVRManagerParent> endpoint, ContentParentId childId, uint32_t aNamespace);
+  async NewContentImageBridge(Endpoint<PImageBridgeParent> endpoint, ContentParentId childId);
+  async NewContentVRManager(Endpoint<PVRManagerParent> endpoint, ContentParentId childId);
   async NewContentRemoteMediaManager(Endpoint<PRemoteMediaManagerParent> endpoint, ContentParentId childId);
 
   // Called to notify the GPU process of who owns a layersId.

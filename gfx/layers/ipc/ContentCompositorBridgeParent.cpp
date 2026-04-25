@@ -433,12 +433,6 @@ PTextureParent* ContentCompositorBridgeParent::AllocPTextureParent(
     const SurfaceDescriptor& aSharedData, ReadLockDescriptor& aReadLock,
     const LayersBackend& aLayersBackend, const TextureFlags& aFlags,
     const uint64_t& aSerial, const wr::MaybeExternalImageId& aExternalImageId) {
-  if (aExternalImageId.isSome() &&
-      !OwnsExternalImageId(aExternalImageId.ref())) {
-    NS_ERROR("We do not own this external image id.");
-    return nullptr;
-  }
-
   return TextureHost::CreateIPDLActor(
       this, aSharedData, std::move(aReadLock), aLayersBackend, aFlags,
       mCompositorManager->GetContentId(), aSerial, aExternalImageId);

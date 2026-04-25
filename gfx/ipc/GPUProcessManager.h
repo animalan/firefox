@@ -248,11 +248,11 @@ class GPUProcessManager final : public GPUProcessHost::Listener {
       mozilla::ipc::Endpoint<PCompositorManagerChild>* aOutEndpoint);
   bool CreateContentImageBridge(
       mozilla::ipc::EndpointProcInfo aOtherProcess,
-      dom::ContentParentId aChildId, uint32_t aNamespace,
+      dom::ContentParentId aChildId,
       mozilla::ipc::Endpoint<PImageBridgeChild>* aOutEndpoint);
   bool CreateContentVRManager(
       mozilla::ipc::EndpointProcInfo aOtherProcess,
-      dom::ContentParentId aChildId, uint32_t aNamespace,
+      dom::ContentParentId aChildId,
       mozilla::ipc::Endpoint<PVRManagerChild>* aOutEndpoint);
   void CreateContentRemoteMediaManager(
       mozilla::ipc::EndpointProcInfo aOtherProcess,

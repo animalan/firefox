@@ -78,8 +78,6 @@ class CompositorManagerParent final : public PCompositorManagerParent {
     return mNamespace == static_cast<uint32_t>(wr::AsUint64(aId) >> 32);
   }
 
-  uint32_t GetNamespace() const { return mNamespace; }
-
  private:
   static StaticMonitor sMonitor;
   static StaticRefPtr<CompositorManagerParent> sInstance

@@ -68,11 +68,9 @@ class VRManagerChild : public PVRManagerChild {
   void AddPromise(const uint32_t& aID, dom::Promise* aPromise);
   gfx::VRAPIMode GetVRAPIMode(uint32_t aDisplayID) const;
 
-  static void InitSameProcess(uint32_t aNamespace);
-  static void InitWithGPUProcess(Endpoint<PVRManagerChild>&& aEndpoint,
-                                 uint32_t aNamespace);
-  static bool InitForContent(Endpoint<PVRManagerChild>&& aEndpoint,
-                             uint32_t aNamespace);
+  static void InitSameProcess();
+  static void InitWithGPUProcess(Endpoint<PVRManagerChild>&& aEndpoint);
+  static bool InitForContent(Endpoint<PVRManagerChild>&& aEndpoint);
   static void ShutDown();
 
   static bool IsCreated();
@@ -109,7 +107,7 @@ class VRManagerChild : public PVRManagerChild {
   void ResetPuppet(dom::Promise* aPromise, ErrorResult& aRv);
 
  protected:
-  explicit VRManagerChild(uint32_t aNamespace);
+  explicit VRManagerChild();
   ~VRManagerChild();
 
   PVRLayerChild* AllocPVRLayerChild(const uint32_t& aDisplayID,
@@ -144,8 +142,6 @@ class VRManagerChild : public PVRManagerChild {
   void NotifyPresentationGenerationChangedInternal(uint32_t aDisplayID);
   void NotifyEnumerationCompletedInternal();
   void NotifyRuntimeCapabilitiesUpdatedInternal();
-
-  uint32_t mNamespace;
 
   nsTArray<RefPtr<VRDisplayClient>> mDisplays;
   VRDisplayCapabilityFlags mRuntimeCapabilities;
