@@ -26,7 +26,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <chrono>
 #ifdef XP_WIN
 #  include <direct.h>
 #  include <process.h>
