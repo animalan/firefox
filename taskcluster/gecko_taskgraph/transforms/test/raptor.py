@@ -487,7 +487,6 @@ def setup_lull_schedule(config, tasks):
 
 @task_transforms.add
 def setup_autoland_retriggers(config, tasks):
-
     def _allow_task_duplicates(label):
         if "android" in label:
             return False
@@ -644,10 +643,82 @@ def add_simpleperf(config, tests):
 
 
 @transforms.add
-def handle_simpleperf_symbol(config, tests):
+def add_xperf(config, tests):
+    is_native_profiling = config.params.get("try_task_config", {}).get(
+        "native-profiling", False
+    )
+
+    for test in tests:
+        is_np_test = "speedometer3" in test["test-name"]
+        test_name = test.get("test-name", None)
+        if (
+            is_native_profiling
+            and is_np_test
+            and "win" in test.get("test-platform", "")
+        ):
+            extra_options = test.setdefault("mozharness", {}).setdefault(
+                "extra-options", []
+            )
+
+            extra_options.extend([
+                "--add-option=--etw-profile",
+                "--setenv ETW_ENABLED=1",
+                "--setenv JIT_OPTION_enableICFramePointers=true",
+                "--setenv JIT_OPTION_onlyInlineSelfHosted=true",
+                "--setenv JIT_OPTION_emitInterpreterEntryTrampoline=true",
+            ])
+
+            # Additional Browsertime configuration for Chromium-based builds
+            if test.get("app") in ["chrome", "custom-car"]:
+                extra_options.extend([
+                    "--browsertime-arg=chrome.args=--enable-features=EnableEtwExports",
+                    "--browsertime-arg=chrome.args=--enable-benchmarking",
+                    "--browsertime-arg=chrome.args=--js-flags=--perf-prof",
+                    "--browsertime-arg=chrome.args=--js-flags=--enable-etw-stack-walking",
+                    "--browsertime-arg=chrome.args=--js-flags=--interpreted-frames-native-stack",
+                    "--browsertime-arg=chrome.args=--js-flags=--no-turbo-inlining",
+                    "--browsertime-arg=chrome.args=--js-flags=--no-compact-code-space",
+                ])
+
+            if "speedometer3" in test_name:
+                test["max-run-time"] = 4200  # seconds
+                extra_options.extend([
+                    "--add-option=--post-startup-delay=2000",  # milliseconds
+                ])
+                extra_options.remove("--extra-profiler-run")
+
+            # Add win64-samply toolchain to tests run on x64 Windows
+            fetches = test.setdefault("fetches", {})
+            by_apps = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
+            for by_app in by_apps.values():
+                test_platforms = by_app.get("by-test-platform")
+
+                if not test_platforms:
+                    continue
+
+                for test_platform, test_platform_config in test_platforms.items():
+                    if (
+                        "win" in test_platform
+                        and "win64-samply" not in test_platform_config
+                    ):
+                        test_platform_config.append("win64-samply")
+            fetches.setdefault("build", []).append({
+                "artifact": "target.crashreporter-symbols.zip",
+                "extract": False,
+            })
+
+        yield test
+
+
+@transforms.add
+def handle_native_profiling_symbol(config, tests):
     for test in tests:
         extra_options = test.get("mozharness", {}).get("extra-options", [])
-        if "--add-option=--simpleperf" in extra_options:
+        native_profiling_args = [
+            "--add-option=--simpleperf",
+            "--add-option=--etw-profile",
+        ]
+        if any(arg in extra_options for arg in native_profiling_args):
             group, symbol = split_symbol(test["treeherder-symbol"])
-            test["treeherder-symbol"] = join_symbol(group, f"{symbol}-simpleperf")
+            test["treeherder-symbol"] = join_symbol(group, f"{symbol}-profiling")
         yield test

@@ -14,6 +14,9 @@ class Speedometer3Support(BasePythonSupport):
     def setup_test(self, test, args):
         super().setup_test(test, args)
 
+        if args.etw_profile:
+            test["browser_cycles"] = 20
+
         if args.simpleperf:
             # Each test suite runs in its own browser cycle.
             # There's 20 test suites, so 20 cycles are needed.
