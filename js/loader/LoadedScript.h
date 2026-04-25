@@ -213,6 +213,11 @@ class LoadedScript : public nsIMemoryReporter {
     // holds the SRI. mScriptData is unused.
     eCachedStencil,
 
+    // This was eCachedStencil, but the stencil reference is cleared
+    // for the memory pressure.
+    // Other fields are still valid.
+    eInvalidatedCachedStencil,
+
     // This is a wasm module, which is used when the response mime type essence
     // is application/wasm.
     // mScriptData holds the wasm source as uint8_t from the channel.
@@ -237,6 +242,9 @@ class LoadedScript : public nsIMemoryReporter {
     return mDataType == DataType::eSerializedStencil;
   }
   bool IsCachedStencil() const { return mDataType == DataType::eCachedStencil; }
+  bool IsInvalidatedCachedStencil() const {
+    return mDataType == DataType::eInvalidatedCachedStencil;
+  }
   bool IsWasmBytes() const { return mDataType == DataType::eWasmBytes; }
 
   // ==== Methods to convert the data type ====
@@ -266,6 +274,12 @@ class LoadedScript : public nsIMemoryReporter {
     mCachedStencil = aStencil;
     mCachedReferrerPolicy = aReferrerPolicy;
     mCachedBaseURL = aBaseURL;
+  }
+
+  void InvalidateCachedStencil() {
+    MOZ_ASSERT(IsCachedStencil());
+    mDataType = DataType::eInvalidatedCachedStencil;
+    mCachedStencil = nullptr;
   }
 
   void SetWasmBytes() {

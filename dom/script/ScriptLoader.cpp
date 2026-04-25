@@ -1267,7 +1267,8 @@ void ScriptLoader::TryUseCache(ReferrerPolicy aReferrerPolicy,
   //       LoadedScript, and we cannot use them here.
   ScriptHashKey key(this, aRequest, aReferrerPolicy, aFetchOptions, aURI);
   auto cacheResult = mCache->Lookup(*this, key, /* aSyncLoad = */ true);
-  if (cacheResult.mState != CachedSubResourceState::Complete) {
+  if (cacheResult.mState != CachedSubResourceState::Complete ||
+      !cacheResult.mCompleteValue->IsCachedStencil()) {
     aRequest->NoCacheEntryFound(aReferrerPolicy, aFetchOptions, aURI);
     LOG(
         ("ScriptLoader (%p): Created LoadedScript (%p) for "
@@ -3553,7 +3554,8 @@ ScriptLoader::CacheBehavior ScriptLoader::GetCacheBehavior(
                     aRequest->getLoadedScript()->GetURI());
   auto cacheResult = mCache->Lookup(*this, key,
                                     /* aSyncLoad = */ true);
-  if (cacheResult.mState == CachedSubResourceState::Complete) {
+  if (cacheResult.mState == CachedSubResourceState::Complete &&
+      cacheResult.mCompleteValue->IsCachedStencil()) {
     if (!cacheResult.mCompleteValue->IsSRIMetadataReusableBy(
             aRequest->mIntegrity)) {
       mCache->Evict(key);
@@ -3991,11 +3993,15 @@ void ScriptLoader::UpdateDiskCache() {
       continue;
     }
 
-    MOZ_ASSERT(loadedScript->IsCachedStencil());
+    if (!loadedScript->IsCachedStencil()) {
+      // The cache is invalidated.
+      continue;
+    }
+    RefPtr<JS::Stencil> stencil = loadedScript->GetCachedStencil();
 
     Vector<uint8_t> compressed;
-    if (!EncodeAndCompress(fc, loadedScript, loadedScript->GetCachedStencil(),
-                           loadedScript->SRI(), compressed)) {
+    if (!EncodeAndCompress(fc, loadedScript, stencil, loadedScript->SRI(),
+                           compressed)) {
       loadedScript->DropDiskCacheReference();
       loadedScript->DropSRIOrSRIAndSerializedStencil();
       TRACE_FOR_TEST(loadedScript, "diskcache:failed");
@@ -4004,8 +4010,7 @@ void ScriptLoader::UpdateDiskCache() {
 
     // The pref being -1 means "no limit".
     if (diskCacheMaxSizeInKb > 0) {
-      size_t sourceLength =
-          JS::GetScriptSourceLength(loadedScript->GetCachedStencil());
+      size_t sourceLength = JS::GetScriptSourceLength(stencil);
       size_t expectedDiskCacheSize = sourceLength + compressed.length();
       if (expectedDiskCacheSize > size_t(diskCacheMaxSizeInKb) * 1024) {
         loadedScript->DropDiskCacheReference();
@@ -4496,6 +4501,7 @@ nsresult ScriptLoader::OnStreamComplete(
                             aRequest->FetchOptions(), aRequest->URI());
           auto cacheResult = mCache->Lookup(*this, key, /* aSyncLoad = */ true);
           if (cacheResult.mState == CachedSubResourceState::Complete &&
+              cacheResult.mCompleteValue->IsCachedStencil() &&
               cacheResult.mCompleteValue->IsSRIMetadataReusableBy(
                   aRequest->mIntegrity) &&
               cacheResult.mCompleteValue->CacheEntryId() == id) {
