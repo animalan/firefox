@@ -820,6 +820,12 @@ struct ParamTraits<FontVisibility>
                                       FontVisibility::Count> {};
 
 template <>
+struct ParamTraits<mozilla::gfx::CrossProcessPaintFlags>
+    : public BitFlagsEnumSerializer<mozilla::gfx::CrossProcessPaintFlags,
+                                    mozilla::gfx::kAllCrossProcessPaintFlags> {
+};
+
+template <>
 struct ParamTraits<mozilla::gfx::PaintFragment> {
   typedef mozilla::gfx::PaintFragment paramType;
   static void Write(IPC::MessageWriter* aWriter, paramType&& aParam) {

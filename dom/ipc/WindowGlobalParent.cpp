@@ -1127,11 +1127,9 @@ already_AddRefed<mozilla::dom::Promise> WindowGlobalParent::DrawSnapshot(
   return promise.forget();
 }
 
-void WindowGlobalParent::DrawSnapshotInternal(gfx::CrossProcessPaint* aPaint,
-                                              const Maybe<IntRect>& aRect,
-                                              float aScale,
-                                              nscolor aBackgroundColor,
-                                              uint32_t aFlags) {
+void WindowGlobalParent::DrawSnapshotInternal(
+    gfx::CrossProcessPaint* aPaint, const Maybe<IntRect>& aRect, float aScale,
+    nscolor aBackgroundColor, gfx::CrossProcessPaintFlags aFlags) {
   auto promise = SendDrawSnapshot(aRect, aScale, aBackgroundColor, aFlags);
 
   RefPtr<gfx::CrossProcessPaint> paint(aPaint);
