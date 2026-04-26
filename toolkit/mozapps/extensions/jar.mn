@@ -8,6 +8,7 @@ toolkit.jar:
   content/mozapps/extensions/OpenH264-license.txt               (content/OpenH264-license.txt)
   content/mozapps/extensions/aboutaddons.html                   (content/aboutaddons.html)
   content/mozapps/extensions/aboutaddons.js                     (content/aboutaddons.js)
+  content/mozapps/extensions/aboutaddons-utils.mjs              (content/aboutaddons-utils.mjs)
   content/mozapps/extensions/aboutaddonsCommon.js               (content/aboutaddonsCommon.js)
   content/mozapps/extensions/aboutaddons.css                    (content/aboutaddons.css)
   content/mozapps/extensions/abuse-reports.js                   (content/abuse-reports.js)
