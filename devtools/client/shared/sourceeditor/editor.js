@@ -217,6 +217,7 @@ class Editor extends EventEmitter {
     EXCEPTION_POSITION_MARKER: "exception-position-marker",
     ACTIVE_SELECTION_MARKER: "active-selection-marker",
     PAUSED_LOCATION_MARKER: "paused-location-marker",
+    AUTOCOMPLETE_CONTENT_MARKER: "autocomplete-content-marker",
     /* Gutter Markers */
     EMPTY_LINE_MARKER: "empty-line-marker",
     BLACKBOX_LINE_GUTTER_MARKER: "blackbox-line-gutter-marker",
@@ -891,6 +892,9 @@ class Editor extends EventEmitter {
                 to: lezerUtils.positionToLocation(tr.newDoc, toB),
                 origin: !inserted.length ? "+delete" : "+input",
                 text: inserted.toString(),
+                // This is always false for CM6, setting this is just keep the
+                // output expected uniform with that returned by CM5.
+                canceled: false,
               });
             });
             this.#beforeUpdateListener(a);
@@ -1382,6 +1386,12 @@ class Editor extends EventEmitter {
       newMarkerDecorations
     ) {
       const viewport = marker._view.viewport;
+      // If the viewport changes and does ont match the state,
+      // lets not try to update the decorations because the positions
+      // would not longer be valid.
+      if (viewport.to > transaction.state.doc.length) {
+        return;
+      }
       const vStartLine = transaction.state.doc.lineAt(viewport.from);
       const vEndLine = transaction.state.doc.lineAt(viewport.to);
 
@@ -1624,6 +1634,9 @@ class Editor extends EventEmitter {
    */
   removePositionContentMarker(markerId) {
     const cm = editors.get(this);
+    if (!this.#posContentMarkers.has(markerId)) {
+      return;
+    }
     this.#posContentMarkers.delete(markerId);
     cm.dispatch({
       effects:
@@ -2251,9 +2264,12 @@ class Editor extends EventEmitter {
     const cm = editors.get(this);
     if (this.config.cm6) {
       const pos = cm.state.selection.main.head;
+      // if the cursor position is `0` (which is the case when selecting text backward to the first position)
+      // we are going to get a negetive offset, this would throw an error.
+      const offset = pos - numberOfCharsToReplaceCharsBeforeCursor;
       cm.dispatch({
         changes: {
-          from: pos - numberOfCharsToReplaceCharsBeforeCursor, // Start offset
+          from: offset >= 0 ? offset : 0, // Start offset
           to: pos, // End offset
           insert: str, // Replacement text
         },
@@ -3205,6 +3221,29 @@ class Editor extends EventEmitter {
   }
 
   /**
+   * Finds the markers of a specified marker type
+   *
+   * @param {string} markerType - The type for the marker to get decorations
+   */
+  getDecorationsForMarker(markerType) {
+    const cm = editors.get(this);
+    const {
+      codemirrorView: { EditorView },
+    } = this.#CodeMirror6;
+    const decorations = [];
+    const decoSets = cm.state.facet(EditorView.decorations);
+    decoSets.forEach(deco => {
+      const decoSet = typeof deco === "function" ? deco(cm) : deco;
+      decoSet.between(0, cm.state.doc.length, (from, to, decoration) => {
+        if (decoration?.markerType === markerType) {
+          decorations.push(decoration);
+        }
+      });
+    });
+    return decorations;
+  }
+
+  /**
    * Removes all gutter markers in the gutter with the given name.
    */
   removeAllMarkers(gutterName) {
@@ -3630,39 +3669,82 @@ class Editor extends EventEmitter {
     }
   }
 
+  /**
+   * Get the marked autocompletion text from the editor
+   *
+   * @returns {string} Autocompletion text
+   */
   getAutoCompletionText() {
     const cm = editors.get(this);
+    if (this.config.cm6) {
+      const decorations = this.getDecorationsForMarker(
+        this.markerTypes.AUTOCOMPLETE_CONTENT_MARKER
+      );
+      if (!decorations.length) {
+        return "";
+      }
+      // For the autocomplete marker we expect to find only
+      // one decoration.
+      const mark = decorations[0].widget.toDOM();
+      return mark.attributes["data-completion"].value || "";
+    }
     const mark = cm
       .getAllMarks()
       .find(m => m.className === AUTOCOMPLETE_MARK_CLASSNAME);
+
     if (!mark) {
       return "";
     }
-
     return mark.attributes["data-completion"] || "";
   }
 
+  /**
+   * Add the autocompletion text to the codemirror editor with a
+   * marker to style the text.
+   *
+   * @param {string} text
+   */
   setAutoCompletionText(text) {
     const cm = editors.get(this);
-    const cursor = cm.getCursor();
     const className = AUTOCOMPLETE_MARK_CLASSNAME;
 
-    cm.operation(() => {
-      cm.getAllMarks().forEach(mark => {
-        if (mark.className === className) {
-          mark.clear();
-        }
-      });
-
+    if (this.config.cm6) {
+      const pos = cm.state.selection.main.head;
+      const line = cm.state.doc.lineAt(pos);
+      this.removePositionContentMarker(
+        this.markerTypes.AUTOCOMPLETE_CONTENT_MARKER
+      );
       if (text) {
-        cm.markText({ ...cursor, ch: cursor.ch - 1 }, cursor, {
-          className,
-          attributes: {
-            "data-completion": text,
+        this.setPositionContentMarker({
+          id: this.markerTypes.AUTOCOMPLETE_CONTENT_MARKER,
+          positions: [{ line: line.number, column: pos - line.from }],
+          createPositionElementNode: () => {
+            const autocompleteMarker = this.#win.document.createElement("span");
+            autocompleteMarker.className = AUTOCOMPLETE_MARK_CLASSNAME;
+            autocompleteMarker.setAttribute("data-completion", text);
+            return autocompleteMarker;
           },
         });
       }
-    });
+    } else {
+      const cursor = cm.getCursor();
+      cm.operation(() => {
+        cm.getAllMarks().forEach(mark => {
+          if (mark.className === className) {
+            mark.clear();
+          }
+        });
+
+        if (text) {
+          cm.markText({ ...cursor, ch: cursor.ch - 1 }, cursor, {
+            className,
+            attributes: {
+              "data-completion": text,
+            },
+          });
+        }
+      });
+    }
   }
 
   /**
