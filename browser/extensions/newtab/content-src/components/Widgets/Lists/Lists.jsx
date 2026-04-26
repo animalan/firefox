@@ -12,6 +12,7 @@ import React, {
 import { useSelector, batch } from "react-redux";
 import { actionCreators as ac, actionTypes as at } from "common/Actions.mjs";
 import { useIntersectionObserver, useConfetti } from "../../../lib/utils";
+import { WIDGET_REGISTRY, resolveWidgetSize } from "../WidgetsRegistry.mjs";
 
 const TASK_TYPE = {
   IN_PROGRESS: "tasks",
@@ -51,15 +52,16 @@ function Lists({
   const [pendingNewList, setPendingNewList] = useState(null);
   const selectedList = useMemo(() => lists[selected], [lists, selected]);
 
-  // @nova-cleanup(remove-pref): Remove novaEnabled and this check; always use prefs[PREF_LISTS_SIZE] directly and always apply col-4 class after Nova ships
+  // @nova-cleanup(remove-pref): Remove novaEnabled and this check; always use resolveWidgetSize directly and always apply col-4 class after Nova ships
   const novaEnabled = prefs[PREF_NOVA_ENABLED];
   // Nova path: only "medium" or "large" are selectable; "small" is disabled in the submenu
   const isSmallSize = novaEnabled
     ? false
     : !isMaximized && widgetsMayBeMaximized;
+  const listsWidget = WIDGET_REGISTRY.find(w => w.id === "lists");
   let widgetSize;
   if (novaEnabled) {
-    widgetSize = prefs[PREF_LISTS_SIZE] || "large";
+    widgetSize = resolveWidgetSize(listsWidget, prefs);
   } else {
     widgetSize = isSmallSize ? "small" : "medium";
   }

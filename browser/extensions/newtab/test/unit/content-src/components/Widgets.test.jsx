@@ -1337,7 +1337,7 @@ describe("<Widgets>", () => {
         novaStore.dispatch.restore();
       });
 
-      it("should send Lists to compact mode and other widgets to medium when minimizing", () => {
+      it("should send all row widgets to medium when minimizing", () => {
         const maximizedNovaState = {
           ...NOVA_STATE,
           Prefs: {
@@ -1380,14 +1380,14 @@ describe("<Widgets>", () => {
           call => call.args[0].data?.name === "widgets.weather.size"
         );
 
-        assert.equal(listsSizeCall?.args[0].data.value, "small");
+        assert.equal(listsSizeCall?.args[0].data.value, "medium");
         assert.equal(timerSizeCall?.args[0].data.value, "medium");
         assert.equal(weatherSizeCall?.args[0].data.value, "medium");
 
         novaStore.dispatch.restore();
       });
 
-      it("should restore Lists from compact mode when maximizing", () => {
+      it("should not update size prefs for lists pinned to small", () => {
         const smallSizeState = {
           ...NOVA_STATE,
           Prefs: {
@@ -1421,10 +1421,9 @@ describe("<Widgets>", () => {
         const listsSizeCall = setPrefCalls.find(
           call => call.args[0].data?.name === "widgets.lists.size"
         );
-        assert.equal(
-          listsSizeCall?.args[0].data.value,
-          "large",
-          "should dispatch SetPref for lists when restoring from compact mode"
+        assert.ok(
+          !listsSizeCall,
+          "should not dispatch SetPref for lists pinned to small"
         );
 
         novaStore.dispatch.restore();
@@ -1551,6 +1550,115 @@ describe("<Widgets>", () => {
 
         novaStore.dispatch.restore();
       });
+    });
+  });
+
+  describe("widget order", () => {
+    const PREF_WIDGETS_ORDER = "widgets.order";
+
+    it("should render Lists before FocusTimer with default order (empty pref)", () => {
+      const state = {
+        ...INITIAL_STATE,
+        Prefs: {
+          ...INITIAL_STATE.Prefs,
+          values: {
+            ...INITIAL_STATE.Prefs.values,
+            [PREF_WIDGETS_ENABLED]: true,
+            [PREF_WIDGETS_LISTS_ENABLED]: true,
+            [PREF_WIDGETS_SYSTEM_LISTS_ENABLED]: true,
+            [PREF_WIDGETS_TIMER_ENABLED]: true,
+            [PREF_WIDGETS_SYSTEM_TIMER_ENABLED]: true,
+            [PREF_WIDGETS_ORDER]: "",
+          },
+        },
+      };
+      const wrapper = mount(
+        <WrapWithProvider state={state}>
+          <Widgets />
+        </WrapWithProvider>
+      );
+      const listsNode = wrapper.find(Lists).getDOMNode();
+      const timerNode = wrapper.find(FocusTimer).getDOMNode();
+      // DOCUMENT_POSITION_FOLLOWING (4): timerNode comes after listsNode
+      assert.ok(
+        listsNode.compareDocumentPosition(timerNode) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+        "Lists should appear before FocusTimer in default order"
+      );
+    });
+
+    it("should render FocusTimer before Lists when order pref reverses them", () => {
+      const state = {
+        ...INITIAL_STATE,
+        Prefs: {
+          ...INITIAL_STATE.Prefs,
+          values: {
+            ...INITIAL_STATE.Prefs.values,
+            [PREF_WIDGETS_ENABLED]: true,
+            [PREF_WIDGETS_LISTS_ENABLED]: true,
+            [PREF_WIDGETS_SYSTEM_LISTS_ENABLED]: true,
+            [PREF_WIDGETS_TIMER_ENABLED]: true,
+            [PREF_WIDGETS_SYSTEM_TIMER_ENABLED]: true,
+            [PREF_WIDGETS_ORDER]: "focusTimer,lists,weather",
+          },
+        },
+      };
+      const wrapper = mount(
+        <WrapWithProvider state={state}>
+          <Widgets />
+        </WrapWithProvider>
+      );
+      const timerNode = wrapper.find(FocusTimer).getDOMNode();
+      const listsNode = wrapper.find(Lists).getDOMNode();
+      // DOCUMENT_POSITION_FOLLOWING (4): listsNode comes after timerNode
+      assert.ok(
+        timerNode.compareDocumentPosition(listsNode) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+        "FocusTimer should appear before Lists when order pref says so"
+      );
+    });
+
+    it("should not dispatch SET_PREF for widgets.order when a widget is disabled", () => {
+      const state = {
+        ...INITIAL_STATE,
+        Prefs: {
+          ...INITIAL_STATE.Prefs,
+          values: {
+            ...INITIAL_STATE.Prefs.values,
+            [PREF_WIDGETS_ENABLED]: true,
+            [PREF_WIDGETS_LISTS_ENABLED]: true,
+            [PREF_WIDGETS_SYSTEM_LISTS_ENABLED]: true,
+            [PREF_WIDGETS_TIMER_ENABLED]: true,
+            [PREF_WIDGETS_SYSTEM_TIMER_ENABLED]: true,
+          },
+        },
+      };
+      const store = createStore(combineReducers(reducers), state);
+      sinon.spy(store, "dispatch");
+      const wrapper = mount(
+        <Provider store={store}>
+          <Widgets />
+        </Provider>
+      );
+
+      wrapper.find("#hide-all-widgets-button").prop("onClick")({
+        preventDefault: () => {},
+      });
+
+      const orderPrefCalls = store.dispatch
+        .getCalls()
+        .filter(
+          call =>
+            call.args[0]?.type === at.SET_PREF &&
+            call.args[0]?.data?.name === PREF_WIDGETS_ORDER
+        );
+
+      assert.equal(
+        orderPrefCalls.length,
+        0,
+        "hiding widgets should not modify widgets.order"
+      );
+      store.dispatch.restore();
     });
   });
 });

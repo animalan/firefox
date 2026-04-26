@@ -242,8 +242,13 @@ function getDefaultWidgetSize() {
  * explicit one-time migration step.
  *
  * This sets a default pref, not a user pref. Users who change their size via
- * the UI are fully migrated (their choice becomes a user pref). Users who never
- * touch the UI remain dependent on this function at every startup.
+ * the UI are fully migrated (their choice becomes a user pref — see the
+ * sentinel approach documented in WidgetsRegistry.mjs). Users who never touch
+ * the UI remain dependent on this function at every startup.
+ *
+ * widgets.weather.size uses getValue here instead of value: "" (the approach
+ * used by other widget size prefs) because the correct initial value depends
+ * on the user's prior weather configuration and cannot be a static default.
  *
  * - No forecast system pref → user had the classic weather widget → "small" (sidebar)
  * - Forecast enabled + display !== "detailed" → user switched to simple weather → "small"
@@ -252,8 +257,8 @@ function getDefaultWidgetSize() {
  */
 // @nova-cleanup(remove-pref): Replace this function with a _migratePref call
 // that writes the computed size as a user pref for widgets.weather.size, then
-// change widgets.weather.size in PREFS_CONFIG from getValue: getWeatherWidgetSize
-// to getValue: getDefaultWidgetSize.
+// change widgets.weather.size in PREFS_CONFIG to value: "" (consistent with
+// other widget size prefs; new users fall through to defaultSize in the registry).
 function getWeatherWidgetSize() {
   const forecastSystemEnabled = Services.prefs.getBoolPref(
     "browser.newtabpage.activity-stream.widgets.system.weatherForecast.enabled",
@@ -1276,14 +1281,14 @@ export const PREFS_CONFIG = new Map([
     "widgets.lists.size",
     {
       title: "Size of the lists widget (medium or large)",
-      getValue: getDefaultWidgetSize,
+      value: "",
     },
   ],
   [
     "widgets.focusTimer.size",
     {
       title: "Size of the focus timer widget (medium or large)",
-      getValue: getDefaultWidgetSize,
+      value: "",
     },
   ],
   [
@@ -1298,6 +1303,14 @@ export const PREFS_CONFIG = new Map([
     {
       title: "Shows a toast when all widgets are hidden via the X button",
       value: false,
+    },
+  ],
+  [
+    "widgets.order",
+    {
+      title:
+        "Widget display order as a comma-separated list of widget IDs. Empty string means use the default registry order.",
+      value: "",
     },
   ],
   [

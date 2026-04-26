@@ -6,6 +6,7 @@ import { actionCreators as ac, actionTypes as at } from "common/Actions.mjs";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, batch } from "react-redux";
 import { useIntersectionObserver } from "../../../lib/utils";
+import { WIDGET_REGISTRY, resolveWidgetSize } from "../WidgetsRegistry.mjs";
 
 const USER_ACTION_TYPES = {
   CHANGE_SIZE: "change_size",
@@ -130,14 +131,15 @@ export const FocusTimer = ({
   const initialTimerDuration = timerData[timerType].initialDuration;
 
   const prefs = useSelector(state => state.Prefs.values);
-  // @nova-cleanup(remove-pref): Remove novaEnabled and this check; always use prefs[PREF_FOCUS_TIMER_SIZE] directly after Nova ships
+  // @nova-cleanup(remove-pref): Remove novaEnabled and this check; always use resolveWidgetSize directly after Nova ships
   const novaEnabled = prefs[PREF_NOVA_ENABLED];
   const isSmallSize = novaEnabled
     ? false
     : !isMaximized && widgetsMayBeMaximized;
+  const timerWidget = WIDGET_REGISTRY.find(w => w.id === "focusTimer");
   let widgetSize;
   if (novaEnabled) {
-    widgetSize = prefs[PREF_FOCUS_TIMER_SIZE] || "large";
+    widgetSize = resolveWidgetSize(timerWidget, prefs);
   } else {
     widgetSize = isSmallSize ? "small" : "medium";
   }
