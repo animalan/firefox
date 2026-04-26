@@ -908,7 +908,7 @@ ResolveResult ImportMap::ResolveModuleSpecifier(ImportMap* aImportMap,
                                                 ScriptFetchInfo* aFetchInfo,
                                                 const nsAString& aSpecifier) {
   nsCOMPtr<nsIURI> baseURL;
-  if (aFetchInfo && !aFetchInfo->IsForEventScript()) {
+  if (aFetchInfo && !aFetchInfo->IsForEvent()) {
     baseURL = aFetchInfo->BaseURL();
   } else {
     baseURL = aLoader->GetBaseURI();
