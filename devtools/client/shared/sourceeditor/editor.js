@@ -2190,7 +2190,26 @@ class Editor extends EventEmitter {
   }
 
   /**
+   * Gets the text from the cursor position to the end of the line
+   *
+   * @returns {string} The text after the cursor
+   */
+  getTextAfterCursor() {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      const pos = cm.state.selection.main.head;
+      const line = cm.state.doc.lineAt(pos);
+      return cm.state.sliceDoc(pos, line.to);
+    }
+    const { ch, line } = cm.getCursor();
+    const lineContent = cm.getLine(line);
+    return lineContent.substring(ch);
+  }
+
+  /**
    * Gets the text from the start postion to just before the cursor position
+   *
+   * @returns {string} The text before the cursor
    */
   getTextBeforeCursor() {
     const cm = editors.get(this);
@@ -2214,6 +2233,39 @@ class Editor extends EventEmitter {
       return { line: line.number, ch: pos - line.from };
     }
     return cm.getCursor();
+  }
+
+  /**
+   * Insert a string into the editor at the cursor location,
+   * moving the cursor to the end of the string.
+   *
+   * @param {string} str
+   * @param {int} numberOfCharsToReplaceCharsBeforeCursor - defaults to 0
+   * @param {string} origin
+   */
+  insertStringAtCursor(
+    str,
+    numberOfCharsToReplaceCharsBeforeCursor = 0,
+    origin
+  ) {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      const pos = cm.state.selection.main.head;
+      cm.dispatch({
+        changes: {
+          from: pos - numberOfCharsToReplaceCharsBeforeCursor, // Start offset
+          to: pos, // End offset
+          insert: str, // Replacement text
+        },
+      });
+    } else {
+      const cursor = cm.getCursor();
+      const from = {
+        line: cursor.line,
+        ch: cursor.ch - numberOfCharsToReplaceCharsBeforeCursor,
+      };
+      cm.getDoc().replaceRange(str, from, cursor, origin);
+    }
   }
 
   getDoc() {
@@ -3591,8 +3643,8 @@ class Editor extends EventEmitter {
   }
 
   setAutoCompletionText(text) {
-    const cursor = this.getCursor();
     const cm = editors.get(this);
+    const cursor = cm.getCursor();
     const className = AUTOCOMPLETE_MARK_CLASSNAME;
 
     cm.operation(() => {
@@ -3821,29 +3873,49 @@ class Editor extends EventEmitter {
   /**
    * Move CodeMirror cursor to a given location.
    * This will also scroll the editor to the specified position.
-   * Used only for CM6
    *
    * @param {number} line
    * @param {number} column
+   * @param {boolean} scroll
    */
-  async setCursorAt(line, column) {
-    await this.scrollTo(line, column);
+  async setCursorAt(line, column, scroll = true) {
+    if (scroll) {
+      await this.scrollTo(line, column);
+    }
     const cm = editors.get(this);
-    const { lines } = cm.state.doc;
-    if (line > lines) {
-      console.error(
-        `Trying to set the cursor on a non-existing line ${line} > ${lines}`
-      );
-      return null;
+    if (this.config.cm6) {
+      const { lines } = cm.state.doc;
+      if (line > lines) {
+        console.error(
+          `Trying to set the cursor on a non-existing line ${line} > ${lines}`
+        );
+        return null;
+      }
+      const lineInfo = cm.state.doc.line(line);
+      if (column > lineInfo.length) {
+        console.error(
+          `Trying to set the cursor on a non-existing column ${column} > ${lineInfo.length}`
+        );
+        return null;
+      }
+      const position = lineInfo.from + column;
+      return cm.dispatch({ selection: { anchor: position, head: position } });
     }
-    const lineInfo = cm.state.doc.line(line);
-    if (column >= lineInfo.length) {
-      console.error(
-        `Trying to set the cursor on a non-existing column ${column} >= ${lineInfo.length}`
-      );
-      return null;
+    return this.setCursor({ line, ch: column });
+  }
+
+  /**
+   * Set the cursor at a codemirror 6 position in the document.
+   *
+   * @param {number} position
+   * @param {boolean} scroll
+   * @returns
+   */
+  setCursorAtPosition(position, scroll = true) {
+    const cm = editors.get(this);
+    if (scroll) {
+      cm.scrollToPosition(position);
     }
-    const position = lineInfo.from + column;
     return cm.dispatch({ selection: { anchor: position, head: position } });
   }
 
