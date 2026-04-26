@@ -19,7 +19,9 @@ pub type SslTokensReadCallback =
     unsafe extern "C" fn(ctx: *mut c_void, record: *const SslTokensPersistedRecord);
 
 /// FFI-safe representation of one persisted token record.
-/// Cert chain data is excluded — see `PersistedRecord` for rationale.
+/// All cert chain fields are included so that PSK-resumed TLS 1.3
+/// connections (which receive no Certificate message from the server)
+/// can reconstruct full security info after a browser restart.
 #[repr(C)]
 pub struct SslTokensPersistedRecord {
     pub id: u64,
@@ -30,12 +32,13 @@ pub struct SslTokensPersistedRecord {
     pub ev_status: u8,
     pub ct_status: u16,
     pub overridable_error: u8,
+    pub server_cert: ThinVec<u8>,
+    pub succeeded_cert_chain: ThinVec<ThinVec<u8>>,
+    pub handshake_certs: ThinVec<ThinVec<u8>>,
+    /// Empty = absent (`None`); one element = present (`Some(value)`).
+    pub is_built_cert_chain_root_built_in_root: ThinVec<bool>,
 }
 
-/// Certificate chain fields (`server_cert`, `succeeded_chain`,
-/// `handshake_certs`) are intentionally excluded — a new TLS handshake
-/// delivers fresh cert data, so the storage cost (~8–10 KB
-/// per record) is not worthwhile.
 #[derive(Clone, Serialize, Deserialize)]
 #[expect(
     clippy::unsafe_derive_deserialize,
@@ -49,10 +52,24 @@ struct PersistedRecord {
     ev_status: u8,
     ct_status: u16,
     overridable_error: u8,
+    server_cert: Vec<u8>,
+    succeeded_cert_chain: Option<Vec<Vec<u8>>>,
+    handshake_certs: Option<Vec<Vec<u8>>>,
+    is_built_cert_chain_root_built_in_root: Option<bool>,
 }
 
 impl PersistedRecord {
-    /// Constructs a `PersistedRecord` from a C-compatible record, ignoring cert chains.
+    fn thin_chain_to_opt(chain: &ThinVec<ThinVec<u8>>) -> Option<Vec<Vec<u8>>> {
+        (!chain.is_empty()).then(|| chain.iter().map(|c| c.to_vec()).collect())
+    }
+
+    fn opt_chain_to_thin(chain: Option<&[Vec<u8>]>) -> ThinVec<ThinVec<u8>> {
+        chain.map_or_else(ThinVec::new, |c| {
+            c.iter().map(|b| b.iter().copied().collect()).collect()
+        })
+    }
+
+    /// Constructs a `PersistedRecord` from a C-compatible record.
     ///
     /// # Safety
     ///
@@ -69,11 +86,19 @@ impl PersistedRecord {
             ev_status: rec.ev_status,
             ct_status: rec.ct_status,
             overridable_error: rec.overridable_error,
+            server_cert: rec.server_cert.to_vec(),
+            succeeded_cert_chain: Self::thin_chain_to_opt(&rec.succeeded_cert_chain),
+            handshake_certs: Self::thin_chain_to_opt(&rec.handshake_certs),
+            is_built_cert_chain_root_built_in_root: rec
+                .is_built_cert_chain_root_built_in_root
+                .first()
+                .copied(),
         }
     }
 
-    /// Constructs a stack-allocated `SslTokensPersistedRecord` that borrows
-    /// from `self` and passes it to `f`. The record must not escape `f`.
+    /// Constructs a stack-allocated `SslTokensPersistedRecord` that partially
+    /// borrows from `self` (the `token` raw pointer) and partially copies (cert
+    /// chain fields) and passes it to `f`. The record must not escape `f`.
     fn with_record<F: FnOnce(&SslTokensPersistedRecord)>(&self, f: F) {
         let rec = SslTokensPersistedRecord {
             id: self.id,
@@ -84,6 +109,13 @@ impl PersistedRecord {
             ev_status: self.ev_status,
             ct_status: self.ct_status,
             overridable_error: self.overridable_error,
+            server_cert: self.server_cert.iter().copied().collect(),
+            succeeded_cert_chain: Self::opt_chain_to_thin(self.succeeded_cert_chain.as_deref()),
+            handshake_certs: Self::opt_chain_to_thin(self.handshake_certs.as_deref()),
+            is_built_cert_chain_root_built_in_root: self
+                .is_built_cert_chain_root_built_in_root
+                .into_iter()
+                .collect(),
         };
         f(&rec);
     }
@@ -101,7 +133,7 @@ static STATE: Mutex<SslTokensState> = Mutex::new(SslTokensState {
 type PrTime = i64;
 
 const MAGIC: [u8; 4] = *b"STCF";
-const VERSION: u8 = 1;
+const VERSION: u8 = 2;
 /// Derived from the header layout: magic(4) + version(1).
 /// Integrity is provided by the Adler-32 embedded in the zlib stream.
 const HEADER_SIZE: usize = MAGIC.len() + size_of::<u8>();
@@ -426,6 +458,10 @@ mod tests {
             ev_status: 0,
             ct_status: 0,
             overridable_error: 0,
+            server_cert: vec![1, 2, 3],
+            succeeded_cert_chain: Some(vec![vec![4, 5], vec![6, 7, 8]]),
+            handshake_certs: None,
+            is_built_cert_chain_root_built_in_root: Some(true),
         }
     }
 
@@ -448,6 +484,12 @@ mod tests {
         assert_eq!(output.len(), 2);
         assert_eq!(output[0].key, b"example.com:443");
         assert_eq!(output[0].token, b"token1");
+        assert_eq!(output[0].server_cert, [1, 2, 3]);
+        assert_eq!(
+            output[0].succeeded_cert_chain,
+            Some(vec![vec![4, 5], vec![6, 7, 8]])
+        );
+        assert_eq!(output[0].is_built_cert_chain_root_built_in_root, Some(true));
         assert_eq!(output[1].id, 2);
     }
 

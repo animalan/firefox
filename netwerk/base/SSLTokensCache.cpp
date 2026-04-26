@@ -52,25 +52,24 @@ class ExpirationComparator {
   }
 };
 
+// Deep-copies a flat cert chain (a list of DER-encoded certs).  Used by
+// SessionCacheInfo::Clone() and the FFI marshaling helpers below.
+static nsTArray<nsTArray<uint8_t>> CloneCertChain(
+    const nsTArray<nsTArray<uint8_t>>& aSrc) {
+  return TransformIntoNewArray(aSrc, [](const auto& c) { return c.Clone(); });
+}
+
 SessionCacheInfo SessionCacheInfo::Clone() const {
   SessionCacheInfo result;
   result.mEVStatus = mEVStatus;
   result.mCertificateTransparencyStatus = mCertificateTransparencyStatus;
   result.mServerCertBytes = mServerCertBytes.Clone();
   result.mSucceededCertChainBytes =
-      mSucceededCertChainBytes
-          ? Some(TransformIntoNewArray(
-                *mSucceededCertChainBytes,
-                [](const auto& element) { return element.Clone(); }))
-          : Nothing();
+      mSucceededCertChainBytes.map(CloneCertChain);
   result.mIsBuiltCertChainRootBuiltInRoot = mIsBuiltCertChainRootBuiltInRoot;
   result.mOverridableErrorCategory = mOverridableErrorCategory;
   result.mHandshakeCertificatesBytes =
-      mHandshakeCertificatesBytes
-          ? Some(TransformIntoNewArray(
-                *mHandshakeCertificatesBytes,
-                [](const auto& element) { return element.Clone(); }))
-          : Nothing();
+      mHandshakeCertificatesBytes.map(CloneCertChain);
   return result;
 }
 
@@ -457,6 +456,35 @@ SSLTokensCache::SSLTokensCache() { LOG(("SSLTokensCache::SSLTokensCache")); }
 
 SSLTokensCache::~SSLTokensCache() { LOG(("SSLTokensCache::~SSLTokensCache")); }
 
+// Helpers for marshaling cert chain data across the Rust FFI boundary.
+// The FFI representation uses nsTArray<nsTArray<uint8_t>> where an empty
+// array signals "absent" (i.e. Maybe::Nothing on the C++ side), and
+// nsTArray<bool> with 0 or 1 elements for optional booleans.
+
+static nsTArray<nsTArray<uint8_t>> ChainToFfi(
+    const Maybe<nsTArray<nsTArray<uint8_t>>>& aSrc) {
+  if (aSrc.isNothing()) {
+    return {};
+  }
+  return CloneCertChain(*aSrc);
+}
+
+static Maybe<nsTArray<nsTArray<uint8_t>>> ChainFromFfi(
+    const nsTArray<nsTArray<uint8_t>>& aSrc) {
+  return aSrc.IsEmpty() ? Nothing() : Some(CloneCertChain(aSrc));
+}
+
+static nsTArray<bool> BoolToFfi(const Maybe<bool>& aSrc) {
+  if (aSrc.isNothing()) return {};
+  nsTArray<bool> result;
+  result.AppendElement(*aSrc);
+  return result;
+}
+
+static Maybe<bool> BoolFromFfi(const nsTArray<bool>& aSrc) {
+  return aSrc.IsEmpty() ? Nothing() : Some(aSrc[0]);
+}
+
 // static
 nsresult SSLTokensCache::Put(const nsACString& aKey, const uint8_t* aToken,
                              uint32_t aTokenLen,
@@ -582,22 +610,15 @@ nsresult SSLTokensCache::Put(const nsACString& aKey, const uint8_t* aToken,
       return NS_ERROR_NOT_INITIALIZED;
     }
 
-    auto cloneChain = [](const Maybe<nsTArray<nsTArray<uint8_t>>>& aSrc)
-        -> Maybe<nsTArray<nsTArray<uint8_t>>> {
-      if (aSrc.isNothing()) return Nothing();
-      return Some(TransformIntoNewArray(
-          aSrc.ref(), [](const auto& element) { return element.Clone(); }));
-    };
-
     auto makeRecord = [&]() MOZ_REQUIRES(sLock) {
       auto rec = MakeUnique<TokenCacheRecord>();
       rec->mKey = aKey;
       rec->mExpirationTime = aExpirationTime;
       MOZ_ASSERT(rec->mToken.IsEmpty());
       rec->mToken.AppendElements(aToken, aTokenLen);
-      rec->mSessionCacheInfo.mServerCertBytes = std::move(certBytes);
+      rec->mSessionCacheInfo.mServerCertBytes = certBytes.Clone();
       rec->mSessionCacheInfo.mSucceededCertChainBytes =
-          cloneChain(succeededCertChainBytes);
+          succeededCertChainBytes.map(CloneCertChain);
       if (isEV) {
         rec->mSessionCacheInfo.mEVStatus = psm::EVStatus::EV;
       }
@@ -608,7 +629,7 @@ nsresult SSLTokensCache::Put(const nsACString& aKey, const uint8_t* aToken,
       rec->mSessionCacheInfo.mOverridableErrorCategory =
           overridableErrorCategory;
       rec->mSessionCacheInfo.mHandshakeCertificatesBytes =
-          cloneChain(handshakeCertificatesBytes);
+          handshakeCertificatesBytes.map(CloneCertChain);
       return rec;
     };
 
@@ -632,6 +653,11 @@ nsresult SSLTokensCache::Put(const nsACString& aKey, const uint8_t* aToken,
     rec.ev_status = isEV ? 1 : 0;
     rec.ct_status = certificateTransparencyStatus;
     rec.overridable_error = static_cast<uint8_t>(overridableErrorCategory);
+    rec.server_cert = certBytes.Clone();
+    rec.succeeded_cert_chain = ChainToFfi(succeededCertChainBytes);
+    rec.handshake_certs = ChainToFfi(handshakeCertificatesBytes);
+    rec.is_built_cert_chain_root_built_in_root =
+        BoolToFfi(isBuiltCertChainRootBuiltInRoot);
     ssl_tokens_cache_append(&rec);
   }
 
@@ -1108,6 +1134,13 @@ bool SSLTokensCache::PutFromPersisted(const SslTokensPersistedRecord* aRec,
     rec->mSessionCacheInfo.mOverridableErrorCategory =
         static_cast<nsITransportSecurityInfo::OverridableErrorCategory>(
             aRec->overridable_error);
+    rec->mSessionCacheInfo.mServerCertBytes = aRec->server_cert.Clone();
+    rec->mSessionCacheInfo.mSucceededCertChainBytes =
+        ChainFromFfi(aRec->succeeded_cert_chain);
+    rec->mSessionCacheInfo.mHandshakeCertificatesBytes =
+        ChainFromFfi(aRec->handshake_certs);
+    rec->mSessionCacheInfo.mIsBuiltCertChainRootBuiltInRoot =
+        BoolFromFfi(aRec->is_built_cert_chain_root_built_in_root);
     uint64_t newId = gInstance->InsertRecordLocked(std::move(rec), evictedIds);
 
     // Keep the Rust shadow in sync so DoWrite includes this record on the next
@@ -1116,8 +1149,20 @@ bool SSLTokensCache::PutFromPersisted(const SslTokensPersistedRecord* aRec,
     // connections with cert-error overrides.
     if ((gInstance->mBackingFile || XRE_IsSocketProcess()) &&
         ShouldPersistKey(aRec->key, aRec->overridable_error)) {
-      shadowRec = *aRec;
       shadowRec.id = newId;
+      shadowRec.key = aRec->key;
+      shadowRec.expiration_time = aRec->expiration_time;
+      shadowRec.token = aRec->token;
+      shadowRec.token_len = aRec->token_len;
+      shadowRec.ev_status = aRec->ev_status;
+      shadowRec.ct_status = aRec->ct_status;
+      shadowRec.overridable_error = aRec->overridable_error;
+      shadowRec.server_cert = aRec->server_cert.Clone();
+      shadowRec.succeeded_cert_chain =
+          CloneCertChain(aRec->succeeded_cert_chain);
+      shadowRec.handshake_certs = CloneCertChain(aRec->handshake_certs);
+      shadowRec.is_built_cert_chain_root_built_in_root =
+          aRec->is_built_cert_chain_root_built_in_root.Clone();
       shouldAppend = true;
     }
   }  // sLock released

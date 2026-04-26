@@ -3,6 +3,7 @@ header = """/* This Source Code Form is subject to the terms of the Mozilla Publ
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */"""
 autogen_warning = """/* DO NOT MODIFY THIS MANUALLY! This file was generated using cbindgen. */
 #include "nsString.h"
+#include "nsTArray.h"
 """
 include_guard = "mozilla_net_ssl_tokens_cache_h"
 include_version = true
