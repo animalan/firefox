@@ -817,7 +817,7 @@
 
   .urlbarView-row:is([type="remotetab"], [sponsored]):not([selected], :hover) &,
   .urlbarView-row:is([show-action-text], [restyled-search]) &,
-  .urlbarView:not([action-override]) .urlbarView-row[type="switchtab"] & {
+  .urlbarView:not([action-override]) .urlbarView-row[type="switchtab"] > .urlbarView-row-inner > .urlbarView-row-body > .urlbarView-row-body-top > & {
     /* Use visibility:collapse instead of display:none since the latter can
        confuse the overflow state of these elements when their content
        changes while they're hidden (bug 1549787). */
