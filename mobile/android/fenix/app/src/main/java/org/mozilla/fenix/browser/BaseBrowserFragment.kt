@@ -196,7 +196,6 @@ import org.mozilla.fenix.components.toolbar.BrowserToolbarComposable
 import org.mozilla.fenix.components.toolbar.BrowserToolbarMenuController
 import org.mozilla.fenix.components.toolbar.DefaultBrowserToolbarController
 import org.mozilla.fenix.components.toolbar.DefaultBrowserToolbarMenuController
-import org.mozilla.fenix.components.toolbar.FenixBrowserToolbarView
 import org.mozilla.fenix.components.toolbar.ToolbarContainerView
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.components.toolbar.ToolbarsIntegration
@@ -292,11 +291,11 @@ abstract class BaseBrowserFragment :
 
     @VisibleForTesting
     @Suppress("VariableNaming")
-    internal var _browserToolbarView: FenixBrowserToolbarView? = null
+    internal var _browserToolbarView: BrowserToolbarComposable? = null
     private var awesomeBarComposable: AwesomeBarComposable? = null
 
     @VisibleForTesting
-    internal val browserToolbarView: FenixBrowserToolbarView
+    internal val browserToolbarView: BrowserToolbarComposable
         get() = _browserToolbarView!!
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
@@ -1025,7 +1024,6 @@ abstract class BaseBrowserFragment :
                 requireContext().settings().toolbarPosition
             },
             onShow = ::onAutocompleteBarShow,
-            onHide = ::onAutocompleteBarHide,
         )
 
         addressSelectBar = FenixAutocompletePrompt(
@@ -1037,7 +1035,6 @@ abstract class BaseBrowserFragment :
                 requireContext().settings().toolbarPosition
             },
             onShow = ::onAutocompleteBarShow,
-            onHide = ::onAutocompleteBarHide,
         )
 
         creditCardSelectBar = FenixAutocompletePrompt(
@@ -1049,7 +1046,6 @@ abstract class BaseBrowserFragment :
                 requireContext().settings().toolbarPosition
             },
             onShow = ::onAutocompleteBarShow,
-            onHide = ::onAutocompleteBarHide,
         )
 
         suggestStrongPasswordBar = FenixSuggestStrongPasswordPrompt(
@@ -1061,7 +1057,6 @@ abstract class BaseBrowserFragment :
                 requireContext().settings().toolbarPosition
             },
             onShow = ::onAutocompleteBarShow,
-            onHide = ::onAutocompleteBarHide,
         )
 
         emailMaskBar = FenixEmailMaskPrompt(
@@ -1076,7 +1071,6 @@ abstract class BaseBrowserFragment :
                 onAutocompleteBarShow()
                 EmailMask.promptShown.record()
             },
-            onHide = ::onAutocompleteBarHide,
         )
 
         promptsFeature.set(
@@ -1586,10 +1580,6 @@ abstract class BaseBrowserFragment :
         removeBottomToolbarDivider()
     }
 
-    private fun onAutocompleteBarHide() {
-        restoreBottomToolbarDivider()
-    }
-
     /**
      * Show a [Snackbar] when data is set to the device clipboard. To avoid duplicate displays of
      * information only show a [Snackbar] for Android 12 and lower.
@@ -1767,7 +1757,7 @@ abstract class BaseBrowserFragment :
         val view = requireView()
 
         val isToolbarAtBottom = context.isToolbarAtBottom()
-        val browserToolbar = (browserToolbarView as BrowserToolbarComposable).layout
+        val browserToolbar = browserToolbarView.layout
         val navigationBar = browserNavigationBar?.layout
         // The toolbar view has already been added directly to the container.
         if (isToolbarAtBottom) {
@@ -1812,8 +1802,6 @@ abstract class BaseBrowserFragment :
                                     },
                                 )
                             }
-                        } else {
-                            restoreBottomToolbarDivider()
                         }
 
                         if (isToolbarAtBottom) {
@@ -1847,12 +1835,7 @@ abstract class BaseBrowserFragment :
     }
 
     private fun removeBottomToolbarDivider() {
-        browserToolbarView.updateDividerVisibility(false)
         browserToolbarView.layout.elevation = 0.0f
-    }
-
-    private fun restoreBottomToolbarDivider() {
-        browserToolbarView.updateDividerVisibility(true)
     }
 
     private var currentMicrosurvey: MicrosurveyUIData? = null
@@ -2423,7 +2406,7 @@ abstract class BaseBrowserFragment :
     }
 
     @CallSuper
-    internal open fun onUpdateToolbarForConfigurationChange(toolbar: FenixBrowserToolbarView) {
+    internal open fun onUpdateToolbarForConfigurationChange(toolbar: BrowserToolbarComposable) {
         reinitializeEngineView()
 
         // If the microsurvey feature is visible, we should update it's state.

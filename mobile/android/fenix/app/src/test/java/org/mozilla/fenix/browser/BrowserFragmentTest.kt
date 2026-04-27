@@ -36,7 +36,7 @@ import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.appstate.AppState
-import org.mozilla.fenix.components.toolbar.FenixBrowserToolbarView
+import org.mozilla.fenix.components.toolbar.BrowserToolbarComposable
 import org.mozilla.fenix.ext.application
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
@@ -85,7 +85,7 @@ class BrowserFragmentTest {
         browserFragment = spyk(BrowserFragment())
         every { browserFragment.view } returns view
         every { browserFragment.isAdded } returns true
-        every { browserFragment.browserToolbarView } returns mockk<FenixBrowserToolbarView>(relaxed = true)
+        every { browserFragment.browserToolbarView } returns mockk<BrowserToolbarComposable>(relaxed = true)
         every { browserFragment.browserToolbarInteractor } returns mockk(relaxed = true)
         every { browserFragment.childFragmentManager } returns mockk(relaxed = true)
         every { browserFragment.activity } returns homeActivity
@@ -176,7 +176,7 @@ class BrowserFragmentTest {
             coroutineContext[ContinuationInterceptor] as CoroutineDispatcher,
         )
 
-        val toolbar: FenixBrowserToolbarView = mockk(relaxed = true)
+        val toolbar: BrowserToolbarComposable = mockk(relaxed = true)
         every { browserFragment.browserToolbarView } returns toolbar
 
         val newSelectedTab = createTab("https://firefox.com")
