@@ -8,6 +8,7 @@
 
 #include "nsISound.h"
 #include "nsIObserver.h"
+#include "nsIStreamLoader.h"
 #include "nsCOMPtr.h"
 #include "mozilla/StaticPtr.h"
 
@@ -15,6 +16,7 @@ class nsIThread;
 class nsIRunnable;
 
 class nsSound : public nsISound,
+                public nsIStreamLoaderObserver,
                 public nsIObserver
 
 {
@@ -24,6 +26,7 @@ class nsSound : public nsISound,
 
   NS_DECL_ISUPPORTS
   NS_DECL_NSISOUND
+  NS_DECL_NSISTREAMLOADEROBSERVER
   NS_DECL_NSIOBSERVER
 
  private:

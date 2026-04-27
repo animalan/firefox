@@ -7,13 +7,15 @@
 #define nsSound_h_
 
 #include "nsISound.h"
+#include "nsIStreamLoader.h"
 
-class nsSound : public nsISound {
+class nsSound : public nsISound, public nsIStreamLoaderObserver {
  public:
   nsSound();
 
   NS_DECL_ISUPPORTS
   NS_DECL_NSISOUND
+  NS_DECL_NSISTREAMLOADEROBSERVER
 
  protected:
   virtual ~nsSound();
