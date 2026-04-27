@@ -42,26 +42,6 @@ export const ToastNotification = {
   },
 
   /**
-   * Select the appropriate image URL from message content based on the
-   * system color scheme and motion preferences.
-   *
-   * @param {object} content  The message content object.
-   * @returns {string|undefined} The selected image URL.
-   */
-  imageUrlForContent(content) {
-    const isDark = Services.appinfo.chromeColorSchemeIsDark;
-    const isReducedMotion = Services.appinfo.prefersReducedMotion;
-    return (
-      (isDark &&
-        isReducedMotion &&
-        content.dark_mode_reduced_motion_image_url) ||
-      (isDark && content.dark_mode_image_url) ||
-      (isReducedMotion && content.reduced_motion_image_url) ||
-      content.image_url
-    );
-  },
-
-  /**
    * Show a toast notification.
    *
    * @param message             Message containing content to show.
@@ -95,16 +75,15 @@ export const ToastNotification = {
     this.sendUserEventTelemetry("IMPRESSION", message, dispatch);
     dispatch({ type: "IMPRESSION", data: message });
 
-    const imageUrl = this.imageUrlForContent(content);
-
+    // `content_image_url` specifies the image to display in the notification.
     // To determine whether the image is a `.gif`, we inspect the file name.
     // Because the URL may include query parameters, we use a proper URL parser
     // to extract the canonical file name and consolidate the parsed data in
     // `imgData` to keep all related information in a single structure.
     let imageContainer = null;
     let imageData;
-    if (imageUrl) {
-      const url = new URL(imageUrl);
+    if (content.image_url) {
+      const url = new URL(content.image_url);
       imageData = {
         url,
         name: url.pathname.split("/").pop(),
@@ -127,7 +106,7 @@ export const ToastNotification = {
       try {
         const resp = await fetch(imageData.url);
         if (!resp.ok) {
-          throw new Error(`Could not fetch ${imageUrl}`);
+          throw new Error(`Could not fetch ${content.image_url}`);
         }
 
         const bytes = new Uint8Array(await resp.arrayBuffer());
@@ -138,7 +117,9 @@ export const ToastNotification = {
           `${uuid}_${imageData.name}`
         );
 
-        lazy.logConsole.info(`Saved ${imageUrl} to path: ${imagePath}`);
+        lazy.logConsole.info(
+          `Saved ${content.image_url} to path: ${imagePath}`
+        );
 
         await IOUtils.write(imagePath, bytes);
 
