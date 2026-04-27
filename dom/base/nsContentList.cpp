@@ -374,9 +374,9 @@ GetFuncStringContentList<nsCacheableFuncStringHTMLCollection>(
 
 nsContentList::nsContentList(nsINode* aRootNode, int32_t aMatchNameSpaceId,
                              nsAtom* aHTMLMatchAtom, nsAtom* aXMLMatchAtom,
-                             bool aDeep, bool aLiveList)
-    : nsBaseContentList(),
-      mRootNode(aRootNode),
+                             bool aDeep, bool aLiveList,
+                             bool aKnownParserCreated)
+    : mRootNode(aRootNode),
       mMatchNameSpaceId(aMatchNameSpaceId),
       mHTMLMatchAtom(aHTMLMatchAtom),
       mXMLMatchAtom(aXMLMatchAtom),
@@ -401,22 +401,22 @@ nsContentList::nsContentList(nsINode* aRootNode, int32_t aMatchNameSpaceId,
     mRootNode->AddMutationObserver(this);
   }
 
-  // We only need to flush if we're in an non-HTML document, since the
-  // HTML5 parser doesn't need flushing.  Further, if we're not in a
-  // document at all right now (in the GetUncomposedDoc() sense), we're
-  // not parser-created and don't need to be flushing stuff under us
-  // to get our kids right.
-  Document* doc = mRootNode->GetUncomposedDoc();
-  mFlushesNeeded = doc && !doc->IsHTMLDocument();
+  // We only need to flush if we're in an non-HTML document, since the HTML5
+  // parser doesn't need flushing.  Further, if we're not in a document at all
+  // right now (in the IsInUncomposedDoc() sense), and aKnownParserCreated is
+  // false, we're not parser-created and don't need to be flushing stuff under
+  // us to get our kids right.
+  mFlushesNeeded = (aKnownParserCreated || aRootNode->IsInUncomposedDoc()) &&
+                   !mIsHTMLDocument;
 }
 
 nsContentList::nsContentList(nsINode* aRootNode, nsContentListMatchFunc aFunc,
                              nsContentListDestroyFunc aDestroyFunc, void* aData,
                              bool aDeep, nsAtom* aMatchAtom,
                              int32_t aMatchNameSpaceId,
-                             bool aFuncMayDependOnAttr, bool aLiveList)
-    : nsBaseContentList(),
-      mRootNode(aRootNode),
+                             bool aFuncMayDependOnAttr, bool aLiveList,
+                             bool aKnownParserCreated)
+    : mRootNode(aRootNode),
       mMatchNameSpaceId(aMatchNameSpaceId),
       mHTMLMatchAtom(aMatchAtom),
       mXMLMatchAtom(aMatchAtom),
@@ -438,13 +438,9 @@ nsContentList::nsContentList(nsINode* aRootNode, nsContentListMatchFunc aFunc,
     mRootNode->AddMutationObserver(this);
   }
 
-  // We only need to flush if we're in an non-HTML document, since the
-  // HTML5 parser doesn't need flushing.  Further, if we're not in a
-  // document at all right now (in the GetUncomposedDoc() sense), we're
-  // not parser-created and don't need to be flushing stuff under us
-  // to get our kids right.
-  Document* doc = mRootNode->GetUncomposedDoc();
-  mFlushesNeeded = doc && !doc->IsHTMLDocument();
+  // See above
+  mFlushesNeeded = (aKnownParserCreated || aRootNode->IsInUncomposedDoc()) &&
+                   !aRootNode->OwnerDoc()->IsHTMLDocument();
 }
 
 nsContentList::~nsContentList() {
