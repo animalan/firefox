@@ -299,9 +299,10 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             with(requireContext()) {
                 maybeNavigateToSystemSetToDefaultAction(
-                    result.resultCode,
-                    settings(),
-                    dateTimeProvider,
+                    resultCode = result.resultCode,
+                    settings = settings(),
+                    dateTimeProvider = dateTimeProvider,
+                    isChecklistTask = true,
                 ) {
                     navigateToDefaultBrowserAppsSettings(BuildManufacturerChecker())
                 }
