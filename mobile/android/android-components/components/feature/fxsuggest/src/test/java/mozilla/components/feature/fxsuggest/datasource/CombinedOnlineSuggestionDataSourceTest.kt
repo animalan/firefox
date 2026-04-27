@@ -4,20 +4,24 @@
 
 package mozilla.components.feature.fxsuggest.datasource
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import mozilla.components.feature.fxsuggest.client.MerinoClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CombinedOnlineSuggestionDataSourceTest {
 
     @Test
     fun `fetchStocks returns empty list without a network call when query is too short`() =
         runTest {
             val client = FakeMerinoClient(STOCKS_RESPONSE)
-            val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+            val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
             val result = dataSource.fetchStocks("AP")
 
@@ -29,7 +33,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     fun `fetchSports returns empty list without a network call when query is too short`() =
         runTest {
             val client = FakeMerinoClient(SPORTS_RESPONSE)
-            val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+            val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
             val result = dataSource.fetchSports("AP")
 
@@ -41,7 +45,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     fun `fetchFlights returns empty list without a network call when query is too short`() =
         runTest {
             val client = FakeMerinoClient(FLIGHTS_RESPONSE)
-            val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+            val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
             val result = dataSource.fetchFlights("UA")
 
@@ -52,7 +56,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchStocks returns stock items when only a stock response is returned`() = runTest {
         val client = FakeMerinoClient(STOCKS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchStocks("AAPL stock")
 
@@ -71,7 +75,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchSports returns empty when only a stock response is returned`() = runTest {
         val client = FakeMerinoClient(STOCKS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchSports("AAPL stock")
 
@@ -81,7 +85,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchFlights returns empty when only a stock response is returned`() = runTest {
         val client = FakeMerinoClient(STOCKS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchFlights("AAPL stock")
 
@@ -91,7 +95,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchSports returns sport items when only a sport response is returned`() = runTest {
         val client = FakeMerinoClient(SPORTS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchSports("lakers game")
 
@@ -117,7 +121,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchStocks returns empty when only a sport response is returned`() = runTest {
         val client = FakeMerinoClient(SPORTS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchStocks("lakers game")
 
@@ -127,7 +131,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchFlights returns empty when only a sport response is returned`() = runTest {
         val client = FakeMerinoClient(SPORTS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchFlights("lakers game")
 
@@ -137,7 +141,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchFlights returns flight items when only a flight response is returned`() = runTest {
         val client = FakeMerinoClient(FLIGHTS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchFlights("UA1 flight")
 
@@ -161,7 +165,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchStocks returns empty when only a flight response is returned`() = runTest {
         val client = FakeMerinoClient(FLIGHTS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchStocks("UA1 flight")
 
@@ -171,7 +175,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchSports returns empty when only flights response is returned`() = runTest {
         val client = FakeMerinoClient(FLIGHTS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchSports("UA1 flight")
 
@@ -181,7 +185,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchSports returns sports items when sports has a higher score than stocks`() = runTest {
         val client = FakeMerinoClient(SPORTS_BEATS_STOCKS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchSports("query test")
 
@@ -192,7 +196,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchStocks returns empty when sports has a higher score than stocks`() = runTest {
         val client = FakeMerinoClient(SPORTS_BEATS_STOCKS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchStocks("query test")
 
@@ -202,7 +206,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchStocks returns empty when fetcher returns null`() = runTest {
         val client = FakeMerinoClient(null)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchStocks("AAPL stock")
 
@@ -212,7 +216,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchStocks returns empty when response is malformed JSON`() = runTest {
         val client = FakeMerinoClient("not valid json")
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchStocks("AAPL stock")
 
@@ -222,7 +226,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchStocks returns empty when response has no suggestions`() = runTest {
         val client = FakeMerinoClient("""{"suggestions":[]}""")
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchStocks("AAPL stock")
 
@@ -232,7 +236,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `fetchStocks returns empty when response contains unknown provider`() = runTest {
         val client = FakeMerinoClient(UNKNOWN_PROVIDER_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val result = dataSource.fetchStocks("query test")
 
@@ -242,7 +246,7 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `concurrent requests for the same query result in a single network call`() = runTest {
         val client = FakeMerinoClient(STOCKS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
         val deferred1 = async { dataSource.fetchStocks("AAPL stock") }
         val deferred2 = async { dataSource.fetchStocks("AAPL stock") }
@@ -254,15 +258,35 @@ class CombinedOnlineSuggestionDataSourceTest {
     @Test
     fun `different queries each trigger a separate network call`() = runTest {
         val client = FakeMerinoClient(STOCKS_RESPONSE)
-        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client, debounceMs = 0)
 
-        val deferred1 = async { dataSource.fetchStocks("AAPL stock") }
-        val deferred2 = async { dataSource.fetchStocks("MSFT stock") }
-
-        deferred1.await()
-        deferred2.await()
+        dataSource.fetchStocks("AAPL stock")
+        dataSource.fetchStocks("MSFT stock")
 
         assertEquals(listOf("AAPL stock", "MSFT stock"), client.queries)
+    }
+
+    @Test
+    fun `no network call is made within the debounce window`() = runTest {
+        val client = FakeMerinoClient(STOCKS_RESPONSE)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+
+        backgroundScope.launch { dataSource.fetchStocks("AAPL stock") }
+        advanceTimeBy(DEFAULT_DEBOUNCE_MS - 1)
+
+        assertTrue(client.queries.isEmpty())
+    }
+
+    @Test
+    fun `only the last query within the debounce window triggers a network call`() = runTest {
+        val client = FakeMerinoClient(STOCKS_RESPONSE)
+        val dataSource = CombinedOnlineSuggestionDataSource(backgroundScope, client)
+
+        backgroundScope.launch { dataSource.fetchStocks("AAPL stock") }
+        advanceTimeBy(DEFAULT_DEBOUNCE_MS - 1)
+        dataSource.fetchStocks("MSFT stock")
+
+        assertEquals(listOf("MSFT stock"), client.queries)
     }
 }
 
