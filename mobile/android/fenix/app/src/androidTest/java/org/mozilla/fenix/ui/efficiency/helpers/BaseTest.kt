@@ -70,7 +70,7 @@ abstract class BaseTest(
     val retryWithCompose: TestRule = TestRule { base, description ->
         object : Statement() {
             override fun evaluate() {
-                repeat(1) { attempt ->
+                repeat(1 + MAX_RETRIES) { attempt ->
                     _composeRule = AndroidComposeTestRule(
                         HomeActivityIntentTestRule(
                             skipOnboarding = skipOnboarding,
@@ -87,7 +87,7 @@ abstract class BaseTest(
                         cleanup(removeTabs = true)
                         throw t
                     } catch (t: Throwable) {
-                        if (!t.isRetryable() || attempt == 2) throw t
+                        if (!t.isRetryable() || attempt >= MAX_RETRIES) throw t
                         Log.i("BaseTest", "RetryTestRule: ${t::class.simpleName} caught, retrying.")
                         cleanup()
                     }
@@ -157,6 +157,13 @@ abstract class BaseTest(
         } catch (_: Throwable) {
             // Logging must never fail a test.
         }
+    }
+
+    private companion object {
+        /**
+         * Number of retry attempts to do, if the test fails.
+         */
+        const val MAX_RETRIES = 1
     }
 }
 
