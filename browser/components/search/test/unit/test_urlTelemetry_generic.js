@@ -444,7 +444,10 @@ add_task(async function test_parsing_search_urls() {
         },
       },
     };
-    SearchSERPTelemetry.updateTrackingStatus(browser, test.trackingUrl);
+    SearchSERPTelemetry.updateTrackingStatus(
+      browser,
+      Services.io.newURI(test.trackingUrl)
+    );
     SearchSERPTelemetry.reportPageImpression(
       {
         url: test.trackingUrl,

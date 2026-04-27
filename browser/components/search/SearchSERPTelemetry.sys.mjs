@@ -161,6 +161,10 @@ const AD_COMPONENTS = [
 /**
  * @typedef {object} ProviderInfo
  *
+ * @property {{parent: boolean, child: boolean}} alwaysMatchSERP
+ *   If set, any URL matching searchPageRegexp is treated as a SERP without
+ *   requiring a query param in the specified process(es). Used for providers
+ *   where the search query is in the POST body rather than the URL.
  * @property {string} codeParamName
  *   The name of the query parameter for the partner code.
  * @property {object[]} components
@@ -617,18 +621,29 @@ class TelemetryHandler {
    *
    * @param {object} browser
    *   The browser associated with the page.
-   * @param {string} url
-   *   The url that was loaded in the browser.
-   * @param {nsIDocShell.LoadCommand} loadType
-   *   The load type associated with the page load.
+   * @param {nsIURI} uri
+   *   The uri that was loaded in the browser.
+   * @param {nsIWebProgress} [webProgress]
+   *   The web progress associated with the page load.
    */
-  updateTrackingStatus(browser, url, loadType) {
+  updateTrackingStatus(browser, uri, webProgress = null) {
     if (
       !lazy.BrowserSearchTelemetry.shouldRecordSearchCount(
         browser.getTabBrowser()
       )
     ) {
       return;
+    }
+    let url = uri.spec;
+    let postParams = this._extractPostParams(webProgress, uri);
+    if (postParams) {
+      let augmentedUrl = URL.fromURI(uri);
+      for (let [key, value] of postParams.entries()) {
+        if (!augmentedUrl.searchParams.has(key)) {
+          augmentedUrl.searchParams.set(key, value);
+        }
+      }
+      url = augmentedUrl.href;
     }
     let info = this._checkURLForSerpMatch(url);
     if (!info) {
@@ -637,6 +652,7 @@ class TelemetryHandler {
       return;
     }
 
+    let loadType = webProgress?.loadType ?? 0;
     let source = "unknown";
     if (loadType & Ci.nsIDocShell.LOAD_CMD_RELOAD) {
       source = "reload";
@@ -741,10 +757,10 @@ class TelemetryHandler {
    *   The browser element related to the request.
    * @param {string} url
    *   The url of the request.
-   * @param {number} loadType
-   *   The loadtype of a the request.
+   * @param {nsIWebProgress} webProgress
+   *   The web progress associated with the request.
    */
-  async updateTrackingSinglePageApp(browser, url, loadType) {
+  async updateTrackingSinglePageApp(browser, url, webProgress) {
     let providerInfo = this._getProviderInfoForURL(url);
     if (!providerInfo?.pageTypeParam?.enableSPAHandling) {
       return;
@@ -768,7 +784,7 @@ class TelemetryHandler {
     let pageTypeChanged = previousPageType != pageType;
 
     let browserIsTracked = !!telemetryState;
-    let isTabHistory = loadType & Ci.nsIDocShell.LOAD_CMD_HISTORY;
+    let isTabHistory = webProgress.loadType & Ci.nsIDocShell.LOAD_CMD_HISTORY;
 
     // Step 1: Maybe record engagement.
     if (
@@ -844,7 +860,7 @@ class TelemetryHandler {
       this._isTrackablePageType(pageType, providerInfo) &&
       !browserIsTracked
     ) {
-      this.updateTrackingStatus(browser, url, loadType);
+      this.updateTrackingStatus(browser, Services.io.newURI(url), webProgress);
       let actor = browser.browsingContext.currentWindowGlobal.getActor(
         "SearchSERPTelemetry"
       );
@@ -1196,6 +1212,36 @@ class TelemetryHandler {
   }
 
   /**
+   * Attempts to read POST body parameters for the current page from session
+   * history.
+   *
+   * @param {?nsIWebProgress} webProgress
+   *   The web progress associated with the page load.
+   * @param {nsIURI} uri
+   *   The uri of the page.
+   * @returns {?URLSearchParams}
+   *   Parsed POST body parameters, or null if unavailable.
+   */
+  _extractPostParams(webProgress, uri) {
+    if (!webProgress || !this._getProviderInfoForURL(uri.spec)) {
+      return null;
+    }
+
+    try {
+      // @ts-expect-error
+      let history = webProgress.browsingContext.sessionHistory;
+      if (!history) {
+        return null;
+      }
+      let body = history.getEntryAtIndex(history.index)?.postData?.data?.data;
+      return body ? new URLSearchParams(body) : null;
+    } catch (ex) {
+      lazy.logConsole.debug("Failed to read POST data:", ex);
+      return null;
+    }
+  }
+
+  /**
    * Checks to see if a url is a search partner location, and determines the
    * provider and codes used.
    *
@@ -1242,7 +1288,7 @@ class TelemetryHandler {
         break;
       }
     }
-    if (!hasQuery) {
+    if (!hasQuery && !searchProviderInfo.alwaysMatchSERP?.parent) {
       return null;
     }
     // Default to organic to simplify things.
