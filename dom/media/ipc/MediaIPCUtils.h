@@ -500,7 +500,8 @@ struct ParamTraits<mozilla::OpusSpecific::Application>
           mozilla::OpusSpecific::Application::RestricedLowDelay> {};
 
 template <>
-struct ParamTraits<mozilla::VPXComplexity>
+struct MOZ_ENUM_SERIALIZER_ALLOW_SENTINEL_UPPER_BOUND
+    ParamTraits<mozilla::VPXComplexity>
     : public ContiguousEnumSerializerInclusive<mozilla::VPXComplexity,
                                                mozilla::VPXComplexity::Normal,
                                                mozilla::VPXComplexity::Max> {};

@@ -9,6 +9,7 @@
 #include "AssertAssignmentChecker.h"
 #include "CanRunScriptChecker.h"
 #include "DanglingOnTemporaryChecker.h"
+#include "EnumSerializerChecker.h"
 #include "ExplicitImplicitChecker.h"
 #include "ExplicitOperatorBoolChecker.h"
 #ifdef TARGET_IS_WINDOWS

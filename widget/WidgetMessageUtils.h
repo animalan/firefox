@@ -7,6 +7,7 @@
 
 #include "ipc/EnumSerializer.h"
 #include "ipc/IPCMessageUtils.h"
+#include "mozilla/Attributes.h"
 #include "mozilla/DimensionRequest.h"
 #include "mozilla/GfxMessageUtils.h"
 #include "mozilla/LookAndFeel.h"
@@ -65,7 +66,8 @@ struct ParamTraits<nsCursor>
     : ContiguousEnumSerializer<nsCursor, eCursor_standard, eCursorCount> {};
 
 template <>
-struct ParamTraits<nsIWidget::TouchpadGesturePhase>
+struct MOZ_ENUM_SERIALIZER_ALLOW_SENTINEL_UPPER_BOUND
+    ParamTraits<nsIWidget::TouchpadGesturePhase>
     : ContiguousEnumSerializerInclusive<
           nsIWidget::TouchpadGesturePhase,
           nsIWidget::TouchpadGesturePhase::PHASE_BEGIN,

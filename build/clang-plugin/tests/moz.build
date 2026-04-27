@@ -11,6 +11,7 @@ SOURCES += [
     "TestCanRunScript.cpp",
     "TestCustomHeap.cpp",
     "TestDanglingOnTemporary.cpp",
+    "TestEnumSerializer.cpp",
     "TestExplicitOperatorBool.cpp",
     "TestGlobalClass.cpp",
     "TestGlobalVariableInitialization.cpp",

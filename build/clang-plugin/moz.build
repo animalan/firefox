@@ -14,6 +14,7 @@ HOST_SOURCES += [
     "CustomTypeAnnotation.cpp",
     "DanglingOnTemporaryChecker.cpp",
     "DiagnosticsMatcher.cpp",
+    "EnumSerializerChecker.cpp",
     "ExplicitImplicitChecker.cpp",
     "ExplicitOperatorBoolChecker.cpp",
     "GlobalVariableInitializationChecker.cpp",

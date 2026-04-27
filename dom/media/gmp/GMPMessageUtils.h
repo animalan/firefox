@@ -11,6 +11,7 @@
 #include "gmp-video-frame-encoded.h"
 #include "ipc/EnumSerializer.h"
 #include "ipc/IPCMessageUtilsSpecializations.h"
+#include "mozilla/Attributes.h"
 
 namespace IPC {
 
@@ -70,7 +71,7 @@ struct ParamTraits<GMPRateControlMode>
           GMPRateControlMode, kGMPRateControlUnknown, kGMPRateControlOff> {};
 
 template <>
-struct ParamTraits<GMPSliceMode>
+struct MOZ_ENUM_SERIALIZER_ALLOW_SENTINEL_UPPER_BOUND ParamTraits<GMPSliceMode>
     : public ContiguousEnumSerializerInclusive<GMPSliceMode, kGMPSliceUnknown,
                                                kGMPSliceSizeLimited> {};
 
