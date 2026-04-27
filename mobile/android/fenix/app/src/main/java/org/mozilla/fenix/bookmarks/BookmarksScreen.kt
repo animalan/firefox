@@ -157,7 +157,6 @@ private const val MATERIAL_DESIGN_SCRIM = "#52000000"
  * @param toolbarStore [BrowserToolbarStore] controlling the search toolbar.
  * @param searchStore [SearchFragmentStore] controlling how search results are displayed.
  * @param bookmarksSearchEngine [SearchEngine] the default search engine to use when searching bookmarks.
- * @param useNewSearchUX Whether to use the new integrated search UX or navigate to a separate search screen.
  * @param profiler app profiler used to access firefox profile features.
  * @param startDestination the screen on which to initialize [BookmarksScreen] with.
  */
@@ -169,7 +168,6 @@ internal fun BookmarksScreen(
     toolbarStore: BrowserToolbarStore,
     searchStore: SearchFragmentStore,
     bookmarksSearchEngine: SearchEngine?,
-    useNewSearchUX: Boolean = false,
     profiler: Profiler? = components.core.engine.profiler,
     startDestination: String = BookmarksDestinations.LIST,
 ) {
@@ -200,7 +198,6 @@ internal fun BookmarksScreen(
                 searchStore = searchStore,
                 bookmarksSearchEngine = bookmarksSearchEngine,
                 profiler = profiler,
-                useNewSearchUX = useNewSearchUX,
             )
         }
         composable(route = BookmarksDestinations.ADD_FOLDER) {
@@ -244,7 +241,6 @@ private fun BookmarksList(
     searchStore: SearchFragmentStore,
     bookmarksSearchEngine: SearchEngine?,
     profiler: Profiler?,
-    useNewSearchUX: Boolean = false,
 ) {
     val state by store.stateFlow.collectAsState()
     val searchState = searchStore.observeAsComposableState { it }.value
@@ -315,11 +311,7 @@ private fun BookmarksList(
         }
     }
 
-    LaunchedEffect(state.isSearching, useNewSearchUX) {
-        if (!useNewSearchUX) {
-            return@LaunchedEffect
-        }
-
+    LaunchedEffect(state.isSearching) {
         when (state.isSearching) {
             true -> {
                 if (!appStore.state.searchState.isSearchActive) {
@@ -375,7 +367,7 @@ private fun BookmarksList(
             }
         },
         topBar = {
-            if (useNewSearchUX && state.isSearching) {
+            if (state.isSearching) {
                 BrowserToolbar(toolbarStore)
             } else {
                 BookmarksListTopBar(store = store)
@@ -546,7 +538,7 @@ private fun BookmarksList(
             }
         }
 
-        if (useNewSearchUX && state.isSearching && searchState.searchSuggestionsProviders.isNotEmpty()) {
+        if (state.isSearching && searchState.searchSuggestionsProviders.isNotEmpty()) {
             val activity = LocalActivity.current
             val deleteHistoryDelegate = remember(activity?.getRootView(), searchStore) {
                 activity?.getRootView()?.let {

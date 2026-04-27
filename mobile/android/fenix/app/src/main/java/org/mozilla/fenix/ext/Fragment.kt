@@ -285,7 +285,7 @@ fun Fragment.getBottomToolbarHeight(includeNavBarIfEnabled: Boolean = true): Int
     val navBarHeight =
         if (includeNavBarIfEnabled && isNavBarEnabled) {
         pixelSizeFor(
-            if (settings.shouldUseComposableToolbar && isToolbarAtBottom) {
+            if (isToolbarAtBottom) {
                 R.dimen.browser_navbar_height_small
             } else {
                 R.dimen.browser_navbar_height
