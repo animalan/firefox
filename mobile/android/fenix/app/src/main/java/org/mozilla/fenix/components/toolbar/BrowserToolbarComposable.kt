@@ -41,7 +41,7 @@ import org.mozilla.fenix.utils.Settings
 
 /**
  * A wrapper over the [BrowserToolbar] composable to allow for extra customisation and
- * integration in the same framework as the [BrowserToolbarView]
+ * integration in the same framework as the [FenixBrowserToolbarView]
  *
  * @param activity [AppCompatActivity] hosting the toolbar.
  * @param container [ViewGroup] which will serve as parent of this View.

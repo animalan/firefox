@@ -290,15 +290,8 @@
     <string name="extensions_management_no_extensions">No extensions here</string>
 
     <!-- Browser Toolbar -->
-    <!-- Content description for the Home screen button on the browser toolbar -->
-    <string name="browser_toolbar_home">Home screen</string>
     <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
     <string name="browser_toolbar_translate">Translate page</string>
-    <!-- Content description (not visible, for screen readers etc.) for the translate page toolbar button that opens the translations dialog when the page is translated successfully.
-         %1$s is the name of the language that is displayed in the original page. (For example: English)
-         %2$s is the name of the language which the page was translated to. (For example: French) -->
-    <string name="browser_toolbar_translated_successfully">Page translated from %1$s to %2$s.</string>
-
     <!-- CFR description for the browser toolbar describing the "Shake to summarize feature" -->
     <string name="browser_toolbar_summarize_cfr_description">Shake your device to summarize this page in seconds. ⚡️</string>
 
@@ -1353,8 +1346,6 @@
     <string name="library_desktop_bookmarks_unfiled">Other Bookmarks</string>
     <!-- Option in Library to open History page -->
     <string name="library_history">History</string>
-    <!-- Option in Library to open a new tab -->
-    <string name="library_new_tab">New tab</string>
     <!-- Settings Page Title -->
     <string name="settings_title">Settings</string>
     <!-- Content description (not visible, for screen readers etc.): "Close button for library settings" -->
