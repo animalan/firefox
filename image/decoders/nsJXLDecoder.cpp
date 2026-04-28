@@ -181,9 +181,14 @@ LexerResult nsJXLDecoder::ScanForFrameCount(SourceBufferIterator& aIterator,
       }
     }
 
-    if (HasSize() && !jxl_decoder_has_more_frames(mScanner.get())) {
+    if (HasSize()) {
       uint32_t count = jxl_decoder_get_scanned_frame_count(mScanner.get());
-      PostFrameCount(count);
+      if (count >= 1) {
+        PostFrameCount(count);
+      }
+    }
+
+    if (HasSize() && !jxl_decoder_has_more_frames(mScanner.get())) {
       return LexerResult(TerminalState::SUCCESS);
     }
 
