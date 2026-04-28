@@ -1608,7 +1608,7 @@ class MOZ_STACK_CLASS nsAutoLowPriorityIO {
 
  private:
   bool lowIOPrioritySet;
-#if defined(XP_MACOSX)
+#if defined(XP_MACOSX) || defined(XP_LINUX)
   int oldPriority;
 #endif
 };
