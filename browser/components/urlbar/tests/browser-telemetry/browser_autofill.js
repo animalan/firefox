@@ -428,6 +428,20 @@ add_task(async function deletion() {
     expectedScalar: 2,
   });
 
+  info("Delete autofilled value and then delete again");
+  await doDeletionTest({
+    firstSearchString: "exa",
+    firstAutofilledValue: "example.com/",
+    trigger: () => {
+      EventUtils.synthesizeKey("KEY_Backspace");
+      Assert.equal(gURLBar.value, "exa");
+
+      EventUtils.synthesizeKey("KEY_Backspace");
+      Assert.equal(gURLBar.value, "ex");
+    },
+    expectedScalar: 1,
+  });
+
   info("Delete one char after unselecting autofilled string");
   await doDeletionTest({
     firstSearchString: "exa",
