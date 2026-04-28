@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 import { actionCreators as ac, actionTypes as at } from "common/Actions.mjs";
 // eslint-disable-next-line no-shadow
 import { CSSTransition } from "react-transition-group";
+import { calculateTheme } from "lib/Wallpapers/WallpaperThemeUtils.mjs";
 
 const PREF_WALLPAPER_UPLOADED_PREVIOUSLY =
   "newtabWallpapers.customWallpaper.uploadedPreviously";
@@ -352,10 +353,19 @@ export class _WallpaperCategories extends React.PureComponent {
           return;
         }
 
+        let theme;
+        try {
+          theme = await calculateTheme(globalThis, file);
+        } catch (e) {
+          console.error("Failed to decode wallpaper image", e);
+          this.setState({ customWallpaperErrorType: "fileType" });
+          return;
+        }
+
         this.props.dispatch(
           ac.OnlyToMain({
             type: at.WALLPAPER_UPLOAD,
-            data: { file },
+            data: { file, theme },
           })
         );
 

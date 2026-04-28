@@ -3,11 +3,9 @@
 
 "use strict";
 
-ChromeUtils.defineESModuleGetters(this, {
-  BasePromiseWorker: "resource://gre/modules/PromiseWorker.sys.mjs",
-});
-
-const WORKER_URL = "resource://newtab/lib/Wallpapers/WallpaperTheme.worker.mjs";
+const { calculateTheme } = ChromeUtils.importESModule(
+  "resource://newtab/lib/Wallpapers/WallpaperThemeUtils.mjs"
+);
 
 async function blobFromRGBA(rgba) {
   const canvas = new OffscreenCanvas(2, 2);
@@ -20,28 +18,26 @@ async function blobFromRGBA(rgba) {
 }
 
 add_task(async function test_calculateTheme_white_and_black_pixels() {
-  const worker = new BasePromiseWorker(WORKER_URL, { type: "module" });
-
   // 2x2: two white, two black
   const rgba = [
     255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255,
   ];
-  const fakeBlob = await blobFromRGBA(rgba);
-
-  const theme = await worker.post("calculateTheme", [fakeBlob]);
+  const blob = await blobFromRGBA(rgba);
+  const theme = await calculateTheme(window, blob);
   Assert.equal(theme, "light");
-
-  worker.terminate();
 });
 
 add_task(async function test_calculateTheme_all_black_pixels() {
-  const worker = new BasePromiseWorker(WORKER_URL, { type: "module" });
-
   const rgba = [0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255];
-  const fakeBlob = await blobFromRGBA(rgba);
-
-  const theme = await worker.post("calculateTheme", [fakeBlob]);
+  const blob = await blobFromRGBA(rgba);
+  const theme = await calculateTheme(window, blob);
   Assert.equal(theme, "dark");
+});
 
-  worker.terminate();
+add_task(async function test_calculateTheme_transparent_pixels_ignored() {
+  // 2x2: one white opaque, three fully transparent — average should equal white = light
+  const rgba = [255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const blob = await blobFromRGBA(rgba);
+  const theme = await calculateTheme(window, blob);
+  Assert.equal(theme, "light");
 });
