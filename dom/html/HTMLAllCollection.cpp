@@ -5,10 +5,10 @@
 #include "mozilla/dom/HTMLAllCollection.h"
 
 #include "jsfriendapi.h"
-#include "mozilla/dom/ContentList.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/HTMLAllCollectionBinding.h"
 #include "mozilla/dom/Nullable.h"
+#include "nsContentList.h"
 #include "nsGenericHTMLElement.h"
 
 namespace mozilla::dom {
@@ -63,7 +63,7 @@ void HTMLAllCollection::Item(const Optional<nsAString>& aNameOrIndex,
   NamedItem(nameOrIndex, aResult);
 }
 
-ContentList* HTMLAllCollection::Collection() {
+nsContentList* HTMLAllCollection::Collection() {
   if (!mCollection) {
     Document* document = mDocument;
     mCollection = document->GetElementsByTagName(u"*"_ns);
@@ -100,13 +100,14 @@ static bool DocAllResultMatch(Element* aElement, int32_t aNamespaceID,
          val->GetAtomValue() == aAtom;
 }
 
-ContentList* HTMLAllCollection::GetDocumentAllList(const nsAString& aID) {
+nsContentList* HTMLAllCollection::GetDocumentAllList(const nsAString& aID) {
   return mNamedMap
       .LookupOrInsertWith(aID,
                           [this, &aID] {
                             RefPtr<nsAtom> id = NS_Atomize(aID);
-                            return new ContentList(mDocument, DocAllResultMatch,
-                                                   nullptr, nullptr, true, id);
+                            return new nsContentList(mDocument,
+                                                     DocAllResultMatch, nullptr,
+                                                     nullptr, true, id);
                           })
       .get();
 }
@@ -120,7 +121,7 @@ void HTMLAllCollection::NamedGetter(
     return;
   }
 
-  ContentList* docAllList = GetDocumentAllList(aID);
+  nsContentList* docAllList = GetDocumentAllList(aID);
   if (!docAllList) {
     aFound = false;
     aResult.SetNull();
@@ -137,9 +138,9 @@ void HTMLAllCollection::NamedGetter(
   }
 
   // There's only 0 or 1 items. Return the first one or null.
-  if (Element* element = docAllList->Item(0, true)) {
+  if (nsIContent* node = docAllList->Item(0, true)) {
     aFound = true;
-    aResult.SetValue().SetAsElement() = element;
+    aResult.SetValue().SetAsElement() = node->AsElement();
     return;
   }
 

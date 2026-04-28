@@ -8,13 +8,13 @@
 #include "mozilla/PresShell.h"
 #include "mozilla/StaticPrefs_intl.h"
 #include "mozilla/css/Loader.h"
-#include "mozilla/dom/ContentList.h"
 #include "mozilla/dom/PrototypeDocumentContentSink.h"
 #include "mozilla/parser/PrototypeDocumentParser.h"
 #include "nsArrayUtils.h"
 #include "nsAttrName.h"
 #include "nsCOMPtr.h"
 #include "nsCommandManager.h"
+#include "nsContentList.h"
 #include "nsContentUtils.h"
 #include "nsDOMString.h"
 #include "nsDocShell.h"
@@ -560,7 +560,7 @@ void nsHTMLDocument::NamedGetter(JSContext* aCx, const nsAString& aName,
     return;
   }
 
-  BaseContentList* list = entry->GetDocumentNameContentList();
+  nsBaseContentList* list = entry->GetDocumentNameContentList();
   if (!list || list->Length() == 0) {
     return;
   }
@@ -663,7 +663,7 @@ bool nsHTMLDocument::ResolveNameForWindow(JSContext* aCx,
     return false;
   }
 
-  BaseContentList* list = entry->GetNameContentList();
+  nsBaseContentList* list = entry->GetNameContentList();
   uint32_t length = list ? list->Length() : 0;
 
   nsIContent* node;
@@ -802,29 +802,8 @@ bool nsHTMLDocument::WillIgnoreCharsetOverride() {
   return !potentialEffect;
 }
 
-class nsHTMLDocument::ContentListHolder : public mozilla::Runnable {
- public:
-  ContentListHolder(nsHTMLDocument* aDocument,
-                    mozilla::dom::ContentList* aFormList,
-                    mozilla::dom::ContentList* aFormControlList)
-      : mozilla::Runnable("ContentListHolder"),
-        mDocument(aDocument),
-        mFormList(aFormList),
-        mFormControlList(aFormControlList) {}
-
-  ~ContentListHolder() {
-    MOZ_ASSERT(!mDocument->mContentListHolder ||
-               mDocument->mContentListHolder == this);
-    mDocument->mContentListHolder = nullptr;
-  }
-
-  RefPtr<nsHTMLDocument> mDocument;
-  RefPtr<mozilla::dom::ContentList> mFormList;
-  RefPtr<mozilla::dom::ContentList> mFormControlList;
-};
-
-void nsHTMLDocument::GetFormsAndFormControls(ContentList** aFormList,
-                                             ContentList** aFormControlList) {
+void nsHTMLDocument::GetFormsAndFormControls(nsContentList** aFormList,
+                                             nsContentList** aFormControlList) {
   RefPtr<ContentListHolder> holder = mContentListHolder;
   if (!holder) {
     // Flush our content model so it'll be up to date
@@ -835,7 +814,7 @@ void nsHTMLDocument::GetFormsAndFormControls(ContentList** aFormList,
     //         anymore.
     FlushPendingNotifications(FlushType::Content);
 
-    RefPtr<ContentList> htmlForms = GetExistingForms();
+    RefPtr<nsContentList> htmlForms = GetExistingForms();
     if (!htmlForms) {
       // If the document doesn't have an existing forms content list, create a
       // new one which will be released soon by ContentListHolder.  The idea is
@@ -843,13 +822,13 @@ void nsHTMLDocument::GetFormsAndFormControls(ContentList** aFormList,
       // down future DOM mutations.
       //
       // Please keep this in sync with Document::Forms().
-      htmlForms = new ContentList(this, kNameSpaceID_XHTML, nsGkAtoms::form,
-                                  nsGkAtoms::form,
-                                  /* aDeep = */ true,
-                                  /* aLiveList = */ true);
+      htmlForms = new nsContentList(this, kNameSpaceID_XHTML, nsGkAtoms::form,
+                                    nsGkAtoms::form,
+                                    /* aDeep = */ true,
+                                    /* aLiveList = */ true);
     }
 
-    RefPtr htmlFormControls = new ContentList(
+    RefPtr<nsContentList> htmlFormControls = new nsContentList(
         this, nsHTMLDocument::MatchFormControls, nullptr, nullptr,
         /* aDeep = */ true,
         /* aMatchAtom = */ nullptr,

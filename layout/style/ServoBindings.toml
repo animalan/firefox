@@ -243,7 +243,7 @@ allowlist-types = [
     "nsMargin",
     "nsRect",
     "nsresult",
-    "mozilla::dom::SimpleContentList",
+    "nsSimpleContentList",
     "nsSize",
     "nsStyleBackground",
     "nsStyleBorder",

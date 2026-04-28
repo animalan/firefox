@@ -83,11 +83,11 @@ class HTMLTableElement final : public nsGenericHTMLElement {
   }
   already_AddRefed<nsGenericHTMLElement> CreateTFoot();
 
-  HTMLCollection* TBodies();
+  nsIHTMLCollection* TBodies();
 
   already_AddRefed<nsGenericHTMLElement> CreateTBody();
 
-  HTMLCollection* Rows();
+  nsIHTMLCollection* Rows();
 
   already_AddRefed<nsGenericHTMLElement> InsertRow(int32_t aIndex,
                                                    ErrorResult& aError);
@@ -187,7 +187,7 @@ class HTMLTableElement final : public nsGenericHTMLElement {
     return nullptr;
   }
 
-  RefPtr<ContentList> mTBodies;
+  RefPtr<nsContentList> mTBodies;
   RefPtr<TableRowsCollection> mRows;
   RefPtr<StyleLockedDeclarationBlock> mTableInheritedAttributes;
   void BuildInheritedAttributes();

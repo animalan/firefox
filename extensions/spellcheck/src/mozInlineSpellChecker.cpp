@@ -48,7 +48,6 @@
 #include "mozilla/dom/KeyboardEvent.h"
 #include "mozilla/dom/KeyboardEventBinding.h"
 #include "mozilla/dom/MouseEvent.h"
-#include "mozilla/dom/NodeList.h"
 #include "mozilla/dom/Selection.h"
 #include "mozInlineSpellWordUtil.h"
 #include "nsCOMPtr.h"

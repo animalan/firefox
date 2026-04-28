@@ -19,10 +19,13 @@
 #include "nsAtomHashKeys.h"
 #include "nsCycleCollectionParticipant.h"  // NS_DECL_CYCLE_*
 #include "nsIContent.h"                    // base class
+#include "nsIHTMLCollection.h"
 #include "nsIWeakReferenceUtils.h"
 #include "nsTHashSet.h"
 
 class ContentUnbinder;
+class nsContentList;
+class nsLabelsNodeList;
 class nsDOMAttributeMap;
 class nsDOMTokenList;
 class nsIControllers;
@@ -37,14 +40,11 @@ enum class ContentRelevancyReason;
 using ContentRelevancy = EnumSet<ContentRelevancyReason, uint8_t>;
 class ElementAnimationData;
 namespace dom {
-class ContentList;
+struct CustomElementData;
 class Element;
-class HTMLCollection;
-class LabelsNodeList;
 class PopoverData;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
-struct CustomElementData;
 }  // namespace dom
 }  // namespace mozilla
 
@@ -110,8 +110,13 @@ class FragmentOrElement : public nsIContent {
   void DestroyContent() override;
   void SaveSubtreeState() override;
 
-  HTMLCollection* Children();
-  uint32_t ChildElementCount();
+  nsIHTMLCollection* Children();
+  uint32_t ChildElementCount() {
+    if (!HasChildren()) {
+      return 0;
+    }
+    return Children()->Length();
+  }
 
   RadioGroupContainer& OwnedRadioGroupContainer() {
     auto* slots = ExtendedDOMSlots();
@@ -186,7 +191,7 @@ class FragmentOrElement : public nsIContent {
     /**
      * An object implementing the .labels property for this element.
      */
-    RefPtr<mozilla::dom::LabelsNodeList> mLabelsList;
+    RefPtr<nsLabelsNodeList> mLabelsList;
 
     /**
      * ShadowRoot bound to the element.
@@ -369,7 +374,7 @@ class FragmentOrElement : public nsIContent {
     /**
      * An object implementing the .children property for this element.
      */
-    RefPtr<ContentList> mChildrenList;
+    RefPtr<nsContentList> mChildrenList;
 
     /**
      * An object implementing the .classList property for this element.

@@ -31,10 +31,10 @@ NS_IMPL_ISUPPORTS_CYCLE_COLLECTION_INHERITED_0(HTMLTableSectionElement,
 
 NS_IMPL_ELEMENT_CLONE(HTMLTableSectionElement)
 
-HTMLCollection* HTMLTableSectionElement::Rows() {
+nsIHTMLCollection* HTMLTableSectionElement::Rows() {
   if (!mRows) {
-    mRows = new ContentList(this, mNodeInfo->NamespaceID(), nsGkAtoms::tr,
-                            nsGkAtoms::tr, false);
+    mRows = new nsContentList(this, mNodeInfo->NamespaceID(), nsGkAtoms::tr,
+                              nsGkAtoms::tr, false);
   }
 
   return mRows;
@@ -47,7 +47,7 @@ already_AddRefed<nsGenericHTMLElement> HTMLTableSectionElement::InsertRow(
     return nullptr;
   }
 
-  HTMLCollection* rows = Rows();
+  nsIHTMLCollection* rows = Rows();
 
   uint32_t rowCount = rows->Length();
   if (aIndex > (int32_t)rowCount) {
@@ -84,7 +84,7 @@ void HTMLTableSectionElement::DeleteRow(int32_t aValue, ErrorResult& aError) {
     return;
   }
 
-  HTMLCollection* rows = Rows();
+  nsIHTMLCollection* rows = Rows();
 
   uint32_t refIndex;
   if (aValue == -1) {

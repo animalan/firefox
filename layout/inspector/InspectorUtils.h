@@ -13,6 +13,7 @@
 
 class nsAtom;
 class nsINode;
+class nsINodeList;
 class nsRange;
 
 namespace mozilla {
@@ -29,7 +30,6 @@ class Document;
 class Element;
 class GlobalObject;
 class InspectorFontFace;
-class NodeList;
 class OwningCSSRuleOrInspectorDeclaration;
 }  // namespace dom
 }  // namespace mozilla
@@ -257,7 +257,7 @@ class InspectorUtils {
                                  Nullable<nsTArray<uint32_t>>& aResult);
 
   MOZ_CAN_RUN_SCRIPT
-  static already_AddRefed<NodeList> GetOverflowingChildrenOfElement(
+  static already_AddRefed<nsINodeList> GetOverflowingChildrenOfElement(
       GlobalObject& aGlobal, Element& element);
 
   /**

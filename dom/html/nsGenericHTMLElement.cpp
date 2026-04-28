@@ -32,7 +32,6 @@
 #include "mozilla/dom/BindContext.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/CommandEvent.h"
-#include "mozilla/dom/ContentList.h"
 #include "mozilla/dom/CustomElementRegistry.h"
 #include "mozilla/dom/DirectionalityUtils.h"
 #include "mozilla/dom/Document.h"
@@ -1892,21 +1891,21 @@ bool nsGenericHTMLElement::MatchLabelsElement(Element* aElement,
   return element && element->GetLabeledElementInternal() == aData;
 }
 
-already_AddRefed<NodeList> nsGenericHTMLElement::LabelsForBindings() {
+already_AddRefed<nsINodeList> nsGenericHTMLElement::LabelsForBindings() {
   return LabelsInternal();
 }
 
-already_AddRefed<NodeList> nsGenericHTMLElement::LabelsInternal() {
+already_AddRefed<nsINodeList> nsGenericHTMLElement::LabelsInternal() {
   MOZ_ASSERT(IsLabelable(),
              "Labels() only allow labelable elements to use it.");
   nsExtendedDOMSlots* slots = ExtendedDOMSlots();
 
   if (!slots->mLabelsList) {
     slots->mLabelsList =
-        new LabelsNodeList(this, SubtreeRoot(), MatchLabelsElement, nullptr);
+        new nsLabelsNodeList(this, SubtreeRoot(), MatchLabelsElement, nullptr);
   }
 
-  RefPtr<LabelsNodeList> labels = slots->mLabelsList;
+  RefPtr<nsLabelsNodeList> labels = slots->mLabelsList;
   return labels.forget();
 }
 

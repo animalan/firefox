@@ -60,6 +60,7 @@ class JSObject;
 class mozAutoDocUpdate;
 class nsAttrName;
 class nsAttrValueOrString;
+class nsContentList;
 class nsDOMAttributeMap;
 class nsDOMCSSAttributeDeclaration;
 class nsDOMStringMap;
@@ -83,6 +84,7 @@ class nsIDOMXULRelatedElement;
 class nsIDOMXULSelectControlElement;
 class nsIDOMXULSelectControlItemElement;
 class nsIFrame;
+class nsIHTMLCollection;
 class nsIPrincipal;
 class nsIScreen;
 class nsIURI;
@@ -124,7 +126,6 @@ struct ScrollOptions;
 struct FullscreenOptions;
 class Attr;
 class BooleanOrScrollIntoViewOptions;
-class ContentList;
 class Document;
 class HTMLFormElement;
 class DOMIntersectionObserver;
@@ -153,8 +154,9 @@ using nsMapRuleToAttributesFunc = void (*)(mozilla::MappedDeclarationsBuilder&);
 // Declared here because of include hell.
 extern "C" bool Servo_Element_IsDisplayContents(const mozilla::dom::Element*);
 
-already_AddRefed<mozilla::dom::ContentList> NS_GetContentList(
-    nsINode* aRootNode, int32_t aMatchNameSpaceId, const nsAString& aTagname);
+already_AddRefed<nsContentList> NS_GetContentList(nsINode* aRootNode,
+                                                  int32_t aMatchNameSpaceId,
+                                                  const nsAString& aTagname);
 
 #define ELEMENT_FLAG_BIT(n_) \
   NODE_FLAG_BIT(NODE_TYPE_SPECIFIC_BITS_OFFSET + (n_))
@@ -1372,12 +1374,12 @@ class Element : public FragmentOrElement {
   bool HasAttributes() const { return HasAttrs(); }
   Element* Closest(const nsACString& aSelector, ErrorResult& aResult);
   bool Matches(const nsACString& aSelector, ErrorResult& aError);
-  already_AddRefed<HTMLCollection> GetElementsByTagName(
+  already_AddRefed<nsIHTMLCollection> GetElementsByTagName(
       const nsAString& aQualifiedName);
-  already_AddRefed<HTMLCollection> GetElementsByTagNameNS(
+  already_AddRefed<nsIHTMLCollection> GetElementsByTagNameNS(
       const nsAString& aNamespaceURI, const nsAString& aLocalName,
       ErrorResult& aError);
-  already_AddRefed<HTMLCollection> GetElementsByClassName(
+  already_AddRefed<nsIHTMLCollection> GetElementsByClassName(
       const nsAString& aClassNames);
 
   /**

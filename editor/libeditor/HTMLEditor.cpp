@@ -67,7 +67,7 @@
 #include "mozilla/dom/NameSpaceConstants.h"
 #include "mozilla/dom/Selection.h"
 
-#include "mozilla/dom/ContentList.h"
+#include "nsContentList.h"
 #include "nsContentUtils.h"
 #include "nsCRT.h"
 #include "nsDebug.h"
@@ -530,7 +530,7 @@ NS_IMETHODIMP HTMLEditor::SetDocumentCharacterSet(
     return NS_OK;
   }
 
-  RefPtr<ContentList> headElementList =
+  RefPtr<nsContentList> headElementList =
       document->GetElementsByTagName(u"head"_ns);
   if (NS_WARN_IF(!headElementList)) {
     return NS_OK;
@@ -582,14 +582,14 @@ NS_IMETHODIMP HTMLEditor::SetDocumentCharacterSet(
 bool HTMLEditor::UpdateMetaCharsetWithTransaction(
     Document& aDocument, const nsACString& aCharacterSet) {
   // get a list of META tags
-  RefPtr<ContentList> metaElementList =
+  RefPtr<nsContentList> metaElementList =
       aDocument.GetElementsByTagName(u"meta"_ns);
   if (NS_WARN_IF(!metaElementList)) {
     return false;
   }
 
   for (uint32_t i = 0; i < metaElementList->Length(true); ++i) {
-    RefPtr<Element> metaElement = metaElementList->Item(i);
+    RefPtr<Element> metaElement = metaElementList->Item(i)->AsElement();
     MOZ_ASSERT(metaElement);
 
     nsAutoString currentValue;
@@ -1514,7 +1514,7 @@ NS_IMETHODIMP HTMLEditor::UpdateBaseURL() {
   }
 
   // Look for an HTML <base> tag
-  RefPtr<ContentList> baseElementList =
+  RefPtr<nsContentList> baseElementList =
       document->GetElementsByTagName(u"base"_ns);
 
   // If no base tag, then set baseURL to the document's URL.  This is very

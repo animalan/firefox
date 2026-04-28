@@ -10,7 +10,6 @@
 #include "mozilla/PresShell.h"
 #include "mozilla/StyleSheet.h"
 #include "mozilla/dom/AnimatableBinding.h"
-#include "mozilla/dom/ContentList.h"
 #include "mozilla/dom/CustomElementRegistry.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/HTMLInputElement.h"
@@ -265,10 +264,10 @@ Element* DocumentOrShadowRoot::GetElementById(nsAtom* aElementId) const {
   return nullptr;
 }
 
-already_AddRefed<ContentList> DocumentOrShadowRoot::GetElementsByTagNameNS(
+already_AddRefed<nsContentList> DocumentOrShadowRoot::GetElementsByTagNameNS(
     const nsAString& aNamespaceURI, const nsAString& aLocalName) {
   ErrorResult rv;
-  RefPtr<ContentList> list =
+  RefPtr<nsContentList> list =
       GetElementsByTagNameNS(aNamespaceURI, aLocalName, rv);
   if (rv.Failed()) {
     return nullptr;
@@ -276,7 +275,7 @@ already_AddRefed<ContentList> DocumentOrShadowRoot::GetElementsByTagNameNS(
   return list.forget();
 }
 
-already_AddRefed<ContentList> DocumentOrShadowRoot::GetElementsByTagNameNS(
+already_AddRefed<nsContentList> DocumentOrShadowRoot::GetElementsByTagNameNS(
     const nsAString& aNamespaceURI, const nsAString& aLocalName,
     ErrorResult& aResult) {
   int32_t nameSpaceId = kNameSpaceID_Wildcard;
@@ -293,7 +292,7 @@ already_AddRefed<ContentList> DocumentOrShadowRoot::GetElementsByTagNameNS(
   return NS_GetContentList(&AsNode(), nameSpaceId, aLocalName);
 }
 
-already_AddRefed<ContentList> DocumentOrShadowRoot::GetElementsByClassName(
+already_AddRefed<nsContentList> DocumentOrShadowRoot::GetElementsByClassName(
     const nsAString& aClasses) {
   return nsContentUtils::GetElementsByClassName(&AsNode(), aClasses);
 }

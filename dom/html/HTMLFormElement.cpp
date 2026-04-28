@@ -18,7 +18,6 @@
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/BindContext.h"
 #include "mozilla/dom/BrowsingContext.h"
-#include "mozilla/dom/ContentList.h"
 #include "mozilla/dom/CustomEvent.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/HTMLFormControlsCollection.h"
@@ -28,6 +27,7 @@
 #include "mozilla/dom/nsCSPUtils.h"
 #include "mozilla/dom/nsMixedContentBlocker.h"
 #include "nsCOMArray.h"
+#include "nsContentList.h"
 #include "nsContentUtils.h"
 #include "nsDOMAttributeMap.h"
 #include "nsDocShell.h"
@@ -71,6 +71,7 @@
 #include "mozilla/dom/HTMLInputElement.h"
 #include "mozilla/dom/HTMLSelectElement.h"
 #include "nsIConstraintValidation.h"
+#include "nsIHTMLCollection.h"
 #include "nsLayoutUtils.h"
 #include "nsSandboxFlags.h"
 
@@ -1803,7 +1804,7 @@ nsresult HTMLFormElement::AddElementToTableInternal(
 
         // Found an element, create a list, add the element to the list and put
         // the list in the hash
-        RefPtr list = new RadioNodeList(this);
+        RadioNodeList* list = new RadioNodeList(this);
 
         // If an element has a @form, we can assume it *might* be able to not
         // have a parent and still be in the form.
@@ -1819,8 +1820,10 @@ nsresult HTMLFormElement::AddElementToTableInternal(
         list->AppendElement(newFirst ? aChild : content.get());
         list->AppendElement(newFirst ? content.get() : aChild);
 
+        nsCOMPtr<nsISupports> listSupports = do_QueryObject(list);
+
         // Replace the element with the list.
-        entry.Data() = std::move(list);
+        entry.Data() = std::move(listSupports);
       } else {
         // There's already a list in the hash, add the child to the list.
         MOZ_ASSERT(nsCOMPtr<RadioNodeList>(do_QueryInterface(entry.Data())));

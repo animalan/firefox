@@ -41,7 +41,6 @@ class BooleanOrUnrestrictedDoubleOrString;
 class EditContext;
 class ElementInternals;
 class HTMLFormElement;
-class NodeList;
 class OwningBooleanOrUnrestrictedDoubleOrString;
 class TogglePopoverOptionsOrBoolean;
 enum class FetchPriority : uint8_t;
@@ -697,8 +696,8 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
   static bool MatchLabelsElement(Element* aElement, int32_t aNamespaceID,
                                  nsAtom* aAtom, void* aData);
 
-  already_AddRefed<mozilla::dom::NodeList> LabelsForBindings();
-  already_AddRefed<mozilla::dom::NodeList> LabelsInternal();
+  already_AddRefed<nsINodeList> LabelsForBindings();
+  already_AddRefed<nsINodeList> LabelsInternal();
 
   static bool LegacyTouchAPIEnabled(JSContext* aCx, JSObject* aObj);
 

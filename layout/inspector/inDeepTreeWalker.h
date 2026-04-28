@@ -10,6 +10,8 @@
 #include "nsINode.h"
 #include "nsTArray.h"
 
+class nsINodeList;
+
 class inDeepTreeWalker final : public inIDeepTreeWalker {
  public:
   NS_DECL_ISUPPORTS

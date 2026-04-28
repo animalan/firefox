@@ -4,8 +4,8 @@
 #ifndef mozilla_dom_HTMLOptionsCollection_h
 #define mozilla_dom_HTMLOptionsCollection_h
 
-#include "mozilla/dom/ContentList.h"
 #include "mozilla/dom/HTMLOptionElement.h"
+#include "nsContentList.h"
 
 namespace mozilla {
 class ErrorResult;
@@ -21,7 +21,7 @@ class HTMLSelectElement;
  * The collection of options in the select (what you get back when you do
  * select.options in DOM)
  */
-class HTMLOptionsCollection final : public ContentList {
+class HTMLOptionsCollection final : public nsContentList {
  public:
   HTMLOptionsCollection(HTMLSelectElement*, bool aFromParser);
   HTMLSelectElement* Select() const;
@@ -36,7 +36,7 @@ class HTMLOptionsCollection final : public ContentList {
    * @param aIndex the index
    */
   HTMLOptionElement* ItemAsOption(uint32_t aIndex) {
-    return static_cast<HTMLOptionElement*>(ContentList::Item(aIndex));
+    return static_cast<HTMLOptionElement*>(nsContentList::Item(aIndex));
   }
 
   /**
@@ -61,6 +61,10 @@ class HTMLOptionsCollection final : public ContentList {
                      ErrorResult& aError);
   void SetLength(uint32_t aLength, ErrorResult& aError);
 };
+
+inline nsISupports* ToSupports(HTMLOptionsCollection* aCollection) {
+  return static_cast<nsIHTMLCollection*>(aCollection);
+}
 
 }  // namespace dom
 }  // namespace mozilla

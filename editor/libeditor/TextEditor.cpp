@@ -41,7 +41,7 @@
 #include "nsCaret.h"
 #include "nsCharTraits.h"
 #include "nsComponentManagerUtils.h"
-#include "mozilla/dom/ContentList.h"
+#include "nsContentList.h"
 #include "nsDebug.h"
 #include "nsDependentSubstring.h"
 #include "nsError.h"

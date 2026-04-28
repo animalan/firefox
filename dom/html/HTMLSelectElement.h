@@ -15,7 +15,9 @@
 #include "nsGenericHTMLElement.h"
 #include "nsStubMutationObserver.h"
 
+class nsContentList;
 class nsIDOMHTMLOptionElement;
+class nsIHTMLCollection;
 class nsListControlFrame;
 
 namespace mozilla {
@@ -28,9 +30,7 @@ class PresState;
 
 namespace dom {
 
-class ContentList;
 class FormData;
-class HTMLCollection;
 class HTMLElementOrLong;
 class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLSelectElement;
@@ -150,7 +150,7 @@ class HTMLSelectElement final : public nsGenericHTMLFormControlElementWithState,
 
   static bool MatchSelectedOptions(Element* aElement, int32_t, nsAtom*, void*);
 
-  HTMLCollection* SelectedOptions();
+  nsIHTMLCollection* SelectedOptions();
 
   int32_t SelectedIndex() const;
   // During removal handling we might need to ignore some options that are
@@ -265,7 +265,7 @@ class HTMLSelectElement final : public nsGenericHTMLFormControlElementWithState,
            ErrorResult& aError) {
     // If item index is out of range, insert to last.
     // (since beforeElement becomes null, it is inserted to last)
-    Element* beforeContent = mOptions->Item(aIndex);
+    nsIContent* beforeContent = mOptions->GetElementAt(aIndex);
     return Add(aElement, nsGenericHTMLElement::FromNodeOrNull(beforeContent),
                aError);
   }
@@ -445,7 +445,7 @@ class HTMLSelectElement final : public nsGenericHTMLFormControlElementWithState,
   /**
    * The live list of selected options.
    */
-  RefPtr<ContentList> mSelectedOptions;
+  RefPtr<nsContentList> mSelectedOptions;
 
   /**
    * The current displayed preview text.

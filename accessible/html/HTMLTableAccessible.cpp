@@ -26,8 +26,8 @@
 #include "nsColor.h"
 #include "nsCOMPtr.h"
 #include "nsCoreUtils.h"
-#include "mozilla/dom/ContentList.h"
 #include "nsDebug.h"
+#include "nsIHTMLCollection.h"
 #include "nsError.h"
 #include "nsGkAtoms.h"
 #include "nsLiteralString.h"
@@ -553,7 +553,8 @@ bool HTMLTableAccessible::IsProbablyLayoutTable() {
   }
 
   // Check for nested tables.
-  RefPtr<HTMLCollection> nestedTables = el->GetElementsByTagName(u"table"_ns);
+  nsCOMPtr<nsIHTMLCollection> nestedTables =
+      el->GetElementsByTagName(u"table"_ns);
   if (nestedTables->Length() > 0) {
     RETURN_LAYOUT_ANSWER(true, "Has a nested table within it");
   }
@@ -613,7 +614,7 @@ bool HTMLTableAccessible::IsProbablyLayoutTable() {
   static const nsLiteralString tags[] = {u"embed"_ns, u"object"_ns,
                                          u"iframe"_ns};
   for (const auto& tag : tags) {
-    RefPtr<HTMLCollection> descendants = el->GetElementsByTagName(tag);
+    nsCOMPtr<nsIHTMLCollection> descendants = el->GetElementsByTagName(tag);
     if (descendants->Length() > 0) {
       RETURN_LAYOUT_ANSWER(true,
                            "Has no borders, and has iframe, object or embed, "

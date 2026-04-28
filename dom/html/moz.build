@@ -29,6 +29,7 @@ EXPORTS += [
     "nsHTMLDocument.h",
     "nsIConstraintValidation.h",
     "nsIFormControl.h",
+    "nsIHTMLCollection.h",
 ]
 
 EXPORTS.mozilla += [

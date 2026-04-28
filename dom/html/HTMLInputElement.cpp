@@ -833,7 +833,7 @@ nsTArray<nsString> HTMLInputElement::GetColorsFromList() {
 
   nsTArray<nsString> colors;
 
-  RefPtr<ContentList> options = dataList->Options();
+  RefPtr<nsContentList> options = dataList->Options();
   uint32_t length = options->Length(true);
   for (uint32_t i = 0; i < length; ++i) {
     auto* option = HTMLOptionElement::FromNodeOrNull(options->Item(i, false));
@@ -7605,11 +7605,11 @@ void HTMLInputElement::GetWebkitEntries(
   aSequence.AppendElements(mFileData->mEntries);
 }
 
-already_AddRefed<NodeList> HTMLInputElement::GetLabelsForBindings() {
+already_AddRefed<nsINodeList> HTMLInputElement::GetLabelsForBindings() {
   return GetLabelsInternal();
 }
 
-already_AddRefed<NodeList> HTMLInputElement::GetLabelsInternal() {
+already_AddRefed<nsINodeList> HTMLInputElement::GetLabelsInternal() {
   if (!IsLabelable()) {
     return nullptr;
   }
