@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +19,7 @@ import androidx.navigation3.scene.Scene
 import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
 import org.mozilla.fenix.compose.BottomSheetHandle
+import org.mozilla.fenix.compose.navigation.BottomSheetSceneStrategy.Companion.bottomSheet
 
 /**
  * An [OverlayScene] that renders an [entry] within a [ModalBottomSheet].
@@ -32,6 +34,7 @@ internal class BottomSheetScene<T : Any>(
     override val overlaidEntries: List<NavEntry<T>>,
     private val entry: NavEntry<T>,
     private val modalBottomSheetProperties: ModalBottomSheetProperties,
+    private val skipPartiallyExpanded: Boolean,
     private val handleContentDescription: String,
     private val onBack: () -> Unit,
 ) : OverlayScene<T> {
@@ -39,9 +42,14 @@ internal class BottomSheetScene<T : Any>(
     override val entries: List<NavEntry<T>> = listOf(entry)
 
     override val content: @Composable (() -> Unit) = {
+        val sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = skipPartiallyExpanded,
+        )
+
         ModalBottomSheet(
             onDismissRequest = onBack,
             properties = modalBottomSheetProperties,
+            sheetState = sheetState,
             dragHandle = null,
         ) {
             BottomSheetHandle(
@@ -69,6 +77,7 @@ class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
         val lastEntry = entries.lastOrNull()
         val bottomSheetProperties = lastEntry?.metadata?.get(BOTTOM_SHEET_KEY) as? ModalBottomSheetProperties
+        val skipPartiallyExpanded = lastEntry?.metadata?.get(SKIP_PARTIALLY_EXPANDED_KEY) as? Boolean ?: false
         val handleContentDescription = lastEntry?.metadata?.get(HANDLE_CONTENT_DESCRIPTION_KEY) as? String ?: ""
         return bottomSheetProperties?.let { properties ->
             @Suppress("UNCHECKED_CAST")
@@ -78,6 +87,7 @@ class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
                 overlaidEntries = entries.dropLast(1),
                 entry = lastEntry,
                 modalBottomSheetProperties = properties,
+                skipPartiallyExpanded = skipPartiallyExpanded,
                 onBack = onBack,
                 handleContentDescription = handleContentDescription,
             )
@@ -89,20 +99,24 @@ class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
          * Function to be called on the [NavEntry.metadata] to mark this entry as something that
          * should be displayed within a [ModalBottomSheet].
          *
+         * @param skipPartiallyExpanded Whether to skip the partially expanded sheet state.
          * @param handleContentDescription Content description for the bottom sheet's drag handle.
          * @param modalBottomSheetProperties properties that should be passed to the containing
          * [ModalBottomSheet].
          */
         @OptIn(ExperimentalMaterial3Api::class)
         fun bottomSheet(
+            skipPartiallyExpanded: Boolean = false,
             handleContentDescription: String,
             modalBottomSheetProperties: ModalBottomSheetProperties = ModalBottomSheetProperties(),
         ): Map<String, Any> = mapOf(
             BOTTOM_SHEET_KEY to modalBottomSheetProperties,
+            SKIP_PARTIALLY_EXPANDED_KEY to skipPartiallyExpanded,
             HANDLE_CONTENT_DESCRIPTION_KEY to handleContentDescription,
         )
 
         internal const val BOTTOM_SHEET_KEY = "bottom_sheet"
+        private const val SKIP_PARTIALLY_EXPANDED_KEY = "skip_partially_expanded"
         private const val HANDLE_CONTENT_DESCRIPTION_KEY = "handle_content_description"
     }
 }
