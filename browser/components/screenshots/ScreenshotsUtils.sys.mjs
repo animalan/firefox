@@ -165,10 +165,26 @@ export class ScreenshotsComponentParent extends JSWindowActorParent {
 
 export class ScreenshotsHelperParent extends JSWindowActorParent {
   receiveMessage(message) {
+    let browser = this.browsingContext.topFrameElement;
+    if (ScreenshotsUtils.getUIPhase(browser) !== UIPhases.INITIAL) {
+      return null;
+    }
+
     switch (message.name) {
       case "ScreenshotsHelper:GetElementRectFromPoint": {
-        let cxt = BrowsingContext.get(message.data.bcId);
-        return cxt.currentWindowGlobal
+        let bc = message.data.bc;
+        if (
+          bc.isDiscarded ||
+          bc.parentWindowContext !== this.manager ||
+          !bc.isActive
+        ) {
+          console.error(
+            "Tried to screenshot a browsing context that is not accessible"
+          );
+          return null;
+        }
+
+        return bc.currentWindowGlobal
           .getActor("ScreenshotsHelper")
           .sendQuery("ScreenshotsHelper:GetElementRectFromPoint", message.data);
       }

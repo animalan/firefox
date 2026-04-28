@@ -81,7 +81,7 @@ export async function getElementFromPoint(x, y, doc) {
         {
           x: x + ele.ownerGlobal.mozInnerScreenX,
           y: y + ele.ownerGlobal.mozInnerScreenY,
-          bcId: ele.browsingContext.id,
+          bc: ele.browsingContext,
         }
       );
 
