@@ -402,6 +402,21 @@ browsertime-video-playback-latency-mobile:
         by-app:
             fenix: 1
             default: 3
+    fetches:
+        toolchain:
+            by-app:
+                chrome-m:
+                    - linux64-samply
+                    - profiler-node-tools
+                fenix:
+                    - linux64-samply
+                    - profiler-node-tools
+                geckoview:
+                    - linux64-samply
+                    - profiler-node-tools
+                default:
+                    - linux64-samply
+                    - profiler-node-tools
 
 browsertime-benchmark-speedometer2-mobile:
     description: Browsertime Speedometer 2 on Android

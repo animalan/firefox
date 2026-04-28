@@ -60,18 +60,26 @@ task-defaults:
                             - linux64-custom-car
                             - linux64-minidump-stackwalk
                             - linux64-fix-stacks
+                            - linux64-samply
+                            - profiler-node-tools
                         windows.*-64.*:
                             - win64-custom-car
                             - win64-minidump-stackwalk
                             - win64-fix-stacks
+                            - win64-samply
+                            - profiler-node-tools
                         macosx.*-aarch64.*:
                             - macosx-arm64-custom-car
                             - macosx64-aarch64-minidump-stackwalk
                             - macosx64-aarch64-fix-stacks
+                            - macosx64-aarch64-samply
+                            - profiler-node-tools
                         macosx.*-64.*:
                             - macosx-custom-car
                             - macosx64-minidump-stackwalk
                             - macosx64-fix-stacks
+                            - macosx64-samply
+                            - profiler-node-tools
                         default: []
                 safari-tp:
                     by-test-platform:
@@ -84,15 +92,23 @@ task-defaults:
                         windows.*-64.*:
                             - win64-minidump-stackwalk
                             - win64-fix-stacks
+                            - win64-samply
+                            - profiler-node-tools
                         macosx.*-aarch64.*:
                             - macosx64-aarch64-minidump-stackwalk
                             - macosx64-aarch64-fix-stacks
+                            - macosx64-aarch64-samply
+                            - profiler-node-tools
                         macosx.*-64.*:
                             - macosx64-minidump-stackwalk
                             - macosx64-fix-stacks
+                            - macosx64-samply
+                            - profiler-node-tools
                         default:
                             - linux64-minidump-stackwalk
                             - linux64-fix-stacks
+                            - linux64-samply
+                            - profiler-node-tools
 
 browsertime-tp6:
     <<: &tp6-defaults
