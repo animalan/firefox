@@ -848,14 +848,16 @@ bool GeckoChildProcessHost::AsyncLaunch(
                 glean::dom_parentprocess::process_launch_errors
                     .Get(telemetryKey)
                     .Add(1);
-                {
-                  MonitorAutoLock lock(mMonitor);
-                  mProcessState = PROCESS_ERROR;
-                  lock.Notify();
-                }
+                OnProcessLaunchError(aError);
                 return ProcessHandlePromise::CreateAndReject(aError, __func__);
               });
   return true;
+}
+
+void GeckoChildProcessHost::OnProcessLaunchError(const LaunchError aError) {
+  MonitorAutoLock lock(mMonitor);
+  mProcessState = PROCESS_ERROR;
+  lock.Notify();
 }
 
 bool GeckoChildProcessHost::WaitUntilConnected(int32_t aTimeoutMs) {

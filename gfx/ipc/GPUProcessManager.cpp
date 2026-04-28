@@ -235,8 +235,15 @@ void GPUProcessManager::MaybeCrashIfGpuProcessOnceStable() {
     return;
   }
   MOZ_RELEASE_ASSERT(!gfxConfig::IsEnabled(Feature::GPU_PROCESS));
-  MOZ_RELEASE_ASSERT(!mProcessStableOnce,
-                     "Fallback to parent process not allowed!");
+  if (!mProcessStableOnce) {
+    return;
+  }
+  // If the last launch error was suspected to be an OOM failure, let's annotate
+  // this as an OOM crash.
+  if (mProcess && mProcess->IsLaunchOomError()) {
+    CrashReporter::AnnotateOOMAllocationSize(1);
+  }
+  MOZ_CRASH("Fallback to parent process not allowed!");
 }
 
 void GPUProcessManager::ResetProcessStable() {
