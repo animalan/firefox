@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <map>
+#include <span>
 #include <vector>
 
 #include "CodecConfig.h"
@@ -239,11 +240,11 @@ class WebrtcSendTransport : public webrtc::Transport {
  public:
   explicit WebrtcSendTransport(MediaSessionConduit* aConduit)
       : mConduit(aConduit) {}
-  bool SendRtp(webrtc::ArrayView<const uint8_t> aPacket,
+  bool SendRtp(std::span<const uint8_t> aPacket,
                const webrtc::PacketOptions& aOptions) {
     return mConduit->SendRtp(aPacket.data(), aPacket.size(), aOptions);
   }
-  bool SendRtcp(webrtc::ArrayView<const uint8_t> aPacket,
+  bool SendRtcp(std::span<const uint8_t> aPacket,
                 const webrtc::PacketOptions& aOptions) {
     return mConduit->SendSenderRtcp(aPacket.data(), aPacket.size());
   }
@@ -256,11 +257,11 @@ class WebrtcReceiveTransport : public webrtc::Transport {
  public:
   explicit WebrtcReceiveTransport(MediaSessionConduit* aConduit)
       : mConduit(aConduit) {}
-  bool SendRtp(webrtc::ArrayView<const uint8_t> aPacket,
+  bool SendRtp(std::span<const uint8_t> aPacket,
                const webrtc::PacketOptions& aOptions) {
     MOZ_CRASH("Unexpected RTP packet");
   }
-  bool SendRtcp(webrtc::ArrayView<const uint8_t> aPacket,
+  bool SendRtcp(std::span<const uint8_t> aPacket,
                 const webrtc::PacketOptions& aOptions) {
     return mConduit->SendReceiverRtcp(aPacket.data(), aPacket.size());
   }

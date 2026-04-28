@@ -35,8 +35,7 @@ LOCAL_INCLUDES += [
 ]
 
 UNIFIED_SOURCES += [
-    "/third_party/libwebrtc/common_audio/fir_filter_c.cc",
-    "/third_party/libwebrtc/common_audio/fir_filter_factory.cc"
+    "/third_party/libwebrtc/video/null_video_decoder.cc"
 ]
 
 if not CONFIG["MOZ_DEBUG"]:
@@ -220,4 +219,4 @@ if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "x86_64":
 
     DEFINES["_GNU_SOURCE"] = True
 
-Library("fir_filter_factory_gn")
+Library("null_video_decoder_gn")

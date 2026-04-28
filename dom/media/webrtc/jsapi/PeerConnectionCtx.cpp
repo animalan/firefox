@@ -4,6 +4,8 @@
 
 #include "PeerConnectionCtx.h"
 
+#include <span>
+
 #include "PeerConnectionImpl.h"
 #include "WebrtcGlobalChild.h"
 #include "WebrtcGlobalInformation.h"
@@ -111,7 +113,7 @@ class DummyAudioProcessing : public AudioProcessing {
     return kNoError;
   }
   bool GetLinearAecOutput(
-      webrtc::ArrayView<std::array<float, 160>>) const override {
+      std::span<std::array<float, 160>>) const override {
     MOZ_CRASH("Unexpected call");
     return false;
   }
