@@ -15844,7 +15844,6 @@ AttachDecision UnaryArithIRGenerator::tryAttachDateToNumber() {
   if (!val_.isObject() || !val_.toObject().is<DateObject>()) {
     return AttachDecision::NoAction;
   }
-  MOZ_ASSERT(res_.isNumber());
 
   DateObject* obj = &val_.toObject().as<DateObject>();
 
@@ -15852,6 +15851,7 @@ AttachDecision UnaryArithIRGenerator::tryAttachDateToNumber() {
   if (!canOptimizeDateObjectToNumber(obj, &info)) {
     return AttachDecision::NoAction;
   }
+  MOZ_ASSERT(res_.isNumber());
 
   ValOperandId valId(writer.setInputOperandId(0));
   NumberOperandId numId = emitGuardDateObjectToNumber(obj, valId, info);
