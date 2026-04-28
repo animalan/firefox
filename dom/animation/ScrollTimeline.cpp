@@ -415,8 +415,8 @@ NonOwningAnimationTarget ScrollTimeline::ScrollerInfo::Source() const {
     case Type::Name:
       return NonOwningAnimationTarget{mSourceOrTarget};
     case Type::Nearest: {
-      auto [element, pseudo] =
-          FindNearestScroller(mSourceOrTarget.mElement, mSourceOrTarget.mPseudoRequest);
+      auto [element, pseudo] = FindNearestScroller(
+          mSourceOrTarget.mElement, mSourceOrTarget.mPseudoRequest);
       return {const_cast<Element*>(element), pseudo};
     }
     case Type::Provided:

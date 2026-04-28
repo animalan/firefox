@@ -142,7 +142,9 @@ class ScrollTimeline : public AnimationTimeline,
     }
 
     NonOwningAnimationTarget Source() const;
-    RefPtr<Element>& ElementForCycleCollection() { return mSourceOrTarget.mElement; }
+    RefPtr<Element>& ElementForCycleCollection() {
+      return mSourceOrTarget.mElement;
+    }
   };
 
  public:
