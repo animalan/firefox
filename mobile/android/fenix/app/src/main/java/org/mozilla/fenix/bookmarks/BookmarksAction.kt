@@ -164,5 +164,6 @@ internal data object RootOverflowMenuClicked : BookmarksAction
 internal data object RootOverflowMenuDismissed : BookmarksAction
 internal sealed class ImportAction : BookmarksAction {
     internal data object ImportFailed : ImportAction()
+    internal data object ImportSucceeded : ImportAction()
     internal data object ImportFileClicked : BookmarksAction
 }

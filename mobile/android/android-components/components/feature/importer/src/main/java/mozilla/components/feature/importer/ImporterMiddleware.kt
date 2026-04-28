@@ -5,9 +5,14 @@
 package mozilla.components.feature.importer
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mozilla.components.concept.bookmarks.file.BookmarksFileImporter
 import mozilla.components.lib.state.Middleware
 import mozilla.components.lib.state.Store
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * [Middleware] that handles side-effects for [ImporterAction]s.
@@ -15,8 +20,9 @@ import mozilla.components.lib.state.Store
  * @param lifecycleScope [CoroutineScope] used to launch import work.
  */
 class ImporterMiddleware(
+    private val importer: BookmarksFileImporter,
     private val lifecycleScope: CoroutineScope,
-    ) : Middleware<ImporterState, ImporterAction> {
+) : Middleware<ImporterState, ImporterAction> {
     override fun invoke(
         store: Store<ImporterState, ImporterAction>,
         next: (ImporterAction) -> Unit,
@@ -25,12 +31,26 @@ class ImporterMiddleware(
         next(action)
         when (action) {
             is ImporterAction.FileSelected -> lifecycleScope.launch {
-                // Perform the actual import against the selected [action.uri].
-                // store.dispatch(ImporterAction.ImportFinished)
+                store.dispatch(ImporterAction.ImportStarted)
+
+                // We want to make sure we stay in the loading state for at least one second
+                // during an import to prevent the dialog from flashing before the user can
+                // comprehend what is currently happening.
+                val minimumWait = async { delay(1.seconds) }
+                val result = async { importer.importBookmarksFromUri(action.uri) }
+
+                awaitAll(minimumWait, result)
+
+                result.await()
+                    .onFailure { store.dispatch(ImporterAction.ImportFailed) }
+                    .onSuccess { store.dispatch(ImporterAction.ImportFinished(it.count)) }
             }
+            ImporterAction.FileSelectionCanceled,
+            ImporterAction.ImportStarted,
             ImporterAction.ViewAppeared,
-            ImporterAction.ImportFinished,
+            is ImporterAction.ImportFinished,
             ImporterAction.ImportCancelled,
+            ImporterAction.ImportFailed,
             -> Unit
         }
     }

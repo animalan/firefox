@@ -42,5 +42,5 @@ sealed interface ImporterResult {
     data object Failure : ImporterResult
 
     /** The user cancelled the import. */
-    data object Cancelled : ImporterResult
+    data object Canceled : ImporterResult
 }

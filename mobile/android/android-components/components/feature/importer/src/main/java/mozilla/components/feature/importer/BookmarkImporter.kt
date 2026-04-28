@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import mozilla.components.concept.bookmarks.file.BookmarksFileImporter
 
 /**
  * Self-contained bookmarks import flow that drives file selection, the in-progress dialog, and
@@ -19,9 +20,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
  */
 @Composable
 fun BookmarkImporter(
+    importer: BookmarksFileImporter,
     onFinished: (ImporterResult) -> Unit,
 ) {
-    val viewModel: ImporterViewModel = viewModel()
+    val viewModel: ImporterViewModel = viewModel(
+        factory = ImporterViewModel.factory(importer),
+    )
     val state by viewModel.store.stateFlow.collectAsState(initial = viewModel.store.state)
 
     when (val current = state) {
@@ -33,7 +37,11 @@ fun BookmarkImporter(
         ImporterState.SelectingFile -> {
             FilePicker(
                 onFileSelected = { uri ->
-                    viewModel.store.dispatch(ImporterAction.FileSelected(uri))
+                    if (uri != null) {
+                        viewModel.store.dispatch(ImporterAction.FileSelected(uri))
+                    } else {
+                        viewModel.store.dispatch(ImporterAction.FileSelectionCanceled)
+                    }
                 },
             )
         }

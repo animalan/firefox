@@ -97,8 +97,10 @@ internal class BookmarksMiddleware(
                 store.tryDispatchLoadFor(BookmarkRoot.Mobile.id)
                 importResults()
                     .onEach { result ->
-                        if (result is ImporterResult.Failure) {
-                            store.dispatch(ImportAction.ImportFailed)
+                        when (result) {
+                            ImporterResult.Canceled -> Unit
+                            ImporterResult.Failure -> store.dispatch(ImportAction.ImportFailed)
+                            is ImporterResult.Success -> store.dispatch(ImportAction.ImportSucceeded)
                         }
                     }
                     .launchIn(lifecycleScope)
@@ -412,6 +414,8 @@ internal class BookmarksMiddleware(
             SnackbarAction.Dismissed,
             SnackbarAction.ImportFailed,
             -> Unit
+
+            ImportAction.ImportSucceeded -> store.tryDispatchLoadFor(BookmarkRoot.Mobile.id)
         }
     }
 

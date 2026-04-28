@@ -616,6 +616,8 @@ dependencies {
     implementation project(':components:ui-colors')
     implementation project(':components:ui-tabcounter')
     implementation project(':components:ui-widgets')
+    implementation project(':components:lib-bookmarks-file')
+    implementation project(':components:lib-bookmark-parser-jsoup')
     implementation project(':components:lib-crash')
     implementation project(':components:lib-crash-sentry')
     implementation project(':components:lib-dataprotect')

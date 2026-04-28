@@ -60,7 +60,7 @@ internal class BookmarksTelemetryMiddleware : Middleware<BookmarksState, Bookmar
             is InitEdit,
             is InitEditLoaded,
             is ReceivedSyncSignInUpdate,
-            CloseClicked, AddFolderClicked, Init, SignIntoSyncClicked,
+            ImportAction.ImportSucceeded, CloseClicked, AddFolderClicked, Init, SignIntoSyncClicked,
             OpenTabsConfirmationDialogAction.CancelTapped, OpenTabsConfirmationDialogAction.ConfirmTapped,
             FirstSyncCompleted, PrivateBrowsingAuthorized,
                 -> Unit

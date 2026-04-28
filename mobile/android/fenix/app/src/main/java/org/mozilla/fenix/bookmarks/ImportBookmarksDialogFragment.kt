@@ -10,8 +10,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.compose.content
+import mozilla.appservices.places.BookmarkRoot
+import mozilla.components.concept.bookmark.parser.BookmarksFileParser
+import mozilla.components.concept.bookmarks.file.BookmarksFileImporter
 import mozilla.components.feature.importer.BookmarkImporter
 import mozilla.components.feature.importer.ImporterResult
+import mozilla.components.lib.bookmark.parser.jsoup.jsoupParser
+import mozilla.components.lib.bookmarks.file.htmlImporter
+import org.mozilla.fenix.ext.requireComponents
 
 internal class ImportBookmarksDialogFragment : DialogFragment() {
     override fun onCreateView(
@@ -20,6 +26,12 @@ internal class ImportBookmarksDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?,
     ): View = content {
         BookmarkImporter(
+            importer = BookmarksFileImporter.htmlImporter(
+                context = requireContext(),
+                parentGuid = BookmarkRoot.Mobile.id,
+                parser = BookmarksFileParser.jsoupParser(rootFolderName = "Imported Bookmarks"),
+                inserter = requireComponents.core.bookmarksStorage,
+            ),
             onFinished = { result ->
                 parentFragmentManager.setFragmentResult(
                     REQUEST_KEY,
@@ -42,7 +54,7 @@ internal class ImportBookmarksDialogFragment : DialogFragment() {
             when (bundle.getString(KEY_RESULT)) {
                 RESULT_SUCCESS -> ImporterResult.Success(importCount = 0)
                 RESULT_FAILURE -> ImporterResult.Failure
-                RESULT_CANCELLED -> ImporterResult.Cancelled
+                RESULT_CANCELLED -> ImporterResult.Canceled
                 else -> null
             }
     }
@@ -51,5 +63,5 @@ internal class ImportBookmarksDialogFragment : DialogFragment() {
 private fun ImporterResult.encode(): String = when (this) {
     is ImporterResult.Success -> ImportBookmarksDialogFragment.RESULT_SUCCESS
     ImporterResult.Failure -> ImportBookmarksDialogFragment.RESULT_FAILURE
-    ImporterResult.Cancelled -> ImportBookmarksDialogFragment.RESULT_CANCELLED
+    ImporterResult.Canceled -> ImportBookmarksDialogFragment.RESULT_CANCELLED
 }

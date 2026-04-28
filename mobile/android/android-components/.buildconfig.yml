@@ -1010,6 +1010,7 @@ projects:
     publish: true
     upstream_dependencies:
     - components:concept-base
+    - components:concept-bookmarks-file
     - components:concept-fetch
     - components:lib-publicsuffixlist
     - components:lib-state

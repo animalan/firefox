@@ -4,19 +4,23 @@
 
 package mozilla.components.feature.importer
 
+import mozilla.components.feature.importer.ImporterResult.Canceled
+import mozilla.components.feature.importer.ImporterResult.Failure
+import mozilla.components.feature.importer.ImporterResult.Success
+import mozilla.components.feature.importer.ImporterState.Finished
+import mozilla.components.feature.importer.ImporterState.Loading
+import mozilla.components.feature.importer.ImporterState.SelectingFile
+
 /**
  * Reduces the given [action] into a new [ImporterState].
  */
-@Suppress("UnusedParameter")
 fun importerReducer(state: ImporterState, action: ImporterAction): ImporterState = when (action) {
-    ImporterAction.ViewAppeared -> ImporterState.SelectingFile
-    is ImporterAction.FileSelected -> {
-        if (action.uri == null) {
-            ImporterState.Finished(ImporterResult.Cancelled)
-        } else {
-            ImporterState.Loading
-        }
-    }
-    ImporterAction.ImportFinished -> ImporterState.Finished(ImporterResult.Success(0))
-    ImporterAction.ImportCancelled -> ImporterState.Finished(ImporterResult.Cancelled)
+    ImporterAction.ViewAppeared -> SelectingFile
+    is ImporterAction.FileSelected -> state
+    ImporterAction.ImportStarted -> Loading
+    is ImporterAction.ImportFinished -> Finished(Success(action.bookmarksImported))
+    ImporterAction.ImportFailed -> Finished(Failure)
+    ImporterAction.FileSelectionCanceled,
+    ImporterAction.ImportCancelled,
+    -> Finished(Canceled)
 }
