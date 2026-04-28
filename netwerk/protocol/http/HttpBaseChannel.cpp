@@ -5944,6 +5944,18 @@ HttpBaseChannel::GetResponseStart(TimeStamp* _retval) {
 }
 
 NS_IMETHODIMP
+HttpBaseChannel::GetFirstInterimResponseStart(TimeStamp* _retval) {
+  *_retval = mTransactionTimings.firstInterimResponseStart;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+HttpBaseChannel::GetFinalResponseHeadersStart(TimeStamp* _retval) {
+  *_retval = mTransactionTimings.finalResponseHeadersStart;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
 HttpBaseChannel::GetResponseEnd(TimeStamp* _retval) {
   *_retval = mTransactionTimings.responseEnd;
   return NS_OK;
@@ -6010,6 +6022,8 @@ IMPL_TIMING_ATTR(SecureConnectionStart)
 IMPL_TIMING_ATTR(ConnectEnd)
 IMPL_TIMING_ATTR(RequestStart)
 IMPL_TIMING_ATTR(ResponseStart)
+IMPL_TIMING_ATTR(FirstInterimResponseStart)
+IMPL_TIMING_ATTR(FinalResponseHeadersStart)
 IMPL_TIMING_ATTR(ResponseEnd)
 IMPL_TIMING_ATTR(CacheReadStart)
 IMPL_TIMING_ATTR(CacheReadEnd)

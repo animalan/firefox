@@ -2119,6 +2119,35 @@ nsresult nsHttpTransaction::ParseLineSegment(char* segment, uint32_t len) {
     mLineBuf.Truncate();
     // discard this response if it is a 100 continue or other 1xx status.
     uint16_t status = mResponseHead->Status();
+
+    // Capture timing for interim (1xx) vs final responses
+    if (status / 100 == 1) {
+      if (GetFirstInterimResponseStart().IsNull()) {
+        TimeStamp responseStart = GetResponseStart();
+        if (responseStart.IsNull()) {
+          responseStart = TimeStamp::Now();
+        }
+        SetFirstInterimResponseStart(responseStart, true);
+        SetResponseStart(responseStart, false);
+      }
+    } else {
+      TimeStamp firstInterim = GetFirstInterimResponseStart();
+      TimeStamp finalStart =
+          firstInterim.IsNull() ? GetResponseStart() : TimeStamp::Now();
+      if (finalStart.IsNull()) {
+        finalStart = TimeStamp::Now();
+      }
+      SetFinalResponseHeadersStart(finalStart, true);
+
+      // Keep responseStart aligned with spec: first interim if any, otherwise
+      // final response header start.
+      if (!firstInterim.IsNull()) {
+        SetResponseStart(firstInterim, false);
+      } else {
+        SetResponseStart(finalStart, false);
+      }
+    }
+
     if (status == 103 &&
         (StaticPrefs::network_early_hints_over_http_v1_1_enabled() ||
          mResponseHead->Version() != HttpVersion::v1_1)) {
@@ -2954,6 +2983,24 @@ void nsHttpTransaction::SetResponseEnd(mozilla::TimeStamp timeStamp,
   mTimings.responseEnd = timeStamp;
 }
 
+void nsHttpTransaction::SetFirstInterimResponseStart(
+    mozilla::TimeStamp timeStamp, bool onlyIfNull) {
+  mozilla::MutexAutoLock lock(mLock);
+  if (onlyIfNull && !mTimings.firstInterimResponseStart.IsNull()) {
+    return;
+  }
+  mTimings.firstInterimResponseStart = timeStamp;
+}
+
+void nsHttpTransaction::SetFinalResponseHeadersStart(
+    mozilla::TimeStamp timeStamp, bool onlyIfNull) {
+  mozilla::MutexAutoLock lock(mLock);
+  if (onlyIfNull && !mTimings.finalResponseHeadersStart.IsNull()) {
+    return;
+  }
+  mTimings.finalResponseHeadersStart = timeStamp;
+}
+
 mozilla::TimeStamp nsHttpTransaction::GetDomainLookupStart() {
   mozilla::MutexAutoLock lock(mLock);
   return mTimings.domainLookupStart;
@@ -2997,6 +3044,16 @@ mozilla::TimeStamp nsHttpTransaction::GetResponseStart() {
 mozilla::TimeStamp nsHttpTransaction::GetResponseEnd() {
   mozilla::MutexAutoLock lock(mLock);
   return mTimings.responseEnd;
+}
+
+mozilla::TimeStamp nsHttpTransaction::GetFirstInterimResponseStart() {
+  mozilla::MutexAutoLock lock(mLock);
+  return mTimings.firstInterimResponseStart;
+}
+
+mozilla::TimeStamp nsHttpTransaction::GetFinalResponseHeadersStart() {
+  mozilla::MutexAutoLock lock(mLock);
+  return mTimings.finalResponseHeadersStart;
 }
 
 //-----------------------------------------------------------------------------
