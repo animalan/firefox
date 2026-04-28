@@ -255,29 +255,6 @@ struct QueueParamTraits<bool> {
 
 // ---------------------------------------------------------------
 
-template <class T>
-struct QueueParamTraits_IsEnumCase {
-  template <typename ProducerView>
-  static bool Write(ProducerView& aProducerView, const T& aArg) {
-    MOZ_ASSERT(IsEnumCase(aArg));
-    const auto shadow = static_cast<std::underlying_type_t<T>>(aArg);
-    aProducerView.WriteParam(shadow);
-    return true;
-  }
-
-  template <typename ConsumerView>
-  static bool Read(ConsumerView& aConsumerView, T* aArg) {
-    auto shadow = std::underlying_type_t<T>{};
-    aConsumerView.ReadParam(&shadow);
-    const auto e = AsEnumCase<T>(shadow);
-    if (!e) return false;
-    *aArg = *e;
-    return true;
-  }
-};
-
-// ---------------------------------------------------------------
-
 // We guarantee our robustness via these requirements:
 // * Object.MutTiedFields() gives us a tuple,
 // * where the combined sizeofs all field types sums to sizeof(Object),

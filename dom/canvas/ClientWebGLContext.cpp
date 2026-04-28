@@ -6243,15 +6243,17 @@ void ClientWebGLContext::ProvokingVertex(const GLenum rawMode) const {
   const FuncScope funcScope(*this, "provokingVertex");
   if (IsContextLost()) return;
 
-  const auto mode = AsEnumCase<webgl::ProvokingVertex>(rawMode);
-  if (!mode) {
-    EnqueueError_ArgEnum("mode", rawMode);
-    return;
+  const auto mode = static_cast<webgl::ProvokingVertex>(rawMode);
+  switch (mode) {
+    case webgl::ProvokingVertex::FirstVertex:
+    case webgl::ProvokingVertex::LastVertex: {
+      Run<RPROC(ProvokingVertex)>(mode);
+      funcScope.mKeepNotLostOrNull->state.mProvokingVertex = mode;
+      return;
+    }
   }
 
-  Run<RPROC(ProvokingVertex)>(*mode);
-
-  funcScope.mKeepNotLostOrNull->state.mProvokingVertex = *mode;
+  EnqueueError_ArgEnum("mode", rawMode);
 }
 
 // -
