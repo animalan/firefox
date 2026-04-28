@@ -1571,6 +1571,17 @@ forms-breach-alerts =
     .label = Show alerts about passwords for breached websites
     .accesskey = b
 forms-breach-alerts-learn-more-link = Learn more
+
+## Privacy Panel Settings
+
+privacy-panel-settings-header =
+    .label = Privacy panel settings
+    .description = Get help protecting your info online in { -brand-short-name }.
+# By “breach message” we mean the UI messaging shown when Firefox detects that a
+# site the user has interacted with has been involved in a known data breach
+privacy-panel-breach-alerts =
+    .label = Show breach messages
+    .accesskey = s
 preferences-relay-integration-checkbox2 =
     .label = Suggest { -relay-brand-name } email masks to protect your email address
     .accesskey = r

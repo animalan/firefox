@@ -222,6 +222,7 @@ const CONFIG_PANES = Object.freeze({
     groupIds: [
       "httpsOnly",
       "networkProxy",
+      "privacyPanel",
       "browsingProtection",
       "certificates",
     ],

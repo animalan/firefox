@@ -627,6 +627,7 @@ var gPrivacyPane = {
     initSettingGroup("history2");
     initSettingGroup("permissions");
     initSettingGroup("dataCollection");
+    initSettingGroup("privacyPanel");
     initSettingGroup("dnsOverHttps");
     initSettingGroup("dnsOverHttpsAdvanced");
     initSettingGroup("etpStatus");

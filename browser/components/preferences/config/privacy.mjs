@@ -597,6 +597,10 @@ Preferences.addAll([
   // Tracker list
   { id: "urlclassifier.trackingTable", type: "string" },
 
+  // Trust Panel
+  { id: "browser.urlbar.trustPanel.breachAlerts", type: "bool" },
+  { id: "browser.urlbar.trustPanel.featureGate", type: "bool" },
+
   // Button prefs
   { id: "pref.privacy.disable_button.cookie_exceptions", type: "bool" },
   {
@@ -2008,6 +2012,18 @@ SettingGroupManager.registerGroups({
       },
     ],
   },
+  privacyPanel: {
+    iconSrc: "chrome://devtools/skin/images/globe.svg",
+    l10nId: "privacy-panel-settings-header",
+    headingLevel: 2,
+    supportPage: "breach-alerts-privacy-panel",
+    items: [
+      {
+        id: "trustPanelBreachAlertsMain",
+        l10nId: "privacy-panel-breach-alerts",
+      },
+    ],
+  },
   // Bug 1968118: move this elsewhere
   dataCollection: {
     items: [
@@ -2144,6 +2160,18 @@ SettingGroupManager.registerGroups({
       },
     ],
   },
+});
+
+Preferences.addSetting({
+  id: "trustPanelFeatureGate",
+  pref: "browser.urlbar.trustPanel.featureGate",
+});
+
+Preferences.addSetting({
+  id: "trustPanelBreachAlertsMain",
+  pref: "browser.urlbar.trustPanel.breachAlerts",
+  deps: ["trustPanelFeatureGate"],
+  visible: ({ trustPanelFeatureGate }) => trustPanelFeatureGate.value,
 });
 
 Preferences.addSetting({
