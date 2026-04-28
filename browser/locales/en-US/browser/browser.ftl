@@ -315,6 +315,13 @@ quickactions-library = Open Library
 quickactions-logins2 = Manage passwords
 quickactions-cmd-logins = logins, passwords
 
+# Mutes all tabs playing audio
+quickactions-mute = Mute tabs playing audio
+# List of words that would trigger the "mute tabs" action from the address bar.
+# Replace with idiomatic expressions in your language to silence something or
+# someone.
+quickactions-cmd-mute = mute, shush, sssssh
+
 # Opens the print dialog
 quickactions-print2 = Print page
 quickactions-cmd-print = print
