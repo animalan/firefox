@@ -623,7 +623,7 @@ add_task(async function test_adjustChannel() {
     stream.setByteStringData(postData);
 
     channel.QueryInterface(Ci.nsIUploadChannel2);
-    channel.explicitSetUploadStream(stream, null, -1, "POST");
+    channel.explicitSetUploadStream(stream, null, -1, "POST", false);
 
     return Promise.resolve();
   }

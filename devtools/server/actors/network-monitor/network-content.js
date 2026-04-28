@@ -124,7 +124,7 @@ class NetworkContentActor extends Actor {
           "@mozilla.org/io/string-input-stream;1"
         ].createInstance(Ci.nsIStringInputStream);
         bodyStream.setByteStringData(body);
-        channel.explicitSetUploadStream(bodyStream, null, -1, method);
+        channel.explicitSetUploadStream(bodyStream, null, -1, method, false);
       }
 
       // Make sure the fetch has completed before sending the channel id,

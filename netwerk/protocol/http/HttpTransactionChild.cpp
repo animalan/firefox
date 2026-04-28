@@ -65,8 +65,8 @@ static already_AddRefed<nsIRequestContext> CreateRequestContext(
 nsresult HttpTransactionChild::InitInternal(
     uint32_t caps, const HttpConnectionInfoCloneArgs& infoArgs,
     nsHttpRequestHead* requestHead, nsIInputStream* requestBody,
-    uint64_t requestContentLength, uint64_t browserId,
-    uint8_t httpTrafficCategory, uint64_t requestContextID,
+    uint64_t requestContentLength, bool requestBodyHasHeaders,
+    uint64_t browserId, uint8_t httpTrafficCategory, uint64_t requestContextID,
     ClassOfService classOfService, uint32_t initialRwin,
     bool responseTimeoutEnabled, uint64_t channelId,
     bool aHasTransactionObserver,
@@ -90,7 +90,7 @@ nsresult HttpTransactionChild::InitInternal(
 
   nsresult rv = mTransaction->Init(
       caps, cinfo, requestHead, requestBody, requestContentLength,
-      GetCurrentSerialEventTarget(),
+      requestBodyHasHeaders, GetCurrentSerialEventTarget(),
       nullptr,  // TODO: security callback, fix in bug 1512479.
       this, browserId, static_cast<HttpTrafficCategory>(httpTrafficCategory),
       rc, classOfService, initialRwin, responseTimeoutEnabled, channelId,
@@ -142,7 +142,7 @@ mozilla::ipc::IPCResult HttpTransactionChild::RecvResumePump() {
 mozilla::ipc::IPCResult HttpTransactionChild::RecvInit(
     const uint32_t& aCaps, const HttpConnectionInfoCloneArgs& aArgs,
     const nsHttpRequestHead& aReqHeaders, const Maybe<IPCStream>& aRequestBody,
-    const uint64_t& aReqContentLength,
+    const uint64_t& aReqContentLength, const bool& aReqBodyIncludesHeaders,
     const uint64_t& aTopLevelOuterContentWindowId,
     const uint8_t& aHttpTrafficCategory, const uint64_t& aRequestContextID,
     const ClassOfService& aClassOfService, const uint32_t& aInitialRwin,
@@ -171,9 +171,10 @@ mozilla::ipc::IPCResult HttpTransactionChild::RecvInit(
 
   nsresult rv = InitInternal(
       aCaps, aArgs, &mRequestHead, mUploadStream, aReqContentLength,
-      aTopLevelOuterContentWindowId, aHttpTrafficCategory, aRequestContextID,
-      aClassOfService, aInitialRwin, aResponseTimeoutEnabled, aChannelId,
-      aHasTransactionObserver, aParentIPAddressSpace, aLnaPermissionStatus);
+      aReqBodyIncludesHeaders, aTopLevelOuterContentWindowId,
+      aHttpTrafficCategory, aRequestContextID, aClassOfService, aInitialRwin,
+      aResponseTimeoutEnabled, aChannelId, aHasTransactionObserver,
+      aParentIPAddressSpace, aLnaPermissionStatus);
   if (NS_FAILED(rv)) {
     LOG(("HttpTransactionChild::RecvInit: [this=%p] InitInternal failed!\n",
          this));

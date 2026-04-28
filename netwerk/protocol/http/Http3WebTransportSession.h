@@ -21,10 +21,6 @@ class Http3TunnelStreamBase : public Http3StreamBase,
   NS_DECL_NSAHTTPSEGMENTWRITER
   NS_DECL_NSAHTTPSEGMENTREADER
 
-  // HTTP/3 streams don't want serialized headers in the request stream.
-  // Headers are encoded directly from nsHttpRequestHead using QPACK.
-  bool WantsSerializedHeaders() const override { return false; }
-
   explicit Http3TunnelStreamBase(nsAHttpTransaction* trans,
                                  Http3SessionBase* aHttp3Session);
 
@@ -46,6 +42,7 @@ class Http3TunnelStreamBase : public Http3StreamBase,
   virtual nsresult OnProcessDatagram() { return NS_OK; }
 
  protected:
+  bool ConsumeHeaders(const char* buf, uint32_t avail, uint32_t* countUsed);
   virtual void OnClosePending() = 0;
 
   enum RecvStreamState {
@@ -58,11 +55,13 @@ class Http3TunnelStreamBase : public Http3StreamBase,
   } mRecvState{BEFORE_HEADERS};
 
   enum SendStreamState {
+    PREPARING_HEADERS,
     WAITING_TO_ACTIVATE,
     PROCESSING_DATAGRAM,
     SEND_DONE,
-  } mSendState{WAITING_TO_ACTIVATE};
+  } mSendState{PREPARING_HEADERS};
 
+  nsCString mFlatHttpRequestHeaders;
   nsTArray<uint8_t> mFlatResponseHeaders;
 
   nsresult mSocketInCondition = NS_ERROR_NOT_INITIALIZED;

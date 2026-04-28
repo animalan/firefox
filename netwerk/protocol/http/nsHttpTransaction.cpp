@@ -186,11 +186,11 @@ nsHttpTransaction::~nsHttpTransaction() {
 nsresult nsHttpTransaction::Init(
     uint32_t caps, nsHttpConnectionInfo* cinfo, nsHttpRequestHead* requestHead,
     nsIInputStream* requestBody, uint64_t requestContentLength,
-    nsIEventTarget* target, nsIInterfaceRequestor* callbacks,
-    nsITransportEventSink* eventsink, uint64_t browserId,
-    HttpTrafficCategory trafficCategory, nsIRequestContext* requestContext,
-    ClassOfService classOfService, uint32_t initialRwin,
-    bool responseTimeoutEnabled, uint64_t channelId,
+    bool requestBodyHasHeaders, nsIEventTarget* target,
+    nsIInterfaceRequestor* callbacks, nsITransportEventSink* eventsink,
+    uint64_t browserId, HttpTrafficCategory trafficCategory,
+    nsIRequestContext* requestContext, ClassOfService classOfService,
+    uint32_t initialRwin, bool responseTimeoutEnabled, uint64_t channelId,
     TransactionObserverFunc&& transactionObserver,
     nsILoadInfo::IPAddressSpace aParentIpAddressSpace,
     const struct LNAPerms& aLnaPermissionStatus) {
@@ -263,75 +263,87 @@ nsresult nsHttpTransaction::Init(
     mNoContent = true;
   }
 
-  // grab a weak reference to the request head; nsHttpRequestHead's internal
-  // RecursiveMutex makes individual accessor calls thread-safe across the
-  // socket and main threads.
+  // grab a weak reference to the request head
   mRequestHead = requestHead;
 
-  // Serialize headers only if needed for logging or observers.
-  // For HTTP/1.x, headers will be serialized on-demand when ReadSegments
-  // is first called. For HTTP/2/HTTP/3, headers are never serialized
-  // (they're encoded directly from mRequestHead).
-  if (LOG1_ENABLED() || gHttpHandler->HttpActivityDistributorActivated()) {
-    nsCString headerBuf = nsHttp::ConvertRequestHeadToString(
-        *requestHead, !!requestBody, false, cinfo->UsingConnect());
+  mReqHeaderBuf = nsHttp::ConvertRequestHeadToString(
+      *requestHead, !!requestBody, requestBodyHasHeaders,
+      cinfo->UsingConnect());
 
-    if (LOG1_ENABLED()) {
-      LOG1(("http request [\n"));
-      LogHeaders(headerBuf.get());
-      LOG1(("]\n"));
-    }
-
-    if (gHttpHandler->HttpActivityDistributorActivated()) {
-      NS_DispatchToMainThread(NS_NewRunnableFunction(
-          "ObserveHttpActivityWithArgs", [channelId(mChannelId), headerBuf]() {
-            if (!gHttpHandler) {
-              return;
-            }
-            gHttpHandler->ObserveHttpActivityWithArgs(
-                HttpActivityArgs(channelId),
-                NS_HTTP_ACTIVITY_TYPE_HTTP_TRANSACTION,
-                NS_HTTP_ACTIVITY_SUBTYPE_REQUEST_HEADER, PR_Now(), 0,
-                headerBuf);
-          }));
-    }
+  if (LOG1_ENABLED()) {
+    LOG1(("http request [\n"));
+    LogHeaders(mReqHeaderBuf.get());
+    LOG1(("]\n"));
   }
+
+  // report the request header
+  if (gHttpHandler->HttpActivityDistributorActivated()) {
+    nsCString requestBuf(mReqHeaderBuf);
+    NS_DispatchToMainThread(NS_NewRunnableFunction(
+        "ObserveHttpActivityWithArgs", [channelId(mChannelId), requestBuf]() {
+          if (!gHttpHandler) {
+            return;
+          }
+          gHttpHandler->ObserveHttpActivityWithArgs(
+              HttpActivityArgs(channelId),
+              NS_HTTP_ACTIVITY_TYPE_HTTP_TRANSACTION,
+              NS_HTTP_ACTIVITY_SUBTYPE_REQUEST_HEADER, PR_Now(), 0, requestBuf);
+        }));
+  }
+
+  // Create a string stream for the request header buf (the stream holds
+  // a non-owning reference to the request header data, so we MUST keep
+  // mReqHeaderBuf around).
+  nsCOMPtr<nsIInputStream> headers;
+  rv = NS_NewByteInputStream(getter_AddRefs(headers), mReqHeaderBuf,
+                             NS_ASSIGNMENT_DEPEND);
+  if (NS_FAILED(rv)) return rv;
 
   mHasRequestBody = !!requestBody;
   if (mHasRequestBody && !requestContentLength) {
     mHasRequestBody = false;
   }
 
-  // Store the request body for later. Headers will be prepended lazily
-  // by HTTP/1.x when first reading from the stream.
+  requestContentLength += mReqHeaderBuf.Length();
+
   if (mHasRequestBody) {
-    nsCOMPtr<nsIInputStream> bodyStream(requestBody);
+    // wrap the headers and request body in a multiplexed input stream.
+    RefPtr<nsMultiplexInputStream> multi = new nsMultiplexInputStream();
+
+    rv = multi->AppendStream(headers);
+    if (NS_FAILED(rv)) return rv;
+
+    rv = multi->AppendStream(requestBody);
+    if (NS_FAILED(rv)) return rv;
+
+    // wrap the multiplexed input stream with a buffered input stream, so
+    // that we write data in the largest chunks possible.  this is actually
+    // necessary to workaround some common server bugs (see bug 137155).
     rv = NS_NewBufferedInputStream(getter_AddRefs(mRequestStream),
-                                   bodyStream.forget(),
+                                   multi.forget(),
                                    nsIOService::gDefaultSegmentSize);
     if (NS_FAILED(rv)) return rv;
+  } else {
+    mRequestStream = headers;
   }
-  // Otherwise mRequestStream remains null (no body, no headers yet)
 
   nsCOMPtr<nsIThrottledInputChannel> throttled = do_QueryInterface(eventsink);
   if (throttled) {
     nsCOMPtr<nsIInputChannelThrottleQueue> queue;
     rv = throttled->GetThrottleQueue(getter_AddRefs(queue));
+    // In case of failure, just carry on without throttling.
     if (NS_SUCCEEDED(rv) && queue) {
-      mThrottleQueue = queue;
-      if (mRequestStream) {
-        nsCOMPtr<nsIAsyncInputStream> wrappedStream;
-        rv = queue->WrapStream(mRequestStream, getter_AddRefs(wrappedStream));
-        // Failure to throttle isn't sufficient reason to fail
-        // initialization
-        if (NS_SUCCEEDED(rv)) {
-          MOZ_ASSERT(wrappedStream != nullptr);
-          LOG((
-              "nsHttpTransaction::Init %p wrapping input stream using throttle "
-              "queue %p\n",
-              this, queue.get()));
-          mRequestStream = wrappedStream;
-        }
+      nsCOMPtr<nsIAsyncInputStream> wrappedStream;
+      rv = queue->WrapStream(mRequestStream, getter_AddRefs(wrappedStream));
+      // Failure to throttle isn't sufficient reason to fail
+      // initialization
+      if (NS_SUCCEEDED(rv)) {
+        MOZ_ASSERT(wrappedStream != nullptr);
+        LOG(
+            ("nsHttpTransaction::Init %p wrapping input stream using throttle "
+             "queue %p\n",
+             this, queue.get()));
+        mRequestStream = wrappedStream;
       }
     }
   }
@@ -506,9 +518,7 @@ UniquePtr<nsHttpHeaderArray> nsHttpTransaction::TakeResponseTrailers() {
 
 void nsHttpTransaction::SetProxyConnectFailed() { mProxyConnectFailed = true; }
 
-const nsHttpRequestHead* nsHttpTransaction::RequestHead() {
-  return mRequestHead;
-}
+nsHttpRequestHead* nsHttpTransaction::RequestHead() { return mRequestHead; }
 
 uint32_t nsHttpTransaction::Http1xTransactionCount() { return 1; }
 
@@ -724,7 +734,6 @@ void nsHttpTransaction::OnTransportStatus(nsITransport* transport,
 
     // when uploading, we include the request headers in the progress
     // notifications.
-    progress += mRequestHeadersSize;
     progressMax = mRequestSize;
   } else {
     progress = 0;
@@ -786,63 +795,10 @@ nsresult nsHttpTransaction::ReadSegments(nsAHttpSegmentReader* reader,
     MaybeRefreshSecurityInfo();
   }
 
-  // For HTTP/1.x, lazily create header stream on first read by serializing
-  // the request head. For HTTP/2/HTTP/3, headers are encoded directly from
-  // mRequestHead and never serialized.
-  // Check if the reader wants serialized headers (HTTP/1.x) or not (HTTP/2/3).
-  bool needsSerializedHeaders = reader->WantsSerializedHeaders();
-
-  if (!mHeaderStream && needsSerializedHeaders && !mHeadersSerialized) {
-    nsCString reqHeaderBuf = nsHttp::ConvertRequestHeadToString(
-        *mRequestHead, mHasRequestBody, false, mConnInfo->UsingConnect());
-    AddRequestHeadersSize(reqHeaderBuf.Length());
-    mHeadersSerialized = true;
-
-    // Create a stream from the serialized headers
-    nsresult rv =
-        NS_NewCStringInputStream(getter_AddRefs(mHeaderStream), reqHeaderBuf);
-    if (NS_FAILED(rv)) {
-      return rv;
-    }
-
-    if (mThrottleQueue) {
-      nsCOMPtr<nsIAsyncInputStream> wrappedStream;
-      rv = mThrottleQueue->WrapStream(mHeaderStream,
-                                      getter_AddRefs(wrappedStream));
-      if (NS_SUCCEEDED(rv)) {
-        mHeaderStream = wrappedStream;
-      }
-    }
-  }
-
   mDeferredSendProgress = false;
   mReader = reader;
-
-  // Read from header stream first (if it exists and has data), then from body
-  // stream
-  nsresult rv = NS_OK;
-  *countRead = 0;
-
-  if (mHeaderStream) {
-    uint32_t headerBytesRead = 0;
-    rv = mHeaderStream->ReadSegments(ReadRequestSegment, this, count,
-                                     &headerBytesRead);
-    *countRead = headerBytesRead;
-
-    if (rv == NS_BASE_STREAM_CLOSED) {
-      mHeaderStream = nullptr;
-      rv = NS_OK;
-    }
-  }
-
-  // If we still have room and have a body stream, read from it
-  if (NS_SUCCEEDED(rv) && *countRead < count && mRequestStream) {
-    uint32_t bodyBytesRead = 0;
-    rv = mRequestStream->ReadSegments(ReadRequestSegment, this,
-                                      count - *countRead, &bodyBytesRead);
-    *countRead += bodyBytesRead;
-  }
-
+  nsresult rv =
+      mRequestStream->ReadSegments(ReadRequestSegment, this, count, countRead);
   mReader = nullptr;
 
   if (m0RTTInProgress && (mEarlyDataDisposition == EARLY_NONE) &&
@@ -1094,18 +1050,6 @@ bool nsHttpTransaction::ResponseIsComplete() { return mResponseIsComplete; }
 int64_t nsHttpTransaction::GetTransferSize() { return mTransferSize; }
 
 int64_t nsHttpTransaction::GetRequestSize() { return mRequestSize; }
-
-void nsHttpTransaction::AddRequestHeadersSize(int64_t aHeadersSize) {
-  if (mRequestSize >= 0 && InScriptableRange(aHeadersSize)) {
-    int64_t newSize = mRequestSize + aHeadersSize;
-    if (InScriptableRange(newSize)) {
-      mRequestSize = newSize;
-      mRequestHeadersSize = aHeadersSize;
-    } else {
-      mRequestSize = -1;
-    }
-  }
-}
 
 bool nsHttpTransaction::IsHttp3Used() { return mIsHttp3Used; }
 
@@ -1862,8 +1806,8 @@ void nsHttpTransaction::Close(nsresult reason) {
   ReleaseBlockingTransaction();
 
   // release some resources that we no longer need
-  mHeaderStream = nullptr;
   mRequestStream = nullptr;
+  mReqHeaderBuf.Truncate();
   mLineBuf.Truncate();
   if (mChunkedDecoder) {
     delete mChunkedDecoder;
@@ -1941,7 +1885,6 @@ void nsHttpTransaction::SetRestartReason(TRANSACTION_RESTART_REASON aReason) {
 }
 
 nsresult nsHttpTransaction::Restart() {
-  nsresult rv;
   MOZ_ASSERT(OnSocketThread(), "not on socket thread");
 
   // limit the number of restart attempts - bug 92224
@@ -1957,23 +1900,20 @@ nsresult nsHttpTransaction::Restart() {
 
   LOG(("restarting transaction @%p\n", this));
 
-  // Note: Restart() is only used for connection-level retries (network reset,
-  // 0-RTT rejection, HTTPSRR fallback, etc.) and never for auth failures —
-  // those go through the channel-level auth retry path. The sticky proxy-auth
-  // header (NTLM/Negotiate Type 1/Type 3) must be preserved on the retry so
-  // the new connection continues the handshake byte-for-byte.
-
-  // rewind streams in case we already wrote out the request
-  nsCOMPtr<nsISeekableStream> seekable = do_QueryInterface(mRequestStream);
-  if (seekable) {
-    rv = seekable->Seek(nsISeekableStream::NS_SEEK_SET, 0);
-    if (NS_FAILED(rv)) {
-      return NS_ERROR_FAILURE;
+  if (mRequestHead) {
+    // Dispatching on a new connection better w/o an ambient connection proxy
+    // auth request header to not confuse the proxy authenticator.
+    nsAutoCString proxyAuth;
+    if (NS_SUCCEEDED(
+            mRequestHead->GetHeader(nsHttp::Proxy_Authorization, proxyAuth)) &&
+        IsStickyAuthSchemeAt(proxyAuth)) {
+      (void)mRequestHead->ClearHeader(nsHttp::Proxy_Authorization);
     }
   }
 
-  mHeaderStream = nullptr;
-  mHeadersSerialized = false;
+  // rewind streams in case we already wrote out the request
+  nsCOMPtr<nsISeekableStream> seekable = do_QueryInterface(mRequestStream);
+  if (seekable) seekable->Seek(nsISeekableStream::NS_SEEK_SET, 0);
 
   if (mDoNotTryEarlyData) {
     MutexAutoLock lock(mLock);
@@ -3275,7 +3215,6 @@ nsresult nsHttpTransaction::Finish0RTT(bool aRestart,
        aAlpnChanged));
   MOZ_ASSERT(m0RTTInProgress);
   m0RTTInProgress = false;
-  nsresult rv;
 
   MaybeCancelFallbackTimer();
 
@@ -3288,17 +3227,13 @@ nsresult nsHttpTransaction::Finish0RTT(bool aRestart,
     // Not to use 0RTT when this transaction is restarted next time.
     mDoNotTryEarlyData = true;
 
-    // Rewind the body stream if present.
+    // Reset request headers to be sent again.
     nsCOMPtr<nsISeekableStream> seekable = do_QueryInterface(mRequestStream);
     if (seekable) {
-      rv = seekable->Seek(nsISeekableStream::NS_SEEK_SET, 0);
-      if (NS_WARN_IF(NS_FAILED(rv))) {
-        return NS_ERROR_FAILURE;
-      }
+      seekable->Seek(nsISeekableStream::NS_SEEK_SET, 0);
+    } else {
+      return NS_ERROR_FAILURE;
     }
-
-    mHeaderStream = nullptr;
-    mHeadersSerialized = false;
   } else if (!mConnected) {
     // this is code that was skipped in ::ReadSegments while in 0RTT
     mConnected = true;
@@ -3773,7 +3708,6 @@ void nsHttpTransaction::OnFastFallbackTimer() {
 
 void nsHttpTransaction::HandleFallback(
     nsHttpConnectionInfo* aFallbackConnInfo) {
-  nsresult rv;
   if (mConnection) {
     // Close the transaction with NS_ERROR_NET_RESET, since we know doing this
     // will make transaction to be restarted.
@@ -3801,10 +3735,7 @@ void nsHttpTransaction::HandleFallback(
   // rewind streams in case we already wrote out the request
   nsCOMPtr<nsISeekableStream> seekable = do_QueryInterface(mRequestStream);
   if (seekable) {
-    rv = seekable->Seek(nsISeekableStream::NS_SEEK_SET, 0);
-    if (NS_FAILED(rv)) {
-      NS_WARNING("Failed to seek in nsHttpTransaction::HandleFallback");
-    }
+    seekable->Seek(nsISeekableStream::NS_SEEK_SET, 0);
   }
 
   UpdateConnectionInfo(aFallbackConnInfo);

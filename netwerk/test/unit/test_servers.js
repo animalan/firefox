@@ -338,67 +338,6 @@ add_task(async function test_proxy_with_redirects() {
   }
 });
 
-async function do_post_test(server) {
-  await server.registerPathHandler("/post-test", (req, resp) => {
-    let body = "";
-    req.on("data", chunk => {
-      body += chunk;
-    });
-    req.on("end", () => {
-      let method =
-        req.method || req.headers[global.http2.constants.HTTP2_HEADER_METHOD];
-      resp.writeHead(200);
-      resp.end(method + ":" + body);
-    });
-  });
-
-  let chan = makeChan(`${server.origin()}/post-test`);
-  let stream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
-    Ci.nsIStringInputStream
-  );
-  stream.setByteStringData("post-body");
-  let uchan = chan.QueryInterface(Ci.nsIUploadChannel2);
-  uchan.explicitSetUploadStream(stream, "text/plain", -1, "POST");
-
-  let [req, buff] = await channelOpenPromise(chan, CL_ALLOW_UNKNOWN_CL);
-  equal(
-    req.status,
-    Cr.NS_OK,
-    `POST to ${server.constructor.name} should succeed`
-  );
-  equal(
-    req.QueryInterface(Ci.nsIHttpChannel).responseStatus,
-    200,
-    `POST to ${server.constructor.name} should return 200`
-  );
-  equal(
-    buff,
-    "POST:post-body",
-    `POST body should be echoed by ${server.constructor.name}`
-  );
-}
-
-add_task(async function test_post_http() {
-  let server = new NodeHTTPServer();
-  await server.start();
-  await do_post_test(server);
-  await server.stop();
-});
-
-add_task(async function test_post_https() {
-  let server = new NodeHTTPSServer();
-  await server.start();
-  await do_post_test(server);
-  await server.stop();
-});
-
-add_task(async function test_post_http2() {
-  let server = new NodeHTTP2Server();
-  await server.start();
-  await do_post_test(server);
-  await server.stop();
-});
-
 add_task(async function test_async_event() {
   let server = new NodeHTTP2Server();
   await server.start();

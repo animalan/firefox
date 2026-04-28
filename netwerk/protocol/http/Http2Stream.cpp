@@ -80,7 +80,7 @@ nsresult Http2Stream::CallToWriteData(uint32_t count, uint32_t* countWritten) {
 // This is really a headers frame, but open is pretty clear from a workflow pov
 nsresult Http2Stream::GenerateHeaders(nsCString& aCompressedData,
                                       uint8_t& firstFrameFlags) {
-  const nsHttpRequestHead* head = mTransaction->RequestHead();
+  nsHttpRequestHead* head = mTransaction->RequestHead();
   nsAutoCString requestURI;
   head->RequestURI(requestURI);
   RefPtr<Http2Session> session = Session();
@@ -96,6 +96,11 @@ nsresult Http2Stream::GenerateHeaders(nsCString& aCompressedData,
 
   nsDependentCString scheme(head->IsHTTPS() ? "https" : "http");
 
+  nsAutoCString method;
+  nsAutoCString path;
+  head->Method(method);
+  head->Path(path);
+
   bool mayAddTEHeader = true;
   nsAutoCString teHeader;
   rv = head->GetHeader(nsHttp::TE, teHeader);
@@ -107,18 +112,10 @@ nsresult Http2Stream::GenerateHeaders(nsCString& aCompressedData,
     mayAddTEHeader = false;
   }
 
-  nsAutoCString method;
-  nsAutoCString path;
-  head->Method(method);
-  head->Path(path);
-
   rv = session->Compressor()->EncodeHeaderBlock(
-      method, path, authorityHeader, scheme, EmptyCString(), false,
-      aCompressedData, mayAddTEHeader, head);
+      mFlatHttpRequestHeaders, method, path, authorityHeader, scheme,
+      EmptyCString(), false, aCompressedData, mayAddTEHeader);
   NS_ENSURE_SUCCESS(rv, rv);
-
-  // Add header size to request size
-  mTransaction->AddRequestHeadersSize(aCompressedData.Length());
 
   int64_t clVal = session->Compressor()->GetParsedContentLength();
   if (clVal != -1) {

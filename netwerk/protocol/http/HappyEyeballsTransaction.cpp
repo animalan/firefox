@@ -177,7 +177,7 @@ void HappyEyeballsTransaction::SetProxyConnectFailed() {
   }
 }
 
-const nsHttpRequestHead* HappyEyeballsTransaction::RequestHead() {
+nsHttpRequestHead* HappyEyeballsTransaction::RequestHead() {
   return mTransaction ? mTransaction->RequestHead() : nullptr;
 }
 

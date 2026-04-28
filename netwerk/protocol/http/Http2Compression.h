@@ -16,7 +16,6 @@
 namespace mozilla {
 namespace net {
 
-class nsHttpRequestHead;
 struct HuffmanIncomingTable;
 
 void Http2CompressionCleanup();
@@ -156,16 +155,13 @@ class Http2Compressor final : public Http2BaseCompressor {
   Http2Compressor() = default;
   virtual ~Http2Compressor();
 
-  // Encode request pseudo-headers from the explicit
-  // method/path/host/scheme/protocol arguments, then append non-pseudo
-  // headers from requestHead. Callers pass method/path explicitly because
-  // CONNECT tunnels (proxy/WebSocket/WebTransport) override the request
-  // head's method/path with "CONNECT" and tunnel-specific paths.
+  // HTTP/1 formatted header block as input - HTTP/2 formatted
+  // header block as output
   [[nodiscard]] nsresult EncodeHeaderBlock(
-      const nsACString& method, const nsACString& path, const nsACString& host,
-      const nsACString& scheme, const nsACString& protocol,
-      bool simpleConnectForm, nsACString& output, bool addTEHeader,
-      const nsHttpRequestHead* requestHead);
+      const nsCString& nvInput, const nsACString& method,
+      const nsACString& path, const nsACString& host, const nsACString& scheme,
+      const nsACString& protocol, bool simpleConnectForm, nsACString& output,
+      bool addTEHeader);
 
   int64_t GetParsedContentLength() {
     return mParsedContentLength;

@@ -156,7 +156,8 @@ add_task(async function test_bug1749957_bug1750056() {
       stream,
       /* aContentType = */ "",
       /* aContentLength = */ -1,
-      "POST"
+      "POST",
+      /* aStreamHasHeaders = */ false
     );
   }
 

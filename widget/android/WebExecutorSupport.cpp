@@ -403,7 +403,7 @@ static nsresult SetupHttpChannel(nsIHttpChannel* aHttpChannel,
     NS_ENSURE_SUCCESS(rv, rv);
 
     rv = uploadChannel->ExplicitSetUploadStream(
-        stream, contentType, -1, aRequest->Method()->ToCString());
+        stream, contentType, -1, aRequest->Method()->ToCString(), false);
     NS_ENSURE_SUCCESS(rv, rv);
   }
 

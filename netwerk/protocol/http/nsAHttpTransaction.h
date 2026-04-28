@@ -115,11 +115,8 @@ class nsAHttpTransaction : public nsSupportsWeakReference {
   // called to indicate a failure with proxy CONNECT
   virtual void SetProxyConnectFailed() = 0;
 
-  // called to retrieve the request headers of the transaction. Returns a
-  // const pointer so that the transaction's immutable snapshot of the
-  // request head (see nsHttpTransaction::AsyncRead) cannot be mutated by
-  // callers. Internal state mutations must go through the owning transaction.
-  virtual const nsHttpRequestHead* RequestHead() = 0;
+  // called to retrieve the request headers of the transaction
+  virtual nsHttpRequestHead* RequestHead() = 0;
 
   // determine the number of real http/1.x transactions on this
   // abstract object. Pipelines had multiple, SPDY has 0,
@@ -243,8 +240,6 @@ class nsAHttpTransaction : public nsSupportsWeakReference {
 
   virtual void InvokeCallback() {}
   virtual bool IsForFallback() { return false; }
-
-  virtual void AddRequestHeadersSize(int64_t aHeadersSize) {}
 };
 
 #define NS_DECL_NSAHTTPTRANSACTION                                             \
@@ -263,7 +258,7 @@ class nsAHttpTransaction : public nsSupportsWeakReference {
   virtual void Close(nsresult reason) override;                                \
   nsHttpConnectionInfo* ConnectionInfo() override;                             \
   void SetProxyConnectFailed() override;                                       \
-  virtual const nsHttpRequestHead* RequestHead() override;                     \
+  virtual nsHttpRequestHead* RequestHead() override;                           \
   uint32_t Http1xTransactionCount() override;                                  \
   [[nodiscard]] nsresult TakeSubTransactions(                                  \
       nsTArray<RefPtr<nsAHttpTransaction> >& outTransactions) override;
@@ -295,11 +290,6 @@ class nsAHttpSegmentReader {
                                                      bool forceCommitment) {
     return NS_ERROR_FAILURE;
   }
-
-  // Returns true if this reader expects serialized headers in the request
-  // stream (HTTP/1.x), false if headers should be encoded separately
-  // (HTTP/2, HTTP/3).
-  virtual bool WantsSerializedHeaders() const { return true; }
 };
 
 #define NS_DECL_NSAHTTPSEGMENTREADER                                     \

@@ -32,19 +32,13 @@ class Http3SessionStub final : public Http3SessionBase {
  public:
   NS_INLINE_DECL_REFCOUNTING(Http3SessionStub, override)
 
-  nsresult TryActivating(const nsHttpRequestHead* aRequestHead,
+  nsresult TryActivating(const nsACString& aMethod, const nsACString& aScheme,
                          const nsACString& aAuthorityHeader,
+                         const nsACString& aPath, const nsACString& aHeaders,
                          uint64_t* aStreamId,
                          Http3StreamBase* aStream) override {
+    mPathHeader = aPath;
     mAuthHeader = aAuthorityHeader;
-    // For CONNECT-UDP streams, the MASQUE path is derived from the URI
-    // template and stored on the stream itself (not in the request head).
-    if (RefPtr<Http3ConnectUDPStream> udpStream =
-            aStream->GetHttp3ConnectUDPStream()) {
-      mPathHeader = udpStream->PathQuery();
-    } else if (aRequestHead) {
-      aRequestHead->Path(mPathHeader);
-    }
     return NS_OK;
   }
 

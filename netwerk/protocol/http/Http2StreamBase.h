@@ -41,10 +41,6 @@ class Http2StreamBase : public nsISupports,
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSAHTTPSEGMENTREADER
 
-  // HTTP/2 streams don't want serialized headers in the request stream.
-  // Headers are encoded directly from nsHttpRequestHead using HPACK.
-  bool WantsSerializedHeaders() const override { return false; }
-
   enum stateType {
     IDLE,
     RESERVED_BY_REMOTE,
@@ -254,6 +250,9 @@ class Http2StreamBase : public nsISupports,
   // The HTTP/2 state for the stream from section 5.1
   enum stateType mState { IDLE };
 
+  // Flag is set when all http request headers have been read ID is not stable
+  uint32_t mRequestHeadersDone : 1;
+
   // Flag is set when ID is stable and concurrency limits are met
   uint32_t mOpenGenerated : 1;
 
@@ -290,6 +289,9 @@ class Http2StreamBase : public nsISupports,
 
   uint32_t mRFC7540Priority = 0;  // geckoish weight
 
+  // Buffer for request header compression.
+  nsCString mFlatHttpRequestHeaders;
+
   // Track the content-length of a request body so that we can
   // place the fin flag on the last data packet instead of waiting
   // for a stream closed indication. Relying on stream close results
@@ -303,6 +305,8 @@ class Http2StreamBase : public nsISupports,
  private:
   friend mozilla::DefaultDelete<Http2StreamBase>;
 
+  [[nodiscard]] nsresult ParseHttpRequestHeaders(const char*, uint32_t,
+                                                 uint32_t*);
   [[nodiscard]] nsresult GenerateOpen();
 
   virtual nsresult GenerateHeaders(nsCString& aCompressedData,

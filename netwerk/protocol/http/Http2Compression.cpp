@@ -19,7 +19,6 @@
 #include "nsCharSeparatedTokenizer.h"
 #include "nsIMemoryReporter.h"
 #include "nsHttpHandler.h"
-#include "nsHttpRequestHead.h"
 
 namespace mozilla {
 namespace net {
@@ -542,11 +541,19 @@ nsresult Http2Decompressor::OutputHeader(const nsACString& name,
   }
 
   // http/2 transport level headers shouldn't be gatewayed into http/1
-  const char* begin = name.BeginReading();
-  const char* end = name.EndReading();
-  auto* first =
-      std::find_if(begin, end, [](char c) { return c != ' ' && c != '\t'; });
-  bool isColonHeader = (first != end && *first == ':');
+  bool isColonHeader = false;
+  for (const char* cPtr = name.BeginReading(); cPtr && cPtr < name.EndReading();
+       ++cPtr) {
+    if (*cPtr == ':') {
+      isColonHeader = true;
+      break;
+    }
+    if (*cPtr != ' ' && *cPtr != '\t') {
+      isColonHeader = false;
+      break;
+    }
+  }
+
   if (isColonHeader) {
     // :status is the only pseudo-header field allowed in received HEADERS
     // frames, PUSH_PROMISE allows the other pseudo-header fields
@@ -1023,12 +1030,10 @@ nsresult Http2Decompressor::DoContextUpdate() {
 Http2Compressor::~Http2Compressor() = default;
 
 nsresult Http2Compressor::EncodeHeaderBlock(
-    const nsACString& method, const nsACString& path, const nsACString& host,
-    const nsACString& scheme, const nsACString& protocol,
-    bool simpleConnectForm, nsACString& output, bool addTEHeader,
-    const nsHttpRequestHead* requestHead) {
-  MOZ_ASSERT(requestHead);
-
+    const nsCString& nvInput, const nsACString& method, const nsACString& path,
+    const nsACString& host, const nsACString& scheme,
+    const nsACString& protocol, bool simpleConnectForm, nsACString& output,
+    bool addTEHeader) {
   mSetInitialMaxBufferSizeAllowed = false;
   mOutput = &output;
   output.Truncate();
@@ -1036,6 +1041,7 @@ nsresult Http2Compressor::EncodeHeaderBlock(
 
   bool isWebsocket = (!simpleConnectForm && !protocol.IsEmpty());
 
+  // first thing's first - context size updates (if necessary)
   if (mBufferSizeChangeWaiting) {
     if (mLowestBufferSizeWaiting < mMaxBufferSetting) {
       EncodeTableSizeChange(mLowestBufferSizeWaiting);
@@ -1044,46 +1050,44 @@ nsresult Http2Compressor::EncodeHeaderBlock(
     mBufferSizeChangeWaiting = false;
   }
 
-  // Emit pseudo-headers. For non-simple CONNECT forms (regular requests and
-  // extended CONNECT like WebSocket/WebTransport), include :path, :scheme,
-  // and optionally :protocol. Simple CONNECT only needs :method and
-  // :authority.
-  ProcessHeader(nvPair(":method"_ns, method), false, false);
+  // colon headers first
   if (!simpleConnectForm) {
+    ProcessHeader(nvPair(":method"_ns, method), false, false);
     ProcessHeader(nvPair(":path"_ns, path), true, false);
-  }
-  ProcessHeader(nvPair(":authority"_ns, host), false, false);
-  if (!simpleConnectForm) {
+    ProcessHeader(nvPair(":authority"_ns, host), false, false);
     ProcessHeader(nvPair(":scheme"_ns, scheme), false, false);
     if (isWebsocket) {
       ProcessHeader(nvPair(":protocol"_ns, protocol), false, false);
     }
+  } else {
+    ProcessHeader(nvPair(":method"_ns, method), false, false);
+    ProcessHeader(nvPair(":authority"_ns, host), false, false);
   }
 
-  // Emit non-pseudo headers from the request head.
-  requestHead->Enter();
-  const nsHttpHeaderArray& headers = requestHead->Headers();
-  uint32_t headerCount = headers.Count();
+  // now the non colon headers
+  const char* beginBuffer = nvInput.BeginReading();
 
-  for (uint32_t i = 0; i < headerCount; ++i) {
-    nsHttpAtom headerAtom;
-    nsAutoCString headerNameOriginal;
-    const char* headerValue =
-        headers.PeekHeaderAt(i, headerAtom, headerNameOriginal);
+  // This strips off the HTTP/1 method+path+version
+  int32_t crlfIndex = nvInput.Find("\r\n");
+  while (true) {
+    int32_t startIndex = crlfIndex + 2;
 
-    if (!headerValue) {
-      continue;
+    crlfIndex = nvInput.Find("\r\n", startIndex);
+    if (crlfIndex == -1) {
+      break;
     }
 
-    nsAutoCString name(headerAtom.get());
-    nsDependentCString value(headerValue);
+    int32_t colonIndex = Substring(nvInput, 0, crlfIndex).Find(":", startIndex);
+    if (colonIndex == -1) {
+      break;
+    }
 
-    // All header names must be lowercase in HTTP/2
+    nsDependentCSubstring name =
+        Substring(beginBuffer + startIndex, beginBuffer + colonIndex);
+    // all header names are lower case in http/2
     ToLowerCase(name);
 
-    // Filter out HTTP/1-specific headers that are forbidden in HTTP/2.
-    // sec-websocket-key is also filtered - RFC 8441 WebSocket-over-H2 uses
-    // a different handshake that does not use this header.
+    // exclusions
     if (name.EqualsLiteral("connection") || name.EqualsLiteral("host") ||
         name.EqualsLiteral("keep-alive") ||
         name.EqualsLiteral("proxy-connection") || name.EqualsLiteral("te") ||
@@ -1093,15 +1097,32 @@ nsresult Http2Compressor::EncodeHeaderBlock(
       continue;
     }
 
-    // Skip any stray colon-prefixed headers (could indicate smuggling).
-    const char* begin = name.BeginReading();
-    const char* end = name.EndReading();
-    auto* first =
-        std::find_if(begin, end, [](char c) { return c != ' ' && c != '\t'; });
-    bool isColonHeader = (first != end && *first == ':');
+    // colon headers are for http/2 and this is http/1 input, so that
+    // is probably a smuggling attack of some kind
+    bool isColonHeader = false;
+    for (const char* cPtr = name.BeginReading();
+         cPtr && cPtr < name.EndReading(); ++cPtr) {
+      if (*cPtr == ':') {
+        isColonHeader = true;
+        break;
+      }
+      if (*cPtr != ' ' && *cPtr != '\t') {
+        isColonHeader = false;
+        break;
+      }
+    }
     if (isColonHeader) {
       continue;
     }
+
+    int32_t valueIndex = colonIndex + 1;
+
+    while (valueIndex < crlfIndex && beginBuffer[valueIndex] == ' ') {
+      ++valueIndex;
+    }
+
+    nsDependentCSubstring value =
+        Substring(beginBuffer + valueIndex, beginBuffer + crlfIndex);
 
     if (name.EqualsLiteral("content-length")) {
       int64_t len;
@@ -1112,31 +1133,35 @@ nsresult Http2Compressor::EncodeHeaderBlock(
     }
 
     if (name.EqualsLiteral("cookie")) {
-      // Cookie crumbling: split "a; b; c" into separate HPACK entries so
-      // individual cookies can be indexed independently in the dynamic table.
-      int32_t start = 0;
+      // cookie crumbling
       bool haveMoreCookies = true;
+      int32_t nextCookie = valueIndex;
       while (haveMoreCookies) {
-        int32_t semiSpaceIndex = value.Find("; ", start);
+        int32_t semiSpaceIndex =
+            Substring(nvInput, 0, crlfIndex).Find("; ", nextCookie);
         if (semiSpaceIndex == -1) {
           haveMoreCookies = false;
-          semiSpaceIndex = value.Length();
+          semiSpaceIndex = crlfIndex;
         }
         nsDependentCSubstring cookie =
-            Substring(value, start, semiSpaceIndex - start);
+            Substring(beginBuffer + nextCookie, beginBuffer + semiSpaceIndex);
+        // cookies less than 20 bytes are not indexed
         ProcessHeader(nvPair(name, cookie), false, cookie.Length() < 20);
-        start = semiSpaceIndex + 2;
+        nextCookie = semiSpaceIndex + 2;
       }
     } else {
+      // allow indexing of every non-cookie except authorization
       ProcessHeader(nvPair(name, value), false,
                     name.EqualsLiteral("authorization"));
     }
   }
 
-  requestHead->Exit();
-
+  // NB: This is a *really* ugly hack, but to do this in the right place (the
+  // transaction) would require totally reworking how/when the transaction
+  // creates its request stream, which is not worth the effort and risk of
+  // breakage just to add one header only to h2 connections.
   if (addTEHeader && !simpleConnectForm && !isWebsocket) {
-    // Add TE: trailers for regular requests.
+    // Add in TE: trailers for regular requests
     nsAutoCString te("te");
     nsAutoCString trailers("trailers");
     ProcessHeader(nvPair(te, trailers), false, false);

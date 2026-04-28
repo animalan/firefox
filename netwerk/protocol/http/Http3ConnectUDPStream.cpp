@@ -117,12 +117,12 @@ nsresult Http3ConnectUDPStream::TryActivating() {
     return rv;
   }
 
-  builder->Build(&mPathQuery);
+  nsCString pathQuery;
+  builder->Build(&pathQuery);
   LOG(("Http3ConnectUDPStream::TryActivating [host=%s pathQuery=%s]",
-       info->Host().get(), mPathQuery.get()));
-
-  const nsHttpRequestHead* head = mTransaction->RequestHead();
-  return mSession->TryActivating(head, info->Host(), &mStreamId, this);
+       info->Host().get(), pathQuery.get()));
+  return mSession->TryActivating(""_ns, ""_ns, info->Host(), pathQuery,
+                                 mFlatHttpRequestHeaders, &mStreamId, this);
 }
 
 void Http3ConnectUDPStream::OnSocketReady(PRFileDesc* fd, int16_t outFlags) {}

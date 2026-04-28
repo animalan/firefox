@@ -119,22 +119,22 @@ nsresult nsHttpRequestHead::VisitHeaders(
   return rv;
 }
 
-void nsHttpRequestHead::Method(nsACString& aMethod) const {
+void nsHttpRequestHead::Method(nsACString& aMethod) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   aMethod = mMethod;
 }
 
-HttpVersion nsHttpRequestHead::Version() const {
+HttpVersion nsHttpRequestHead::Version() {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   return mVersion;
 }
 
-void nsHttpRequestHead::RequestURI(nsACString& aRequestURI) const {
+void nsHttpRequestHead::RequestURI(nsACString& aRequestURI) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   aRequestURI = mRequestURI;
 }
 
-void nsHttpRequestHead::Path(nsACString& aPath) const {
+void nsHttpRequestHead::Path(nsACString& aPath) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   aPath = mPath.IsEmpty() ? mRequestURI : mPath;
 }
@@ -144,7 +144,7 @@ void nsHttpRequestHead::SetHTTPS(bool val) {
   mHTTPS = val;
 }
 
-void nsHttpRequestHead::Origin(nsACString& aOrigin) const {
+void nsHttpRequestHead::Origin(nsACString& aOrigin) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   aOrigin = mOrigin;
 }
@@ -195,8 +195,7 @@ nsresult nsHttpRequestHead::SetEmptyHeader(const nsACString& h) {
   return mHeaders.SetEmptyHeader(h, nsHttpHeaderArray::eVarietyRequestOverride);
 }
 
-nsresult nsHttpRequestHead::GetHeader(const nsHttpAtom& h,
-                                      nsACString& v) const {
+nsresult nsHttpRequestHead::GetHeader(const nsHttpAtom& h, nsACString& v) {
   v.Truncate();
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   return mHeaders.GetHeader(h, v);
@@ -223,13 +222,12 @@ void nsHttpRequestHead::ClearHeaders() {
   mHeaders.Clear();
 }
 
-bool nsHttpRequestHead::HasHeader(const nsHttpAtom& h) const {
+bool nsHttpRequestHead::HasHeader(const nsHttpAtom& h) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   return mHeaders.HasHeader(h);
 }
 
-bool nsHttpRequestHead::HasHeaderValue(const nsHttpAtom& h,
-                                       const char* v) const {
+bool nsHttpRequestHead::HasHeaderValue(const nsHttpAtom& h, const char* v) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   return mHeaders.HasHeaderValue(h, v);
 }
@@ -249,12 +247,12 @@ nsresult nsHttpRequestHead::SetHeaderOnce(const nsHttpAtom& h, const char* v,
   return NS_OK;
 }
 
-nsHttpRequestHead::ParsedMethodType nsHttpRequestHead::ParsedMethod() const {
+nsHttpRequestHead::ParsedMethodType nsHttpRequestHead::ParsedMethod() {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   return mParsedMethod;
 }
 
-bool nsHttpRequestHead::EqualsMethod(ParsedMethodType aType) const {
+bool nsHttpRequestHead::EqualsMethod(ParsedMethodType aType) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   return mParsedMethod == aType;
 }
@@ -283,7 +281,7 @@ void nsHttpRequestHead::ParseHeaderSet(const char* buffer) {
   }
 }
 
-bool nsHttpRequestHead::IsHTTPS() const {
+bool nsHttpRequestHead::IsHTTPS() {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   return mHTTPS;
 }
@@ -330,7 +328,7 @@ void nsHttpRequestHead::SetOrigin(const nsACString& scheme,
   }
 }
 
-bool nsHttpRequestHead::IsSafeMethod() const {
+bool nsHttpRequestHead::IsSafeMethod() {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   // This code will need to be extended for new safe methods, otherwise
   // they'll default to "not safe".
@@ -347,7 +345,7 @@ bool nsHttpRequestHead::IsSafeMethod() const {
           !strcmp(mMethod.get(), "REPORT") || !strcmp(mMethod.get(), "SEARCH"));
 }
 
-void nsHttpRequestHead::Flatten(nsACString& buf, bool pruneProxyHeaders) const {
+void nsHttpRequestHead::Flatten(nsACString& buf, bool pruneProxyHeaders) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   // note: the first append is intentional.
 

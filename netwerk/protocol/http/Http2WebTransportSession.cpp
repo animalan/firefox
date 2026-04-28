@@ -566,7 +566,7 @@ void Http2WebTransportSession::CloseStream(nsresult aReason) {
 
 nsresult Http2WebTransportSession::GenerateHeaders(nsCString& aCompressedData,
                                                    uint8_t& aFirstFrameFlags) {
-  const nsHttpRequestHead* head = mTransaction->RequestHead();
+  nsHttpRequestHead* head = mTransaction->RequestHead();
 
   nsAutoCString authorityHeader;
   nsresult rv = head->GetHeader(nsHttp::Host, authorityHeader);
@@ -580,12 +580,9 @@ nsresult Http2WebTransportSession::GenerateHeaders(nsCString& aCompressedData,
   head->Path(path);
 
   rv = session->Compressor()->EncodeHeaderBlock(
-      "CONNECT"_ns, path, authorityHeader, "https"_ns, "webtransport"_ns, false,
-      aCompressedData, false, head);
+      mFlatHttpRequestHeaders, "CONNECT"_ns, path, authorityHeader, "https"_ns,
+      "webtransport"_ns, false, aCompressedData, true);
   NS_ENSURE_SUCCESS(rv, rv);
-
-  // Add header size to request size
-  mTransaction->AddRequestHeadersSize(aCompressedData.Length());
 
   mRequestBodyLenRemaining = 0x0fffffffffffffffULL;
 

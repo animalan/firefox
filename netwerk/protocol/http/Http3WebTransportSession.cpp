@@ -26,9 +26,35 @@ Http3TunnelStreamBase::Http3TunnelStreamBase(nsAHttpTransaction* trans,
                                              Http3SessionBase* aHttp3Session)
     : Http3StreamBase(trans, aHttp3Session) {}
 
+bool Http3TunnelStreamBase::ConsumeHeaders(const char* buf, uint32_t avail,
+                                           uint32_t* countUsed) {
+  LOG3(("Http3TunnelStreamBase::ConsumeHeaders %p avail=%u.", this, avail));
+
+  mFlatHttpRequestHeaders.Append(buf, avail);
+  // We can use the simple double crlf because firefox is the
+  // only client we are parsing
+  int32_t endHeader = mFlatHttpRequestHeaders.Find("\r\n\r\n");
+
+  if (endHeader == kNotFound) {
+    // We don't have all the headers yet
+    LOG3(
+        ("Http3TunnelStreamBase::ConsumeHeaders %p "
+         "Need more header bytes. Len = %zu",
+         this, mFlatHttpRequestHeaders.Length()));
+    *countUsed = avail;
+    return false;
+  }
+
+  uint32_t oldLen = mFlatHttpRequestHeaders.Length();
+  mFlatHttpRequestHeaders.SetLength(endHeader + 2);
+  *countUsed = avail - (oldLen - endHeader) + 4;
+
+  return true;
+}
+
 nsresult Http3TunnelStreamBase::TryActivating() {
   LOG(("Http3TunnelStreamBase::TryActivating [this=%p]", this));
-  const nsHttpRequestHead* head = mTransaction->RequestHead();
+  nsHttpRequestHead* head = mTransaction->RequestHead();
 
   nsAutoCString host;
   nsresult rv = head->GetHeader(nsHttp::Host, host);
@@ -36,8 +62,11 @@ nsresult Http3TunnelStreamBase::TryActivating() {
     MOZ_ASSERT(false);
     return rv;
   }
+  nsAutoCString path;
+  head->Path(path);
 
-  return mSession->TryActivating(head, host, &mStreamId, this);
+  return mSession->TryActivating(""_ns, ""_ns, host, path,
+                                 mFlatHttpRequestHeaders, &mStreamId, this);
 }
 
 nsresult Http3TunnelStreamBase::ReadSegments() {
@@ -67,6 +96,10 @@ nsresult Http3TunnelStreamBase::ReadSegments() {
     LOG(("Http3TunnelStreamBase::ReadSegments state=%d [this=%p]", mSendState,
          this));
     switch (mSendState) {
+      case PREPARING_HEADERS: {
+        rv = mTransaction->ReadSegmentsAgain(
+            this, nsIOService::gDefaultSegmentSize, &transactionBytes, &again);
+      } break;
       case WAITING_TO_ACTIVATE: {
         // A transaction that had already generated its headers before it was
         // queued at the session level (due to concurrency concerns) may not
@@ -79,7 +112,6 @@ nsresult Http3TunnelStreamBase::ReadSegments() {
         nsresult rv2 = OnReadSegment("", 0, &wasted);
         LOG3(("  OnReadSegment returned 0x%08" PRIx32,
               static_cast<uint32_t>(rv2)));
-        again = false;
       } break;
       default:
         transactionBytes = 0;
@@ -240,6 +272,13 @@ nsresult Http3TunnelStreamBase::OnReadSegment(const char* buf, uint32_t count,
   nsresult rv = NS_OK;
 
   switch (mSendState) {
+    case PREPARING_HEADERS: {
+      if (!ConsumeHeaders(buf, count, countRead)) {
+        break;
+      }
+      mSendState = WAITING_TO_ACTIVATE;
+    }
+      [[fallthrough]];
     case WAITING_TO_ACTIVATE:
       rv = TryActivating();
       if (rv == NS_BASE_STREAM_WOULD_BLOCK) {

@@ -585,8 +585,8 @@ nsresult Http3StreamTunnel::TryActivating() {
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
   LOG(("Http3StreamTunnel::TryActivating [auth=%s]", host.get()));
-  const nsHttpRequestHead* head = mTransaction->RequestHead();
-  return mSession->TryActivating(head, host, &mStreamId, this);
+  return mSession->TryActivating("CONNECT"_ns, ""_ns, host, ""_ns,
+                                 mFlatHttpRequestHeaders, &mStreamId, this);
 }
 
 void Http3StreamTunnel::Close(nsresult aResult) {

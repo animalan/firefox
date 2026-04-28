@@ -700,12 +700,12 @@ run-if = [
 
 ["test_file_protocol.js"]
 
+["test_file_url_with_host.js"]
+
 ["test_file_root.js"]
 skip-if = [
   "os == 'android'",
 ]
-
-["test_file_url_with_host.js"]
 
 ["test_filestreams.js"]
 
@@ -1372,7 +1372,6 @@ skip-if = [
 
 ["test_progress_no_proxy_and_proxy.js"]
 run-sequentially = ["true"] # node server exceptions dont replay well
-requesttimeoutfactor = 2  # exercises 8 HTTP/1, HTTP/2, and proxy variants with 3 MB payloads
 skip-if = [
   "os == 'android' && os_version == '14' && arch == 'x86_64'", # Bug 1982955
   "os == 'win' && os_version == '10.2009' && arch == 'x86_64'",

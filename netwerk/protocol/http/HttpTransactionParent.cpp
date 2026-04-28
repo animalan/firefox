@@ -96,11 +96,11 @@ HttpTransactionParent::~HttpTransactionParent() {
 nsresult HttpTransactionParent::Init(
     uint32_t caps, nsHttpConnectionInfo* cinfo, nsHttpRequestHead* requestHead,
     nsIInputStream* requestBody, uint64_t requestContentLength,
-    nsIEventTarget* target, nsIInterfaceRequestor* callbacks,
-    nsITransportEventSink* eventsink, uint64_t browserId,
-    HttpTrafficCategory trafficCategory, nsIRequestContext* requestContext,
-    ClassOfService classOfService, uint32_t initialRwin,
-    bool responseTimeoutEnabled, uint64_t channelId,
+    bool requestBodyHasHeaders, nsIEventTarget* target,
+    nsIInterfaceRequestor* callbacks, nsITransportEventSink* eventsink,
+    uint64_t browserId, HttpTrafficCategory trafficCategory,
+    nsIRequestContext* requestContext, ClassOfService classOfService,
+    uint32_t initialRwin, bool responseTimeoutEnabled, uint64_t channelId,
     TransactionObserverFunc&& transactionObserver,
     nsILoadInfo::IPAddressSpace aParentIpAddressSpace,
     const LNAPerms& aLnaPermissionStatus) {
@@ -150,16 +150,18 @@ nsresult HttpTransactionParent::Init(
   // TODO: Figure out if we have to implement nsIThreadRetargetableRequest in
   // bug 1544378.
   if (!SendInit(caps, infoArgs, *requestHead, ipcStream, requestContentLength,
-                browserId, static_cast<uint8_t>(trafficCategory),
-                requestContextID, classOfService, initialRwin,
-                responseTimeoutEnabled, mChannelId, !!mTransactionObserver,
-                throttleQueue, mIsDocumentLoad, aParentIpAddressSpace,
-                aLnaPermissionStatus, mRedirectStart, mRedirectEnd)) {
+                requestBodyHasHeaders, browserId,
+                static_cast<uint8_t>(trafficCategory), requestContextID,
+                classOfService, initialRwin, responseTimeoutEnabled, mChannelId,
+                !!mTransactionObserver, throttleQueue, mIsDocumentLoad,
+                aParentIpAddressSpace, aLnaPermissionStatus, mRedirectStart,
+                mRedirectEnd)) {
     return NS_ERROR_FAILURE;
   }
 
   nsCString reqHeaderBuf = nsHttp::ConvertRequestHeadToString(
-      *requestHead, !!requestBody, false, cinfo->UsingConnect());
+      *requestHead, !!requestBody, requestBodyHasHeaders,
+      cinfo->UsingConnect());
   requestContentLength += reqHeaderBuf.Length();
 
   mRequestSize = InScriptableRange(requestContentLength)
@@ -346,17 +348,6 @@ bool HttpTransactionParent::ResponseIsComplete() { return mResponseIsComplete; }
 int64_t HttpTransactionParent::GetTransferSize() { return mTransferSize; }
 
 int64_t HttpTransactionParent::GetRequestSize() { return mRequestSize; }
-
-void HttpTransactionParent::AddRequestHeadersSize(int64_t aHeadersSize) {
-  if (mRequestSize >= 0 && InScriptableRange(aHeadersSize)) {
-    int64_t newSize = mRequestSize + aHeadersSize;
-    if (InScriptableRange(newSize)) {
-      mRequestSize = newSize;
-    } else {
-      mRequestSize = -1;
-    }
-  }
-}
 
 bool HttpTransactionParent::IsHttp3Used() { return mIsHttp3Used; }
 

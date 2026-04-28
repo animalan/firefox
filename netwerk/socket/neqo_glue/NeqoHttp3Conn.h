@@ -84,15 +84,15 @@ class NeqoHttp3Conn final {
 
   nsresult Fetch(const nsACString& aMethod, const nsACString& aScheme,
                  const nsACString& aHost, const nsACString& aPath,
-                 const NeqoHeaderArray* aHeaders, uint64_t* aStreamId,
+                 const nsACString& aHeaders, uint64_t* aStreamId,
                  uint8_t aUrgency, bool aIncremental) {
     return neqo_http3conn_fetch(this, &aMethod, &aScheme, &aHost, &aPath,
-                                aHeaders, aStreamId, aUrgency, aIncremental);
+                                &aHeaders, aStreamId, aUrgency, aIncremental);
   }
 
-  nsresult Connect(const nsACString& aHost, const NeqoHeaderArray* aHeaders,
+  nsresult Connect(const nsACString& aHost, const nsACString& aHeaders,
                    uint64_t* aStreamId, uint8_t aUrgency, bool aIncremental) {
-    return neqo_http3conn_connect(this, &aHost, aHeaders, aStreamId, aUrgency,
+    return neqo_http3conn_connect(this, &aHost, &aHeaders, aStreamId, aUrgency,
                                   aIncremental);
   }
 
@@ -149,17 +149,16 @@ class NeqoHttp3Conn final {
   }
 
   nsresult CreateWebTransport(const nsACString& aHost, const nsACString& aPath,
-                              const NeqoHeaderArray* aHeaders,
+                              const nsACString& aHeaders,
                               uint64_t* aSessionId) {
     return neqo_http3conn_webtransport_create_session(this, &aHost, &aPath,
-                                                      aHeaders, aSessionId);
+                                                      &aHeaders, aSessionId);
   }
 
   nsresult CreateConnectUdp(const nsACString& aHost, const nsACString& aPath,
-                            const NeqoHeaderArray* aHeaders,
-                            uint64_t* aSessionId) {
+                            const nsACString& aHeaders, uint64_t* aSessionId) {
     return neqo_http3conn_connect_udp_create_session(this, &aHost, &aPath,
-                                                     aHeaders, aSessionId);
+                                                     &aHeaders, aSessionId);
   }
 
   nsresult CloseWebTransport(uint64_t aSessionId, uint32_t aError,

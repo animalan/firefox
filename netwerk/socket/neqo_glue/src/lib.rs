@@ -44,7 +44,7 @@ use neqo_transport::{
 };
 use nserror::{
     nsresult, NS_BASE_STREAM_WOULD_BLOCK, NS_ERROR_CONNECTION_REFUSED,
-    NS_ERROR_FILE_ALREADY_EXISTS, NS_ERROR_ILLEGAL_VALUE,
+    NS_ERROR_DOM_INVALID_HEADER_NAME, NS_ERROR_FILE_ALREADY_EXISTS, NS_ERROR_ILLEGAL_VALUE,
     NS_ERROR_INVALID_ARG, NS_ERROR_NET_HTTP3_PROTOCOL_ERROR, NS_ERROR_NET_INTERRUPT,
     NS_ERROR_NET_RESET, NS_ERROR_NET_TIMEOUT, NS_ERROR_NOT_AVAILABLE, NS_ERROR_NOT_CONNECTED,
     NS_ERROR_OUT_OF_MEMORY, NS_ERROR_SOCKET_ADDRESS_IN_USE, NS_ERROR_UNEXPECTED, NS_OK,
@@ -1331,57 +1331,65 @@ fn is_excluded_header(name: &str) -> bool {
     )
 }
 
-#[repr(C)]
-pub struct NeqoHeaderArray {
-    _opaque: [u8; 0],
-    _marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
-}
+fn parse_headers(headers: &nsACString) -> Result<Vec<Header>, nsresult> {
+    let mut hdrs = Vec::new();
+    // this is only used for headers built by Firefox.
+    // Firefox supplies all headers already prepared for sending over http1.
+    // They need to be split into (name, value) pairs where name is a String
+    // and value is a Vec<u8>.
 
-#[no_mangle]
-pub extern "C" fn neqo_header_array_new(capacity: usize) -> *mut NeqoHeaderArray {
-    let vec: Vec<Header> = Vec::with_capacity(capacity);
-    Box::into_raw(Box::new(vec)) as *mut NeqoHeaderArray
-}
+    let headers_bytes: &[u8] = headers;
 
-#[no_mangle]
-pub extern "C" fn neqo_header_array_add(
-    array: *mut NeqoHeaderArray,
-    name: *const nsACString,
-    value: *const nsACString,
-) {
-    if array.is_null() || name.is_null() || value.is_null() {
-        return;
-    }
-
-    let (vec, name_cstring, value_cstring) = unsafe {
-        let vec = &mut *(array as *mut Vec<Header>);
-        let name_cstring = &*name;
-        let value_cstring = &*value;
-        (vec, name_cstring, value_cstring)
-    };
-
-    let name_bytes: &[u8] = name_cstring;
-    let value_bytes: &[u8] = value_cstring;
-
-    let name_str = match str::from_utf8(name_bytes) {
-        Ok(n) => n.trim().to_lowercase(),
-        Err(_) => return,
-    };
-
-    if is_excluded_header(&name_str) {
-        return;
-    }
-
-    vec.push(Header::new(name_str, value_bytes.to_vec()));
-}
-
-#[no_mangle]
-pub extern "C" fn neqo_header_array_free(array: *mut NeqoHeaderArray) {
-    if !array.is_null() {
-        unsafe {
-            let _ = Box::from_raw(array as *mut Vec<Header>);
+    // Split on either \r or \n. When splitting "\r\n" sequences, this produces
+    // an empty element between them which is filtered out by the is_empty check.
+    // This also handles malformed inputs with bare \r or \n.
+    for elem in headers_bytes.split(|&b| b == b'\r' || b == b'\n').skip(1) {
+        if elem.is_empty() {
+            continue;
         }
+        if elem.starts_with(b":") {
+            // colon headers are for http/2 and 3 and this is http/1
+            // input, so that is probably a smuggling attack of some
+            // kind.
+            continue;
+        }
+
+        let colon_pos = match elem.iter().position(|&b| b == b':') {
+            Some(pos) => pos,
+            None => continue, // No colon, skip this line
+        };
+
+        let name_bytes = &elem[..colon_pos];
+        // Safe: if colon is at the end, this yields an empty slice
+        let value_bytes = &elem[colon_pos + 1..];
+
+        // Header names must be valid UTF-8
+        let name = match str::from_utf8(name_bytes) {
+            Ok(n) => n.trim().to_lowercase(),
+            Err(_) => return Err(NS_ERROR_DOM_INVALID_HEADER_NAME),
+        };
+
+        if is_excluded_header(&name) {
+            continue;
+        }
+
+        // Trim leading and trailing optional whitespace (OWS) from value.
+        // Per RFC 9110, OWS is defined as *( SP / HTAB ), i.e., space and tab only.
+        let value = value_bytes
+            .iter()
+            .position(|&b| b != b' ' && b != b'\t')
+            .map_or(&value_bytes[0..0], |start| {
+                let end = value_bytes
+                    .iter()
+                    .rposition(|&b| b != b' ' && b != b'\t')
+                    .map_or(value_bytes.len(), |pos| pos + 1);
+                &value_bytes[start..end]
+            })
+            .to_vec();
+
+        hdrs.push(Header::new(name, value));
     }
+    Ok(hdrs)
 }
 
 #[no_mangle]
@@ -1391,11 +1399,17 @@ pub extern "C" fn neqo_http3conn_fetch(
     scheme: &nsACString,
     host: &nsACString,
     path: &nsACString,
-    headers: *const NeqoHeaderArray,
+    headers: &nsACString,
     stream_id: &mut u64,
     urgency: u8,
     incremental: bool,
 ) -> nsresult {
+    let hdrs = match parse_headers(headers) {
+        Err(e) => {
+            return e;
+        }
+        Ok(h) => h,
+    };
     let Ok(method_tmp) = str::from_utf8(method) else {
         return NS_ERROR_INVALID_ARG;
     };
@@ -1411,20 +1425,12 @@ pub extern "C" fn neqo_http3conn_fetch(
     if urgency >= 8 {
         return NS_ERROR_INVALID_ARG;
     }
-
-    let empty_vec = Vec::new();
-    let hdrs = if headers.is_null() {
-        &empty_vec
-    } else {
-        unsafe { &*(headers as *const Vec<Header>) }
-    };
-
     let priority = Priority::new(urgency, incremental);
     match conn.conn.fetch(
         Instant::now(),
         method_tmp,
         (scheme_tmp, host_tmp, path_tmp),
-        hdrs,
+        &hdrs,
         priority,
     ) {
         Ok(id) => {
@@ -1440,27 +1446,25 @@ pub extern "C" fn neqo_http3conn_fetch(
 pub extern "C" fn neqo_http3conn_connect(
     conn: &mut NeqoHttp3Conn,
     host: &nsACString,
-    headers: *const NeqoHeaderArray,
+    headers: &nsACString,
     stream_id: &mut u64,
     urgency: u8,
     incremental: bool,
 ) -> nsresult {
+    let hdrs = match parse_headers(headers) {
+        Err(e) => {
+            return e;
+        }
+        Ok(h) => h,
+    };
     let Ok(host_tmp) = str::from_utf8(host) else {
         return NS_ERROR_INVALID_ARG;
     };
     if urgency >= 8 {
         return NS_ERROR_INVALID_ARG;
     }
-
-    let empty_vec = Vec::new();
-    let hdrs = if headers.is_null() {
-        &empty_vec
-    } else {
-        unsafe { &*(headers as *const Vec<Header>) }
-    };
-
     let priority = Priority::new(urgency, incremental);
-    match conn.conn.connect(Instant::now(), host_tmp, hdrs, priority) {
+    match conn.conn.connect(Instant::now(), host_tmp, &hdrs, priority) {
         Ok(id) => {
             *stream_id = id.as_u64();
             NS_OK
@@ -2382,9 +2386,15 @@ pub extern "C" fn neqo_http3conn_webtransport_create_session(
     conn: &mut NeqoHttp3Conn,
     host: &nsACString,
     path: &nsACString,
-    headers: *const NeqoHeaderArray,
+    headers: &nsACString,
     stream_id: &mut u64,
 ) -> nsresult {
+    let hdrs = match parse_headers(headers) {
+        Err(e) => {
+            return e;
+        }
+        Ok(h) => h,
+    };
     let Ok(host_tmp) = str::from_utf8(host) else {
         return NS_ERROR_INVALID_ARG;
     };
@@ -2392,17 +2402,10 @@ pub extern "C" fn neqo_http3conn_webtransport_create_session(
         return NS_ERROR_INVALID_ARG;
     };
 
-    let empty_vec = Vec::new();
-    let hdrs = if headers.is_null() {
-        &empty_vec
-    } else {
-        unsafe { &*(headers as *const Vec<Header>) }
-    };
-
     match conn.conn.webtransport_create_session(
         Instant::now(),
         ("https", host_tmp, path_tmp),
-        hdrs,
+        &hdrs,
     ) {
         Ok(id) => {
             *stream_id = id.as_u64();
@@ -2418,9 +2421,15 @@ pub extern "C" fn neqo_http3conn_connect_udp_create_session(
     conn: &mut NeqoHttp3Conn,
     host: &nsACString,
     path: &nsACString,
-    headers: *const NeqoHeaderArray,
+    headers: &nsACString,
     stream_id: &mut u64,
 ) -> nsresult {
+    let hdrs = match parse_headers(headers) {
+        Err(e) => {
+            return e;
+        }
+        Ok(h) => h,
+    };
     let Ok(host_tmp) = str::from_utf8(host) else {
         return NS_ERROR_INVALID_ARG;
     };
@@ -2428,16 +2437,9 @@ pub extern "C" fn neqo_http3conn_connect_udp_create_session(
         return NS_ERROR_INVALID_ARG;
     };
 
-    let empty_vec = Vec::new();
-    let hdrs = if headers.is_null() {
-        &empty_vec
-    } else {
-        unsafe { &*(headers as *const Vec<Header>) }
-    };
-
     match conn
         .conn
-        .connect_udp_create_session(Instant::now(), ("https", host_tmp, path_tmp), hdrs)
+        .connect_udp_create_session(Instant::now(), ("https", host_tmp, path_tmp), &hdrs)
     {
         Ok(id) => {
             *stream_id = id.as_u64();
@@ -2972,4 +2974,33 @@ fn probe_apple_fast_path_inner(send_fd: c_int, recv_fd: c_int) -> io::Result<()>
 #[no_mangle]
 pub extern "C" fn neqo_glue_probe_apple_fast_path(send_fd: c_int, recv_fd: c_int) -> bool {
     probe_apple_fast_path_inner(send_fd, recv_fd).is_ok()
+}
+
+// Test function called from C++ gtest
+// Callback signature: fn(user_data, name_ptr, name_len, value_ptr, value_len)
+type HeaderCallback = extern "C" fn(*mut c_void, *const u8, usize, *const u8, usize);
+
+#[no_mangle]
+pub extern "C" fn neqo_glue_test_parse_headers(
+    headers_input: &nsACString,
+    callback: HeaderCallback,
+    user_data: *mut c_void,
+) -> bool {
+    match parse_headers(headers_input) {
+        Ok(headers) => {
+            for header in headers {
+                let name_bytes = header.name().as_bytes();
+                let value_bytes = header.value();
+                callback(
+                    user_data,
+                    name_bytes.as_ptr(),
+                    name_bytes.len(),
+                    value_bytes.as_ptr(),
+                    value_bytes.len(),
+                );
+            }
+            true
+        }
+        Err(_) => false,
+    }
 }

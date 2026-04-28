@@ -121,8 +121,11 @@ class Http3SessionBase {
  public:
   NS_INLINE_DECL_PURE_VIRTUAL_REFCOUNTING
 
-  virtual nsresult TryActivating(const nsHttpRequestHead* aRequestHead,
+  virtual nsresult TryActivating(const nsACString& aMethod,
+                                 const nsACString& aScheme,
                                  const nsACString& aAuthorityHeader,
+                                 const nsACString& aPath,
+                                 const nsACString& aHeaders,
                                  uint64_t* aStreamId,
                                  Http3StreamBase* aStream) = 0;
   virtual void CloseSendingSide(uint64_t aStreamId) = 0;
@@ -201,8 +204,11 @@ class Http3Session final : public Http3SessionBase,
 
   bool CanReuse();
 
-  nsresult TryActivating(const nsHttpRequestHead* aRequestHead,
+  // The following functions are used by Http3Stream and
+  // Http3WebTransportSession:
+  nsresult TryActivating(const nsACString& aMethod, const nsACString& aScheme,
                          const nsACString& aAuthorityHeader,
+                         const nsACString& aPath, const nsACString& aHeaders,
                          uint64_t* aStreamId,
                          Http3StreamBase* aStream) override;
   // The folowing functions are used by Http3Stream:

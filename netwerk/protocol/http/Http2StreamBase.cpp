@@ -82,6 +82,7 @@ Http2StreamBase::Http2StreamBase(uint64_t aTransactionBrowserId,
                                  uint64_t currentBrowserId)
     : mSession(
           do_GetWeakReference(static_cast<nsISupportsWeakReference*>(session))),
+      mRequestHeadersDone(0),
       mOpenGenerated(0),
       mAllHeadersReceived(0),
       mQueued(0),
@@ -184,7 +185,7 @@ nsresult Http2StreamBase::ReadSegments(nsAHttpSegmentReader* reader,
   switch (mUpstreamState) {
     case GENERATING_HEADERS:
     case GENERATING_BODY:
-    case SENDING_BODY: {
+    case SENDING_BODY:
       // Call into the HTTP Transaction to generate the HTTP request
       // stream. That stream will show up in OnReadSegment().
       mSegmentReader = reader;
@@ -197,10 +198,8 @@ nsresult Http2StreamBase::ReadSegments(nsAHttpSegmentReader* reader,
 
       // Check to see if the transaction's request could be written out now.
       // If not, mark the stream for callback when writing can proceed.
-      // Don't schedule writes when the stream is already queued (waiting for
-      // concurrent stream capacity) to avoid busy-looping.
       if (NS_SUCCEEDED(rv) && mUpstreamState == GENERATING_HEADERS &&
-          !mOpenGenerated && !Queued()) {
+          !mRequestHeadersDone) {
         session->TransactionHasDataToWrite(this);
       }
 
@@ -241,14 +240,6 @@ nsresult Http2StreamBase::ReadSegments(nsAHttpSegmentReader* reader,
         if (NS_SUCCEEDED(rv2)) {
           mRequestBlockedOnRead = 0;
         }
-
-        // If we just generated headers and transitioned to GENERATING_BODY
-        // for a request with a body (!mSentFin), schedule another write
-        // and return to avoid the FIN check below.
-        if (mUpstreamState == GENERATING_BODY && !mSentFin) {
-          session->TransactionHasDataToWrite(this);
-          return NS_OK;
-        }
       }
 
       // If the sending flow control window is open (!mBlockedOnRwin) then
@@ -256,6 +247,7 @@ nsresult Http2StreamBase::ReadSegments(nsAHttpSegmentReader* reader,
       if (!mBlockedOnRwin && mOpenGenerated && !mTxInlineFrameUsed &&
           NS_SUCCEEDED(rv) && (!*countRead) && CloseSendStreamWhenDone()) {
         MOZ_ASSERT(!mQueued);
+        MOZ_ASSERT(mRequestHeadersDone);
         LOG3(
             ("Http2StreamBase::ReadSegments %p 0x%X: Sending request data "
              "complete, "
@@ -271,7 +263,6 @@ nsresult Http2StreamBase::ReadSegments(nsAHttpSegmentReader* reader,
         }
       }
       break;
-    }
 
     case SENDING_FIN_STREAM:
       // We were trying to send the FIN-STREAM but were blocked from
@@ -372,6 +363,45 @@ nsresult Http2StreamBase::WriteSegments(nsAHttpSegmentWriter* writer,
         static_cast<uint32_t>(rv)));
   mSegmentWriter = nullptr;
   return rv;
+}
+
+nsresult Http2StreamBase::ParseHttpRequestHeaders(const char* buf,
+                                                  uint32_t avail,
+                                                  uint32_t* countUsed) {
+  // Returns NS_OK even if the headers are incomplete
+  // set mRequestHeadersDone flag if they are complete
+
+  MOZ_ASSERT(OnSocketThread(), "not on socket thread");
+  MOZ_ASSERT(mUpstreamState == GENERATING_HEADERS);
+  MOZ_ASSERT(!mRequestHeadersDone);
+
+  LOG3(("Http2StreamBase::ParseHttpRequestHeaders %p avail=%d state=%x", this,
+        avail, mUpstreamState));
+
+  mFlatHttpRequestHeaders.Append(buf, avail);
+
+  // We can use the simple double crlf because firefox is the
+  // only client we are parsing
+  int32_t endHeader = mFlatHttpRequestHeaders.Find("\r\n\r\n");
+
+  if (endHeader == kNotFound) {
+    // We don't have all the headers yet
+    LOG3(
+        ("Http2StreamBase::ParseHttpRequestHeaders %p "
+         "Need more header bytes. Len = %zd",
+         this, mFlatHttpRequestHeaders.Length()));
+    *countUsed = avail;
+    return NS_OK;
+  }
+
+  // We have recvd all the headers, trim the local
+  // buffer of the final empty line, and set countUsed to reflect
+  // the whole header has been consumed.
+  uint32_t oldLen = mFlatHttpRequestHeaders.Length();
+  mFlatHttpRequestHeaders.SetLength(endHeader + 2);
+  *countUsed = avail - (oldLen - endHeader) + 4;
+  mRequestHeadersDone = 1;
+  return NS_OK;
 }
 
 // This is really a headers frame, but open is pretty clear from a workflow pov
@@ -497,6 +527,8 @@ nsresult Http2StreamBase::GenerateOpen() {
     compressedDataOffset += frameLen;
     outputOffset += frameLen;
   }
+
+  mFlatHttpRequestHeaders.Truncate();
 
   return NS_OK;
 }
@@ -1138,44 +1170,46 @@ nsresult Http2StreamBase::OnReadSegment(const char* buf, uint32_t count,
 
   switch (mUpstreamState) {
     case GENERATING_HEADERS:
-      // Headers are encoded directly from the transaction's RequestHead()
-      // by GenerateOpen()/GenerateHeaders(). The buffer may contain request
-      // body data (for POST/PUT) or tunnel data (for CONNECT).
+      // The buffer is the HTTP request stream, including at least part of the
+      // HTTP request header. This state's job is to build a HEADERS frame
+      // from the header information. count is the number of http bytes
+      // available (which may include more than the header), and in countRead we
+      // return the number of those bytes that we consume (i.e. the portion that
+      // are header bytes)
 
-      if (!mOpenGenerated) {
+      if (!mRequestHeadersDone) {
+        if (NS_FAILED(rv = ParseHttpRequestHeaders(buf, count, countRead))) {
+          return rv;
+        }
+      }
+
+      if (mRequestHeadersDone && !mOpenGenerated) {
         if (!session->TryToActivate(this)) {
           LOG3(
               ("Http2StreamBase::OnReadSegment %p cannot activate now. "
                "queued.\n",
                this));
-          *countRead = 0;
-          return NS_BASE_STREAM_WOULD_BLOCK;
+          return *countRead ? NS_OK : NS_BASE_STREAM_WOULD_BLOCK;
         }
         if (NS_FAILED(rv = GenerateOpen())) {
           return rv;
         }
       }
 
-      LOG3(("OnReadSegment %p count=%d mOpenGenerated=%d\n", this, count,
-            mOpenGenerated));
+      LOG3(
+          ("ParseHttpRequestHeaders %p used %d of %d. "
+           "requestheadersdone = %d mOpenGenerated = %d\n",
+           this, *countRead, count, mRequestHeadersDone, mOpenGenerated));
       if (mOpenGenerated) {
         SetHTTPState(OPEN);
         AdjustInitialWindow();
         // This version of TransmitFrame cannot block
         rv = TransmitFrame(nullptr, nullptr, true);
         ChangeState(GENERATING_BODY);
+        break;
       }
-
-      if (!CloseSendStreamWhenDone()) {
-        // For CONNECT tunnels: report data as consumed so the inner
-        // transport advances. The tunnel data will be re-provided after
-        // the server responds with 200 and the tunnel is established.
-        *countRead = count;
-      } else {
-        // For regular streams: don't consume body data during header
-        // generation. It will be provided again in GENERATING_BODY state.
-        *countRead = 0;
-      }
+      MOZ_ASSERT(*countRead == count,
+                 "Header parsing not complete but unused data");
       break;
 
     case GENERATING_BODY:

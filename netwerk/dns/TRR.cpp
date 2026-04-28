@@ -377,7 +377,7 @@ nsresult TRR::SendHTTPRequest() {
     NS_ENSURE_SUCCESS(rv, rv);
 
     rv = uploadChannel->ExplicitSetUploadStream(uploadStream, contentType,
-                                                streamLength, "POST"_ns);
+                                                streamLength, "POST"_ns, false);
     NS_ENSURE_SUCCESS(rv, rv);
   }
 

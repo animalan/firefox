@@ -320,13 +320,9 @@ nsresult Http2StreamTunnel::GenerateHeaders(nsCString& aCompressedData,
   mRequestBodyLenRemaining = 0x0fffffffffffffffULL;
 
   nsresult rv = session->Compressor()->EncodeHeaderBlock(
-      "CONNECT"_ns, EmptyCString(), authorityHeader, EmptyCString(),
-      EmptyCString(), true, aCompressedData, false,
-      mTransaction->RequestHead());
+      mFlatHttpRequestHeaders, "CONNECT"_ns, EmptyCString(), authorityHeader,
+      EmptyCString(), EmptyCString(), true, aCompressedData, true);
   NS_ENSURE_SUCCESS(rv, rv);
-
-  // Add header size to request size
-  mTransaction->AddRequestHeadersSize(aCompressedData.Length());
 
   return NS_OK;
 }
@@ -664,7 +660,7 @@ Http2StreamWebSocket::~Http2StreamWebSocket() {
 
 nsresult Http2StreamWebSocket::GenerateHeaders(nsCString& aCompressedData,
                                                uint8_t& firstFrameFlags) {
-  const nsHttpRequestHead* head = mTransaction->RequestHead();
+  nsHttpRequestHead* head = mTransaction->RequestHead();
 
   nsAutoCString authorityHeader;
   nsresult rv = head->GetHeader(nsHttp::Host, authorityHeader);
@@ -679,12 +675,9 @@ nsresult Http2StreamWebSocket::GenerateHeaders(nsCString& aCompressedData,
   head->Path(path);
 
   rv = session->Compressor()->EncodeHeaderBlock(
-      "CONNECT"_ns, path, authorityHeader, scheme, "websocket"_ns, false,
-      aCompressedData, false, head);
+      mFlatHttpRequestHeaders, "CONNECT"_ns, path, authorityHeader, scheme,
+      "websocket"_ns, false, aCompressedData, true);
   NS_ENSURE_SUCCESS(rv, rv);
-
-  // Add header size to request size
-  mTransaction->AddRequestHeadersSize(aCompressedData.Length());
 
   mRequestBodyLenRemaining = 0x0fffffffffffffffULL;
 

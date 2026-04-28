@@ -53,7 +53,6 @@ class Http3ConnectUDPStream final : public Http3TunnelStreamBase,
   Http3StreamTunnel* GetHttp3StreamTunnel() override { return nullptr; }
 
   nsresult TryActivating() override;
-  const nsCString& PathQuery() const { return mPathQuery; }
 
   void SetPeerAddr(const NetAddr& addr) { mAddr = addr; }
 
@@ -87,7 +86,6 @@ class Http3ConnectUDPStream final : public Http3TunnelStreamBase,
   void OnClosePending() override {}
 
   NetAddr mAddr;
-  nsCString mPathQuery;
   nsCOMPtr<nsIUDPSocketSyncListener> mSyncListener;
 
   uint64_t mByteReadCount{0};
