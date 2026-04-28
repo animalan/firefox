@@ -169,9 +169,11 @@ LexerResult nsJXLDecoder::ScanForFrameCount(SourceBufferIterator& aIterator,
             jxl_decoder_get_scanned_frame_info(mScanner.get(), 0);
         PostIsAnimated(
             FrameTimeout::FromRawMilliseconds(frameInfo.duration_ms));
+        // num_loops == 0 in jxl means infinite loop, whereas 1 means one total
+        // play through.
         PostLoopCount((info.num_loops == 0 || info.num_loops > INT32_MAX)
                           ? -1
-                          : static_cast<int32_t>(info.num_loops));
+                          : static_cast<int32_t>(info.num_loops - 1));
       }
     }
 
@@ -254,10 +256,12 @@ nsJXLDecoder::ProcessResult nsJXLDecoder::ProcessAvailableData(
                   jxl_decoder_get_frame_info(mDecoder.get());
               PostIsAnimated(
                   FrameTimeout::FromRawMilliseconds(frameInfo.duration_ms));
+              // num_loops == 0 in jxl means infinite loop, whereas 1 means one
+              // total play through.
               PostLoopCount(
                   (basicInfo.num_loops == 0 || basicInfo.num_loops > INT32_MAX)
                       ? -1
-                      : static_cast<int32_t>(basicInfo.num_loops));
+                      : static_cast<int32_t>(basicInfo.num_loops - 1));
               if (IsMetadataDecode()) {
                 return ProcessResult::Complete;
               }
