@@ -249,6 +249,10 @@ async function openDialog(doc, search = false) {
   };
 }
 
+add_setup(function setup() {
+  Services.telemetry.clearEvents();
+});
+
 add_task(async function testDisabledBrowserLanguages() {
   let langpacksFile = await createLanguageToolsFile();
   let langpacksUrl = Services.io.newFileURI(langpacksFile).spec;

@@ -450,6 +450,12 @@ manage-browser-languages-button =
 confirm-browser-language-change-description = Restart { -brand-short-name } to apply these changes
 confirm-browser-language-change-button = Apply and Restart
 
+browser-language-heading =
+  .label = Browser language
+  .description = Choose the language used to display menus, messages, and notifications from { -brand-short-name }.
+browser-language-preferred-label =
+  .label = Preferred language
+
 fx-translate-web-pages = { -translations-brand-name }
 
 translate-exceptions =

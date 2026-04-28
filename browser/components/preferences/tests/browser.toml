@@ -28,6 +28,11 @@ run-if = [
 
 ["browser_backup_warning_banner.js"]
 
+["browser_browser_languages_main_pane.js"]
+skip-if = [
+  "verify", # bug 2035367
+]
+
 ["browser_browser_languages_subdialog.js"]
 skip-if = [
   "tsan",
