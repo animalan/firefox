@@ -24,6 +24,4 @@ let {run} = wasmEvalText(`(module
 )`, {"": {suspending}}).exports;
 WebAssembly.promising(run)();
 
-print(e.stack);
-// TODO: these are not correct, we need to hide self-hosted wasm code.
-assertStackTrace(e, ["suspending<","wasm-function[1]","a","b","c","run","wasm-function[2]","wasm-function[1]",""]);
+assertStackTrace(e, ["suspending<","a","b","c","run",""]);

@@ -4224,9 +4224,8 @@ static JSFunction* WasmFunctionCreate(JSContext* cx, HandleObject func,
   // one in wasm tables. We synthesize such a module below, instantiate it, and
   // then return the exported function as the result.
   FeatureOptions options;
-  ScriptedCaller scriptedCaller;
   SharedCompileArgs compileArgs =
-      CompileArgs::buildAndReport(cx, std::move(scriptedCaller), options);
+      CompileArgs::buildAndReport(cx, ScriptedCaller::selfHosted(cx), options);
   if (!compileArgs) {
     return nullptr;
   }

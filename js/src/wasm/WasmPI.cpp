@@ -207,9 +207,8 @@ class SuspendingFunctionModuleFactory {
     FeatureOptions options;
     options.isBuiltinModule = true;
 
-    ScriptedCaller scriptedCaller;
-    SharedCompileArgs compileArgs =
-        CompileArgs::buildAndReport(cx, std::move(scriptedCaller), options);
+    SharedCompileArgs compileArgs = CompileArgs::buildAndReport(
+        cx, ScriptedCaller::selfHosted(cx), options);
     if (!compileArgs) {
       return nullptr;
     }
@@ -839,9 +838,8 @@ class PromisingFunctionModuleFactory {
     FeatureOptions options;
     options.isBuiltinModule = true;
 
-    ScriptedCaller scriptedCaller;
-    SharedCompileArgs compileArgs =
-        CompileArgs::buildAndReport(cx, std::move(scriptedCaller), options);
+    SharedCompileArgs compileArgs = CompileArgs::buildAndReport(
+        cx, ScriptedCaller::selfHosted(cx), options);
     if (!compileArgs) {
       return nullptr;
     }
