@@ -768,7 +768,7 @@ TEST(MP4Demuxer, VideoInfoMdcvClli)
   si.mastering_display.display_primaries_y[0] = 16000;
   si.mastering_display.display_primaries_x[1] = 13250;  // G
   si.mastering_display.display_primaries_y[1] = 34500;
-  si.mastering_display.display_primaries_x[2] = 7500;   // B
+  si.mastering_display.display_primaries_x[2] = 7500;  // B
   si.mastering_display.display_primaries_y[2] = 3000;
   si.mastering_display.white_point_x = 15635;
   si.mastering_display.white_point_y = 16450;

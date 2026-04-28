@@ -380,9 +380,8 @@ MediaResult MP4VideoInfo::Update(const Mp4parseTrackInfo* track,
     }
     if (si.has_content_light_level) {
       const auto& cll = si.content_light_level;
-      hdr.mContentLightLevel =
-          Some(gfx::ContentLightLevel{cll.max_content_light_level,
-                                      cll.max_pic_average_light_level});
+      hdr.mContentLightLevel = Some(gfx::ContentLightLevel{
+          cll.max_content_light_level, cll.max_pic_average_light_level});
     }
     mHDRMetadata = Some(hdr);
   }
