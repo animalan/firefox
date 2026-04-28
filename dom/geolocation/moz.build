@@ -51,7 +51,7 @@ else:
         "GeolocationSystem.cpp",
     ]
 
-EXTRA_JS_MODULES += [
+MOZ_SRC_FILES += [
     "GeolocationUIUtils.sys.mjs",
 ]
 XPCOM_MANIFESTS += [
