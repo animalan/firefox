@@ -32,6 +32,7 @@
 #include "mozilla/AsyncEventDispatcher.h"
 #include "nsICachingChannel.h"
 #include "nsHttp.h"
+#include "mozilla/net/CacheControlParser.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -204,17 +205,26 @@ nsPrefetchNode::OnStartRequest(nsIRequest* aRequest) {
     return NS_BINDING_ABORTED;
   }
 
-  //
   // no need to prefetch a document that must be requested fresh each
-  // and every time.
-  //
+  // and every time. Only cancel when the server set an explicit freshness
+  // directive (max-age or Expires) that has already expired. We specifically
+  // check for max-age rather than any Cache-Control header because directives
+  // like Cache-Control: public carry no freshness information — those responses
+  // will be force-validated by nsHttpChannel so they remain reusable from the
+  // prefetch cache (bug 1527334).
   uint32_t expTime;
   if (NS_SUCCEEDED(cacheInfoChannel->GetCacheTokenExpirationTime(&expTime))) {
     if (mozilla::net::NowInSeconds() >= expTime) {
-      LOG(
-          ("document cannot be reused from cache; "
-           "canceling prefetch\n"));
-      return NS_BINDING_ABORTED;
+      nsAutoCString cacheControlHeader, expires;
+      (void)httpChannel->GetResponseHeader("Cache-Control"_ns,
+                                           cacheControlHeader);
+      (void)httpChannel->GetResponseHeader("Expires"_ns, expires);
+      mozilla::net::CacheControlParser ccParser(cacheControlHeader);
+      uint32_t maxAge;
+      if (ccParser.MaxAge(&maxAge) || !expires.IsEmpty()) {
+        LOG(("document cannot be reused from cache; canceling prefetch\n"));
+        return NS_BINDING_ABORTED;
+      }
     }
   }
 

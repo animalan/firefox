@@ -279,16 +279,6 @@ bool ValidationRequired(bool isForcedValid,
     *performBackgroundRevalidation = false;
   }
 
-  // Check isForcedValid to see if it is possible to skip validation.
-  // Don't skip validation if we have serious reason to believe that this
-  // content is invalid (it's expired).
-  // See netwerk/cache2/nsICacheEntry.idl for details
-  if (isForcedValid && (!cachedResponseHead->ExpiresInPast() ||
-                        !cachedResponseHead->MustValidateIfExpired())) {
-    LOG(("NOT validating based on isForcedValid being true.\n"));
-    return false;
-  }
-
   // If the LOAD_FROM_CACHE flag is set, any cached data can simply be used
   if (loadFlags & nsIRequest::LOAD_FROM_CACHE || allowStaleCacheContent) {
     LOG(("NOT validating based on LOAD_FROM_CACHE load flag\n"));
@@ -302,6 +292,16 @@ bool ValidationRequired(bool isForcedValid,
       !isImmutable) {
     LOG(("Validating based on VALIDATE_ALWAYS load flag\n"));
     return true;
+  }
+
+  // Check isForcedValid to see if it is possible to skip validation.
+  // Don't skip validation if we have serious reason to believe that this
+  // content is invalid (it's expired).
+  // See netwerk/cache2/nsICacheEntry.idl for details
+  if (isForcedValid && (!cachedResponseHead->ExpiresInPast() ||
+                        !cachedResponseHead->MustValidateIfExpired())) {
+    LOG(("NOT validating based on isForcedValid being true.\n"));
+    return false;
   }
 
   // Even if the VALIDATE_NEVER flag is set, there are still some cases in
