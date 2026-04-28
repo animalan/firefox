@@ -8,6 +8,7 @@ mod common;
 mod file_perm;
 mod file_whitespace;
 mod license;
+mod mingw_cap;
 mod pathutil;
 mod rejected_words;
 mod trojan_source;
