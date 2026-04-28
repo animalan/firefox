@@ -63,7 +63,11 @@ function showNotificationToolbar(restartZonedDateTime) {
   if (!win) {
     return;
   }
-  lazy.InfoBar.showInfoBarMessage(win, message, infobarDispatchCallback);
+  lazy.InfoBar.showInfoBarMessage(
+    win.gBrowser.selectedBrowser,
+    message,
+    infobarDispatchCallback
+  );
 }
 
 /**

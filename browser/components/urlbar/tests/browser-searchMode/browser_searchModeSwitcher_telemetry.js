@@ -91,7 +91,7 @@ add_task(async function test_picked_settings() {
 
   let popup = await UrlbarTestUtils.openSearchModeSwitcher(window);
   let popupHidden = UrlbarTestUtils.searchModeSwitcherPopupClosed(window);
-  let pageLoaded = BrowserTestUtils.browserLoaded(window);
+  let pageLoaded = BrowserTestUtils.browserLoaded(tab.linkedBrowser);
   popup
     .querySelector(".searchmode-switcher-panel-search-settings-button")
     .button.click();

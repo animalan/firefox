@@ -206,7 +206,7 @@ export async function loadReleaseNotes(uri) {
 }
 
 export function openOptionsInTab(optionsURL) {
-  let mainWindow = window.windowRoot.ownerGlobal;
+  let mainWindow = window.windowRoot.window;
   if ("switchToTabHavingURI" in mainWindow) {
     mainWindow.switchToTabHavingURI(optionsURL, true, {
       relatedToCurrent: true,
@@ -881,7 +881,7 @@ export function openAmoInTab(el, path) {
   }
 
   amoUrl = formatUTMParams("find-more-link-bottom", amoUrl);
-  windowRoot.ownerGlobal.openTrustedLinkIn(amoUrl, "tab");
+  windowRoot.window.openTrustedLinkIn(amoUrl, "tab");
 }
 
 // DOMParser instance used by AboutAddonsElementMixin to parse the

@@ -302,7 +302,7 @@ export class AddonCard extends AboutAddonsHTMLElement {
           this.updateInstall = null;
           break;
         case "contribute":
-          windowRoot.ownerGlobal.openWebLinkIn(addon.contributionURL, "tab");
+          windowRoot.window.openWebLinkIn(addon.contributionURL, "tab");
           break;
         case "preferences":
           if (getOptionsType(addon) == "tab") {
@@ -322,7 +322,7 @@ export class AddonCard extends AboutAddonsHTMLElement {
               const source = e.target.nodeName == "BUTTON" ? "details" : "list";
               lazy.recordRemoveInitiatedTelemetry(addon, source);
             }
-            let { BrowserAddonUI } = windowRoot.ownerGlobal;
+            let { BrowserAddonUI } = windowRoot.window;
             let { remove, report } =
               await BrowserAddonUI.promptRemoveExtension(addon);
             if (addon.type == "mlmodel") {
@@ -360,7 +360,7 @@ export class AddonCard extends AboutAddonsHTMLElement {
           break;
         case "link":
           if (e.target.getAttribute("url")) {
-            windowRoot.ownerGlobal.openWebLinkIn(
+            windowRoot.window.openWebLinkIn(
               e.target.getAttribute("url"),
               "tab"
             );

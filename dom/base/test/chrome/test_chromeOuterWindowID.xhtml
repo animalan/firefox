@@ -48,7 +48,7 @@ windows.
       } catch(ex) { }
 
       // Not a remote tab
-      return content.top.windowRoot.ownerGlobal.docShell.outerWindowID;
+      return content.top.windowRoot.window.docShell.outerWindowID;
     };
 
     let browser1ID = await SpecialPowers.spawn(browser1, [], getChildRootOuterId);

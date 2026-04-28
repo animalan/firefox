@@ -378,7 +378,10 @@ class OpenTabsTarget extends EventTarget {
   }
 
   handleEvent({ detail, target, type }) {
-    const win = target.ownerGlobal;
+    const win =
+      ChromeUtils.getClassName(target) == "Window"
+        ? target
+        : target.ownerGlobal;
     // NOTE: we already filtered on privateness by not listening for those events
     // from private/not-private windows
     if (

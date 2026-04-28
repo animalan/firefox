@@ -30,8 +30,8 @@ add_task(async function testMenus() {
     await menu.close();
   }
 
-  await BrowserTestUtils.withNewTab("about:blank", async function () {
-    ReportBrokenSite.enableOrDisableMenuitems(window);
+  await BrowserTestUtils.withNewTab("about:blank", async function (browser) {
+    ReportBrokenSite.enableOrDisableMenuitems(browser);
     const test = "on invalid page when preffed off";
     await ensure(appMenu, isMenuItemDisabled, test);
     await ensure(helpMenu, isMenuItemDisabled, test);
@@ -39,7 +39,7 @@ add_task(async function testMenus() {
   });
 
   await BrowserTestUtils.withNewTab(REPORTABLE_PAGE_URL, async function () {
-    ReportBrokenSite.enableOrDisableMenuitems(window);
+    ReportBrokenSite.enableOrDisableMenuitems(gBrowser.selectedBrowser);
     const test =
       "on valid page when preffed off (fallback to original reporter)";
     await ensure(appMenu, isMenuItemEnabled, test);
@@ -49,31 +49,37 @@ add_task(async function testMenus() {
 
   ensureReportBrokenSitePreffedOn();
 
-  await BrowserTestUtils.withNewTab("about:blank", async function () {
-    ReportBrokenSite.enableOrDisableMenuitems(window);
+  await BrowserTestUtils.withNewTab("about:blank", async function (browser) {
+    ReportBrokenSite.enableOrDisableMenuitems(browser);
     const test = "on invalid page when preffed on";
     await ensure(appMenu, isMenuItemDisabled, test);
     await ensure(helpMenu, isMenuItemDisabled, test);
     ensureProtectionsPanelHidden(test);
   });
 
-  await BrowserTestUtils.withNewTab(REPORTABLE_PAGE_URL, async function () {
-    ReportBrokenSite.enableOrDisableMenuitems(window);
-    const test = "on valid page when preffed on";
-    await ensure(appMenu, isMenuItemEnabled, test);
-    await ensure(helpMenu, isMenuItemEnabled, test);
-    await ensure(protectionsPanel, isMenuItemEnabled, test);
-  });
+  await BrowserTestUtils.withNewTab(
+    REPORTABLE_PAGE_URL,
+    async function (browser) {
+      ReportBrokenSite.enableOrDisableMenuitems(browser);
+      const test = "on valid page when preffed on";
+      await ensure(appMenu, isMenuItemEnabled, test);
+      await ensure(helpMenu, isMenuItemEnabled, test);
+      await ensure(protectionsPanel, isMenuItemEnabled, test);
+    }
+  );
 
   ensureReportBrokenSitePreffedOff();
 
-  await BrowserTestUtils.withNewTab(REPORTABLE_PAGE_URL, async function () {
-    ReportBrokenSite.enableOrDisableMenuitems(window);
-    const test = "still active when pref toggled back off";
-    await ensure(appMenu, isMenuItemEnabled, test);
-    await ensure(helpMenu, isMenuItemEnabled, test);
-    await ensure(protectionsPanel, isMenuItemEnabled, test);
-  });
+  await BrowserTestUtils.withNewTab(
+    REPORTABLE_PAGE_URL,
+    async function (browser) {
+      ReportBrokenSite.enableOrDisableMenuitems(browser);
+      const test = "still active when pref toggled back off";
+      await ensure(appMenu, isMenuItemEnabled, test);
+      await ensure(helpMenu, isMenuItemEnabled, test);
+      await ensure(protectionsPanel, isMenuItemEnabled, test);
+    }
+  );
 
   ensureReportBrokenSitePreffedOn();
 });

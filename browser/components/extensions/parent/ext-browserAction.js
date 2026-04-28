@@ -48,11 +48,10 @@ function actionWidgetId(widgetId) {
 class BrowserAction extends BrowserActionBase {
   constructor(extension, buttonDelegate) {
     let tabContext = new TabContext(target => {
-      let window = target.ownerGlobal;
-      if (target === window) {
+      if (ChromeUtils.getClassName(target) == "Window") {
         return this.getContextData(null);
       }
-      return tabContext.get(window);
+      return tabContext.get(target.ownerGlobal);
     });
     super(tabContext, extension);
     this.buttonDelegate = buttonDelegate;
@@ -60,9 +59,10 @@ class BrowserAction extends BrowserActionBase {
 
   updateOnChange(target) {
     if (target) {
-      let window = target.ownerGlobal;
-      if (target === window || target.selected) {
-        this.buttonDelegate.updateWindow(window);
+      if (ChromeUtils.getClassName(target) == "Window") {
+        this.buttonDelegate.updateWindow(target);
+      } else if (target.selected) {
+        this.buttonDelegate.updateWindow(target.ownerGlobal);
       }
     } else {
       for (let window of windowTracker.browserWindows()) {

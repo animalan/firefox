@@ -1304,7 +1304,15 @@ export var BrowserTestUtils = {
    */
   waitForEvent(subject, eventName, capture, checkFn, wantsUntrusted) {
     let startTime = ChromeUtils.now();
-    let innerWindowId = subject.ownerGlobal?.windowGlobalChild.innerWindowId;
+    let innerWindowId = (() => {
+      if (subject.windowGlobalChild) {
+        return subject.windowGlobalChild.innerWindowId;
+      }
+      if ("ownerDocument" in subject) {
+        return subject.ownerGlobal.windowGlobalChild.innerWindowId;
+      }
+      return null;
+    })();
 
     return new Promise((resolve, reject) => {
       let removed = false;

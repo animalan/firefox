@@ -20,7 +20,7 @@ class UpdateReleaseNotes extends HTMLElement {
     if (e.type == "click" && e.target.localName == "a" && e.target.href) {
       e.preventDefault();
       e.stopPropagation();
-      windowRoot.ownerGlobal.openWebLinkIn(e.target.href, "tab");
+      windowRoot.window.openWebLinkIn(e.target.href, "tab");
     }
   }
 

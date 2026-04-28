@@ -156,8 +156,8 @@ export class MigrationWizardParent extends JSWindowActorParent {
       }
 
       case "OpenAboutAddons": {
-        let browser = this.browsingContext.topChromeWindow;
-        this.#openAboutAddons(browser);
+        let window = this.browsingContext.topChromeWindow;
+        this.#openAboutAddons(window);
         break;
       }
 
@@ -815,11 +815,10 @@ export class MigrationWizardParent extends JSWindowActorParent {
    * Opens the about:addons page in a new background tab in the same window
    * as the passed browser.
    *
-   * @param {Element} browser
-   *   The browser element requesting that about:addons opens.
+   * @param {ChromeWindow} window
+   *   The window requesting that about:addons opens.
    */
-  #openAboutAddons(browser) {
-    let window = browser.ownerGlobal;
+  #openAboutAddons(window) {
     window.openTrustedLinkIn("about:addons", "tab", { inBackground: true });
   }
 

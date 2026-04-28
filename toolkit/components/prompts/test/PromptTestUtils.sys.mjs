@@ -132,8 +132,7 @@ export let PromptTestUtils = {
     let dialog;
     await TestUtils.topicObserved(topic, subject => {
       // If we are not given a browser, use the currently selected browser of the window
-      let browser =
-        parentBrowser || subject.ownerGlobal.gBrowser?.selectedBrowser;
+      let browser = parentBrowser || subject.gBrowser?.selectedBrowser;
       // Is not associated with given parent window, skip
       if (parentWindow && subject.opener !== parentWindow) {
         return false;

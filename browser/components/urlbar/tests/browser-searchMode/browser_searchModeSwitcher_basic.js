@@ -17,7 +17,7 @@ add_task(async function open_settings() {
   await UrlbarTestUtils.openSearchModeSwitcher(window);
 
   let settingsLoaded = BrowserTestUtils.browserLoaded(
-    window,
+    gBrowser.selectedBrowser,
     false,
     "about:preferences#search"
   );

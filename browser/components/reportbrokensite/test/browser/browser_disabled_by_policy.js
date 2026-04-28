@@ -42,13 +42,16 @@ add_task(async function testDisabledByPolicy() {
   const helpMenu = HelpMenu();
   const protectionsPanel = ProtectionsPanel();
 
-  await BrowserTestUtils.withNewTab(REPORTABLE_PAGE_URL, async function () {
-    ReportBrokenSite.enableOrDisableMenuitems(window);
-    const test = "when disabled by DisableFeedbackCommands enterprise policy";
-    await ensure(appMenu, isMenuItemHidden, test);
-    await ensure(helpMenu, isMenuItemHidden, test);
-    await ensure(protectionsPanel, isMenuItemHidden, test);
-  });
+  await BrowserTestUtils.withNewTab(
+    REPORTABLE_PAGE_URL,
+    async function (browser) {
+      ReportBrokenSite.enableOrDisableMenuitems(browser);
+      const test = "when disabled by DisableFeedbackCommands enterprise policy";
+      await ensure(appMenu, isMenuItemHidden, test);
+      await ensure(helpMenu, isMenuItemHidden, test);
+      await ensure(protectionsPanel, isMenuItemHidden, test);
+    }
+  );
 
   PoliciesPrefTracker.stop();
   await EnterprisePolicyTesting.setupPolicyEngineWithJson("");

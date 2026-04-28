@@ -120,6 +120,10 @@ nsPIDOMWindowOuter* nsWindowRoot::GetOwnerGlobalForBindingsInternal() {
   return mWindow;
 }
 
+nsGlobalWindowInner* nsWindowRoot::GetInnerWindow() {
+  return nsGlobalWindowInner::Cast(mWindow->GetCurrentInnerWindow());
+}
+
 nsIGlobalObject* nsWindowRoot::GetOwnerGlobal() const {
   nsCOMPtr<nsIGlobalObject> global =
       do_QueryInterface(mWindow->GetCurrentInnerWindow());
