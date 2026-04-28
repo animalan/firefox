@@ -35,10 +35,6 @@ export const SYSTEM_COLORS = [
   "-moz-combobox",
   "-moz-dialog",
   "-moz-dialogtext",
-  "-moz-menuhover",
-  "-moz-menuhoverdisabled",
-  "-moz-menuhovertext",
-  "-moz-menubarhovertext",
 ];
 
 /**

@@ -46,8 +46,6 @@
   color-scheme: light dark;
   min-width: 1px;
   -moz-window-input-region-margin: var(--panel-shadow-margin);
-  /* Panel design tokens will be added in Bug 2017979 */
-  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
   margin: calc(-1 * var(--panel-shadow-margin));
 
   /* Panel design token theming */
@@ -75,8 +73,6 @@
     /* This should pass stylelint once panel design tokens are added in bug 2017979 */
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     padding: var(--panel-padding);
-    /* Panel design tokens will be added in Bug 2017979 */
-    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     color: var(--panel-color);
     background: var(--panel-background);
     /* The values chosen for the border radius should match OS values, not necessarily
@@ -90,8 +86,6 @@
     /* This should pass stylelint once panel design tokens are added in bug 2017979 */
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     box-shadow: var(--panel-shadow);
-    /* Panel design tokens will be added in Bug 2017979 */
-    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     margin: var(--panel-shadow-margin);
 
     min-width: 0;
