@@ -66,7 +66,8 @@
       gQueue.push(new synthDownKey(id, new caretMoveChecker(12, true, id)));
 
       id = "textarea_wrapped";
-      gQueue.push(new setCaretOffset(id, 4, id));
+      gQueue.push(new synthFocus(id, new caretMoveChecker(10, true, id)));
+      gQueue.push(new setCaretOffset(id, 4));
       gQueue.push(new synthLeftKey(id, new caretMoveChecker(4, true, id)));
 
       id = "p";
