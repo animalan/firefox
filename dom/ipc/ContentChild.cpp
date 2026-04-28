@@ -1763,8 +1763,7 @@ static void DisconnectWindowServer(bool aIsSandboxEnabled) {
   // for some tests.
   if (aIsSandboxEnabled &&
       Preferences::GetBool(
-          "security.sandbox.content.mac.disconnect-windowserver") &&
-      Preferences::GetBool("webgl.out-of-process")) {
+          "security.sandbox.content.mac.disconnect-windowserver")) {
     CGError result = CGSSetDenyWindowServerConnections(true);
     MOZ_DIAGNOSTIC_ASSERT(result == kCGErrorSuccess);
 #  if !MOZ_DIAGNOSTIC_ASSERT_ENABLED

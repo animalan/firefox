@@ -88,7 +88,7 @@ GFXINFO_FEATURE(WEBRENDER_COMPOSITOR, "webrender.compositor")
 /* Whether WebRender can use scissored clears for cached surfaces, staring in 79 */
 GFXINFO_FEATURE(WEBRENDER_SCISSORED_CACHE_CLEARS, "webrender.scissored_cache_clears")
 /* Support webgl.out-of-process: true (starting in 83) */
-GFXINFO_FEATURE(ALLOW_WEBGL_OUT_OF_PROCESS, "webgl.allow-oop")
+GFXINFO_FEATURE_RETIRED(ALLOW_WEBGL_OUT_OF_PROCESS, "webgl.allow-oop")
 /* Is OpenGL threadsafe (starting in 83) */
 GFXINFO_FEATURE(THREADSAFE_GL, "gl.threadsafe")
 /* Whether webrender uses pre-optimized shaders, starting in 87; downloadable blocking in 133. */

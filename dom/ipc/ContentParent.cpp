@@ -2333,8 +2333,7 @@ static void CacheSandboxParams(std::vector<std::string>& aCachedParams) {
   // "true" or out-of-process WebGL is not enabled, allow window server
   // access in the sandbox policy.
   if (!Preferences::GetBool(
-          "security.sandbox.content.mac.disconnect-windowserver") ||
-      !Preferences::GetBool("webgl.out-of-process")) {
+          "security.sandbox.content.mac.disconnect-windowserver")) {
     info.hasWindowServer = true;
   }
 
