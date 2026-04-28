@@ -1036,12 +1036,12 @@ class MOZ_RAII DOMSubtreeIterator final : public DOMIterator {
  public:
   explicit DOMSubtreeIterator();
   virtual ~DOMSubtreeIterator() = default;
+  explicit DOMSubtreeIterator(nsINode& aNode) = delete;
 
   nsresult Init(nsRange& aRange);
 
  private:
   ContentSubtreeIterator mSubtreeIter;
-  explicit DOMSubtreeIterator(nsINode& aNode) = delete;
 };
 
 /******************************************************************************
