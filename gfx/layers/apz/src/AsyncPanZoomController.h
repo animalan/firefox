@@ -637,6 +637,19 @@ class AsyncPanZoomController {
 
   bool FuzzyGreater(ParentLayerCoord aCoord1, ParentLayerCoord aCoord2) const;
 
+  /**
+   * This deleted function is used for:
+   * 1. avoiding accidental implicit value type conversions of input delta
+   *    values when callers intend to call the above function;
+   * 2. decoupling the manual relationship between the delta value type and the
+   *    above function. If by any chance the defined delta value type in
+   *    ScrollWheelInput has changed, this will automatically result in build
+   *    time failure, so we can learn of it the first time and accordingly
+   *    redefine those parameters' value types in the above function.
+   */
+  template <typename T>
+  ParentLayerPoint GetScrollWheelDelta(ScrollWheelInput&, T, T, T, T) = delete;
+
  private:
   // Get whether the horizontal content of the honoured target of auto-dir
   // scrolling starts from right to left. If you don't know of auto-dir
@@ -730,19 +743,6 @@ class AsyncPanZoomController {
                                        double aDeltaX, double aDeltaY,
                                        double aMultiplierX,
                                        double aMultiplierY) const;
-
-  /**
-   * This deleted function is used for:
-   * 1. avoiding accidental implicit value type conversions of input delta
-   *    values when callers intend to call the above function;
-   * 2. decoupling the manual relationship between the delta value type and the
-   *    above function. If by any chance the defined delta value type in
-   *    ScrollWheelInput has changed, this will automatically result in build
-   *    time failure, so we can learn of it the first time and accordingly
-   *    redefine those parameters' value types in the above function.
-   */
-  template <typename T>
-  ParentLayerPoint GetScrollWheelDelta(ScrollWheelInput&, T, T, T, T) = delete;
 
   /**
    * Helper methods for handling keyboard events.
