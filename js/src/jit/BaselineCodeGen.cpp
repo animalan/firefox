@@ -423,6 +423,8 @@ bool BaselineCompiler::finishCompile(JSContext* cx) {
     code->setHasBytecodeMap();
   }
 
+  script->jitScript()->setIonThreshold(handler.baseWarmUpThreshold());
+
   script->jitScript()->setBaselineScript(script, baselineScript.release());
 
   perfSpewer_.saveProfile(cx, script, code);
@@ -1664,7 +1666,13 @@ bool BaselineCompilerCodeGen::emitWarmUpCounterIncrement() {
 
   uint32_t warmUpThreshold = OptimizationInfo::warmUpThresholdForPC(
       script, pc, handler.baseWarmUpThreshold());
-  masm.branch32(Assembler::LessThan, countReg, Imm32(warmUpThreshold), &done);
+  int32_t delta = warmUpThreshold - handler.baseWarmUpThreshold();
+  masm.load32(Address(scriptReg, ICScript::offsetOfIonThreshold()),
+              R1.scratchReg());
+  if (delta != 0) {
+    masm.add32(Imm32(delta), R1.scratchReg());
+  }
+  masm.branch32(Assembler::LessThan, countReg, R1.scratchReg(), &done);
 
   // Don't trigger Warp compilations from trial-inlined scripts.
   Address depthAddr(scriptReg, ICScript::offsetOfDepth());

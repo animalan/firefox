@@ -14,6 +14,7 @@
 #include "jit/BaselineJIT.h"
 #include "jit/BytecodeAnalysis.h"
 #include "jit/CacheIRCompiler.h"
+#include "jit/IonOptimizationLevels.h"  // jit::OptimizationInfo
 #include "jit/IonScript.h"
 #include "jit/JitFrames.h"
 #include "jit/JitSpewer.h"
@@ -135,6 +136,10 @@ bool JSScript::createJitScript(JSContext* cx) {
   jitScript->icScript()->initICEntries(cx, this);
 
   cx->zone()->jitZone()->registerJitScript(jitScript.get());
+
+  uint32_t baseWarmUpThreshold =
+      jit::OptimizationInfo::baseWarmUpThresholdForScript(cx, this);
+  jitScript->setIonThreshold(baseWarmUpThreshold);
 
   warmUpData_.initJitScript(jitScript.release());
   AddCellMemory(this, allocSize.value(), MemoryUse::JitScript);
