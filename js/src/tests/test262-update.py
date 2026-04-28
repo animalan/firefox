@@ -32,6 +32,7 @@ FEATURE_CHECK_NEEDED = {
     "Error.isError": "!Error.isError",  # Bug 1923733
     "iterator-sequencing": "!Iterator.concat",  # Bug 1923732
     "iterator-includes": "!Iterator.prototype.includes",  # Bug 2025779
+    "Iterator.prototype.join": "!Iterator.prototype.join",  # Bug 2003341
     "immutable-arraybuffer": "!ArrayBuffer.prototype.sliceToImmutable",  # Bug 1952253
     "await-dictionary": "!Promise.allKeyed",
     "source-phase-imports": "!(this.hasOwnProperty('getBuildConfiguration')&&getBuildConfiguration('source-phase-imports'))",
@@ -45,6 +46,7 @@ SHELL_OPTIONS = {
     "explicit-resource-management": "--enable-explicit-resource-management",
     "iterator-sequencing": "--enable-iterator-sequencing",
     "iterator-includes": "--enable-iterator-includes",
+    "Iterator.prototype.join": "--enable-iterator-join",
     "Atomics.waitAsync": "--setpref=atomics_wait_async",
     "immutable-arraybuffer": "--enable-arraybuffer-immutable",
     "import-bytes": "--enable-import-bytes",
