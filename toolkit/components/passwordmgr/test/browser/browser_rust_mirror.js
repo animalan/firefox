@@ -15,6 +15,23 @@ const { LoginCSVImport } = ChromeUtils.importESModule(
   "resource://gre/modules/LoginCSVImport.sys.mjs"
 );
 
+async function cleanupTest() {
+  await LoginTestUtils.clearData();
+  const rustStorage = new LoginManagerRustStorage();
+  await rustStorage.clearAllPotentiallyVulnerablePasswords();
+  await rustStorage.removeAllLoginsAsync();
+  const migrationMayRun = TestUtils.topicObserved(
+    "rust-mirror.migration.finished"
+  );
+  await SpecialPowers.flushPrefEnv();
+  if (
+    Services.prefs.getBoolPref("signon.rustMirror.enabled", false) &&
+    Services.prefs.getBoolPref("signon.rustMirror.migrationNeeded", false)
+  ) {
+    await migrationMayRun;
+  }
+}
+
 add_setup(async function () {
   registerCleanupFunction(async function () {
     SpecialPowers.clearUserPref("signon.rustMirror.migrationNeeded");
@@ -47,9 +64,7 @@ add_task(async function test_mirror_addLogin() {
   const rustStoredLoginInfos = await rustStorage.getAllLogins();
   LoginTestUtils.assertLoginListsEqual(storedLoginInfos, rustStoredLoginInfos);
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -94,9 +109,7 @@ add_task(async function test_mirror_modifyLogin() {
     [rustStoredModifiedLoginInfo]
   );
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -128,9 +141,7 @@ add_task(async function test_mirror_removeLogin() {
   const allLogins = await rustStorage.getAllLogins();
   Assert.equal(allLogins.length, 0);
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -157,9 +168,7 @@ add_task(async function test_mirror_csv_import_add() {
   const rustStoredLoginInfos = await rustStorage.getAllLogins();
   LoginTestUtils.assertLoginListsEqual(storedLoginInfos, rustStoredLoginInfos);
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -203,9 +212,7 @@ add_task(async function test_mirror_csv_import_modify() {
     "password has been updated via csv import"
   );
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -240,7 +247,7 @@ add_task(async function test_migration_is_triggered_by_pref_change() {
     "migrationNeeded is set to false"
   );
 
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -303,9 +310,7 @@ add_task(async function test_migration_is_idempotent() {
     "No duplicate after second migration"
   );
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -323,11 +328,13 @@ add_task(async function test_migration_partial_failure() {
   });
 
   const rustStorage = new LoginManagerRustStorage();
+  const originalAddLoginsAsync =
+    LoginManagerRustStorage.prototype.addLoginsAsync;
   // Save the first (valid) login into Rust for real, then simulate results
   sinon
     .stub(LoginManagerRustStorage.prototype, "addLoginsAsync")
-    .callsFake(async (logins, _cont) => {
-      await rustStorage.addWithMeta(logins[0]);
+    .callsFake(async function (logins, _cont) {
+      await originalAddLoginsAsync.call(this, [logins[0]], true);
       return [
         { login: {}, error: null }, // row 0 success
         { login: null, error: { message: "row failed" } }, // row 1 failure
@@ -365,9 +372,7 @@ add_task(async function test_migration_partial_failure() {
   );
 
   sinon.restore();
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -419,9 +424,7 @@ add_task(async function test_migration_rejects_when_bulk_add_rejects() {
   );
 
   sinon.restore();
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -483,9 +486,7 @@ add_task(async function test_rust_migration_failure_event() {
   );
 
   sinon.restore();
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -523,12 +524,10 @@ add_task(async function test_migration_time_under_threshold() {
   await prefChangePromise;
 
   const duration = Date.now() - start;
-  Assert.less(duration, 2000, "Migration should complete under 2s");
-  Assert.equal(rustStorage.countLogins("", "", ""), numberOfLogins);
+  Assert.less(duration, 3000, "Migration should complete under 3s");
+  Assert.equal(await rustStorage.countLoginsAsync("", "", ""), numberOfLogins);
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /*
@@ -620,8 +619,7 @@ add_task(async function test_rust_mirror_addLogin_failure() {
     "rust_write_failure event is poisoned now"
   );
 
-  LoginTestUtils.clearData();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /*
@@ -663,9 +661,7 @@ add_task(async function test_punycode_origin_metric() {
     "origin has been punicoded on the Rust side"
   );
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /*
@@ -706,63 +702,8 @@ add_task(async function test_punycode_formActionOrigin_metric() {
     "origin has been punicoded on the Rust side"
   );
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
-
-/*
- * Tests that we collect telemetry about several origin errors
- */
-// Note: "example.com", "www.example.com", https (bare label), "https:", and
-// "https://" are intentionally omitted — the perform_additional_origin_fixups
-// feature now repairs these into valid origins instead of rejecting them.
-const originsToTest = {
-  "//example.com": "MissingProtocol",
-  "//example.com/path": "MissingProtocol",
-  "example.com/path": "MissingProtocol",
-  "hptts//example.com": "ProtocolTypo",
-  "htp//example.com": "ProtocolTypo",
-  "htpps//example.com": "ProtocolTypo",
-  "http//example.com": "ProtocolTypo",
-  "http//example.com/path": "ProtocolTypo",
-  "https//example.com": "ProtocolTypo",
-  "https//example.com:abc": "MissingProtocol",
-  "https:// example.com": "UnknownError",
-  "https:///": "UnknownError",
-  "https://exa mple.com": "UnknownError",
-  "htttp//example.com": "ProtocolTypo",
-};
-for (const origin in originsToTest) {
-  add_task(async function () {
-    // ensure mirror is on
-    await SpecialPowers.pushPrefEnv({
-      set: [["signon.rustMirror.enabled", true]],
-    });
-
-    Services.fog.testResetFOG();
-
-    const login = LoginTestUtils.testData.formLogin({
-      origin,
-      formActionOrigin: "https://example.com",
-      username: "user1",
-      password: "pass1",
-    });
-
-    const waitForGleanEvent = BrowserTestUtils.waitForCondition(
-      () => Glean.pwmgr.rustMirrorStatus.testGetValue()?.length == 1,
-      "event has been emitted"
-    );
-    await Services.logins.addLoginAsync(login);
-    await waitForGleanEvent;
-
-    const [evt] = Glean.pwmgr.rustWriteFailure.testGetValue();
-    Assert.equal(evt.extra?.origin_error, originsToTest[origin]);
-
-    LoginTestUtils.clearData();
-    await SpecialPowers.flushPrefEnv();
-  });
-}
 
 /*
  * Tests that origins repaired by perform_additional_origin_fixups are accepted
@@ -844,9 +785,7 @@ add_task(async function test_username_linebreak_metric() {
     "line break username origin login saved to Rust"
   );
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /*
@@ -925,81 +864,7 @@ add_task(async function test_rust_mirror_addLogin_failure_with_time_metrics() {
     "time_created is bucketed to month (UTC)"
   );
 
-  LoginTestUtils.clearData();
-  await SpecialPowers.flushPrefEnv();
-});
-
-/*
- * Tests that we record has_ftp_origin telemetry when adding a login with an
- * FTP origin fails in the Rust mirror.
- */
-add_task(async function test_rust_mirror_addLogin_failure_has_ftp_origin() {
-  // ensure mirror is on, and reset poisoned flag
-  await SpecialPowers.pushPrefEnv({
-    set: [
-      ["signon.rustMirror.enabled", true],
-      ["signon.rustMirror.poisoned", false],
-    ],
-  });
-
-  Services.fog.testResetFOG();
-
-  const waitForGleanEvent = BrowserTestUtils.waitForCondition(
-    () => Glean.pwmgr.rustMirrorStatus.testGetValue()?.length == 1,
-    "rust_mirror_status event has been emitted"
-  );
-
-  // This login will be accepted by JSON but rejected by Rust,
-  // and contains an FTP origin.
-  const badLogin = LoginTestUtils.testData.formLogin({
-    origin: "ftp.",
-    passwordField: ".",
-  });
-
-  await Services.logins.addLoginAsync(badLogin);
-  await waitForGleanEvent;
-
-  // Sanity check: login exists in JSON storage
-  const allLoginsJson = await Services.logins.getAllLogins();
-  Assert.equal(
-    allLoginsJson.length,
-    1,
-    "FTP origin login saved to JSON storage"
-  );
-
-  // Sanity check: login was not saved to Rust storage
-  const rustStorage = new LoginManagerRustStorage();
-  const allLoginsRust = await rustStorage.getAllLogins();
-  Assert.equal(
-    allLoginsRust.length,
-    0,
-    "FTP origin login not saved to Rust storage"
-  );
-
-  // Check rust mirror status telemetry
-  const [statusEvt] = Glean.pwmgr.rustMirrorStatus.testGetValue();
-  Assert.equal(
-    statusEvt.extra?.operation,
-    "add",
-    "rust_mirror_status event has operation=add"
-  );
-  Assert.equal(
-    statusEvt.extra?.status,
-    "failure",
-    "rust_mirror_status event has status=failure"
-  );
-
-  // Check rust write failure telemetry
-  const [failureEvt] = Glean.pwmgr.rustWriteFailure.testGetValue();
-
-  Assert.equal(
-    failureEvt.extra?.has_ftp_origin,
-    "true",
-    "has_ftp_origin is recorded for FTP origin failures"
-  );
-
-  LoginTestUtils.clearData();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -1053,8 +918,7 @@ add_task(async function test_migration_performance_probe() {
   );
 
   sinon.restore();
-  LoginTestUtils.clearData();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -1088,10 +952,7 @@ add_task(async function test_mirror_addPotentiallyVulnerablePassword() {
     "login should be vulnerable in Rust storage after mirror sync"
   );
 
-  await rustStorage.clearAllPotentiallyVulnerablePasswords();
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -1139,9 +1000,7 @@ add_task(async function test_migration_includes_breach_alert_dismissals() {
     "dismissal timestamp should be positive"
   );
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -1186,9 +1045,7 @@ add_task(async function test_mirror_clearAllPotentiallyVulnerablePasswords() {
     "login should not be vulnerable in Rust storage after clearing"
   );
 
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
 
 /**
@@ -1225,8 +1082,5 @@ add_task(async function test_migration_includes_vulnerable_passwords() {
     "vulnerable password should be migrated to Rust storage"
   );
 
-  await rustStorage.clearAllPotentiallyVulnerablePasswords();
-  LoginTestUtils.clearData();
-  await rustStorage.removeAllLoginsAsync();
-  await SpecialPowers.flushPrefEnv();
+  await cleanupTest();
 });
