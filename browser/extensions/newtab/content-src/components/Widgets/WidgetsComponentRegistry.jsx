@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { Lists } from "./Lists/Lists";
 import { FocusTimer } from "./FocusTimer/FocusTimer";
 import { Weather as WeatherWidget } from "./Weather/Weather";
+import { SportsWidget } from "./SportsWidget/SportsWidget";
 import { WIDGET_REGISTRY, resolveWidgetSize } from "./WidgetsRegistry.mjs";
 
 const weatherEntry = WIDGET_REGISTRY.find(w => w.id === "weather");
@@ -29,6 +30,7 @@ export const WIDGET_ROW_COMPONENTS = {
   lists: Lists,
   focusTimer: FocusTimer,
   weather: WeatherRowWidget,
+  sportsWidget: SportsWidget,
 };
 
 export const WIDGET_SIDEBAR_COMPONENTS = {

@@ -250,6 +250,14 @@ export class AboutPreferences {
         type: "bool",
       },
       {
+        id: "browser.newtabpage.activity-stream.widgets.system.sportsWidget.enabled",
+        type: "bool",
+      },
+      {
+        id: "browser.newtabpage.activity-stream.widgets.sportsWidget.enabled",
+        type: "bool",
+      },
+      {
         id: "browser.newtabpage.activity-stream.feeds.topsites",
         type: "bool",
       },
@@ -881,6 +889,19 @@ export class AboutPreferences {
       visible: ({ timerEnabled }) => timerEnabled.value,
     });
 
+    // Widgets: sports
+    Preferences.addSetting({
+      id: "sportsWidgetEnabled",
+      pref: "browser.newtabpage.activity-stream.widgets.system.sportsWidget.enabled",
+    });
+
+    Preferences.addSetting({
+      id: "sportsWidget",
+      pref: "browser.newtabpage.activity-stream.widgets.sportsWidget.enabled",
+      deps: ["sportsWidgetEnabled"],
+      visible: ({ sportsWidgetEnabled }) => sportsWidgetEnabled.value,
+    });
+
     // Shortcuts
     Preferences.addSetting({
       id: "shortcuts",
@@ -1051,6 +1072,10 @@ export class AboutPreferences {
             {
               id: "timer",
               l10nId: "home-prefs-timer-header",
+            },
+            {
+              id: "sportsWidget",
+              l10nId: "home-prefs-sports-widget-header",
             },
           ],
         },

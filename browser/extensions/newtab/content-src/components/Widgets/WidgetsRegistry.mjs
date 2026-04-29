@@ -84,6 +84,11 @@ export const PREF_WIDGETS_SYSTEM_TIMER_ENABLED =
   "widgets.system.focusTimer.enabled";
 export const PREF_WIDGETS_SYSTEM_WEATHER_ENABLED =
   "widgets.system.weather.enabled";
+export const PREF_WIDGETS_SPORTS_WIDGET_ENABLED =
+  "widgets.sportsWidget.enabled";
+export const PREF_SPORTS_WIDGET_SIZE = "widgets.sportsWidget.size";
+export const PREF_WIDGETS_SYSTEM_SPORTS_WIDGET_ENABLED =
+  "widgets.system.sportsWidget.enabled";
 
 /**
  * @typedef {object} WidgetRegistryEntry
@@ -144,6 +149,20 @@ export const WIDGET_REGISTRY = [
     trainhopEnabledKey: "weatherEnabled",
     trainhopSizeKey: "weatherSize",
     trainhopSidebarKey: "weatherSidebar",
+  },
+  {
+    id: "sportsWidget",
+    telemetryName: "sports_widget",
+    order: 3,
+    enabledPref: PREF_WIDGETS_SPORTS_WIDGET_ENABLED,
+    sizePref: PREF_SPORTS_WIDGET_SIZE,
+    defaultSize: "medium",
+    validSizes: ["medium", "large"],
+    hasSidebar: false,
+    systemEnabledPref: PREF_WIDGETS_SYSTEM_SPORTS_WIDGET_ENABLED,
+    trainhopEnabledKey: "sportsWidgetEnabled",
+    trainhopSizeKey: "sportsWidgetSize",
+    trainhopSidebarKey: null,
   },
 ];
 

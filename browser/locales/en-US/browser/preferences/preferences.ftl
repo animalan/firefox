@@ -1059,6 +1059,10 @@ home-prefs-lists-header =
 home-prefs-timer-header =
     .label = Timer
 
+# Sports is a widget on New Tab showing sports scores and schedules.
+home-prefs-sports-widget-header =
+    .label = Sports
+
 # "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
 home-prefs-support-firefox-header =
     .label = Support { -brand-product-name }

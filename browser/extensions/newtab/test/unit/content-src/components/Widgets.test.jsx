@@ -16,6 +16,7 @@ const PREF_WIDGETS_LISTS_ENABLED = "widgets.lists.enabled";
 const PREF_WIDGETS_SYSTEM_LISTS_ENABLED = "widgets.system.lists.enabled";
 const PREF_WIDGETS_TIMER_ENABLED = "widgets.focusTimer.enabled";
 const PREF_WIDGETS_SYSTEM_TIMER_ENABLED = "widgets.system.focusTimer.enabled";
+const PREF_WIDGETS_SPORTS_WIDGET_ENABLED = "widgets.sportsWidget.enabled";
 const PREF_WIDGETS_FEEDBACK_ENABLED = "widgets.feedback.enabled";
 const PREF_WIDGETS_HIDE_ALL_TOAST_ENABLED = "widgets.hideAllToast.enabled";
 
@@ -212,8 +213,8 @@ describe("<Widgets>", () => {
 
       assert.equal(
         setPrefCalls.length,
-        2,
-        `should dispatch two SetPref actions, got ${setPrefCalls.length}.`
+        3,
+        `should dispatch three SetPref actions, got ${setPrefCalls.length}.`
       );
 
       const listsPrefCall = setPrefCalls.find(
@@ -221,6 +222,9 @@ describe("<Widgets>", () => {
       );
       const timerPrefCall = setPrefCalls.find(
         call => call.args[0].data?.name === PREF_WIDGETS_TIMER_ENABLED
+      );
+      const sportsPrefCall = setPrefCalls.find(
+        call => call.args[0].data?.name === PREF_WIDGETS_SPORTS_WIDGET_ENABLED
       );
 
       assert.ok(listsPrefCall, "should dispatch SetPref for lists");
@@ -235,6 +239,13 @@ describe("<Widgets>", () => {
         timerPrefCall.args[0].data.value,
         false,
         "should set timer pref to false"
+      );
+
+      assert.ok(sportsPrefCall, "should dispatch SetPref for sports widget");
+      assert.equal(
+        sportsPrefCall.args[0].data.value,
+        false,
+        "should set sports widget pref to false"
       );
     });
 
@@ -250,8 +261,8 @@ describe("<Widgets>", () => {
 
       assert.equal(
         setPrefCalls.length,
-        2,
-        "should dispatch two SetPref actions"
+        3,
+        "should dispatch three SetPref actions"
       );
 
       const listsPrefCall = setPrefCalls.find(
@@ -259,6 +270,9 @@ describe("<Widgets>", () => {
       );
       const timerPrefCall = setPrefCalls.find(
         call => call.args[0].data?.name === PREF_WIDGETS_TIMER_ENABLED
+      );
+      const sportsPrefCall = setPrefCalls.find(
+        call => call.args[0].data?.name === PREF_WIDGETS_SPORTS_WIDGET_ENABLED
       );
 
       assert.ok(listsPrefCall, "should dispatch SetPref for lists");
@@ -273,6 +287,13 @@ describe("<Widgets>", () => {
         timerPrefCall.args[0].data.value,
         false,
         "should set timer pref to false"
+      );
+
+      assert.ok(sportsPrefCall, "should dispatch SetPref for sports widget");
+      assert.equal(
+        sportsPrefCall.args[0].data.value,
+        false,
+        "should set sports widget pref to false"
       );
     });
 
@@ -288,8 +309,8 @@ describe("<Widgets>", () => {
 
       assert.equal(
         setPrefCalls.length,
-        2,
-        "should dispatch two SetPref actions"
+        3,
+        "should dispatch three SetPref actions"
       );
 
       const listsPrefCall = setPrefCalls.find(
@@ -297,6 +318,9 @@ describe("<Widgets>", () => {
       );
       const timerPrefCall = setPrefCalls.find(
         call => call.args[0].data?.name === PREF_WIDGETS_TIMER_ENABLED
+      );
+      const sportsPrefCall = setPrefCalls.find(
+        call => call.args[0].data?.name === PREF_WIDGETS_SPORTS_WIDGET_ENABLED
       );
 
       assert.ok(listsPrefCall, "should dispatch SetPref for lists");
@@ -311,6 +335,13 @@ describe("<Widgets>", () => {
         timerPrefCall.args[0].data.value,
         false,
         "should set timer pref to false"
+      );
+
+      assert.ok(sportsPrefCall, "should dispatch SetPref for sports widget");
+      assert.equal(
+        sportsPrefCall.args[0].data.value,
+        false,
+        "should set sports widget pref to false"
       );
     });
 

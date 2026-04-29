@@ -828,6 +828,14 @@ export class BaseContent extends React.PureComponent {
       prefs["widgets.system.weather.enabled"] ||
       prefs.trainhopConfig?.widgets?.weatherEnabled;
 
+    const nimbusSportsWidgetEnabled = prefs.widgetsConfig?.sportsWidgetEnabled;
+    const nimbusSportsWidgetTrainhopEnabled =
+      prefs.trainhopConfig?.widgets?.sportsWidgetEnabled;
+    const mayHaveSportsWidget =
+      prefs["widgets.system.sportsWidget.enabled"] ||
+      nimbusSportsWidgetEnabled ||
+      nimbusSportsWidgetTrainhopEnabled;
+
     // These prefs set the initial values on the Customize panel toggle switches
     const enabledWidgets = {
       listsEnabled: prefs["widgets.lists.enabled"],
@@ -835,6 +843,7 @@ export class BaseContent extends React.PureComponent {
       weatherEnabled: novaEnabled
         ? prefs["widgets.weather.enabled"]
         : prefs.showWeather,
+      sportsWidgetEnabled: prefs["widgets.sportsWidget.enabled"],
       widgetsMaximized: prefs["widgets.maximized"],
       widgetsMayBeMaximized: prefs["widgets.system.maximized"],
     };
@@ -929,7 +938,8 @@ export class BaseContent extends React.PureComponent {
         (mayHaveTimerWidget && enabledWidgets.timerEnabled) ||
         (mayHaveWeatherWidget &&
           enabledWidgets.weatherEnabled &&
-          !weatherGoesToSidebar);
+          !weatherGoesToSidebar) ||
+        (mayHaveSportsWidget && enabledWidgets.sportsWidgetEnabled);
       const logoShouldBeCentered = !pocketEnabled && !hasContentWidgets;
 
       return (
@@ -1074,6 +1084,7 @@ export class BaseContent extends React.PureComponent {
               mayHaveWidgets={mayHaveWidgets}
               mayHaveTimerWidget={mayHaveTimerWidget}
               mayHaveListsWidget={mayHaveListsWidget}
+              mayHaveSportsWidget={mayHaveSportsWidget}
               mayHaveWeatherForecast={
                 prefs["widgets.system.weatherForecast.enabled"]
               }
@@ -1232,6 +1243,7 @@ export class BaseContent extends React.PureComponent {
             mayHaveWidgets={mayHaveWidgets}
             mayHaveTimerWidget={mayHaveTimerWidget}
             mayHaveListsWidget={mayHaveListsWidget}
+            mayHaveSportsWidget={mayHaveSportsWidget}
             mayHaveWeatherForecast={
               prefs["widgets.system.weatherForecast.enabled"]
             }

@@ -25,10 +25,11 @@ describe("getWidgetOrder", () => {
   });
 
   it("respects a fully-specified custom order", () => {
-    expect(getWidgetOrder("focusTimer,lists,weather")).toEqual([
+    expect(getWidgetOrder("focusTimer,lists,weather,sportsWidget")).toEqual([
       "focusTimer",
       "lists",
       "weather",
+      "sportsWidget",
     ]);
   });
 
@@ -37,6 +38,7 @@ describe("getWidgetOrder", () => {
       "weather",
       "lists",
       "focusTimer",
+      "sportsWidget",
     ]);
   });
 
@@ -45,6 +47,7 @@ describe("getWidgetOrder", () => {
       "lists",
       "weather",
       "focusTimer",
+      "sportsWidget",
     ]);
   });
 
@@ -56,7 +59,7 @@ describe("getWidgetOrder", () => {
 
   it("deduplicates repeated IDs in the saved pref", () => {
     const result = getWidgetOrder("focusTimer,focusTimer,lists");
-    expect(result).toEqual(["focusTimer", "lists", "weather"]);
+    expect(result).toEqual(["focusTimer", "lists", "weather", "sportsWidget"]);
     expect(result.length).toBe(registryIds.length);
   });
 });
@@ -71,7 +74,7 @@ describe("resolveWidgetOrder", () => {
   it("uses the user-saved order when set", () => {
     expect(
       resolveWidgetOrder({ [PREF_WIDGETS_ORDER]: "weather,lists,focusTimer" })
-    ).toEqual(["weather", "lists", "focusTimer"]);
+    ).toEqual(["weather", "lists", "focusTimer", "sportsWidget"]);
   });
 
   it("uses trainhop order when no user order is saved", () => {
@@ -80,7 +83,7 @@ describe("resolveWidgetOrder", () => {
         [PREF_WIDGETS_ORDER]: "",
         trainhopConfig: { widgets: { order: "focusTimer,weather,lists" } },
       })
-    ).toEqual(["focusTimer", "weather", "lists"]);
+    ).toEqual(["focusTimer", "weather", "lists", "sportsWidget"]);
   });
 
   it("user order takes precedence over trainhop order", () => {
@@ -89,7 +92,7 @@ describe("resolveWidgetOrder", () => {
         [PREF_WIDGETS_ORDER]: "lists,focusTimer,weather",
         trainhopConfig: { widgets: { order: "weather,lists,focusTimer" } },
       })
-    ).toEqual(["lists", "focusTimer", "weather"]);
+    ).toEqual(["lists", "focusTimer", "weather", "sportsWidget"]);
   });
 });
 

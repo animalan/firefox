@@ -183,6 +183,11 @@ function Widgets() {
     lists: listsEnabled,
     focusTimer: timerEnabled,
     weather: weatherEnabled && !weatherGoesToSidebar,
+    sportsWidget: isWidgetEnabled(
+      WIDGET_REGISTRY.find(w => w.id === "sportsWidget"),
+      prefs,
+      widgetsEnabled
+    ),
   };
 
   const widgetOrder = resolveWidgetOrder(prefs);

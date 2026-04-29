@@ -1292,6 +1292,42 @@ export const PREFS_CONFIG = new Map([
     },
   ],
   [
+    "widgets.sportsWidget.enabled",
+    {
+      title: "Enables the sports widget",
+      value: true,
+    },
+  ],
+  [
+    "widgets.system.sportsWidget.enabled",
+    {
+      title: "Enables the sports widget experiment in Nimbus",
+      value: false,
+    },
+  ],
+  [
+    "widgets.sportsWidget.size",
+    {
+      title: "Size of the sports widget (medium or large)",
+      value: "",
+    },
+  ],
+  [
+    "widgets.sportsWidget.live.enabled",
+    {
+      title: "Enables live scores in the sports widget",
+      value: false,
+    },
+  ],
+  [
+    "widgets.sportsWidget.interaction",
+    {
+      title:
+        "Boolean flag for determining if a user has interacted with the sports widget",
+      value: false,
+    },
+  ],
+  [
     "widgets.feedback.enabled",
     {
       title: "Enables the feedback link in the widgets container",

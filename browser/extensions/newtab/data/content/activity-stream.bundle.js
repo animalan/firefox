@@ -306,6 +306,7 @@ for (const type of [
   "WIDGETS_LISTS_UPDATE",
   "WIDGETS_LISTS_USER_EVENT",
   "WIDGETS_LISTS_USER_IMPRESSION",
+  "WIDGETS_SPORTS_WIDGET_SET",
   "WIDGETS_TIMER_END",
   "WIDGETS_TIMER_PAUSE",
   "WIDGETS_TIMER_PLAY",
@@ -6736,6 +6737,10 @@ const INITIAL_STATE = {
   ExternalComponents: {
     components: [],
   },
+  SportsWidget: {
+    data: null,
+    initialized: false,
+  },
 };
 
 function App(prevState = INITIAL_STATE.App, action) {
@@ -7719,6 +7724,15 @@ function ExternalComponents(
   }
 }
 
+function SportsWidget(prevState = INITIAL_STATE.SportsWidget, action) {
+  switch (action.type) {
+    case actionTypes.WIDGETS_SPORTS_WIDGET_SET:
+      return { ...prevState, data: action.data, initialized: true };
+    default:
+      return prevState;
+  }
+}
+
 const reducers = {
   TopSites,
   App,
@@ -7738,6 +7752,7 @@ const reducers = {
   SectionsLayout,
   Weather,
   ExternalComponents,
+  SportsWidget,
 };
 
 ;// CONCATENATED MODULE: ./content-src/components/TopSites/TopSiteFormInput.jsx
@@ -11995,6 +12010,11 @@ const PREF_WIDGETS_SYSTEM_TIMER_ENABLED =
   "widgets.system.focusTimer.enabled";
 const PREF_WIDGETS_SYSTEM_WEATHER_ENABLED =
   "widgets.system.weather.enabled";
+const PREF_WIDGETS_SPORTS_WIDGET_ENABLED =
+  "widgets.sportsWidget.enabled";
+const PREF_SPORTS_WIDGET_SIZE = "widgets.sportsWidget.size";
+const PREF_WIDGETS_SYSTEM_SPORTS_WIDGET_ENABLED =
+  "widgets.system.sportsWidget.enabled";
 
 /**
  * @typedef {object} WidgetRegistryEntry
@@ -12055,6 +12075,20 @@ const WIDGET_REGISTRY = [
     trainhopEnabledKey: "weatherEnabled",
     trainhopSizeKey: "weatherSize",
     trainhopSidebarKey: "weatherSidebar",
+  },
+  {
+    id: "sportsWidget",
+    telemetryName: "sports_widget",
+    order: 3,
+    enabledPref: PREF_WIDGETS_SPORTS_WIDGET_ENABLED,
+    sizePref: PREF_SPORTS_WIDGET_SIZE,
+    defaultSize: "medium",
+    validSizes: ["medium", "large"],
+    hasSidebar: false,
+    systemEnabledPref: PREF_WIDGETS_SYSTEM_SPORTS_WIDGET_ENABLED,
+    trainhopEnabledKey: "sportsWidgetEnabled",
+    trainhopSizeKey: "sportsWidgetSize",
+    trainhopSidebarKey: null,
   },
 ];
 
@@ -15302,10 +15336,233 @@ function WidgetsFeatureHighlight({
   });
 }
 
+;// CONCATENATED MODULE: ./content-src/components/Widgets/SportsWidget/SportsWidget.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// eslint-disable-next-line no-unused-vars
+
+
+
+
+const SportsWidget_USER_ACTION_TYPES = {
+  FOLLOW_TEAMS: "follow_teams",
+  VIEW_UPCOMING: "view_upcoming",
+  VIEW_RESULTS: "view_results",
+  CHANGE_SIZE: "change_size",
+  LEARN_MORE: "learn_more"
+};
+const SportsWidget_PREF_NOVA_ENABLED = "nova.enabled";
+const SportsWidget_PREF_SPORTS_WIDGET_SIZE = "widgets.sportsWidget.size";
+const PREF_SPORTS_WIDGET_LIVE_ENABLED = "widgets.sportsWidget.live.enabled";
+function SportsWidget_SportsWidget({
+  dispatch,
+  handleUserInteraction
+}) {
+  const prefs = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values);
+  const sportsWidgetData = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.SportsWidget);
+  const widgetSize = prefs[SportsWidget_PREF_SPORTS_WIDGET_SIZE] || "medium";
+  const liveEnabled = prefs[PREF_SPORTS_WIDGET_LIVE_ENABLED];
+  const impressionFired = (0,external_React_namespaceObject.useRef)(false);
+  const sizeSubmenuRef = (0,external_React_namespaceObject.useRef)(null);
+  const handleIntersection = (0,external_React_namespaceObject.useCallback)(() => {
+    if (impressionFired.current) {
+      return;
+    }
+    impressionFired.current = true;
+    dispatch(actionCreators.AlsoToMain({
+      type: actionTypes.WIDGETS_IMPRESSION,
+      data: {
+        widget_name: "sports_widget",
+        widget_size: widgetSize
+      }
+    }));
+  }, [dispatch, widgetSize]);
+  const widgetRef = useIntersectionObserver(handleIntersection);
+  const handleInteraction = (0,external_React_namespaceObject.useCallback)(() => handleUserInteraction("sportsWidget"), [handleUserInteraction]);
+  function handleFollowTeams() {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "sports_widget",
+          widget_source: "context_menu",
+          user_action: SportsWidget_USER_ACTION_TYPES.FOLLOW_TEAMS,
+          widget_size: widgetSize
+        }
+      }));
+    });
+    handleInteraction();
+  }
+  function handleViewUpcoming() {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "sports_widget",
+          widget_source: "context_menu",
+          user_action: SportsWidget_USER_ACTION_TYPES.VIEW_UPCOMING,
+          widget_size: widgetSize
+        }
+      }));
+    });
+    handleInteraction();
+  }
+  function handleViewResults() {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "sports_widget",
+          widget_source: "context_menu",
+          user_action: SportsWidget_USER_ACTION_TYPES.VIEW_RESULTS,
+          widget_size: widgetSize
+        }
+      }));
+    });
+    handleInteraction();
+  }
+  function handleSportsWidgetHide() {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.SET_PREF,
+        data: {
+          name: "widgets.sportsWidget.enabled",
+          value: false
+        }
+      }));
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_ENABLED,
+        data: {
+          widget_name: "sports_widget",
+          widget_source: "context_menu",
+          enabled: false,
+          widget_size: widgetSize
+        }
+      }));
+    });
+    handleInteraction();
+  }
+  const handleChangeSize = (0,external_React_namespaceObject.useCallback)(size => {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.SET_PREF,
+        data: {
+          name: SportsWidget_PREF_SPORTS_WIDGET_SIZE,
+          value: size
+        }
+      }));
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "sports_widget",
+          widget_source: "context_menu",
+          user_action: SportsWidget_USER_ACTION_TYPES.CHANGE_SIZE,
+          action_value: size,
+          widget_size: size
+        }
+      }));
+    });
+  }, [dispatch]);
+  (0,external_React_namespaceObject.useEffect)(() => {
+    const el = sizeSubmenuRef.current;
+    if (!el) {
+      return undefined;
+    }
+    const listener = e => {
+      const item = e.composedPath().find(node => node.dataset?.size);
+      if (item) {
+        handleChangeSize(item.dataset.size);
+      }
+    };
+    el.addEventListener("click", listener);
+    return () => el.removeEventListener("click", listener);
+  }, [handleChangeSize]);
+  function handleLearnMore() {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.OPEN_LINK,
+        data: {
+          url: "https://support.mozilla.org/kb/firefox-new-tab-widgets"
+        }
+      }));
+      const telemetryData = {
+        widget_name: "sports_widget",
+        widget_source: "context_menu",
+        user_action: SportsWidget_USER_ACTION_TYPES.LEARN_MORE,
+        widget_size: widgetSize
+      };
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: telemetryData
+      }));
+    });
+  }
+
+  // @nova-cleanup(remove-gate): Remove this guard and PREF_NOVA_ENABLED after Nova ships
+  if (!prefs[SportsWidget_PREF_NOVA_ENABLED]) {
+    return null;
+  }
+  return /*#__PURE__*/external_React_default().createElement("article", {
+    className: `sports-widget widget col-4 ${widgetSize}-widget`,
+    ref: el => {
+      widgetRef.current = [el];
+    }
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sports-widget-title-wrapper"
+  }, /*#__PURE__*/external_React_default().createElement("h3", {
+    className: "newtab-sports-widget-title"
+  }, "Sports"), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sports-widget-context-menu-wrapper"
+  }, /*#__PURE__*/external_React_default().createElement("moz-button", {
+    className: "sports-widget-context-menu-button",
+    iconSrc: "chrome://global/skin/icons/more.svg",
+    menuId: "sports-widget-context-menu",
+    type: "ghost"
+  }), /*#__PURE__*/external_React_default().createElement("panel-list", {
+    id: "sports-widget-context-menu"
+  }, /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": "newtab-sports-widget-menu-follow-teams",
+    onClick: handleFollowTeams
+  }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": "newtab-sports-widget-menu-view-upcoming",
+    onClick: handleViewUpcoming
+  }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": "newtab-sports-widget-menu-view-results",
+    onClick: handleViewResults
+  }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    submenu: "sports-widget-size-submenu"
+  }, /*#__PURE__*/external_React_default().createElement("span", {
+    "data-l10n-id": "newtab-widget-menu-change-size"
+  }), /*#__PURE__*/external_React_default().createElement("panel-list", {
+    ref: sizeSubmenuRef,
+    slot: "submenu",
+    id: "sports-widget-size-submenu"
+  }, ["medium", "large"].map(size => /*#__PURE__*/external_React_default().createElement("panel-item", {
+    key: size,
+    type: "checkbox",
+    checked: widgetSize === size || undefined,
+    "data-size": size,
+    "data-l10n-id": `newtab-widget-size-${size}`
+  })))), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": "newtab-widget-menu-hide",
+    onClick: handleSportsWidgetHide
+  }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": "newtab-sports-widget-menu-learn-more",
+    onClick: handleLearnMore
+  })))), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sports-widget-body"
+  }, liveEnabled && sportsWidgetData?.initialized && /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sports-widget-live-scores"
+  })));
+}
+
 ;// CONCATENATED MODULE: ./content-src/components/Widgets/WidgetsComponentRegistry.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 
 
 
@@ -15339,7 +15596,8 @@ function WeatherSidebarWidget({
 const WIDGET_ROW_COMPONENTS = {
   lists: Lists,
   focusTimer: FocusTimer,
-  weather: WeatherRowWidget
+  weather: WeatherRowWidget,
+  sportsWidget: SportsWidget_SportsWidget
 };
 const WIDGET_SIDEBAR_COMPONENTS = {
   weather: WeatherSidebarWidget
@@ -15487,7 +15745,8 @@ function Widgets() {
   const widgetEnabledMap = {
     lists: listsEnabled,
     focusTimer: timerEnabled,
-    weather: weatherEnabled && !weatherGoesToSidebar
+    weather: weatherEnabled && !weatherGoesToSidebar,
+    sportsWidget: isWidgetEnabled(WIDGET_REGISTRY.find(w => w.id === "sportsWidget"), prefs, widgetsEnabled)
   };
   const widgetOrder = resolveWidgetOrder(prefs);
   const anyWidgetInRow = WIDGET_REGISTRY.some(w => widgetEnabledMap[w.id]) || !novaEnabled && weatherForecastEnabled;
@@ -17274,6 +17533,7 @@ function WidgetsManagementPanel({
   mayHaveWeather,
   mayHaveTimerWidget,
   mayHaveListsWidget,
+  mayHaveSportsWidget,
   mayHaveWeatherForecast,
   weatherDisplay,
   setPref
@@ -17324,6 +17584,9 @@ function WidgetsManagementPanel({
         case "WIDGET_TIMER":
           widgetName = "focus_timer";
           break;
+        case "WIDGET_SPORTS":
+          widgetName = "sports_widget";
+          break;
       }
       if (widgetName) {
         const {
@@ -17358,7 +17621,8 @@ function WidgetsManagementPanel({
   } = enabledSections;
   const {
     timerEnabled,
-    listsEnabled
+    listsEnabled,
+    sportsWidgetEnabled
   } = enabledWidgets;
   const isRTL = typeof document !== "undefined" && document.dir === "rtl";
   // @backward-compat { version 151 } Switch to chrome://global/skin/icons/shaft-arrow-${dir}.svg
@@ -17427,6 +17691,19 @@ function WidgetsManagementPanel({
     "data-preference": "widgets.lists.enabled",
     "data-event-source": "WIDGET_LISTS",
     "data-l10n-id": "newtab-custom-widget-lists-toggle"
+  })), mayHaveSportsWidget && /*#__PURE__*/external_React_default().createElement("div", {
+    id: "sports-widget-section",
+    className: "section"
+  }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
+    id: "sports-widget-toggle",
+    pressed: sportsWidgetEnabled || null,
+    ontoggle: onToggleWidget,
+    onToggle: onToggleWidget,
+    "data-preference": "widgets.sportsWidget.enabled",
+    "data-event-source": "WIDGET_SPORTS"
+    //  TODO: add in widget title fluent string when product gets back to us*
+    ,
+    label: "Sports"
   })))))));
 }
 
@@ -17577,6 +17854,7 @@ class ContentSection extends (external_React_default()).PureComponent {
       mayHaveWidgets,
       mayHaveTimerWidget,
       mayHaveListsWidget,
+      mayHaveSportsWidget,
       mayHaveWeatherForecast,
       openPreferences,
       wallpapersUserEnabled,
@@ -17766,6 +18044,7 @@ class ContentSection extends (external_React_default()).PureComponent {
       mayHaveWeather: mayHaveWeather,
       mayHaveTimerWidget: mayHaveTimerWidget,
       mayHaveListsWidget: mayHaveListsWidget,
+      mayHaveSportsWidget: mayHaveSportsWidget,
       mayHaveWeatherForecast: mayHaveWeatherForecast,
       weatherDisplay: weatherDisplay,
       setPref: setPref,
@@ -17990,6 +18269,7 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
       weatherDisplay: this.props.weatherDisplay,
       mayHaveTimerWidget: this.props.mayHaveTimerWidget,
       mayHaveListsWidget: this.props.mayHaveListsWidget,
+      mayHaveSportsWidget: this.props.mayHaveSportsWidget,
       dispatch: this.props.dispatch,
       exitEventFired: this.state.exitEventFired,
       onSubpanelToggle: this.onSubpanelToggle,
@@ -20152,12 +20432,16 @@ class BaseContent extends (external_React_default()).PureComponent {
     const mayHaveListsWidget = prefs["widgets.system.lists.enabled"] || nimbusListsEnabled || nimbusListsTrainhopEnabled;
     const mayHaveTimerWidget = prefs["widgets.system.focusTimer.enabled"] || nimbusTimerEnabled || nimbusTimerTrainhopEnabled;
     const mayHaveWeatherWidget = prefs["widgets.system.weather.enabled"] || prefs.trainhopConfig?.widgets?.weatherEnabled;
+    const nimbusSportsWidgetEnabled = prefs.widgetsConfig?.sportsWidgetEnabled;
+    const nimbusSportsWidgetTrainhopEnabled = prefs.trainhopConfig?.widgets?.sportsWidgetEnabled;
+    const mayHaveSportsWidget = prefs["widgets.system.sportsWidget.enabled"] || nimbusSportsWidgetEnabled || nimbusSportsWidgetTrainhopEnabled;
 
     // These prefs set the initial values on the Customize panel toggle switches
     const enabledWidgets = {
       listsEnabled: prefs["widgets.lists.enabled"],
       timerEnabled: prefs["widgets.focusTimer.enabled"],
       weatherEnabled: novaEnabled ? prefs["widgets.weather.enabled"] : prefs.showWeather,
+      sportsWidgetEnabled: prefs["widgets.sportsWidget.enabled"],
       widgetsMaximized: prefs["widgets.maximized"],
       widgetsMayBeMaximized: prefs["widgets.system.maximized"]
     };
@@ -20202,7 +20486,7 @@ class BaseContent extends (external_React_default()).PureComponent {
       // the sidebar provides a better visual anchor.
       const weatherWidget = WIDGET_REGISTRY.find(w => w.id === "weather");
       const weatherGoesToSidebar = resolveWidgetHasSidebar(weatherWidget, prefs) && resolveWidgetSize(weatherWidget, prefs) === "small";
-      const hasContentWidgets = mayHaveListsWidget && enabledWidgets.listsEnabled || mayHaveTimerWidget && enabledWidgets.timerEnabled || mayHaveWeatherWidget && enabledWidgets.weatherEnabled && !weatherGoesToSidebar;
+      const hasContentWidgets = mayHaveListsWidget && enabledWidgets.listsEnabled || mayHaveTimerWidget && enabledWidgets.timerEnabled || mayHaveWeatherWidget && enabledWidgets.weatherEnabled && !weatherGoesToSidebar || mayHaveSportsWidget && enabledWidgets.sportsWidgetEnabled;
       const logoShouldBeCentered = !pocketEnabled && !hasContentWidgets;
       return /*#__PURE__*/external_React_default().createElement("div", {
         className: "nova-outer-wrapper"
@@ -20265,6 +20549,7 @@ class BaseContent extends (external_React_default()).PureComponent {
         mayHaveWidgets: mayHaveWidgets,
         mayHaveTimerWidget: mayHaveTimerWidget,
         mayHaveListsWidget: mayHaveListsWidget,
+        mayHaveSportsWidget: mayHaveSportsWidget,
         mayHaveWeatherForecast: prefs["widgets.system.weatherForecast.enabled"],
         weatherDisplay: prefs["weather.display"],
         showing: customizeMenuVisible,
@@ -20351,6 +20636,7 @@ class BaseContent extends (external_React_default()).PureComponent {
       mayHaveWidgets: mayHaveWidgets,
       mayHaveTimerWidget: mayHaveTimerWidget,
       mayHaveListsWidget: mayHaveListsWidget,
+      mayHaveSportsWidget: mayHaveSportsWidget,
       mayHaveWeatherForecast: prefs["widgets.system.weatherForecast.enabled"],
       weatherDisplay: prefs["weather.display"],
       showing: customizeMenuVisible,

@@ -167,6 +167,7 @@ export class ContentSection extends React.PureComponent {
       mayHaveWidgets,
       mayHaveTimerWidget,
       mayHaveListsWidget,
+      mayHaveSportsWidget,
       mayHaveWeatherForecast,
       openPreferences,
       wallpapersUserEnabled,
@@ -404,6 +405,7 @@ export class ContentSection extends React.PureComponent {
                             mayHaveWeather={mayHaveWeather}
                             mayHaveTimerWidget={mayHaveTimerWidget}
                             mayHaveListsWidget={mayHaveListsWidget}
+                            mayHaveSportsWidget={mayHaveSportsWidget}
                             mayHaveWeatherForecast={mayHaveWeatherForecast}
                             weatherDisplay={weatherDisplay}
                             setPref={setPref}

@@ -4879,19 +4879,19 @@ dialog:dir(rtl)::after {
   --widgets-grid-gap: var(--space-large);
   --widgets-small-card-height: var(--newtab-card-height-small);
 }
-.classic-enabled .widgets-container:has(.lists), .classic-enabled .widgets-container:has(.focus-timer) {
+.classic-enabled .widgets-container:has(.lists), .classic-enabled .widgets-container:has(.focus-timer), .classic-enabled .widgets-container:has(.sports-widget) {
   display: grid;
   grid-template-columns: repeat(auto-fit, var(--widgets-card-width));
   gap: var(--widgets-grid-gap);
 }
 @media (min-width: 610px) {
-  .classic-enabled .widgets-container:has(.lists), .classic-enabled .widgets-container:has(.focus-timer) {
+  .classic-enabled .widgets-container:has(.lists), .classic-enabled .widgets-container:has(.focus-timer), .classic-enabled .widgets-container:has(.sports-widget) {
     max-width: calc(var(--widgets-max-cols) * var(--widgets-card-width) + (var(--widgets-max-cols) - 1) * var(--widgets-grid-gap));
     justify-content: center;
   }
 }
 @media (min-width: 1122px) {
-  .classic-enabled .widgets-container:has(.lists), .classic-enabled .widgets-container:has(.focus-timer) {
+  .classic-enabled .widgets-container:has(.lists), .classic-enabled .widgets-container:has(.focus-timer), .classic-enabled .widgets-container:has(.sports-widget) {
     --widgets-grid-gap: var(--space-xlarge);
   }
 }
@@ -4903,7 +4903,7 @@ dialog:dir(rtl)::after {
   --widgets-card-width: var(--newtab-card-width-medium);
 }
 @media (min-width: 1122px) {
-  .classic-enabled .has-sections-grid .widgets-container:has(.lists), .classic-enabled .has-sections-grid .widgets-container:has(.focus-timer) {
+  .classic-enabled .has-sections-grid .widgets-container:has(.lists), .classic-enabled .has-sections-grid .widgets-container:has(.focus-timer), .classic-enabled .has-sections-grid .widgets-container:has(.sports-widget) {
     --widgets-grid-gap: var(--space-large);
   }
 }
@@ -5984,6 +5984,65 @@ dialog:dir(rtl)::after {
   color: var(--text-color-deemphasized);
   font-size: var(--font-size-small);
   margin-block-start: var(--space-small);
+}
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+/* stylelint-disable stylelint-plugin-mozilla/use-design-tokens */
+.sports-widget {
+  background: var(--newtab-background-card);
+  transition: opacity 0.2s ease;
+  border-radius: var(--border-radius-large);
+  padding: var(--space-medium);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--box-shadow-card);
+}
+.sports-widget:hover {
+  background: var(--newtab-background-color-secondary);
+}
+.sports-widget.medium-widget {
+  grid-row: span 2;
+}
+.sports-widget.large-widget {
+  grid-row: span 4;
+}
+
+.sports-widget-title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--space-xsmall);
+}
+.sports-widget-title-wrapper h3 {
+  margin-block: 0;
+  font-weight: var(--font-weight);
+  font-size: var(--font-size-root);
+}
+
+.sports-widget-context-menu-wrapper {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sports-widget:hover .sports-widget-context-menu-wrapper,
+.sports-widget:focus-within .sports-widget-context-menu-wrapper {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sports-widget-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-small);
+}
+
+.sports-widget-live-scores {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xsmall);
 }
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
