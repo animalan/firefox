@@ -2353,15 +2353,20 @@ ${
       }
     }
 
-    this.controller.engagementEvent.startTrackingBounceEvent(browser, event, {
-      result,
-      element,
-      location: this.sapLocation,
-      searchString: this._lastSearchString,
-      selType: this.controller.engagementEvent.typeFromElement(result, element),
-      searchSource: this.getSearchSource(event),
-      windowMode: this.windowMode,
-    });
+    this.controller.engagementEvent
+      .startTrackingBounceEvent(browser, event, {
+        result,
+        element,
+        location: this.sapLocation,
+        searchString: this._lastSearchString,
+        selType: this.controller.engagementEvent.typeFromElement(
+          result,
+          element
+        ),
+        searchSource: this.getSearchSource(event),
+        windowMode: this.windowMode,
+      })
+      .catch(lazy.logger.error);
 
     this.controller.engagementEvent.record(event, {
       result,
