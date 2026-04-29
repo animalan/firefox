@@ -69,9 +69,9 @@ class nsLineBox final : public nsLineLink {
   // Infallible overloaded new operator. Uses an arena (which comes from the
   // presShell) to perform the allocation.
   void* operator new(size_t sz, mozilla::PresShell* aPresShell);
-  void operator delete(void* aPtr, size_t sz) = delete;
 
  public:
+  void operator delete(void* aPtr, size_t sz) = delete;
   // Use these functions to allocate and destroy line boxes
   friend nsLineBox* NS_NewLineBox(mozilla::PresShell* aPresShell,
                                   nsIFrame* aFrame, bool aIsBlock);
@@ -1049,10 +1049,10 @@ class nsLineIterator final : public nsILineIterator {
                             nsIFrame** aFirstVisual,
                             nsIFrame** aLastVisual) final;
 
- private:
   nsLineIterator() = delete;
   nsLineIterator(const nsLineIterator& aOther) = delete;
 
+ private:
   const nsLineBox* GetNextLine() {
     MOZ_ASSERT(mIter != mLines.end(), "Already at end!");
     ++mIndex;
