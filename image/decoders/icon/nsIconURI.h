@@ -101,10 +101,10 @@ class nsMozIconURI final : public nsIMozIconURI,
       return InitFromSpec(aSpec);
     }
 
-    explicit Mutator() {}
+    explicit Mutator() = default;
 
    private:
-    virtual ~Mutator() {}
+    virtual ~Mutator() = default;
 
     friend class nsMozIconURI;
   };

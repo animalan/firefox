@@ -42,7 +42,7 @@ struct IResumable {
   virtual void Resume() = 0;
 
  protected:
-  virtual ~IResumable() {}
+  virtual ~IResumable() = default;
 };
 
 /**
@@ -97,6 +97,9 @@ class SourceBufferIterator final {
   ~SourceBufferIterator();
 
   SourceBufferIterator& operator=(SourceBufferIterator&& aOther);
+
+  SourceBufferIterator(const SourceBufferIterator&) = delete;
+  SourceBufferIterator& operator=(const SourceBufferIterator&) = delete;
 
   /**
    * Returns true if there are no more than @aBytes remaining in the
@@ -202,9 +205,6 @@ class SourceBufferIterator final {
 
  private:
   friend class SourceBuffer;
-
-  SourceBufferIterator(const SourceBufferIterator&) = delete;
-  SourceBufferIterator& operator=(const SourceBufferIterator&) = delete;
 
   bool HasMore() const { return mState != COMPLETE; }
 
@@ -460,10 +460,10 @@ class SourceBuffer final {
       return true;
     }
 
-   private:
     Chunk(const Chunk&) = delete;
     Chunk& operator=(const Chunk&) = delete;
 
+   private:
     size_t mCapacity;
     size_t mLength;
     char* mData;
