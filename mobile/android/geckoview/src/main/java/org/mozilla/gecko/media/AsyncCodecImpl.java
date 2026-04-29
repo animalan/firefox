@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.mozilla.gecko.util.HardwareCodecCapabilityUtils;
 
-/* package */ final class LollipopAsyncCodec implements AsyncCodec {
+/* package */ final class AsyncCodecImpl implements AsyncCodec {
   private final MediaCodec mCodec;
 
   private class CodecCallback extends MediaCodec.Callback {
@@ -42,20 +42,20 @@ import org.mozilla.gecko.util.HardwareCodecCapabilityUtils;
       public void handleMessage(final Message msg) {
         switch (msg.what) {
           case MSG_INPUT_BUFFER_AVAILABLE:
-            mTarget.onInputBufferAvailable(LollipopAsyncCodec.this, msg.arg1); // index
+            mTarget.onInputBufferAvailable(AsyncCodecImpl.this, msg.arg1); // index
             break;
           case MSG_OUTPUT_BUFFER_AVAILABLE:
             mTarget.onOutputBufferAvailable(
-                LollipopAsyncCodec.this,
+                AsyncCodecImpl.this,
                 msg.arg1, // index
                 (MediaCodec.BufferInfo) msg.obj); //  buffer info
             break;
           case MSG_OUTPUT_FORMAT_CHANGE:
             mTarget.onOutputFormatChanged(
-                LollipopAsyncCodec.this, (MediaFormat) msg.obj); // output format
+                AsyncCodecImpl.this, (MediaFormat) msg.obj); // output format
             break;
           case MSG_ERROR:
-            mTarget.onError(LollipopAsyncCodec.this, msg.arg1); // error code
+            mTarget.onError(AsyncCodecImpl.this, msg.arg1); // error code
             break;
           default:
             super.handleMessage(msg);
@@ -129,7 +129,7 @@ import org.mozilla.gecko.util.HardwareCodecCapabilityUtils;
     }
   }
 
-  /* package */ LollipopAsyncCodec(final String name) throws IOException {
+  /* package */ AsyncCodecImpl(final String name) throws IOException {
     // Create the codec.
     // We wrap the call to MediaCodec.createByCodecName in a pair of
     // clearCallingIdentity / restoreCallingIdentity, so that the resource

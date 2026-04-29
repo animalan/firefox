@@ -24,10 +24,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 import org.mozilla.gecko.util.ProxySelector;
 
-public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
+public class GeckoMediaDrmBridge implements GeckoMediaDrm {
   protected final String LOGTAG;
   private static final String INVALID_SESSION_ID = "Invalid";
   private static final String WIDEVINE_KEY_SYSTEM = "com.widevine.alpha";
@@ -35,9 +36,6 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
   private static final UUID WIDEVINE_SCHEME_UUID =
       new UUID(0xedef8ba979d64aceL, 0xa3c827dcd51d21edL);
   private static final int MAX_PROMISE_ID = Integer.MAX_VALUE;
-  // MediaDrm.KeyStatus information listener is supported on M+, adding a
-  // dummy key id to report key status.
-  private static final byte[] DUMMY_KEY_ID = new byte[] {0};
 
   public static final Charset UTF_8 = Charset.forName("UTF-8");
 
@@ -47,7 +45,7 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
   private HandlerThread mHandlerThread;
   private ByteBuffer mCryptoSessionId;
 
-  // mProvisioningPromiseId is great than 0 only during provisioning.
+  // mProvisioningPromiseId is greater than 0 only during provisioning.
   private int mProvisioningPromiseId;
   private HashSet<ByteBuffer> mSessionIds;
   private HashMap<ByteBuffer, String> mSessionMIMETypes;
@@ -90,7 +88,7 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
     }
   }
 
-  public boolean isSecureDecoderComonentRequired(final String mimeType) {
+  public boolean isSecureDecoderComponentRequired(final String mimeType) {
     if (mCrypto != null) {
       return mCrypto.requiresSecureDecoderComponent(mimeType);
     }
@@ -117,9 +115,9 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
     }
   }
 
-  GeckoMediaDrmBridgeV21(final String keySystem) throws Exception {
+  GeckoMediaDrmBridge(final String keySystem) throws Exception {
     LOGTAG = getClass().getSimpleName();
-    if (DEBUG) Log.d(LOGTAG, "GeckoMediaDrmBridgeV21 ctor");
+    if (DEBUG) Log.d(LOGTAG, "GeckoMediaDrmBridge ctor");
 
     mProvisioningPromiseId = 0;
     mSessionIds = new HashSet<ByteBuffer>();
@@ -131,11 +129,12 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
 
     if (DEBUG) Log.d(LOGTAG, "mSchemeUUID : " + mSchemeUUID.toString());
 
-    // The caller of GeckoMediaDrmBridgeV21 ctor should handle exceptions
+    // The caller of GeckoMediaDrmBridge ctor should handle exceptions
     // threw by the following steps.
     mDrm = new MediaDrm(mSchemeUUID);
     configureVendorSpecificProperty();
     mDrm.setOnEventListener(new MediaDrmListener());
+    mDrm.setOnKeyStatusChangeListener(new KeyStatusChangeListener(), null);
     try {
       // ensureMediaCryptoCreated may cause NotProvisionedException for the first time use.
       // Need to start provisioning with a dummy promise id.
@@ -176,7 +175,7 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
     try {
       final boolean hasMediaCrypto = ensureMediaCryptoCreated();
       if (!hasMediaCrypto) {
-        onRejectPromise(promiseId, "MediaCrypto intance is not created !");
+        onRejectPromise(promiseId, "MediaCrypto instance is not created !");
         return;
       }
 
@@ -237,7 +236,6 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
           Log.d(LOGTAG, "InfoMap : key(" + strKey + ")/value(" + strValue + ")");
         }
       }
-      HandleKeyStatusChangeByDummyKey(sessionId);
       onSessionUpdated(promiseId, session.array());
       return;
     } catch (final NotProvisionedException | DeniedByServerException | IllegalStateException e) {
@@ -338,13 +336,6 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
     }
   }
 
-  protected void HandleKeyStatusChangeByDummyKey(final String sessionId) {
-    final SessionKeyInfo[] keyInfos = new SessionKeyInfo[1];
-    keyInfos[0] = new SessionKeyInfo(DUMMY_KEY_ID, MediaDrm.KeyStatus.STATUS_USABLE);
-    onSessionBatchedKeyChanged(sessionId.getBytes(), keyInfos);
-    if (DEBUG) Log.d(LOGTAG, "Key successfully added for session " + sessionId);
-  }
-
   protected void onSessionCreated(
       final int createSessionToken,
       final int promiseId,
@@ -413,7 +404,7 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
       return mDrm.getKeyRequest(
           aSession.array(), data, mimeType, MediaDrm.KEY_TYPE_STREAMING, optionalParameters);
     } catch (final Exception e) {
-      Log.e(LOGTAG, "Got excpetion during MediaDrm.getKeyRequest", e);
+      Log.e(LOGTAG, "Got exception during MediaDrm.getKeyRequest", e);
     }
     return null;
   }
@@ -436,8 +427,8 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
         if (DEBUG) Log.d(LOGTAG, "MediaDrmListener: Invalid session.");
         return;
       }
-      // On L, these events are treated as exceptions and handled correspondingly.
-      // Leaving this code block for logging message.
+      // These events are surfaced as exceptions on the API call paths;
+      // this listener exists for diagnostic logging only.
       switch (event) {
         case MediaDrm.EVENT_PROVISION_REQUIRED:
           if (DEBUG) Log.d(LOGTAG, "MediaDrm.EVENT_PROVISION_REQUIRED");
@@ -482,6 +473,27 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
           if (DEBUG) Log.d(LOGTAG, "Invalid DRM event " + event);
           return;
       }
+    }
+  }
+
+  private class KeyStatusChangeListener implements MediaDrm.OnKeyStatusChangeListener {
+    @Override
+    public void onKeyStatusChange(
+        final MediaDrm mediaDrm,
+        final byte[] sessionId,
+        final List<MediaDrm.KeyStatus> keyInformation,
+        final boolean hasNewUsableKey) {
+      if (DEBUG) Log.d(LOGTAG, "[onKeyStatusChange] hasNewUsableKey = " + hasNewUsableKey);
+      if (keyInformation.size() == 0) {
+        return;
+      }
+      final SessionKeyInfo[] keyInfos = new SessionKeyInfo[keyInformation.size()];
+      for (int i = 0; i < keyInformation.size(); i++) {
+        final MediaDrm.KeyStatus keyStatus = keyInformation.get(i);
+        keyInfos[i] = new SessionKeyInfo(keyStatus.getKeyId(), keyStatus.getStatusCode());
+      }
+      onSessionBatchedKeyChanged(sessionId, keyInfos);
+      if (DEBUG) Log.d(LOGTAG, "Key successfully added for session " + new String(sessionId));
     }
   }
 
@@ -637,7 +649,7 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
             pendingData.mInitData);
       }
     } catch (final Exception e) {
-      Log.e(LOGTAG, "Got excpetion during processPendingCreateSessionData ...", e);
+      Log.e(LOGTAG, "Got exception during processPendingCreateSessionData ...", e);
     }
   }
 
@@ -663,11 +675,12 @@ public class GeckoMediaDrmBridgeV21 implements GeckoMediaDrm {
                         mPendingKeyRequest.mMimeType);
               } catch (final NotProvisionedException e) {
                 Log.e(LOGTAG, "Cannot get key request after provisioning!");
-                return;
-              } finally {
                 mPendingKeyRequest = null;
+                return;
               }
-              requestLicense(mPendingKeyRequest.mSession.array(), request);
+              final byte[] sessionArray = mPendingKeyRequest.mSession.array();
+              mPendingKeyRequest = null;
+              requestLicense(sessionArray, request);
             } else {
               processPendingCreateSessionData();
             }

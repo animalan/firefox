@@ -488,8 +488,6 @@ import org.mozilla.gecko.gfx.GeckoSurface;
           continue;
         }
         final String name = info.getName();
-        // API 21+ provide a method to query whether supplied size is supported. For
-        // older version, just avoid software video encoders.
         if (isEncoder && width > 0 && height > 0) {
           final VideoCapabilities c = info.getCapabilitiesForType(mimeType).getVideoCapabilities();
           if (c != null && !c.isSizeSupported(width, height)) {
