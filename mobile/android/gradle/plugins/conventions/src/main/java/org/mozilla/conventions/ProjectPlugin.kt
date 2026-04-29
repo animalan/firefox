@@ -323,6 +323,19 @@ class ProjectPlugin : Plugin<Project> {
         }
         ktlintConfig.dependencies.addLater(ktlintDep)
 
+        // Resolve the include/exclude globs (with leading "!" meaning exclude)
+        // into a FileTree rooted at projectDir, so Gradle can use the actual
+        // Kotlin source set to compute UP-TO-DATE / build cache keys.
+        fun ktlintSourceTree() = project.fileTree(project.projectDir).matching {
+            sourcePaths.get().forEach { pattern ->
+                if (pattern.startsWith("!")) {
+                    exclude(pattern.removePrefix("!"))
+                } else {
+                    include(pattern)
+                }
+            }
+        }
+
         project.tasks.register("ktlint", JavaExec::class.java) {
             group = "verification"
             description = "Check Kotlin code style."
@@ -332,6 +345,13 @@ class ProjectPlugin : Plugin<Project> {
             sourcePaths.get().forEach { args(it) }
             args("--reporter=json,output=build/reports/ktlint/ktlint.json")
             args("--reporter=plain")
+            inputs.files(ktlintSourceTree())
+                .withPropertyName("ktlintSources")
+                .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+                .skipWhenEmpty()
+            outputs.file(project.file("build/reports/ktlint/ktlint.json"))
+                .withPropertyName("ktlintReport")
+            outputs.cacheIf { true }
         }
 
         project.tasks.register("ktlintFormat", JavaExec::class.java) {
@@ -345,6 +365,12 @@ class ProjectPlugin : Plugin<Project> {
             args("--reporter=json,output=build/reports/ktlint/ktlintFormat.json")
             args("--reporter=plain")
             jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
+            inputs.files(ktlintSourceTree())
+                .withPropertyName("ktlintFormatSources")
+                .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+                .skipWhenEmpty()
+            outputs.file(project.file("build/reports/ktlint/ktlintFormat.json"))
+                .withPropertyName("ktlintFormatReport")
         }
     }
 
