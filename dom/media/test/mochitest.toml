@@ -442,6 +442,7 @@ support-files = [
   "can_play_type_wave.js",
   "can_play_type_webm.js",
   "cancellable_request.sjs",
+  "cbr-no-xing.mp3",
   "chain.ogg",
   "chain.ogg^headers^",
   "chain.opus",
@@ -875,6 +876,8 @@ skip-if = [
 ]
 
 ["test_mp3_broadcast.html"]
+
+["test_mp3_dataurl_duration.html"]
 
 ["test_mp4a_32bit_samplesize.html"] # bug 1924052
 
