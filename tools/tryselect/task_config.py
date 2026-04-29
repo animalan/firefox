@@ -580,8 +580,10 @@ class NativeProfiling(TryConfig):
         [
             ["--native-profiling"],
             {
-                "action": "store_true",
+                "nargs": "?",
+                "const": True,
                 "default": False,
+                "choices": [True, False, "both"],
                 "help": "Use OS-native profilers (Simpleperf for Android and xperf for Windows) when running tests. Only available in raptor-browsertime tests at the moment.",
             },
         ],
@@ -589,7 +591,7 @@ class NativeProfiling(TryConfig):
 
     def try_config(self, native_profiling, **kwargs):
         if native_profiling:
-            return {"native-profiling": True}
+            return {"native-profiling": native_profiling}
 
 
 class Browsertime(TryConfig):

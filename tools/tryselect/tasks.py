@@ -53,7 +53,9 @@ def invalidate(cache):
         os.remove(cache)
 
 
-def cache_key(attr, params, disable_target_task_filter, target_tasks_method):
+def cache_key(
+    attr, params, disable_target_task_filter, target_tasks_method, try_config_params
+):
     key = attr
     if params and params["project"] not in ("autoland", "mozilla-central"):
         key += f"-{params['project']}"
@@ -63,6 +65,9 @@ def cache_key(attr, params, disable_target_task_filter, target_tasks_method):
 
     if target_tasks_method:
         key += f"-target_{target_tasks_method}"
+
+    if try_config_params:
+        key += f"-{try_config_params}"
 
     return key
 
@@ -94,6 +99,7 @@ def generate_tasks(
     full=False,
     disable_target_task_filter=False,
     target_tasks_method=None,
+    try_config_params=None,
 ):
     attr = "full_task_set" if full else "target_task_set"
 
@@ -114,6 +120,9 @@ def generate_tasks(
         overrides["target_tasks_method"] = target_tasks_method
         overrides["filters"].insert(0, "target_tasks_method")
 
+    if try_config_params and "try_task_config" in try_config_params:
+        overrides["try_task_config"] = try_config_params["try_task_config"]
+
     params = parameters_loader(param_spec, strict=False, overrides=overrides)
     root = os.path.join(build.topsrcdir, "taskcluster")
     taskgraph.fast = True
@@ -123,7 +132,11 @@ def generate_tasks(
         get_state_dir(specific_to_topsrcdir=True), "cache", "taskgraph"
     )
     key = cache_key(
-        attr, generator.parameters, disable_target_task_filter, target_tasks_method
+        attr,
+        generator.parameters,
+        disable_target_task_filter,
+        target_tasks_method,
+        try_config_params,
     )
     cache = os.path.join(cache_dir, key)
 
@@ -149,7 +162,11 @@ def generate_tasks(
 
         # write cache
         key = cache_key(
-            attr, generator.parameters, disable_target_task_filter, target_tasks_method
+            attr,
+            generator.parameters,
+            disable_target_task_filter,
+            target_tasks_method,
+            try_config_params,
         )
         with open(os.path.join(cache_dir, key), "w") as fh:
             json.dump(tg.to_json(), fh)

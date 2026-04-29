@@ -487,7 +487,6 @@ def setup_lull_schedule(config, tasks):
 
 @task_transforms.add
 def setup_autoland_retriggers(config, tasks):
-
     def _allow_task_duplicates(label):
         if "android" in label:
             return False
@@ -600,9 +599,11 @@ def select_tasks_to_lambda(config, tasks):
 
 @transforms.add
 def add_simpleperf(config, tests):
-    is_simpleperf = config.params.get("try_task_config", {}).get(
+
+    native_profiling = config.params.get("try_task_config", {}).get(
         "native-profiling", False
     )
+
     app_packages = {
         "fenix": "org.mozilla.fenix",
         "geckoview": "org.mozilla.geckoview_example",
@@ -610,8 +611,19 @@ def add_simpleperf(config, tests):
     for test in tests:
         test_name = test.get("test-name", None)
         app = test.get("app")
-        if is_simpleperf and app in app_packages and "speedometer3-mobile" in test_name:
-            extra_options = test.setdefault("mozharness", {}).setdefault(
+        if (
+            native_profiling
+            and app in app_packages
+            and "speedometer3-mobile" in test_name
+        ):
+            if native_profiling == "both":
+                profiling_test = deepcopy(test)
+                profiling_test["test-name"] += "-native-profiling"
+                profiling_test["try-name"] += "-native-profiling"
+            else:
+                profiling_test = test
+
+            extra_options = profiling_test.setdefault("mozharness", {}).setdefault(
                 "extra-options", []
             )
             extra_options.extend([
@@ -628,7 +640,7 @@ def add_simpleperf(config, tests):
                 "--setenv JIT_OPTION_onlyInlineSelfHosted=true",
             ])
 
-            fetches = test.setdefault("fetches", {})
+            fetches = profiling_test.setdefault("fetches", {})
             fetches.setdefault("build", []).append({
                 "artifact": "target.crashreporter-symbols.zip",
                 "extract": False,
@@ -638,16 +650,23 @@ def add_simpleperf(config, tests):
                 "linux64-android-simpleperf-linux-repack",
                 "linux64-samply",
             ]
-            by_app = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
-            by_app.setdefault("default", []).extend(toolchains)
+            if "by-app" in fetches.get("toolchain", {}):
+                by_app = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
+                by_app.setdefault("default", []).extend(toolchains)
+            else:
+                fetches.setdefault("toolchain", []).extend(toolchains)
+
+            if native_profiling == "both":
+                yield profiling_test
+
         yield test
 
 
 @transforms.add
-def handle_simpleperf_symbol(config, tests):
+def handle_native_profiling_symbol(config, tests):
     for test in tests:
         extra_options = test.get("mozharness", {}).get("extra-options", [])
         if "--add-option=--simpleperf" in extra_options:
             group, symbol = split_symbol(test["treeherder-symbol"])
-            test["treeherder-symbol"] = join_symbol(group, f"{symbol}-simpleperf")
+            test["treeherder-symbol"] = join_symbol(group, f"{symbol}-np")
         yield test
