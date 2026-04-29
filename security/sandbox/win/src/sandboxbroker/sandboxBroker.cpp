@@ -1215,12 +1215,6 @@ void SandboxBroker::SetSecurityLevelForContentProcess(int32_t aSandboxLevel,
       sandbox::SBOX_ALL_OK == result,
       "With these static arguments AddRule should never fail, what happened?");
 
-  // Allow content processes to use complex line breaking brokering.
-  result = config->AllowLineBreaking();
-  MOZ_RELEASE_ASSERT(
-      sandbox::SBOX_ALL_OK == result,
-      "With these static arguments AddRule should never fail, what happened?");
-
   if (aSandboxLevel >= 8) {
     // Content process still needs to be able to read fonts.
     AddCachedWindowsDirRule(config, sandbox::FileSemantics::kAllowReadonly,
