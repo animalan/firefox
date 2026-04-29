@@ -10,9 +10,8 @@
 #include <cstring>
 #include <iomanip>
 #include <ostream>
-#include <span>
 #include <sstream>
-#include <string_view>
+#include <string>
 #include <vector>
 
 #include "common/EncodingConstraints.h"
@@ -396,7 +395,7 @@ class SdpFingerprintAttributeList : public SdpAttribute {
   // For use by application programmers. Enforces that it's a known and
   // reasonable algorithm.
   void PushEntry(std::string algorithm_str,
-                 std::span<const uint8_t> fingerprint,
+                 const std::vector<uint8_t>& fingerprint,
                  bool enforcePlausible = true) {
     std::transform(algorithm_str.begin(), algorithm_str.end(),
                    algorithm_str.begin(), ::tolower);
@@ -432,12 +431,10 @@ class SdpFingerprintAttributeList : public SdpAttribute {
     PushEntry(algorithm, fingerprint);
   }
 
-  void PushEntry(HashAlgorithm hashFunc, std::span<const uint8_t> fingerprint) {
-    Fingerprint value = {
-        hashFunc,
-    };
-    value.fingerprint.assign(fingerprint.begin(), fingerprint.end());
-    mFingerprints.push_back(std::move(value));
+  void PushEntry(HashAlgorithm hashFunc,
+                 const std::vector<uint8_t>& fingerprint) {
+    Fingerprint value = {hashFunc, fingerprint};
+    mFingerprints.push_back(value);
   }
 
   SdpAttribute* Clone() const override {
@@ -1900,7 +1897,7 @@ class SdpOptionsAttribute : public SdpAttribute {
  public:
   explicit SdpOptionsAttribute(AttributeType type) : SdpAttribute(type) {}
 
-  void PushEntry(std::string&& entry) { mValues.push_back(std::move(entry)); }
+  void PushEntry(const std::string& entry) { mValues.push_back(entry); }
 
   void Load(const std::string& value);
 
@@ -1926,7 +1923,7 @@ class SdpFlagAttribute : public SdpAttribute {
 // Used for any other kind of single-valued attribute not otherwise specialized
 class SdpStringAttribute : public SdpAttribute {
  public:
-  explicit SdpStringAttribute(AttributeType type, std::string_view value)
+  explicit SdpStringAttribute(AttributeType type, const std::string& value)
       : SdpAttribute(type), mValue(value) {}
 
   SdpAttribute* Clone() const override { return new SdpStringAttribute(*this); }

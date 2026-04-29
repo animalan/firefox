@@ -7,7 +7,6 @@
 #include <ostream>
 
 #include "mozilla/Assertions.h"
-#include "nsString.h"
 #include "sdp/RsdparsaSdpGlue.h"
 #include "sdp/RsdparsaSdpInc.h"
 #include "sdp/SdpMediaSection.h"
@@ -19,14 +18,7 @@
 
 namespace mozilla {
 
-namespace ffi = mozilla::sdp::ffi;
-using ffi::RustSdpConnection;
-using ffi::RustSdpFormatType;
-using ffi::RustSdpMediaValue;
-using ffi::RustSdpProtocolValue;
-using ffi::StringView;
-
-auto RsdparsaSdpMediaSection::GetSection() const -> RustMediaSection* {
+RustMediaSection* RsdparsaSdpMediaSection::GetSection() const {
   auto* section = sdp_get_media_section(mSession.get(), GetLevel());
   MOZ_RELEASE_ASSERT(section);
   return section;
@@ -38,13 +30,13 @@ RsdparsaSdpMediaSection::RsdparsaSdpMediaSection(
     : SdpMediaSection(level), mSession(std::move(session)) {
   RustMediaSection* section = GetSection();
   switch (sdp_rust_get_media_type(section)) {
-    case RustSdpMediaValue::Audio:
+    case RustSdpMediaValue::kRustAudio:
       mMediaType = kAudio;
       break;
-    case RustSdpMediaValue::Video:
+    case RustSdpMediaValue::kRustVideo:
       mMediaType = kVideo;
       break;
-    case RustSdpMediaValue::Application:
+    case RustSdpMediaValue::kRustApplication:
       mMediaType = kApplication;
       break;
   }
@@ -71,27 +63,27 @@ unsigned int RsdparsaSdpMediaSection::GetPortCount() const {
 
 SdpMediaSection::Protocol RsdparsaSdpMediaSection::GetProtocol() const {
   switch (sdp_get_media_protocol(GetSection())) {
-    case RustSdpProtocolValue::RtpSavpf:
+    case RustSdpProtocolValue::kRustRtpSavpf:
       return kRtpSavpf;
-    case RustSdpProtocolValue::UdpTlsRtpSavp:
+    case RustSdpProtocolValue::kRustUdpTlsRtpSavp:
       return kUdpTlsRtpSavp;
-    case RustSdpProtocolValue::TcpDtlsRtpSavp:
+    case RustSdpProtocolValue::kRustTcpDtlsRtpSavp:
       return kTcpDtlsRtpSavp;
-    case RustSdpProtocolValue::UdpTlsRtpSavpf:
+    case RustSdpProtocolValue::kRustUdpTlsRtpSavpf:
       return kUdpTlsRtpSavpf;
-    case RustSdpProtocolValue::TcpDtlsRtpSavpf:
+    case RustSdpProtocolValue::kRustTcpDtlsRtpSavpf:
       return kTcpDtlsRtpSavpf;
-    case RustSdpProtocolValue::DtlsSctp:
+    case RustSdpProtocolValue::kRustDtlsSctp:
       return kDtlsSctp;
-    case RustSdpProtocolValue::UdpDtlsSctp:
+    case RustSdpProtocolValue::kRustUdpDtlsSctp:
       return kUdpDtlsSctp;
-    case RustSdpProtocolValue::TcpDtlsSctp:
+    case RustSdpProtocolValue::kRustTcpDtlsSctp:
       return kTcpDtlsSctp;
-    case RustSdpProtocolValue::RtpAvp:
+    case RustSdpProtocolValue::kRustRtpAvp:
       return kRtpAvp;
-    case RustSdpProtocolValue::RtpAvpf:
+    case RustSdpProtocolValue::kRustRtpAvpf:
       return kRtpAvpf;
-    case RustSdpProtocolValue::RtpSavp:
+    case RustSdpProtocolValue::kRustRtpSavp:
       return kRtpSavp;
   }
   MOZ_CRASH("invalid media protocol");
@@ -108,8 +100,7 @@ SdpConnection& RsdparsaSdpMediaSection::GetConnection() {
 }
 
 uint32_t RsdparsaSdpMediaSection::GetBandwidth(const std::string& type) const {
-  nsDependentCString bwType(type.data(), type.size());
-  return sdp_get_media_bandwidth(GetSection(), &bwType);
+  return sdp_get_media_bandwidth(GetSection(), type.c_str());
 }
 
 const std::vector<std::string>& RsdparsaSdpMediaSection::GetFormats() const {
@@ -131,8 +122,7 @@ SdpDirectionAttribute RsdparsaSdpMediaSection::GetDirectionAttribute() const {
 void RsdparsaSdpMediaSection::AddCodec(const std::string& pt,
                                        const std::string& name,
                                        uint32_t clockrate, uint16_t channels) {
-  StringView rustName{reinterpret_cast<const uint8_t*>(name.data()),
-                      name.size()};
+  StringView rustName{name.c_str(), name.size()};
 
   // call the rust interface
   auto nr = sdp_media_add_codec(GetSection(), std::stoul(pt), rustName,
@@ -182,8 +172,7 @@ void RsdparsaSdpMediaSection::ClearCodecs() {
 void RsdparsaSdpMediaSection::AddDataChannel(const std::string& name,
                                              uint16_t port, uint16_t streams,
                                              uint32_t message_size) {
-  StringView rustName{reinterpret_cast<const uint8_t*>(name.data()),
-                      name.size()};
+  StringView rustName{name.c_str(), name.size()};
   auto nr = sdp_media_add_datachannel(GetSection(), rustName, port, streams,
                                       message_size);
   if (NS_SUCCEEDED(nr)) {
@@ -216,9 +205,12 @@ void RsdparsaSdpMediaSection::Serialize(std::ostream& os) const {
     os << *mConnection;
   }
 
-  nsAutoCString bwString;
-  sdp_serialize_bandwidth(sdp_get_media_bandwidth_vec(GetSection()), &bwString);
-  os << bwString.get();
+  BandwidthVec* bwVec = sdp_get_media_bandwidth_vec(GetSection());
+  char* bwString = sdp_serialize_bandwidth(bwVec);
+  if (bwString) {
+    os << bwString;
+    sdp_free_string(bwString);
+  }
 
   // We dont do k= because they're evil
 
@@ -227,21 +219,22 @@ void RsdparsaSdpMediaSection::Serialize(std::ostream& os) const {
 
 void RsdparsaSdpMediaSection::LoadFormats() {
   RustSdpFormatType formatType = sdp_get_format_type(GetSection());
-  if (formatType == RustSdpFormatType::Integers) {
-    for (uint32_t val : convertRustSpan(sdp_get_format_u32_vec(GetSection()))) {
+  if (formatType == RustSdpFormatType::kRustIntegers) {
+    U32Vec* vec = sdp_get_format_u32_vec(GetSection());
+    size_t len = u32_vec_len(vec);
+    for (size_t i = 0; i < len; i++) {
+      uint32_t val;
+      u32_vec_get(vec, i, &val);
       mFormats.push_back(std::to_string(val));
     }
   } else {
-    AutoTArray<StringView, 8> formats;
-    sdp_get_format_string_vec(GetSection(), &formats);
-    for (const auto& view : formats) {
-      mFormats.emplace_back(convertStringView(view));
-    }
+    StringVec* vec = sdp_get_format_string_vec(GetSection());
+    mFormats = convertStringVec(vec);
   }
 }
 
 UniquePtr<SdpConnection> convertRustConnection(RustSdpConnection conn) {
-  auto address = convertExplicitlyTypedAddress(conn.addr);
+  auto address = convertExplicitlyTypedAddress(&conn.addr);
   return MakeUnique<SdpConnection>(address.first, address.second, conn.ttl,
                                    conn.amount);
 }

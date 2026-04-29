@@ -50,7 +50,6 @@ class RsdparsaSdpMediaSection final : public SdpMediaSection {
   RsdparsaSdpMediaSection(size_t level, RsdparsaSessionHandle session,
                           const RsdparsaSdpAttributeList* sessionLevel);
 
-  using RustMediaSection = sdp::ffi::SdpMedia;
   RustMediaSection* GetSection() const;
 
   void LoadFormats();
