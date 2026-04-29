@@ -287,10 +287,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             lensFeature?.get()?.handleImageResult(result.resultCode, result.data)
         }
-    private val lensCameraPermissionLauncher: ActivityResultLauncher<String> =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            lensFeature?.get()?.onCameraPermissionResult(isGranted)
-        }
 
     private val destinationChangedListener =
         NavController.OnDestinationChangedListener { _, destination, _ ->
@@ -918,7 +914,7 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
 
         qrScanFenixFeature = QrScanFenixFeature.register(this, qrScanLauncher)
         voiceSearchFeature = VoiceSearchFeature.register(this, voiceSearchLauncher)
-        lensFeature = LensFeature.register(this, lensLauncher, lensCameraPermissionLauncher)
+        lensFeature = LensFeature.register(this, lensLauncher)
 
         showReviewPromptBinding.set(
             feature = ShowReviewPromptBinding(

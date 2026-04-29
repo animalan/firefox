@@ -385,9 +385,6 @@ sealed class AppAction : Action {
         /** The user has requested a Lens image search. */
         data object LensRequested : LensAction()
 
-        /** The user has requested a Lens image search for an already-known image URL. */
-        data class LensRequestedWithImageUrl(val imageUrl: String) : LensAction()
-
         /** The Lens request has been consumed and the image chooser launched. */
         data object LensRequestConsumed : LensAction()
 

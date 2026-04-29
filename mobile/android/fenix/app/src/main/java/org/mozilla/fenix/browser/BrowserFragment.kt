@@ -23,9 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.state.TabSessionState
-import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
 import mozilla.components.browser.thumbnails.BrowserThumbnails
-import mozilla.components.concept.engine.HitResult
 import mozilla.components.concept.engine.permission.SitePermissions
 import mozilla.components.feature.app.links.AppLinksUseCases
 import mozilla.components.feature.contextmenu.ContextMenuCandidate
@@ -45,7 +43,6 @@ import org.mozilla.fenix.components.QrScanFenixFeature
 import org.mozilla.fenix.components.TabCollectionStorage
 import org.mozilla.fenix.components.VoiceSearchFeature
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
-import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.metrics.installSourcePackage
 import org.mozilla.fenix.components.toolbar.gestures.ToolbarHorizontalGesturesHandler
 import org.mozilla.fenix.components.toolbar.gestures.ToolbarVerticalGesturesHandler
@@ -54,7 +51,6 @@ import org.mozilla.fenix.compose.snackbar.SnackbarState
 import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
 import org.mozilla.fenix.ext.application
 import org.mozilla.fenix.ext.components
-import org.mozilla.fenix.ext.isGoogleSearchEngine
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.navigateSafe
 import org.mozilla.fenix.ext.requireComponents
@@ -100,10 +96,6 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
     private val lensLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             lensFeature?.get()?.handleImageResult(result.resultCode, result.data)
-        }
-    private val lensCameraPermissionLauncher: ActivityResultLauncher<String> =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            lensFeature?.get()?.onCameraPermissionResult(isGranted)
         }
 
     private val continuousOnboardingDefaultBrowserLauncher: ActivityResultLauncher<Intent> =
@@ -306,7 +298,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
         initReaderModeUpdates(rootView.context, rootView)
         qrScanFenixFeature = QrScanFenixFeature.register(this, qrScanLauncher)
         voiceSearchFeature = VoiceSearchFeature.register(this, voiceSearchLauncher)
-        lensFeature = LensFeature.register(this, lensLauncher, lensCameraPermissionLauncher)
+        lensFeature = LensFeature.register(this, lensLauncher)
     }
 
     private fun initReaderModeUpdates(context: Context, view: View) {
@@ -525,29 +517,8 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
         ) + ContextMenuCandidate.createOpenInExternalAppCandidate(
             requireContext(),
             contextMenuCandidateAppLinksUseCases,
-        ) + createOpenWithGoogleLensCandidate(context)
+        )
     }
-
-    private fun createOpenWithGoogleLensCandidate(context: Context) = ContextMenuCandidate(
-        id = "fenix.contextmenu.open_with_google_lens",
-        label = context.getString(R.string.context_menu_open_image_with_google_lens),
-        showFor = { _, hitResult ->
-            val isImage = hitResult is HitResult.IMAGE || hitResult is HitResult.IMAGE_SRC
-            val selectedEngine = context.components.core.store.state.search.selectedOrDefaultSearchEngine
-            isImage &&
-                hitResult.src.isHttpUrl() &&
-                context.settings().googleLensIntegrationEnabled &&
-                selectedEngine.isGoogleSearchEngine()
-        },
-        action = { _, hitResult ->
-            context.components.appStore.dispatch(
-                AppAction.LensAction.LensRequestedWithImageUrl(hitResult.src),
-            )
-        },
-    )
-
-    private fun String.isHttpUrl(): Boolean =
-        startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true)
 
     /**
      * Updates the last time the user was active on the [BrowserFragment].

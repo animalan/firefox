@@ -32,15 +32,6 @@ fun SearchEngine.isCustomEngine(): Boolean =
     this.type == SearchEngine.Type.CUSTOM
 
 /**
- * Whether this is a Google search engine (any regional/distribution variant).
- *
- * The bundled Google engines ship with ids like `google-b-1-m`, `google-com-nocodes`, etc.,
- * so this matches on the `google` prefix rather than a single exact id.
- */
-fun SearchEngine?.isGoogleSearchEngine(): Boolean =
-    this?.id?.startsWith("google") == true
-
-/**
  * Whether or not the search engine is a known search domain.
  */
 fun SearchEngine.isKnownSearchDomain(): Boolean =
