@@ -16,6 +16,12 @@ use std::path::{Path, PathBuf};
 use std::time;
 use webdriver::error::{ErrorStatus, WebDriverError, WebDriverResult};
 
+// Status of the browser process.
+pub(crate) enum BrowserStatus {
+    Exited(Option<i32>),
+    Running,
+}
+
 /// A running Gecko instance.
 #[derive(Debug)]
 #[allow(clippy::large_enum_variant)]
@@ -41,6 +47,14 @@ impl Browser {
             Browser::Local(x) => x.marionette_port(),
             Browser::Remote(x) => x.marionette_port(),
             Browser::Existing(x) => Ok(Some(*x)),
+        }
+    }
+
+    pub(crate) fn check_status(&mut self) -> Option<(u32, BrowserStatus)> {
+        match self {
+            Browser::Local(x) => Some(x.check_status()),
+            Browser::Remote(x) => Some(x.check_status()),
+            Browser::Existing(_) => None,
         }
     }
 
@@ -189,17 +203,14 @@ impl LocalBrowser {
         self.marionette_port = port;
     }
 
-    pub(crate) fn check_status(&mut self) -> Option<String> {
-        match self.process.try_wait() {
-            Ok(Some(status)) => Some(
-                status
-                    .code()
-                    .map(|c| c.to_string())
-                    .unwrap_or_else(|| "signal".into()),
-            ),
-            Ok(None) => None,
-            Err(_) => Some("{unknown}".into()),
-        }
+    pub(crate) fn check_status(&mut self) -> (u32, BrowserStatus) {
+        let pid = self.process.pid();
+        let status = match self.process.try_wait() {
+            Ok(Some(exit_status)) => BrowserStatus::Exited(exit_status.code()),
+            Ok(None) => BrowserStatus::Running,
+            Err(_) => BrowserStatus::Exited(None),
+        };
+        (pid, status)
     }
 }
 
@@ -249,6 +260,7 @@ fn read_marionette_port(profile_path: &Path) -> Option<u16> {
 pub(crate) struct RemoteBrowser {
     pub(crate) handler: AndroidHandler,
     marionette_port: u16,
+    pid: u32,
     prefs_backup: Option<PrefsBackup>,
 }
 
@@ -297,11 +309,12 @@ impl RemoteBrowser {
 
         handler.prepare(&profile, options.args, options.env.unwrap_or_default())?;
 
-        handler.launch()?;
+        let pid = handler.launch()?;
 
         Ok(RemoteBrowser {
             handler,
             marionette_port,
+            pid,
             prefs_backup,
         })
     }
@@ -317,6 +330,24 @@ impl RemoteBrowser {
 
     fn update_marionette_port(&mut self, port: u16) {
         self.marionette_port = port;
+    }
+
+    pub(crate) fn check_status(&self) -> (u32, BrowserStatus) {
+        let command = format!("kill -0 {} 2>/dev/null; echo $?", self.pid);
+        let status = match self
+            .handler
+            .process
+            .device
+            .execute_host_shell_command(&command)
+        {
+            Ok(output) if output.trim() != "0" => BrowserStatus::Exited(None),
+            Err(e) => {
+                warn!("Failed to check browser status via adb: {}", e);
+                BrowserStatus::Running
+            }
+            _ => BrowserStatus::Running,
+        };
+        (self.pid, status)
     }
 }
 

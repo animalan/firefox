@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::browser::{Browser, LocalBrowser, RemoteBrowser};
+use crate::browser::{Browser, BrowserStatus, LocalBrowser, RemoteBrowser};
 use crate::build;
 use crate::capabilities::{FirefoxCapabilities, FirefoxOptions, ProfileType};
 use crate::command::{
@@ -1263,12 +1263,14 @@ impl MarionetteConnection {
 
         loop {
             // immediately abort connection attempts if process disappears
-            if let Browser::Local(browser) = browser
-                && let Some(status) = browser.check_status()
-            {
+            if let Some((pid, BrowserStatus::Exited(code))) = browser.check_status() {
+                let code_info = match code {
+                    Some(c) => format!("status {}", c),
+                    None => "unknown status".to_string(),
+                };
                 return Err(WebDriverError::new(
                     ErrorStatus::UnknownError,
-                    format!("Process unexpectedly closed with status {}", status),
+                    format!("Process (pid={}) unexpectedly closed with {}", pid, code_info),
                 ));
             }
 
