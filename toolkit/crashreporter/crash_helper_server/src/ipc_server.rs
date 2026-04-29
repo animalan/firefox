@@ -8,9 +8,12 @@ use crash_helper_common::{
     AncillaryData, GeckoChildId, IPCConnector, IPCConnectorKey, IPCEvent, IPCListener, IPCQueue,
     Pid, ProcessHandle,
 };
-use std::{collections::HashMap, ffi::OsString, process, rc::Rc};
+use std::{collections::HashMap, ffi::OsString, mem, process, rc::Rc, sync::Mutex};
 
-use crate::crash_generation::CrashGenerator;
+use crate::{
+    breakpad_crash_generator::BreakpadCrashGenerator, crash_generation::CrashGenerator,
+    finalize_breakpad_minidump, BreakpadData,
+};
 
 #[derive(PartialEq)]
 pub enum IPCServerState {
@@ -71,6 +74,10 @@ pub(crate) struct IPCServer {
     /// the structure so that it's dropped first.
     queue: IPCQueue,
     connections: HashMap<IPCConnectorKey, IPCConnection>,
+    /// The Breakpad server will contain a reference to the crash generator,
+    /// hence it must be dropped first.
+    breakpad_server: BreakpadCrashGenerator,
+    generator: Box<Mutex<CrashGenerator>>,
 }
 
 impl IPCServer {
@@ -78,7 +85,27 @@ impl IPCServer {
         client_pid: Pid,
         listener: IPCListener,
         connector: IPCConnector,
+        breakpad_data: BreakpadData,
+        minidump_path: OsString,
     ) -> Result<IPCServer> {
+        let crash_generator = Box::new(Mutex::new(CrashGenerator::new(minidump_path.clone())));
+
+        // SAFETY: We widen the lifetime of this crash generator reference
+        // as we guarantee that the underlying object will outlive the Breakpad
+        // server which will be holding this reference.
+        let crash_generator_ref = unsafe {
+            mem::transmute::<&Mutex<CrashGenerator>, &'static Mutex<CrashGenerator>>(
+                crash_generator.as_ref(),
+            )
+        };
+
+        let breakpad_server = BreakpadCrashGenerator::new(
+            breakpad_data,
+            minidump_path,
+            crash_generator_ref,
+            finalize_breakpad_minidump,
+        )?;
+
         let connector = Rc::new(connector);
         let mut queue = IPCQueue::new(listener)?;
         queue.add_connector(&connector)?;
@@ -96,10 +123,15 @@ impl IPCServer {
             },
         );
 
-        Ok(IPCServer { queue, connections })
+        Ok(IPCServer {
+            queue,
+            connections,
+            breakpad_server,
+            generator: crash_generator,
+        })
     }
 
-    pub(crate) fn run(&mut self, generator: &mut CrashGenerator) -> Result<IPCServerState> {
+    pub(crate) fn run(&mut self) -> Result<IPCServerState> {
         let events = self.queue.wait_for_events()?;
 
         for event in events.into_iter() {
@@ -116,9 +148,7 @@ impl IPCServer {
                     );
                 }
                 IPCEvent::Message(key, header, payload, ancillary_data) => {
-                    if let Err(error) =
-                        self.handle_message(key, &header, payload, ancillary_data, generator)
-                    {
+                    if let Err(error) = self.handle_message(key, &header, payload, ancillary_data) {
                         log::error!(
                             "Error {error:#} when handling a message of kind {:?}",
                             header.kind
@@ -132,7 +162,10 @@ impl IPCServer {
                         .expect("Disconnection event but no corresponding connection");
 
                     if let Some(process) = connection.process {
-                        generator.move_report_to_id(process.pid, process.id);
+                        self.generator
+                            .lock()
+                            .unwrap()
+                            .move_report_to_id(process.pid, process.id);
                     } else {
                         log::error!("TODO");
                     }
@@ -154,7 +187,6 @@ impl IPCServer {
         header: &Header,
         data: Vec<u8>,
         ancillary_data: Vec<AncillaryData>,
-        generator: &mut CrashGenerator,
     ) -> Result<()> {
         let connection = self
             .connections
@@ -166,15 +198,22 @@ impl IPCServer {
             IPCEndpoint::Parent => match header.kind {
                 messages::Kind::SetCrashReportPath => {
                     let message = messages::SetCrashReportPath::decode(data, ancillary_data)?;
-                    generator.set_path(message.path);
+                    self.generator
+                        .lock()
+                        .unwrap()
+                        .set_path(message.path.clone());
+                    self.breakpad_server.set_path(message.path);
                 }
                 messages::Kind::TransferMinidump => {
                     let message = messages::TransferMinidump::decode(data, ancillary_data)?;
+                    let mut generator_lock = self.generator.lock().unwrap();
                     let crash_report = {
-                        if let Some(crash_report) = generator.retrieve_minidump_by_id(message.id) {
+                        if let Some(crash_report) =
+                            generator_lock.retrieve_minidump_by_id(message.id)
+                        {
                             Some(crash_report)
                         } else if let Some(pid) = self.find_pid(message.id) {
-                            generator.retrieve_minidump_by_pid(pid)
+                            generator_lock.retrieve_minidump_by_pid(pid)
                         } else {
                             None
                         }
@@ -217,12 +256,15 @@ impl IPCServer {
                 #[cfg(any(target_os = "android", target_os = "linux"))]
                 messages::Kind::RegisterAuxvInfo => {
                     let message = messages::RegisterAuxvInfo::decode(data, ancillary_data)?;
-                    generator.register_auxv_info(message)?;
+                    self.generator.lock().unwrap().register_auxv_info(message)?;
                 }
                 #[cfg(any(target_os = "android", target_os = "linux"))]
                 messages::Kind::UnregisterAuxvInfo => {
                     let message = messages::UnregisterAuxvInfo::decode(data, ancillary_data)?;
-                    generator.unregister_auxv_info(message)?;
+                    self.generator
+                        .lock()
+                        .unwrap()
+                        .unregister_auxv_info(message)?;
                 }
                 kind => {
                     bail!("Unexpected message {kind:?} from parent process");
@@ -236,7 +278,11 @@ impl IPCServer {
                 messages::Kind::WindowsErrorReporting => {
                     let message =
                         messages::WindowsErrorReportingMinidump::decode(data, ancillary_data)?;
-                    let res = generator.generate_wer_minidump(message);
+                    let res = self
+                        .generator
+                        .lock()
+                        .unwrap()
+                        .generate_wer_minidump(message);
                     match res {
                         Ok(_) => {}
                         Err(error) => log::error!(
