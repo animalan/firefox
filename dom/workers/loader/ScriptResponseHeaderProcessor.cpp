@@ -40,10 +40,6 @@ nsresult ScriptResponseHeaderProcessor::ProcessCrossOriginEmbedderPolicyHeader(
 // https://github.com/whatwg/html/pull/4001
 nsresult ScriptResponseHeaderProcessor::EnsureExpectedModuleType(
     nsIRequest* aRequest) {
-  if (mModuleType == JS::ModuleType::Text) {
-    return NS_OK;
-  }
-
   nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
   MOZ_ASSERT(channel);
   nsAutoCString mimeType;

@@ -3870,9 +3870,6 @@ nsContentUtils::InternalContentPolicyTypeToExternal(nsContentPolicyType aType) {
     case nsIContentPolicy::TYPE_INTERNAL_JSON_PRELOAD:
       return ExtContentPolicy::TYPE_JSON;
 
-    case nsIContentPolicy::TYPE_INTERNAL_TEXT_PRELOAD:
-      return ExtContentPolicy::TYPE_TEXT;
-
     case nsIContentPolicy::TYPE_INVALID:
     case nsIContentPolicy::TYPE_OTHER:
     case nsIContentPolicy::TYPE_SCRIPT:
@@ -3900,7 +3897,6 @@ nsContentUtils::InternalContentPolicyTypeToExternal(nsContentPolicyType aType) {
     case nsIContentPolicy::TYPE_WEB_IDENTITY:
     case nsIContentPolicy::TYPE_WEB_TRANSPORT:
     case nsIContentPolicy::TYPE_JSON:
-    case nsIContentPolicy::TYPE_TEXT:
       // NOTE: When adding something here make sure the enumerator is defined!
       return static_cast<ExtContentPolicyType>(aType);
 

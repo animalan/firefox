@@ -593,19 +593,11 @@ nsContentPolicyType WorkerScriptLoader::GetContentPolicyType(
     return mWorkerRef->Private()->ContentPolicyType();
   }
   if (aRequest->IsModuleRequest()) {
-    if (aRequest->AsModuleRequest()->mModuleType == JS::ModuleType::Text) {
-      return nsIContentPolicy::TYPE_TEXT;
-    }
-
     if (aRequest->AsModuleRequest()->IsDynamicImport()) {
-      if (aRequest->AsModuleRequest()->mModuleType ==
-          JS::ModuleType::JavaScript) {
-        return nsIContentPolicy::TYPE_INTERNAL_MODULE;
-      } else {
-        MOZ_ASSERT(aRequest->AsModuleRequest()->mModuleType ==
-                   JS::ModuleType::JSON);
-        return nsIContentPolicy::TYPE_JSON;
-      }
+      return aRequest->AsModuleRequest()->mModuleType ==
+                     JS::ModuleType::JavaScript
+                 ? nsIContentPolicy::TYPE_INTERNAL_MODULE
+                 : nsIContentPolicy::TYPE_JSON;
     }
 
     // Implements the destination for Step 14 in

@@ -3866,7 +3866,7 @@ static constexpr nsAttrValue::EnumTableEntry kAsAttributeTable[] = {
     {"script", DESTINATION_SCRIPT}, {"style", DESTINATION_STYLE},
     {"track", DESTINATION_TRACK},   {"video", DESTINATION_VIDEO},
     {"fetch", DESTINATION_FETCH},   {"json", DESTINATION_JSON},
-    {"text", DESTINATION_TEXT}};
+};
 
 void ParseAsValue(const nsAString& aValue, nsAttrValue& aResult) {
   DebugOnly<bool> success =
@@ -3900,8 +3900,6 @@ nsContentPolicyType AsValueToContentPolicy(const nsAttrValue& aValue) {
       return nsIContentPolicy::TYPE_INTERNAL_FETCH_PRELOAD;
     case DESTINATION_JSON:
       return nsIContentPolicy::TYPE_JSON;
-    case DESTINATION_TEXT:
-      return nsIContentPolicy::TYPE_TEXT;
   }
   return nsIContentPolicy::TYPE_INVALID;
 }
@@ -3921,8 +3919,7 @@ bool IsScriptLikeOrInvalid(const nsAString& aAs) {
       aAs.LowerCaseEqualsASCII("report") || aAs.LowerCaseEqualsASCII("style") ||
       aAs.LowerCaseEqualsASCII("track") || aAs.LowerCaseEqualsASCII("video") ||
       aAs.LowerCaseEqualsASCII("webidentity") ||
-      aAs.LowerCaseEqualsASCII("xslt") || aAs.LowerCaseEqualsASCII("json") ||
-      aAs.LowerCaseEqualsASCII("text"));
+      aAs.LowerCaseEqualsASCII("xslt") || aAs.LowerCaseEqualsASCII("json"));
 }
 
 bool CheckPreloadAttrs(const nsAttrValue& aAs, const nsAString& aType,
@@ -3946,8 +3943,7 @@ bool CheckPreloadAttrs(const nsAttrValue& aAs, const nsAString& aType,
     return true;
   }
 
-  if (policyType == nsIContentPolicy::TYPE_INTERNAL_FETCH_PRELOAD ||
-      policyType == nsIContentPolicy::TYPE_TEXT) {
+  if (policyType == nsIContentPolicy::TYPE_INTERNAL_FETCH_PRELOAD) {
     return true;
   }
 

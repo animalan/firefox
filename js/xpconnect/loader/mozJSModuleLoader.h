@@ -120,10 +120,6 @@ class mozJSModuleLoader final {
       const nsACString& aSource, nsIURI* aBaseURI,
       JS::MutableHandle<JSObject*> aModuleOut);
 
-  static nsresult CreateTextModuleFromSource(
-      JSContext* aCx, const nsACString& aSource, const nsACString& aLocation,
-      JS::MutableHandle<JSObject*> aModuleOut);
-
  public:
   size_t SizeOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf);
 

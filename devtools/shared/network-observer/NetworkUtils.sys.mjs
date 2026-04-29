@@ -219,8 +219,7 @@ function isPreloadRequest(channel) {
     type == Ci.nsIContentPolicy.TYPE_INTERNAL_IMAGE_PRELOAD ||
     type == Ci.nsIContentPolicy.TYPE_INTERNAL_STYLESHEET_PRELOAD ||
     type == Ci.nsIContentPolicy.TYPE_INTERNAL_FONT_PRELOAD ||
-    type == Ci.nsIContentPolicy.TYPE_INTERNAL_JSON_PRELOAD ||
-    type == Ci.nsIContentPolicy.TYPE_INTERNAL_TEXT_PRELOAD
+    type == Ci.nsIContentPolicy.TYPE_INTERNAL_JSON_PRELOAD
   );
 }
 

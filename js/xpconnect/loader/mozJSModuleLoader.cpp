@@ -627,25 +627,6 @@ nsresult mozJSModuleLoader::CompileCssModuleFromSource(
   return dom::CreateCssModule(aCx, aModuleLoader->GetGlobalObject(), aSource,
                               aBaseURI, aModuleOut);
 }
-/* static */
-nsresult mozJSModuleLoader::CreateTextModuleFromSource(
-    JSContext* aCx, const nsACString& aSource, const nsACString& aLocation,
-    JS::MutableHandle<JSObject*> aModuleOut) {
-  CompileOptions options(aCx);
-  options.setFileAndLine(PromiseFlatCString(aLocation).get(), 1);
-  SetModuleOptions(options);
-
-  auto str = JS_NewStringCopyUTF8N(
-      aCx, JS::UTF8Chars(aSource.Data(), aSource.Length()));
-  JS::RootedValue defaultExport(aCx, JS::StringValue(str));
-  JSObject* module = JS::CreateDefaultExportSyntheticModule(aCx, defaultExport);
-  if (!module) {
-    return NS_ERROR_FAILURE;
-  }
-
-  aModuleOut.set(module);
-  return NS_OK;
-}
 
 /* static */
 nsresult mozJSModuleLoader::LoadSingleModuleOnWorker(
@@ -701,15 +682,12 @@ nsresult mozJSModuleLoader::LoadSingleModuleOnWorker(
       rv = CompileJsonModuleFromSource(aCx, data, location, aModuleOut);
       NS_ENSURE_SUCCESS(rv, rv);
       break;
-    case JS::ModuleType::Text:
-      rv = CreateTextModuleFromSource(aCx, data, location, aModuleOut);
-      NS_ENSURE_SUCCESS(rv, rv);
-      break;
     case JS::ModuleType::CSS:
       JS_ReportErrorASCII(aCx, "CSS module scripts not supported on workers");
       break;
     case JS::ModuleType::Unknown:
     case JS::ModuleType::Bytes:
+    case JS::ModuleType::Text:
       JS_ReportErrorASCII(aCx, "Unsupported module type");
       return NS_ERROR_FAILURE;
   }
@@ -749,8 +727,7 @@ nsresult mozJSModuleLoader::LoadSingleModule(
       break;
     }
     case JS::ModuleType::JSON:
-    case JS::ModuleType::CSS:
-    case JS::ModuleType::Text: {
+    case JS::ModuleType::CSS: {
       ModuleLoaderInfo info(aRequest);
       nsAutoCString location;
       nsresult rv = aRequest->URI()->GetSpec(location);
@@ -758,17 +735,16 @@ nsresult mozJSModuleLoader::LoadSingleModule(
       nsCString source = MOZ_TRY(ReadScript(info));
       if (aRequest->mModuleType == JS::ModuleType::JSON) {
         rv = CompileJsonModuleFromSource(aCx, source, location, aModuleOut);
-      } else if (aRequest->mModuleType == JS::ModuleType::CSS) {
+      } else {
         rv = CompileCssModuleFromSource(aCx, aModuleLoader, source,
                                         aRequest->BaseURL(), aModuleOut);
-      } else {
-        rv = CreateTextModuleFromSource(aCx, source, location, aModuleOut);
       }
       NS_ENSURE_SUCCESS(rv, rv);
       break;
     }
     case JS::ModuleType::Unknown:
     case JS::ModuleType::Bytes:
+    case JS::ModuleType::Text:
       JS_ReportErrorASCII(aCx, "Unsupported module type");
       return NS_ERROR_FAILURE;
   }

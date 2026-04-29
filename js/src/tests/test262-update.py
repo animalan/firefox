@@ -18,6 +18,7 @@ UNSUPPORTED_FEATURES = set([
     "tail-call-optimization",
     "Intl.Locale-info",  # Bug 1693576
     "import-defer",
+    "import-text",
     "nonextensible-applies-to-private",  # Bug 1991478
     "ShadowRealm",
 ])
@@ -39,7 +40,6 @@ FEATURE_CHECK_NEEDED = {
 RELEASE_OR_BETA = set([
     "legacy-regexp",
     "import-bytes",
-    "import-text",
 ])
 SHELL_OPTIONS = {
     "symbols-as-weakmap-keys": "--enable-symbols-as-weakmap-keys",
@@ -50,7 +50,6 @@ SHELL_OPTIONS = {
     "Atomics.waitAsync": "--setpref=atomics_wait_async",
     "immutable-arraybuffer": "--enable-arraybuffer-immutable",
     "import-bytes": "--enable-import-bytes",
-    "import-text": "--enable-import-text",
     "await-dictionary": "--enable-promise-allkeyed",
     "source-phase-imports": "--enable-source-phase-imports",
     "source-phase-imports-module-source": "--enable-source-phase-imports-test262-module-source",

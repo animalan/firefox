@@ -94,9 +94,6 @@ class ModuleLoader final : public JS::loader::ModuleLoaderBase {
   nsresult CompileCssModule(JSContext* aCx, JS::CompileOptions& aOptions,
                             ModuleLoadRequest* aRequest,
                             JS::MutableHandle<JSObject*> aModuleOut);
-  nsresult CreateTextModule(JSContext* aCx, JS::CompileOptions& aOptions,
-                            ModuleLoadRequest* aRequest,
-                            JS::MutableHandle<JSObject*> aModuleOut);
 
  private:
   const Kind mKind;
