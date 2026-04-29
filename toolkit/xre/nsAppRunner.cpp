@@ -6068,7 +6068,7 @@ int XREMain::XRE_main(int argc, char* argv[], const BootstrapConfig& aConfig) {
   // We call this early because it will kick off a background-thread task
   // to register the fonts, and we'd like it to have a chance to complete
   // before gfxPlatform initialization actually requires it.
-  gfxPlatformMac::RegisterSupplementalFonts();
+  auto _supplementalFontThread = gfxPlatformMac::RegisterSupplementalFonts();
 #endif
 
 #ifdef MOZ_WIDGET_ANDROID
