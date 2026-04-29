@@ -55,7 +55,7 @@ class nsNestedAboutURI final : public nsSimpleNestedURI {
  private:
   nsNestedAboutURI(nsIURI* aInnerURI, nsIURI* aBaseURI)
       : nsSimpleNestedURI(aInnerURI), mBaseURI(aBaseURI) {}
-  nsNestedAboutURI() {}
+  nsNestedAboutURI() = default;
   virtual ~nsNestedAboutURI() = default;
 
  public:
