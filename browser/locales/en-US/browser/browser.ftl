@@ -483,11 +483,6 @@ browser-window-close-button =
 browser-window-return-to-opener =
     .tooltiptext = Return
 
-## Tab actions
-
-# This label should be written in all capital letters if your locale supports them.
-browser-tab-audio-pip = PICTURE-IN-PICTURE
-
 ## Bookmarks toolbar items
 
 browser-import-button2 =

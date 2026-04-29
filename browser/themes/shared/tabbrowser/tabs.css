@@ -4,16 +4,13 @@
 
 :root {
   --tabstrip-inner-border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-  --tab-label-height: 2.7em;
   --tab-min-height: 36px;
   --tab-group-suggestions-loading-animation-color-1: color-mix(in srgb, currentColor 5%, transparent);
   --tab-group-suggestions-loading-animation-color-2: color-mix(in srgb, currentColor 35%, transparent);
   &[uidensity="compact"] {
-    --tab-label-height: 2em;
     --tab-min-height: 29px;
   }
   &[uidensity="touch"] {
-    --tab-label-height: 2.8em;
     --tab-min-height: 41px;
   }
   --split-view-padding-block: 2px;
@@ -833,10 +830,6 @@ tab-split-view-wrapper[dragtarget] {
 .tab-label-container {
   overflow: hidden;
 
-  #tabbrowser-tabs:not([secondarytext-unsupported], [orient="vertical"]) & {
-    height: var(--tab-label-height);
-  }
-
   &[pinned] {
     width: 0;
   }
@@ -897,23 +890,6 @@ tab-split-view-wrapper[dragtarget] {
       --tab-label-mask-size: 2em;
     }
   }
-}
-
-.tab-secondary-label {
-  font-size: 0.75em;
-  margin: -0.3em 0 0.3em; /* adjust margins to compensate for line-height of .tab-label */
-  opacity: 0.8;
-
-  #tabbrowser-tabs:is([secondarytext-unsupported], [orient="vertical"]) &,
-  :root[uidensity="compact"] &,
-  &:not([pictureinpicture]) {
-    display: none;
-  }
-}
-
-.tab-icon-sound-label {
-  white-space: nowrap;
-  margin: 0;
 }
 
 .tab-background {
@@ -1234,13 +1210,6 @@ tab-group > tab-split-view-wrapper {
         inset-block-end: calc(var(--tab-group-line-toolbar-border-distance) - var(--tab-block-margin) - var(--split-view-padding-block));
         inset-inline-start: calc(var(--space-small) * -2);
       }
-    }
-
-    .tab-label-container {
-      /* Nip and tuck: we can't subtract all the padding and margin added for the
-         split-view-wrapper without potentially regressing secondarytext labels but
-         8px seems a good compromise. */
-      height: calc(var(--tab-label-height) - 8px);
     }
 
     tab-group & {

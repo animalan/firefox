@@ -35,9 +35,6 @@
                 pack="center"
                 flex="1">
             <label class="tab-text tab-label" role="presentation"/>
-            <hbox class="tab-secondary-label">
-              <label class="tab-icon-sound-label tab-icon-sound-pip-label" data-l10n-id="browser-tab-audio-pip" role="presentation"/>
-            </hbox>
           </vbox>
           <image class="tab-note-icon" role="presentation"/>
           <image class="tab-close-button close-icon" role="button" data-l10n-id="tabbrowser-close-tabs-button" data-l10n-args='{"tabCount": 1}' keyNav="false"/>
@@ -103,8 +100,6 @@
           "pinned,selected=visuallyselected,labeldirection",
         ".tab-label":
           "text=label,accesskey,fadein,pinned,selected=visuallyselected,attention",
-        ".tab-label-container .tab-secondary-label":
-          "pinned,blocked,selected=visuallyselected,pictureinpicture",
         ".tab-close-button": "fadein,pinned,selected=visuallyselected",
       };
     }
