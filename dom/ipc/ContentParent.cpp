@@ -2700,6 +2700,15 @@ ContentParent::~ContentParent() {
   }
 }
 
+static nsIDNSService::ResolverMode TrrModeFromPref() {
+  auto mode =
+      static_cast<nsIDNSService::ResolverMode>(StaticPrefs::network_trr_mode());
+  if (mode > nsIDNSService::MODE_TRROFF) {
+    mode = nsIDNSService::MODE_TRROFF;
+  }
+  return mode;
+}
+
 bool ContentParent::InitInternal(ProcessPriority aInitialPriority) {
   // We can't access the locale service after shutdown has started. Since we
   // can't init the process without it, and since we're going to be canceling
@@ -2884,8 +2893,7 @@ bool ContentParent::InitInternal(ProcessPriority aInitialPriority) {
   nsIDNSService::ResolverMode mode;
   dns->GetCurrentTrrMode(&mode);
   xpcomInit.trrMode() = mode;
-  xpcomInit.trrModeFromPref() =
-      static_cast<nsIDNSService::ResolverMode>(StaticPrefs::network_trr_mode());
+  xpcomInit.trrModeFromPref() = TrrModeFromPref();
 
   (void)SendSetXPCOMProcessAttributes(
       xpcomInit, initialData, lnf, fontList, std::move(sharedUASheetHandle),
@@ -3975,13 +3983,7 @@ ContentParent::Observe(nsISupports* aSubject, const char* aTopic,
     nsCOMPtr<nsIDNSService> dns = do_GetService(NS_DNSSERVICE_CONTRACTID);
     nsIDNSService::ResolverMode mode;
     dns->GetCurrentTrrMode(&mode);
-    nsIDNSService::ResolverMode modeFromPref =
-        static_cast<nsIDNSService::ResolverMode>(
-            StaticPrefs::network_trr_mode());
-    if (modeFromPref > nsIDNSService::MODE_TRROFF) {
-      modeFromPref = nsIDNSService::MODE_TRROFF;
-    }
-    (void)SendSetTRRMode(mode, modeFromPref);
+    (void)SendSetTRRMode(mode, TrrModeFromPref());
   }
 
   return NS_OK;
