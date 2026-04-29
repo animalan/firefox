@@ -2761,7 +2761,7 @@ pub unsafe extern "C" fn neqo_encode_vvec(encoder: &mut NeqoEncoder, buf: *const
 }
 
 #[no_mangle]
-pub extern "C" fn neqo_encode_get_data(
+pub unsafe extern "C" fn neqo_encode_get_data(
     encoder: &mut NeqoEncoder,
     buf: *mut *const u8,
     read: &mut u32,

@@ -40,7 +40,7 @@ impl From<IpPreference> for happy_eyeballs::IpPreference {
 }
 
 #[no_mangle]
-pub extern "C" fn happy_eyeballs_create(
+pub unsafe extern "C" fn happy_eyeballs_create(
     result: &mut *const HappyEyeballs,
     origin: *const nsACString,
     port: u16,
@@ -104,7 +104,7 @@ pub extern "C" fn happy_eyeballs_create(
 }
 
 #[no_mangle]
-pub extern "C" fn happy_eyeballs_process_dns_response_a(
+pub unsafe extern "C" fn happy_eyeballs_process_dns_response_a(
     he: *mut HappyEyeballs,
     id: u64,
     addrs: *const ThinVec<NetAddr>,
@@ -123,7 +123,7 @@ pub extern "C" fn happy_eyeballs_process_dns_response_a(
 }
 
 #[no_mangle]
-pub extern "C" fn happy_eyeballs_process_dns_response_aaaa(
+pub unsafe extern "C" fn happy_eyeballs_process_dns_response_aaaa(
     he: *mut HappyEyeballs,
     id: u64,
     addrs: *const ThinVec<NetAddr>,
@@ -142,7 +142,7 @@ pub extern "C" fn happy_eyeballs_process_dns_response_aaaa(
 }
 
 #[no_mangle]
-pub extern "C" fn happy_eyeballs_process_dns_response_https(
+pub unsafe extern "C" fn happy_eyeballs_process_dns_response_https(
     he: *mut HappyEyeballs,
     id: u64,
     service_infos: *const ThinVec<ServiceInfo>,
@@ -161,7 +161,7 @@ pub extern "C" fn happy_eyeballs_process_dns_response_https(
 }
 
 #[no_mangle]
-pub extern "C" fn happy_eyeballs_process_connection_result(
+pub unsafe extern "C" fn happy_eyeballs_process_connection_result(
     he: *mut HappyEyeballs,
     id: u64,
     status: nsresult,
@@ -175,7 +175,7 @@ pub extern "C" fn happy_eyeballs_process_connection_result(
 }
 
 #[no_mangle]
-pub extern "C" fn happy_eyeballs_process_output(
+pub unsafe extern "C" fn happy_eyeballs_process_output(
     he: *mut HappyEyeballs,
     ret_event: *mut Output,
     ech_config: *mut ThinVec<u8>,
@@ -596,7 +596,6 @@ pub enum Output {
     },
     None,
 }
-
 
 #[no_mangle]
 pub unsafe extern "C" fn happy_eyeballs_release(happy_eyeballs: *const HappyEyeballs) {
