@@ -199,14 +199,12 @@ add_task(async function enter_action_search_mode() {
       "Actions are shown"
     );
 
-    let promiseNewTab = BrowserTestUtils.waitForNewTab(
-      gBrowser,
-      "about:preferences"
-    );
+    let pageLoaded = BrowserTestUtils.browserLoaded(window);
     EventUtils.synthesizeKey(keyword, {}, window);
     EventUtils.synthesizeKey("KEY_Tab");
     EventUtils.synthesizeKey("KEY_Enter");
-    await promiseNewTab;
+    await pageLoaded;
+
     Assert.equal(
       window.gBrowser.selectedBrowser.currentURI.spec,
       "about:preferences",

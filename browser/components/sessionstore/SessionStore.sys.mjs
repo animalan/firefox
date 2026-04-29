@@ -4239,13 +4239,13 @@ var SessionStoreInternal = {
       aWindowOrOptions = this._getTopWindow();
     }
     if (aWindowOrOptions instanceof Ci.nsIDOMWindow) {
-      isPrivate = PrivateBrowsingUtils.isWindowPrivate(aWindowOrOptions);
+      isPrivate = PrivateBrowsingUtils.isBrowserPrivate(aWindowOrOptions);
     } else {
       isPrivate = Boolean(aWindowOrOptions.private);
     }
 
     const browserWindows = Array.from(this._browserWindows).filter(win => {
-      return PrivateBrowsingUtils.isWindowPrivate(win) === isPrivate;
+      return PrivateBrowsingUtils.isBrowserPrivate(win) === isPrivate;
     });
     return browserWindows;
   },
@@ -4832,7 +4832,7 @@ var SessionStoreInternal = {
       for (let win of browserWindows) {
         if (
           !searchPrivateWindows &&
-          PrivateBrowsingUtils.isWindowPrivate(win)
+          PrivateBrowsingUtils.isBrowserPrivate(win)
         ) {
           continue;
         }

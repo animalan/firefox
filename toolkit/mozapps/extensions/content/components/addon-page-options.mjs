@@ -174,7 +174,7 @@ class AddonPageOptions extends AboutAddonsHTMLElement {
   }
 
   openAboutDebugging() {
-    let mainWindow = window.windowRoot.window;
+    let mainWindow = window.windowRoot.ownerGlobal;
     if ("switchToTabHavingURI" in mainWindow) {
       let principal = Services.scriptSecurityManager.getSystemPrincipal();
       mainWindow.switchToTabHavingURI(

@@ -221,7 +221,7 @@ var gMoreFromMozillaPane = {
           );
         } else {
           actionElement.addEventListener("click", function () {
-            let mainWindow = window.windowRoot.window;
+            let mainWindow = window.windowRoot.ownerGlobal;
             mainWindow.openTrustedLinkIn(
               gMoreFromMozillaPane.getURL(
                 product.button.actionURL,

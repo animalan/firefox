@@ -117,7 +117,7 @@ function getBrowser(panel) {
   );
   browser.addEventListener("DOMWindowClose", event => {
     if (panel.viewType == "sidebar") {
-      windowRoot.window.SidebarController.hide();
+      windowRoot.ownerGlobal.SidebarController.hide();
     }
     // Prevent DOMWindowClose events originated from
     // extensions sidebar and devtools panels to bubble up

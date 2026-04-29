@@ -7,7 +7,7 @@ class ProxyContextMenu extends HTMLElement {
   openPopupAtScreen(...args) {
     // prettier-ignore
     const parentContextMenuPopup =
-      windowRoot.window.document.getElementById("contentAreaContextMenu");
+      windowRoot.ownerGlobal.document.getElementById("contentAreaContextMenu");
     return parentContextMenuPopup.openPopupAtScreen(...args);
   }
 }

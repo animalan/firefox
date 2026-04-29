@@ -51,7 +51,7 @@ add_task(async function test() {
 
       rbs.setURL("");
       rbs.chooseReason("choose");
-      window.document.activeElement?.blur();
+      window.ownerGlobal.document.activeElement?.blur();
       const focusPromise = BrowserTestUtils.waitForEvent(URLInput, "focus");
       EventUtils.synthesizeMouseAtCenter(sendButton, {}, window);
       await focusPromise;

@@ -52,10 +52,11 @@ this.sidebarAction = class extends ExtensionAPI {
     this.globals = Object.create(this.defaults);
 
     this.tabContext = new TabContext(target => {
-      if (ChromeUtils.getClassName(target) == "Window") {
+      let window = target.ownerGlobal;
+      if (target === window) {
         return this.globals;
       }
-      return this.tabContext.get(target.ownerGlobal);
+      return this.tabContext.get(window);
     });
 
     // We need to ensure our elements are available before session restore.
@@ -240,10 +241,9 @@ this.sidebarAction = class extends ExtensionAPI {
    */
   updateOnChange(target) {
     if (target) {
-      if (ChromeUtils.getClassName(target) == "Window") {
-        this.updateWindow(target);
-      } else if (target.selected) {
-        this.updateWindow(target.ownerGlobal);
+      let window = target.ownerGlobal;
+      if (target === window || target.selected) {
+        this.updateWindow(window);
       }
     } else {
       for (let window of windowTracker.browserWindows()) {

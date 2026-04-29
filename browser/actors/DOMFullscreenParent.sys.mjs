@@ -215,7 +215,7 @@ export class DOMFullscreenParent extends JSWindowActorParent {
   }
 
   handleEvent(aEvent) {
-    let window = aEvent.currentTarget;
+    let window = aEvent.currentTarget.ownerGlobal;
     // We can not get the corresponding browsing context from actor if the actor
     // has already destroyed, so use event target to get browsing context
     // instead.

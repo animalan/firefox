@@ -39,7 +39,6 @@ class nsWindowRoot final : public nsPIWindowRoot {
   // nsPIWindowRoot
 
   nsPIDOMWindowOuter* GetWindow() override;
-  nsGlobalWindowInner* GetInnerWindow();
 
   nsresult GetControllers(bool aForVisibleWindow,
                           nsIControllers** aResult) override;

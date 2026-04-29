@@ -498,7 +498,7 @@ function onShortcutChange(e) {
   switch (validation) {
     case lazy.ShortcutUtils.IS_VALID: {
       // Show an error if this is already a system shortcut.
-      let chromeWindow = window.windowRoot.window;
+      let chromeWindow = window.windowRoot.ownerGlobal;
       if (lazy.ShortcutUtils.isSystem(chromeWindow, shortcutString)) {
         setError(input, "shortcuts-system");
         break;

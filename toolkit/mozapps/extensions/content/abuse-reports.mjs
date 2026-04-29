@@ -18,7 +18,7 @@ export async function openAbuseReport({ addonId }) {
   // using it currently. Maybe we should?
 
   const amoUrl = lazy.AbuseReporter.getAMOFormURL({ addonId });
-  windowRoot.window.openTrustedLinkIn(amoUrl, "tab", {
+  windowRoot.ownerGlobal.openTrustedLinkIn(amoUrl, "tab", {
     // Make sure the newly open tab is going to be focused, independently
     // from general user prefs.
     forceForeground: true,

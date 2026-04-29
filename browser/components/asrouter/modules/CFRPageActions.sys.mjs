@@ -773,7 +773,7 @@ export class PageAction {
               },
             },
           },
-          this.window.gBrowser.selectedBrowser
+          this.window
         );
         break;
     }

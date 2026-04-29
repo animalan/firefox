@@ -303,10 +303,10 @@ add_task(async function test_nthTabOpened() {
 
   const win = await BrowserTestUtils.openNewBrowserWindow();
 
-  await BrowserTestUtils.openNewForegroundTab(win.gBrowser);
+  await BrowserTestUtils.openNewForegroundTab(win);
   Assert.ok(handlerStub.calledOnce, "Called once after first tab opened");
 
-  await BrowserTestUtils.openNewForegroundTab(win.gBrowser);
+  await BrowserTestUtils.openNewForegroundTab(win);
   Assert.ok(handlerStub.calledTwice, "Called twice after second tab opened");
 
   BrowserTestUtils.closeWindow(win);
