@@ -77,13 +77,6 @@ static size_t BaseNameLength(const mozilla::intl::Locale& tag) {
 struct IndexAndLength {
   size_t index = 0;
   size_t length = 0;
-
-  IndexAndLength(size_t index, size_t length) : index(index), length(length) {};
-
-  template <typename T>
-  mozilla::Span<const T> spanOf(const T* ptr) const {
-    return {ptr + index, length};
-  }
 };
 
 // Compute the Unicode extension's index and length in the extension subtag.
@@ -835,64 +828,72 @@ struct BaseNamePartsResult {
 
 // Returns [language-length, script-index, region-index, region-length].
 template <typename CharT>
-static BaseNamePartsResult BaseNameParts(const CharT* baseName, size_t length) {
-  size_t languageLength;
+static BaseNamePartsResult BaseNameParts(mozilla::Span<const CharT> baseName) {
+  size_t languageLength = baseName.size();
   size_t scriptIndex = 0;
   size_t regionIndex = 0;
   size_t regionLength = 0;
 
   // Search the first separator to find the end of the language subtag.
-  if (const CharT* sep = std::char_traits<CharT>::find(baseName, length, '-')) {
-    languageLength = sep - baseName;
-
-    // Add +1 to skip over the separator character.
-    size_t nextSubtag = languageLength + 1;
-
-    // Script subtags are always four characters long, but take care for a four
-    // character long variant subtag. These start with a digit.
-    if ((nextSubtag + ScriptLength == length ||
-         (nextSubtag + ScriptLength < length &&
-          baseName[nextSubtag + ScriptLength] == '-')) &&
-        mozilla::IsAsciiAlpha(baseName[nextSubtag])) {
-      scriptIndex = nextSubtag;
-      nextSubtag = scriptIndex + ScriptLength + 1;
+  if (baseName.size() > 3) {
+    if (baseName[2] == '-' || baseName[3] == '-') [[likely]] {
+      languageLength = baseName[2] == '-' ? 2 : 3;
+    } else {
+      // Language subtag with more than three letters.
+      if (const CharT* sep = std::char_traits<CharT>::find(
+              baseName.data(), baseName.size(), '-')) {
+        languageLength = sep - baseName.data();
+      }
     }
 
-    // Region subtags can be either two or three characters long.
-    if (nextSubtag < length) {
-      for (size_t rlen : {AlphaRegionLength, DigitRegionLength}) {
-        MOZ_ASSERT(nextSubtag + rlen <= length);
-        if (nextSubtag + rlen == length || baseName[nextSubtag + rlen] == '-') {
-          regionIndex = nextSubtag;
-          regionLength = rlen;
-          break;
+    if (languageLength < baseName.size()) {
+      // Add +1 to skip over the separator character.
+      size_t nextSubtag = languageLength + 1;
+
+      // Script subtags are always four characters long, but take care for a
+      // four character long variant subtag. These start with a digit.
+      if ((nextSubtag + ScriptLength == baseName.size() ||
+           (nextSubtag + ScriptLength < baseName.size() &&
+            baseName[nextSubtag + ScriptLength] == '-')) &&
+          mozilla::IsAsciiAlpha(baseName[nextSubtag])) {
+        scriptIndex = nextSubtag;
+        nextSubtag = scriptIndex + ScriptLength + 1;
+      }
+
+      // Region subtags can be either two or three characters long.
+      if (nextSubtag < baseName.size()) {
+        for (size_t rlen : {AlphaRegionLength, DigitRegionLength}) {
+          MOZ_ASSERT(nextSubtag + rlen <= baseName.size());
+          if (nextSubtag + rlen == baseName.size() ||
+              baseName[nextSubtag + rlen] == '-') {
+            regionIndex = nextSubtag;
+            regionLength = rlen;
+            break;
+          }
         }
       }
     }
-  } else {
-    // No separator found, the base-name consists of just a language subtag.
-    languageLength = length;
   }
 
   // Tell the analysis the |IsStructurallyValid*Tag| functions can't GC.
   JS::AutoSuppressGCAnalysis nogc;
 
   IndexAndLength language{0, languageLength};
-  MOZ_ASSERT(
-      mozilla::intl::IsStructurallyValidLanguageTag(language.spanOf(baseName)));
+  MOZ_ASSERT(mozilla::intl::IsStructurallyValidLanguageTag(
+      baseName.subspan(language.index, language.length)));
 
   mozilla::Maybe<IndexAndLength> script{};
   if (scriptIndex) {
     script.emplace(scriptIndex, ScriptLength);
-    MOZ_ASSERT(
-        mozilla::intl::IsStructurallyValidScriptTag(script->spanOf(baseName)));
+    MOZ_ASSERT(mozilla::intl::IsStructurallyValidScriptTag(
+        baseName.subspan(script->index, script->length)));
   }
 
   mozilla::Maybe<IndexAndLength> region{};
   if (regionIndex) {
     region.emplace(regionIndex, regionLength);
-    MOZ_ASSERT(
-        mozilla::intl::IsStructurallyValidRegionTag(region->spanOf(baseName)));
+    MOZ_ASSERT(mozilla::intl::IsStructurallyValidRegionTag(
+        baseName.subspan(region->index, region->length)));
   }
 
   return {language, script, region};
@@ -901,10 +902,8 @@ static BaseNamePartsResult BaseNameParts(const CharT* baseName, size_t length) {
 static inline auto BaseNameParts(const JSLinearString* baseName) {
   JS::AutoCheckCannotGC nogc;
   return baseName->hasLatin1Chars()
-             ? BaseNameParts(
-                   reinterpret_cast<const char*>(baseName->latin1Chars(nogc)),
-                   baseName->length())
-             : BaseNameParts(baseName->twoByteChars(nogc), baseName->length());
+             ? BaseNameParts(mozilla::AsChars(baseName->latin1Range(nogc)))
+             : BaseNameParts(mozilla::Span{baseName->twoByteRange(nogc)});
 }
 
 // Intl.Locale.prototype.maximize ()
