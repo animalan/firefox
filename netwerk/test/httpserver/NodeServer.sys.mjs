@@ -157,11 +157,27 @@ export class BaseNodeServer {
       rootDir = parent;
     }
 
-    let certFile = rootDir.clone();
-    certFile.append("netwerk");
-    certFile.append("test");
-    certFile.append("unit");
-    certFile.append(filename);
+    function findCertPath(dir) {
+      let candidates = [
+        `netwerk/test/unit/${filename}`,
+        // This one works for mochitests
+        `_tests/xpcshell/netwerk/test/unit/${filename}`,
+      ];
+      for (let candidate of candidates) {
+        let certpath = dir.clone().QueryInterface(Ci.nsIFile);
+        certpath.appendRelativePath(candidate);
+        if (certpath.exists()) {
+          return certpath;
+        }
+      }
+      return null;
+    }
+
+    let certFile = findCertPath(rootDir);
+    if (!certFile) {
+      console.log(`Error installing cert: file not found.}`);
+      return;
+    }
 
     try {
       let pem = readFile(certFile)
@@ -171,7 +187,7 @@ export class BaseNodeServer {
       certdb.addCertFromBase64(pem, "CTu,u,u");
     } catch (e) {
       let errStr = e.toString();
-      console.log(`Error installing cert ${errStr}`);
+      console.log(`Error installing cert ${errStr} path:${certFile.path}`);
       if (errStr.includes("0x805a1fe8")) {
         // Can't install the cert without a profile
         // Let's show an error, otherwise this will be difficult to diagnose.
