@@ -831,13 +831,6 @@ void XPCJSRuntime::DoCycleCollectionCallback(JSContext* cx) {
   }
 }
 
-void XPCJSRuntime::CustomGCCallback(JSGCStatus status) {
-  nsTArray<xpcGCCallback> callbacks(extraGCCallbacks.Clone());
-  for (uint32_t i = 0; i < callbacks.Length(); ++i) {
-    callbacks[i](status);
-  }
-}
-
 /* static */
 void XPCJSRuntime::FinalizeCallback(JS::GCContext* gcx, JSFinalizeStatus status,
                                     void* data) {
@@ -1220,14 +1213,6 @@ extern void xpc::GetCurrentRealmName(JSContext* cx, nsCString& name) {
   JS::Realm* realm = GetNonCCWObjectRealm(global);
   int anonymizeID = 0;
   GetRealmName(realm, name, &anonymizeID, false);
-}
-
-void xpc::AddGCCallback(xpcGCCallback cb) {
-  XPCJSRuntime::Get()->AddGCCallback(cb);
-}
-
-void xpc::RemoveGCCallback(xpcGCCallback cb) {
-  XPCJSRuntime::Get()->RemoveGCCallback(cb);
 }
 
 static int64_t JSMainRuntimeGCHeapDistinguishedAmount() {
@@ -3363,19 +3348,6 @@ void XPCJSRuntime::DebugDump(int16_t depth) {
 }
 
 /***************************************************************************/
-
-void XPCJSRuntime::AddGCCallback(xpcGCCallback cb) {
-  MOZ_ASSERT(cb, "null callback");
-  extraGCCallbacks.AppendElement(cb);
-}
-
-void XPCJSRuntime::RemoveGCCallback(xpcGCCallback cb) {
-  MOZ_ASSERT(cb, "null callback");
-  bool found = extraGCCallbacks.RemoveElement(cb);
-  if (!found) {
-    NS_ERROR("Removing a callback which was never added.");
-  }
-}
 
 JSObject* XPCJSRuntime::GetUAWidgetScope(JSContext* cx,
                                          nsIPrincipal* principal) {

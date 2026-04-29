@@ -65,8 +65,6 @@ class Exception;
 }  // namespace dom
 }  // namespace mozilla
 
-using xpcGCCallback = void (*)(JSGCStatus);
-
 namespace xpc {
 
 class Scriptability {
@@ -829,9 +827,6 @@ void FindExceptionStackForConsoleReport(
 extern void GetCurrentRealmName(JSContext*, nsCString& name);
 
 nsCString GetFunctionName(JSContext* cx, JS::Handle<JSObject*> obj);
-
-void AddGCCallback(xpcGCCallback cb);
-void RemoveGCCallback(xpcGCCallback cb);
 
 // We need an exact page size only if we run the binary in automation.
 #if (defined(XP_DARWIN) && defined(__aarch64__)) || defined(__loongarch__)
