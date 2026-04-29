@@ -231,12 +231,16 @@ class OutputParser {
         return { tokens, functionData, sawComma: true, sawVariable, depth };
       } else if (token.tokenType === "ParenthesisBlock") {
         ++depth;
+        this.#createStackEntry({ isParenthesis: true, text: "(" });
       } else if (token.tokenType === "CloseParenthesis") {
-        this.#onCloseParenthesis(options);
         --depth;
         if (depth === 0) {
           break;
         }
+        // only call #onCloseParenthesis when we're not closing the top stack.
+        // We'll call it from the callsites after the data returned by this function
+        // is consumed and transformed into parts.
+        this.#onCloseParenthesis(options);
       } else if (
         token.tokenType === "Function" &&
         token.value === "var" &&
@@ -299,6 +303,7 @@ class OutputParser {
       text,
       tokenStream,
       options,
+      // stopAtComma
       true
     );
 
@@ -549,6 +554,7 @@ class OutputParser {
             } else {
               this.#append(variableNode);
             }
+            this.#onCloseParenthesis(options);
           } else {
             const {
               functionData,
@@ -652,6 +658,7 @@ class OutputParser {
                 this.#appendTextNode(functionText, token);
               }
             }
+            this.#onCloseParenthesis(options);
           }
           break;
         }

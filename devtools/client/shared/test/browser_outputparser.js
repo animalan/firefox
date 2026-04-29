@@ -1323,11 +1323,11 @@ function testParseVariable(doc, parser) {
         "</span>",
     },
     {
-      text: "color-mix(in sgrb, var(--x), purple)",
+      text: "color-mix(in srgb, var(--x), purple)",
       variables: { "--x": "yellow" },
       expected:
         // prettier-ignore
-        `color-mix(in sgrb, ` +
+        `color-mix(in srgb, ` +
         `<span data-color="yellow" class="color-swatch-container">` +
           `<span class="test-class" style="background-color:yellow" tabindex="0" role="button" data-color-function="color-mix">` +
           `</span>` +
