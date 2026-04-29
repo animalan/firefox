@@ -4,6 +4,8 @@
 
 "use strict";
 
+// Test that various navigation methods can't framebust
+
 add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
     set: [
@@ -14,32 +16,41 @@ add_setup(async function () {
   });
 });
 
-add_task(async function () {
+add_task(async function test_framebusting_navigation() {
   const tab = await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
     "about:blank"
   );
 
-  // All these different variants to navigate the top-level should be
-  // blocked.
-  const variants = [
-    "top", // top.location =
-    "open", // self.open() with target="_top"
-    "form", // <form> with target="_top"
-    "link", // <a> with target="_top"
-    "mailto", // top.location = mailto:
-  ];
-  for (const variant of variants) {
-    info(`Triggering framebusting (${variant})...`);
-    await triggerFramebusting(tab, /*attrs=*/ {}, /*params=*/ { variant });
+  // top.location =
+  await triggerFramebustingIntervention(tab, "", {
+    exception: true,
+    notification: true,
+  });
 
-    info("Waiting for notification...");
-    await BrowserTestUtils.waitForCondition(() =>
-      gBrowser.getNotificationBox().getNotificationWithValue("popup-blocked")
-    );
+  // top.open()
+  await triggerFramebustingIntervention(tab, "?initiator=open", {
+    exception: true,
+    notification: false,
+  });
 
-    is(tab.linkedBrowser.currentURI.spec, FRAMEBUSTING_PARENT_URL);
-  }
+  // <form> with target="_top"
+  await triggerFramebustingIntervention(tab, "?initiator=form", {
+    exception: true,
+    notification: true,
+  });
+
+  // <a> with target="_top"
+  await triggerFramebustingIntervention(tab, "?initiator=link", {
+    exception: false,
+    notification: true,
+  });
+
+  // top.location = mailto:
+  await triggerFramebustingIntervention(tab, "?initiator=mailto", {
+    exception: true,
+    notification: true,
+  });
 
   BrowserTestUtils.removeTab(tab);
 });

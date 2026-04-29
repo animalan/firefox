@@ -57,7 +57,6 @@ WindowGlobalInit WindowGlobalActor::BaseInitializer(
   fields.Get<Indexes::IDX_AutoplayPermission>() =
       nsIPermissionManager::UNKNOWN_ACTION;
   fields.Get<Indexes::IDX_AllowJavascript>() = true;
-  fields.Get<Indexes::IDX_IsFramebustingAllowed>() = aBrowsingContext->IsTop();
   return init;
 }
 
@@ -116,8 +115,6 @@ WindowGlobalInit WindowGlobalActor::WindowInitializer(
   fields.Get<Indexes::IDX_OverriddenFingerprintingSettings>() =
       doc->GetOverriddenFingerprintingSettings();
   fields.Get<Indexes::IDX_IsSecureContext>() = aWindow->IsSecureContext();
-  fields.Get<Indexes::IDX_IsFramebustingAllowed>() =
-      aWindow->GetBrowsingContext()->ComputeIsFramebustingAllowed();
 
   // Initialze permission fields
   fields.Get<Indexes::IDX_AutoplayPermission>() =

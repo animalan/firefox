@@ -18,7 +18,11 @@ const FRAMEBUSTING_PARENT_URL =
 const FRAMEBUSTING_FRAME_URL =
   EXAMPLE_FRAME_ROOT + "framebusting_intervention_frame.html";
 
-async function triggerFramebusting(tab, attrs = {}, params = {}) {
+async function triggerFramebustingIntervention(
+  tab,
+  query = "",
+  verify = { exception: undefined, notification: undefined }
+) {
   info("Loading framebusting parent page...");
   BrowserTestUtils.startLoadingURIString(
     tab.linkedBrowser,
@@ -30,22 +34,49 @@ async function triggerFramebusting(tab, attrs = {}, params = {}) {
     FRAMEBUSTING_PARENT_URL
   );
 
-  const url = new URL(FRAMEBUSTING_FRAME_URL);
-  for (const name in params) {
-    url.searchParams.append(name, params[name]);
-  }
+  const frameSrc = FRAMEBUSTING_FRAME_URL + query;
 
   info("Loading framebusting frame page...");
   await SpecialPowers.spawn(
     tab.linkedBrowser,
-    [url.href, attrs],
-    (src, attributes) => {
-      const iframe = content.document.createElement("iframe");
-      for (const name in attributes) {
-        iframe.setAttribute(name, attributes[name]);
+    [frameSrc, verify.exception],
+    async (src, verifyException) => {
+      function waitForVerifyExceptionMessage() {
+        return new Promise(resolve => {
+          content.window.addEventListener(
+            "message",
+            event => {
+              is(event.origin, "https://example.org");
+              is(
+                event.data,
+                verifyException ? "exception" : "no-exception",
+                `Should ${verifyException ? "" : "not "}receive an exception when trying to framebust (${src})`
+              );
+              resolve();
+            },
+            { once: true }
+          );
+        });
       }
+
+      const verifyExceptionPromise =
+        verifyException !== undefined
+          ? waitForVerifyExceptionMessage()
+          : Promise.resolve();
+
+      const iframe = content.document.createElement("iframe");
+      iframe.id = "framebustingframe";
       iframe.src = src;
       content.document.body.appendChild(iframe);
+
+      await verifyExceptionPromise;
     }
   );
+
+  if (verify.notification) {
+    await BrowserTestUtils.waitForCondition(() =>
+      gBrowser.getNotificationBox().getNotificationWithValue("popup-blocked")
+    );
+    ok(true, `Framebusting notification should show up (${frameSrc})`);
+  }
 }
