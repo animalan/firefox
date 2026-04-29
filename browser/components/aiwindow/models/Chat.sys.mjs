@@ -4,14 +4,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-
 import { ToolRoleOpts } from "moz-src:///browser/components/aiwindow/ui/modules/ChatMessage.sys.mjs";
-import {
-  openAIEngine,
-  DEFAULT_MODEL,
-  MODEL_FEATURES,
-} from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
+import { openAIEngine } from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
 import {
   toolsConfig,
   toolFns,
@@ -67,13 +61,6 @@ ChromeUtils.defineLazyGetter(lazy, "console", () =>
  * Chat
  */
 export const Chat = {};
-
-XPCOMUtils.defineLazyPreferenceGetter(
-  Chat,
-  "modelId",
-  "browser.smartwindow.model",
-  DEFAULT_MODEL[MODEL_FEATURES.CHAT]
-);
 
 /**
  * Log chat stream traffic.
@@ -143,7 +130,7 @@ Object.assign(Chat, {
       throw fxaError;
     }
 
-    const toolRoleOpts = new ToolRoleOpts(this.modelId);
+    const toolRoleOpts = new ToolRoleOpts(engineInstance.model);
     const currentTurn = conversation.currentTurnIndex();
     const config = engineInstance.getConfig(engineInstance.feature);
     const inferenceParams = config?.parameters || {};
