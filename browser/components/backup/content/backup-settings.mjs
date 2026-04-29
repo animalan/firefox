@@ -139,6 +139,7 @@ export default class BackupSettings extends MozLitElement {
             detail: {
               backupFile: event.detail.backupFile,
               backupPassword: event.detail.backupPassword,
+              source: "preferences",
             },
           })
         );
