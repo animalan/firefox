@@ -58,6 +58,7 @@ class CrashReportingTest {
         }
         navigationToolbar(composeTestRule) {
         }.enterURLAndEnterToBrowser("about:crashcontent".toUri()) {
+            verifyTabCrashReporterView()
             clickPageObject(composeTestRule, itemWithResId("$packageName:id/restoreTabButton"))
             verifyPageContent(website.content)
         }

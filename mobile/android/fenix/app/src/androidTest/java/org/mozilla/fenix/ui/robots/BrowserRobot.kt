@@ -273,11 +273,27 @@ class BrowserRobot(private val composeTestRule: ComposeTestRule) {
     }
 
     fun verifyTabCrashReporterView() {
-        assertUIObjectExists(itemWithResId("$packageName:id/crash_tab_image"))
-        assertUIObjectExists(itemWithText(getStringResource(R.string.tab_crash_title_2)))
-        assertUIObjectExists(itemWithText(getStringResource(R.string.tab_crash_send_report)))
-        assertUIObjectExists(itemWithResId("$packageName:id/restoreTabButton"))
-        assertUIObjectExists(itemWithResId("$packageName:id/closeTabButton"))
+        for (i in 1..RETRY_COUNT) {
+            Log.i(TAG, "verifyTabCrashReporterView: Started try #$i")
+            try {
+                assertUIObjectExists(itemWithResId("$packageName:id/crash_tab_image"))
+                assertUIObjectExists(itemWithText(getStringResource(R.string.tab_crash_title_2)))
+                assertUIObjectExists(itemWithText(getStringResource(R.string.tab_crash_send_report)))
+                assertUIObjectExists(itemWithResId("$packageName:id/restoreTabButton"))
+                assertUIObjectExists(itemWithResId("$packageName:id/closeTabButton"))
+
+                break
+            } catch (e: AssertionError) {
+                Log.i(TAG, "verifyTabCrashReporterView: AssertionError caught, executing fallback methods")
+                if (i == RETRY_COUNT) {
+                    throw e
+                } else {
+                    navigationToolbar(composeTestRule) {
+                    }.enterURLAndEnterToBrowser("about:crashcontent".toUri()) {
+                    }
+                }
+            }
+        }
     }
 
     // Verifies the information displayed on the about:cache page
