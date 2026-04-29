@@ -158,7 +158,7 @@ tasks:
                         .*-wayland.*: []
                         windows.*-ccov.*: []
                         linux.*64(-shippable)?/.*: ['trunk']
-                        macosx.*64-aarch64(-shippable)?(-qr)?/.*: ['mozilla-central']
+                        macosx.*64-aarch64(-shippable)?(-qr)?/.*: ['trunk']
                         macosx.*64(-shippable)?(-qr)?/.*: ['trunk']
                         windows11-64-24h2(-shippable)?(-qr)?/.*: ['trunk']
                         linux.*64-ccov/opt: ['mozilla-central']

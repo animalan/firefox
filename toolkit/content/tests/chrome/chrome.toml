@@ -233,6 +233,9 @@ skip-if = [
 ["test_menuitem_commands.xhtml"]
 
 ["test_menulist.xhtml"]
+skip-if = [
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64'", # Bug 2034604
+]
 
 ["test_menulist_in_popup.xhtml"]
 

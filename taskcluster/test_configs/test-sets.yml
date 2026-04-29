@@ -458,18 +458,6 @@ macosx1500-64-tests:
 
 macosx1500-aarch64-tests:
     - cppunittest
-    - mochitest-media
-    - web-platform-tests
-
-macosx1470-64-tests:
-    - cppunittest
-    - crashtest
-    - firefox-ui-functional
-    - gtest
-    - jittest
-    - jsreftest
-    - marionette-integration
-    - marionette-unittest
     - mochitest-a11y
     - mochitest-browser-a11y
     - mochitest-browser-media
@@ -485,6 +473,17 @@ macosx1470-64-tests:
     - mochitest-webgl1-ext
     - mochitest-webgl2-core
     - mochitest-webgl2-ext
+    - web-platform-tests
+
+macosx1470-64-tests:
+    - cppunittest
+    - crashtest
+    - firefox-ui-functional
+    - gtest
+    - jittest
+    - jsreftest
+    - marionette-integration
+    - marionette-unittest
     - reftest
     - telemetry-tests-client
     - test-verify

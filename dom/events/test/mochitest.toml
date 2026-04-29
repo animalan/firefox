@@ -447,6 +447,9 @@ support-files = [
   "file_coalesce_touchmove_browserchild2.html",
 ]
 tags = "os_integration"
+skip-if = [
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64'", # Bug 2034604
+]
 
 ["test_continuous_wheel_events.html"]
 skip-if = [
@@ -620,6 +623,9 @@ skip-if = [
 support-files = ["window_empty_document.html"]
 
 ["test_moz_mouse_pixel_scroll_event.html"]
+skip-if = [
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64' && debug", # Bug 2034604
+]
 
 ["test_offsetxy.html"]
 
@@ -680,4 +686,5 @@ run-if = [
 ]
 skip-if = [
   "verify-standalone",
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64' && debug", # Bug 2034604
 ]
