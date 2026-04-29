@@ -143,7 +143,7 @@ bool UtilityProcessImpl::Init(int aArgc, char* aArgv[]) {
 #endif
 
   return mUtility->Init(TakeInitialEndpoint(), nsCString(*parentBuildID),
-                        *sandboxingKind);
+                        SandboxingKind(*sandboxingKind));
 }
 
 void UtilityProcessImpl::CleanUp() { NS_ShutdownXPCOM(nullptr); }
