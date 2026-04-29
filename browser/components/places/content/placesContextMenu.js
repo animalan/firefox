@@ -30,7 +30,8 @@ document.addEventListener(
           ContentSharingUtils.createShareableLinkFromBookmarkFolders(
             view.selectedNodes
               .filter(n => PlacesUtils.nodeIsFolderOrShortcut(n))
-              .map(n => PlacesUtils.getConcreteItemGuid(n))
+              .map(n => PlacesUtils.getConcreteItemGuid(n)),
+            window
           );
 
           break;

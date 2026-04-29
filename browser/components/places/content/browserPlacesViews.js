@@ -758,11 +758,14 @@ class PlacesViewBase {
       );
 
       aPopup._endOptShareFolder.addEventListener("command", event => {
-        ContentSharingUtils.createShareableLinkFromBookmarkFolders([
-          PlacesUtils.getConcreteItemGuid(
-            event.currentTarget.parentNode._placesNode
-          ),
-        ]);
+        ContentSharingUtils.createShareableLinkFromBookmarkFolders(
+          [
+            PlacesUtils.getConcreteItemGuid(
+              event.currentTarget.parentNode._placesNode
+            ),
+          ],
+          event.currentTarget.ownerGlobal
+        );
       });
       aPopup.appendChild(aPopup._endOptShareFolder);
     } else if (
