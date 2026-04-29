@@ -18,6 +18,14 @@
     position: relative;
   }
 
+  :host([layout="medium-icon"]) {
+    --box-icon-size: var(--icon-size-large);
+  }
+
+  :host([layout="large-icon"]) {
+    --box-icon-size: var(--icon-size-xlarge);
+  }
+
   .text-content {
     display: grid;
     place-items: center start;
@@ -50,8 +58,8 @@
 
   .icon {
     grid-area: icon;
-    width: var(--box-icon-size);
-    height: var(--box-icon-size);
+    width: var(--icon-size);
+    height: var(--icon-size);
     -moz-context-properties: fill, stroke;
     fill: var(--box-icon-fill);
     stroke: var(--box-icon-stroke);
@@ -60,6 +68,8 @@
     &:not(.nav-icon) {
       fill: var(--box-icon-start-fill, var(--box-icon-fill));
       stroke: var(--box-icon-start-stroke, var(--box-icon-stroke));
+      width: var(--box-icon-size);
+      height: var(--box-icon-size);
 
       .button & {
         fill: var(--box-icon-start-fill, var(--button-icon-fill));

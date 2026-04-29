@@ -13,7 +13,8 @@
 }
 
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   border: var(--card-border);
   border-radius: var(--card-border-radius);
   background-color: var(--card-background-color);
@@ -51,6 +52,12 @@
 
 #moz-card-details {
   width: 100%;
+}
+
+moz-card,
+#moz-card-details,
+#content {
+  flex: 1;
 }
 
 summary {
@@ -98,6 +105,8 @@ summary {
 
 #content {
   align-self: stretch;
+  display: flex;
+  flex-direction: column;
   padding-inline: var(--card-padding-inline, var(--card-padding));
   border-end-start-radius: var(--card-border-radius);
   border-end-end-radius: var(--card-border-radius);

@@ -73,14 +73,18 @@ export class SettingPane extends MozLitElement {
   handleVisibility() {
     if (this.config.visible) {
       let visible = this.config.visible();
-      if (!visible && !this.isSubPane) {
-        let categoryButton = document.querySelector(
+      let categoryButton = /** @type {HTMLElement} */ (
+        document.querySelector(
           `#categories moz-page-nav-button[view="${this.name}"]`
-        );
+        )
+      );
+      if (!visible && !this.isSubPane) {
         if (categoryButton) {
           categoryButton.remove();
         }
         this.remove();
+      } else if (visible && categoryButton) {
+        categoryButton.hidden = false;
       }
     }
   }

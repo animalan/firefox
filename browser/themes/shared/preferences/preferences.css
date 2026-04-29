@@ -1245,28 +1245,33 @@ richlistitem .text-link:hover {
   margin-inline: 30px 0;
 }
 
-#firefox-mobile {
-  background-image: url("chrome://browser/skin/device-phone.svg");
-}
+/* Product icon backgrounds for the legacy (non-SRD) More from Mozilla page.
+ * Scoped to #moreFromMozillaCategory so they don't apply to the config-based
+ * moz-card elements that reuse the same product IDs. */
+#moreFromMozillaCategory {
+  #firefox-mobile {
+    background-image: url("chrome://browser/skin/device-phone.svg");
+  }
 
-#mozilla-vpn {
-  background-image: url("chrome://browser/skin/preferences/vpn-logo.svg");
-}
+  #mozilla-vpn {
+    background-image: url("chrome://browser/skin/preferences/vpn-logo.svg");
+  }
 
-#mozilla-monitor {
-  background-image: url("chrome://browser/skin/preferences/monitor-logo.svg");
-}
+  #mozilla-monitor {
+    background-image: url("chrome://browser/skin/preferences/monitor-logo.svg");
+  }
 
-#firefox-relay {
-  background-image: url("chrome://browser/skin/preferences/relay-logo.svg");
-}
+  #firefox-relay {
+    background-image: url("chrome://browser/skin/preferences/relay-logo.svg");
+  }
 
-#solo-ai {
-  background-image: url("chrome://browser/skin/preferences/solo-ai-logo.svg");
-}
+  #solo-ai {
+    background-image: url("chrome://browser/skin/preferences/solo-ai-logo.svg");
+  }
 
-#mdn {
-  background-image: url("chrome://browser/skin/preferences/mdn-logo.svg");
+  #mdn {
+    background-image: url("chrome://browser/skin/preferences/mdn-logo.svg");
+  }
 }
 
 /*
@@ -1605,4 +1610,18 @@ setting-group[groupid="aiStatesDescription"] {
 
 .box-header-bold {
   --box-label-font-weight: var(--font-weight-heading);
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-large);
+
+  moz-box-link {
+    margin-block-start: auto;
+  }
+
+  @media (max-width: 45em) {
+    grid-template-columns: 1fr;
+  }
 }
