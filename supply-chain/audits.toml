@@ -5524,6 +5524,15 @@ The core logic is very simple, and acts as an abstraction trait for `Cell<T>`
 and `AtomicT`.
 """
 
+[[audits.rand]]
+who = "Henrik Skupin <mail@hskupin.info>"
+criteria = "safe-to-deploy"
+delta = "0.8.5 -> 0.8.6"
+notes = """
+Fixes RUSTSEC-2026-0097 by removing `log` dependency. Removes `simd_support`
+feature. No new dependencies or unsafe code.
+"""
+
 [[audits.rand_core]]
 who = "Mike Hommey <mh+mozilla@glandium.org>"
 criteria = "safe-to-deploy"
