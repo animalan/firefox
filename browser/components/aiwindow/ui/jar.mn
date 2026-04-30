@@ -14,8 +14,6 @@ browser.jar:
   content/browser/aiwindow/assets/loader.svg                        (assets/loader.svg)
   content/browser/aiwindow/components/ai-chat-message.mjs           (components/ai-chat-message/ai-chat-message.mjs)
   content/browser/aiwindow/components/ai-chat-message.css           (components/ai-chat-message/ai-chat-message.css)
-  content/browser/aiwindow/components/ai-chat-search-button.mjs     (components/ai-chat-search-button/ai-chat-search-button.mjs)
-  content/browser/aiwindow/components/ai-chat-search-button.css     (components/ai-chat-search-button/ai-chat-search-button.css)
   content/browser/aiwindow/components/ai-website-chip.mjs           (components/ai-website-chip/ai-website-chip.mjs)
   content/browser/aiwindow/components/ai-website-chip.css           (components/ai-website-chip/ai-website-chip.css)
   content/browser/aiwindow/components/ai-website-select.mjs         (components/ai-website-select/ai-website-select.mjs)

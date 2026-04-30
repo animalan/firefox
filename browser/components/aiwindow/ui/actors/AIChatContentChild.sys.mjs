@@ -34,7 +34,6 @@ export class AIChatContentChild extends JSWindowActorChild {
   };
 
   static #VALID_EVENTS_FROM_CONTENT = new Set([
-    "AIChatContent:DispatchSearch",
     "AIChatContent:DispatchFollowUp",
     "AIChatContent:Ready",
     "AIChatContent:DispatchAction",
@@ -55,10 +54,6 @@ export class AIChatContentChild extends JSWindowActorChild {
     }
 
     switch (event.type) {
-      case "AIChatContent:DispatchSearch":
-        this.#handleSearchDispatch(event);
-        break;
-
       case "AIChatContent:DispatchAction":
         this.#handleActionDispatch(event);
         break;
@@ -95,10 +90,6 @@ export class AIChatContentChild extends JSWindowActorChild {
           `AIChatContentChild received unknown event: ${event.type}`
         );
     }
-  }
-
-  #handleSearchDispatch(event) {
-    this.sendAsyncMessage("aiChatContentActor:search", event.detail);
   }
 
   #handleActionDispatch(event) {

@@ -69,10 +69,6 @@ export class AIChatContentParent extends JSWindowActorParent {
 
   receiveMessage({ data, name }) {
     switch (name) {
-      case "aiChatContentActor:search":
-        this.#handleSearchFromChild(data);
-        break;
-
       case "aiChatContentActor:followUp":
         this.#handleFollowUpFromChild(data);
         break;
@@ -107,15 +103,6 @@ export class AIChatContentParent extends JSWindowActorParent {
   #notifyContentReady() {
     const aiWindow = this.#getAIWindowElement();
     aiWindow?.onContentReady();
-  }
-
-  #handleSearchFromChild(data) {
-    try {
-      const { topChromeWindow } = this.browsingContext;
-      lazy.AIWindow.performSearch(data, topChromeWindow);
-    } catch (e) {
-      console.warn("Could not perform search from AI Window chat", e);
-    }
   }
 
   #handleFooterActionFromChild(data) {
