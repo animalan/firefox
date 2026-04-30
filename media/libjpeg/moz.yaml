@@ -11,9 +11,9 @@ origin:
   url: "https://libjpeg-turbo.org"
   license: ['IJG', 'BSD-3-Clause']
 
-  release: 3.1.0 (2024-12-12T15:46:51-05:00).
+  release: 3.1.1 (2025-06-06T14:50:51-04:00).
 
-  revision: "3.1.0"
+  revision: "3.1.1"
 
   license-file: LICENSE.md
 
