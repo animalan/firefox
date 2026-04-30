@@ -149,7 +149,7 @@ impl LockstoreKeystore {
         Ok((dek, cipher_suite))
     }
 
-    pub fn add_security_level(
+    pub fn add_kek(
         &self,
         collection_name: &str,
         source_kek_ref: &str,
@@ -195,7 +195,7 @@ impl LockstoreKeystore {
         self.save_metadata(collection_name, &metadata)
     }
 
-    pub fn remove_security_level(
+    pub fn remove_kek(
         &self,
         collection_name: &str,
         kek_ref: &str,
@@ -204,7 +204,7 @@ impl LockstoreKeystore {
 
         if metadata.wrapped_deks.len() <= 1 {
             return Err(LockstoreError::InvalidConfiguration(format!(
-                "Cannot remove the last security level from collection '{}'",
+                "Cannot remove the last KEK from collection '{}'",
                 collection_name
             )));
         }

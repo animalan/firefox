@@ -355,7 +355,7 @@ fn test_on_disk_delete_dek_persists() {
 }
 
 #[test]
-fn test_add_security_level() {
+fn test_add_kek() {
     let keystore = LockstoreKeystore::new_in_memory().expect("Failed to create keystore");
 
     keystore
@@ -363,7 +363,7 @@ fn test_add_security_level() {
         .expect("Failed to create DEK");
 
     keystore
-        .add_security_level("col", LOCAL, TEST_LEVEL)
+        .add_kek("col", LOCAL, TEST_LEVEL)
         .expect("Failed to add security level");
 
     let (key_local, _) = keystore
@@ -382,14 +382,14 @@ fn test_add_security_level() {
 }
 
 #[test]
-fn test_add_duplicate_security_level_fails() {
+fn test_add_duplicate_kek_fails() {
     let keystore = LockstoreKeystore::new_in_memory().expect("Failed to create keystore");
 
     keystore
         .create_dek("col", LOCAL, true)
         .expect("Failed to create DEK");
 
-    let result = keystore.add_security_level("col", LOCAL, LOCAL);
+    let result = keystore.add_kek("col", LOCAL, LOCAL);
     assert!(matches!(
         result,
         Err(LockstoreError::InvalidConfiguration(_))
@@ -399,32 +399,32 @@ fn test_add_duplicate_security_level_fails() {
 }
 
 #[test]
-fn test_add_security_level_missing_source_fails() {
+fn test_add_kek_missing_source_fails() {
     let keystore = LockstoreKeystore::new_in_memory().expect("Failed to create keystore");
 
     keystore
         .create_dek("col", LOCAL, true)
         .expect("Failed to create DEK");
 
-    let result = keystore.add_security_level("col", TEST_LEVEL, LOCAL);
+    let result = keystore.add_kek("col", TEST_LEVEL, LOCAL);
     assert!(matches!(result, Err(LockstoreError::NotFound(_))));
 
     keystore.close();
 }
 
 #[test]
-fn test_remove_security_level() {
+fn test_remove_kek() {
     let keystore = LockstoreKeystore::new_in_memory().expect("Failed to create keystore");
 
     keystore
         .create_dek("col", LOCAL, true)
         .expect("Failed to create DEK");
     keystore
-        .add_security_level("col", LOCAL, TEST_LEVEL)
+        .add_kek("col", LOCAL, TEST_LEVEL)
         .expect("Failed to add security level");
 
     keystore
-        .remove_security_level("col", TEST_LEVEL)
+        .remove_kek("col", TEST_LEVEL)
         .expect("Failed to remove security level");
 
     let result = keystore.get_dek("col", TEST_LEVEL);
@@ -439,14 +439,14 @@ fn test_remove_security_level() {
 }
 
 #[test]
-fn test_remove_last_security_level_fails() {
+fn test_remove_last_kek_fails() {
     let keystore = LockstoreKeystore::new_in_memory().expect("Failed to create keystore");
 
     keystore
         .create_dek("col", LOCAL, true)
         .expect("Failed to create DEK");
 
-    let result = keystore.remove_security_level("col", LOCAL);
+    let result = keystore.remove_kek("col", LOCAL);
     assert!(matches!(
         result,
         Err(LockstoreError::InvalidConfiguration(_))
@@ -456,35 +456,35 @@ fn test_remove_last_security_level_fails() {
 }
 
 #[test]
-fn test_remove_security_level_authenticates() {
+fn test_remove_kek_authenticates() {
     let keystore = LockstoreKeystore::new_in_memory().expect("Failed to create keystore");
 
     keystore
         .create_dek("col", LOCAL, true)
         .expect("Failed to create DEK");
     keystore
-        .add_security_level("col", LOCAL, TEST_LEVEL)
+        .add_kek("col", LOCAL, TEST_LEVEL)
         .expect("Failed to add security level");
 
     keystore
-        .remove_security_level("col", TEST_LEVEL)
+        .remove_kek("col", TEST_LEVEL)
         .expect("Should authenticate and remove successfully");
 
     keystore.close();
 }
 
 #[test]
-fn test_remove_nonexistent_security_level_fails() {
+fn test_remove_nonexistent_kek_fails() {
     let keystore = LockstoreKeystore::new_in_memory().expect("Failed to create keystore");
 
     keystore
         .create_dek("col", LOCAL, true)
         .expect("Failed to create DEK");
     keystore
-        .add_security_level("col", LOCAL, TEST_LEVEL)
+        .add_kek("col", LOCAL, TEST_LEVEL)
         .expect("Failed to add security level");
 
-    let result = keystore.remove_security_level("missing_col", LOCAL);
+    let result = keystore.remove_kek("missing_col", LOCAL);
     assert!(matches!(result, Err(LockstoreError::NotFound(_))));
 
     keystore.close();

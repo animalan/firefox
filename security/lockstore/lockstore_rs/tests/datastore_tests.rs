@@ -379,7 +379,7 @@ fn test_multiple_collections_shared_on_disk_keystore() {
 }
 
 #[test]
-fn test_cross_security_level_access() {
+fn test_cross_kek_access() {
     let dir = tempdir().expect("Failed to create temp dir");
     let ks_path = dir.path().join("keystore.sqlite");
     let data_path = dir.path().to_path_buf();
@@ -389,7 +389,7 @@ fn test_cross_security_level_access() {
         .create_dek("col", LOCAL, false)
         .expect("Failed to create DEK");
     keystore
-        .add_security_level("col", LOCAL, TEST_LEVEL)
+        .add_kek("col", LOCAL, TEST_LEVEL)
         .expect("Failed to add TestLevel");
 
     {

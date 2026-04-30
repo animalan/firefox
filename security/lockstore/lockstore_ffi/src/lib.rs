@@ -153,7 +153,7 @@ pub extern "C" fn lockstore_keystore_list_collections(
 }
 
 #[no_mangle]
-pub extern "C" fn lockstore_keystore_add_security_level(
+pub extern "C" fn lockstore_keystore_add_kek(
     handle: &LockstoreKeystoreHandle,
     collection: &nsACString,
     from_kek_ref: &nsACString,
@@ -168,7 +168,7 @@ pub extern "C" fn lockstore_keystore_add_security_level(
     let to_str = to_kek_ref.to_utf8();
     match handle
         .keystore
-        .add_security_level(&coll_str, &from_str, &to_str)
+        .add_kek(&coll_str, &from_str, &to_str)
     {
         Ok(()) => NS_OK,
         Err(e) => error_to_nsresult(e),
@@ -176,7 +176,7 @@ pub extern "C" fn lockstore_keystore_add_security_level(
 }
 
 #[no_mangle]
-pub extern "C" fn lockstore_keystore_remove_security_level(
+pub extern "C" fn lockstore_keystore_remove_kek(
     handle: &LockstoreKeystoreHandle,
     collection: &nsACString,
     kek_ref: &nsACString,
@@ -189,7 +189,7 @@ pub extern "C" fn lockstore_keystore_remove_security_level(
     let kek_ref_str = kek_ref.to_utf8();
     match handle
         .keystore
-        .remove_security_level(&coll_str, &kek_ref_str)
+        .remove_kek(&coll_str, &kek_ref_str)
     {
         Ok(()) => NS_OK,
         Err(e) => error_to_nsresult(e),

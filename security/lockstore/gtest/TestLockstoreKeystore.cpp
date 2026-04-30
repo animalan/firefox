@@ -12,14 +12,14 @@
 #include "nsString.h"
 #include "nsTArray.h"
 
-using mozilla::security::lockstore::lockstore_keystore_add_security_level;
+using mozilla::security::lockstore::lockstore_keystore_add_kek;
 using mozilla::security::lockstore::lockstore_keystore_close;
 using mozilla::security::lockstore::lockstore_keystore_create_dek;
 using mozilla::security::lockstore::lockstore_keystore_delete_dek;
 using mozilla::security::lockstore::lockstore_keystore_get_dek;
 using mozilla::security::lockstore::lockstore_keystore_list_collections;
 using mozilla::security::lockstore::lockstore_keystore_open;
-using mozilla::security::lockstore::lockstore_keystore_remove_security_level;
+using mozilla::security::lockstore::lockstore_keystore_remove_kek;
 using mozilla::security::lockstore::LockstoreKeystoreHandle;
 
 class LockstoreKeystoreTest : public ::testing::Test {
@@ -242,27 +242,27 @@ TEST_F(LockstoreKeystoreTest, PersistenceAcrossReopen) {
   EXPECT_EQ(collections[0], coll);
 }
 
-TEST_F(LockstoreKeystoreTest, AddSecurityLevelEmptyCollection) {
+TEST_F(LockstoreKeystoreTest, AddKekEmptyCollection) {
   nsresult rv = lockstore_keystore_open(&mProfilePath, &mKeystore);
   ASSERT_NS_SUCCEEDED(rv);
 
   nsAutoCString empty;
-  rv = lockstore_keystore_add_security_level(mKeystore, &empty, &mLocalKekRef,
-                                             &mLocalKekRef);
+  rv = lockstore_keystore_add_kek(mKeystore, &empty, &mLocalKekRef,
+                                  &mLocalKekRef);
   ASSERT_EQ(rv, NS_ERROR_INVALID_ARG);
 }
 
-TEST_F(LockstoreKeystoreTest, AddSecurityLevelNonexistentCollection) {
+TEST_F(LockstoreKeystoreTest, AddKekNonexistentCollection) {
   nsresult rv = lockstore_keystore_open(&mProfilePath, &mKeystore);
   ASSERT_NS_SUCCEEDED(rv);
 
   const nsCString coll("nosuch");
-  rv = lockstore_keystore_add_security_level(mKeystore, &coll, &mLocalKekRef,
-                                             &mLocalKekRef);
+  rv = lockstore_keystore_add_kek(mKeystore, &coll, &mLocalKekRef,
+                                  &mLocalKekRef);
   ASSERT_EQ(rv, NS_ERROR_NOT_AVAILABLE);
 }
 
-TEST_F(LockstoreKeystoreTest, AddSecurityLevelDuplicate) {
+TEST_F(LockstoreKeystoreTest, AddKekDuplicate) {
   nsresult rv = lockstore_keystore_open(&mProfilePath, &mKeystore);
   ASSERT_NS_SUCCEEDED(rv);
 
@@ -270,32 +270,30 @@ TEST_F(LockstoreKeystoreTest, AddSecurityLevelDuplicate) {
   rv = lockstore_keystore_create_dek(mKeystore, &coll, &mLocalKekRef, false);
   ASSERT_NS_SUCCEEDED(rv);
 
-  rv = lockstore_keystore_add_security_level(mKeystore, &coll, &mLocalKekRef,
-                                             &mLocalKekRef);
+  rv = lockstore_keystore_add_kek(mKeystore, &coll, &mLocalKekRef,
+                                  &mLocalKekRef);
   ASSERT_EQ(rv, NS_ERROR_FAILURE);
 }
 
-TEST_F(LockstoreKeystoreTest, RemoveSecurityLevelEmptyCollection) {
+TEST_F(LockstoreKeystoreTest, RemoveKekEmptyCollection) {
   nsresult rv = lockstore_keystore_open(&mProfilePath, &mKeystore);
   ASSERT_NS_SUCCEEDED(rv);
 
   nsAutoCString empty;
-  rv = lockstore_keystore_remove_security_level(mKeystore, &empty,
-                                                &mLocalKekRef);
+  rv = lockstore_keystore_remove_kek(mKeystore, &empty, &mLocalKekRef);
   ASSERT_EQ(rv, NS_ERROR_INVALID_ARG);
 }
 
-TEST_F(LockstoreKeystoreTest, RemoveSecurityLevelNonexistentCollection) {
+TEST_F(LockstoreKeystoreTest, RemoveKekNonexistentCollection) {
   nsresult rv = lockstore_keystore_open(&mProfilePath, &mKeystore);
   ASSERT_NS_SUCCEEDED(rv);
 
   const nsCString coll("nosuch");
-  rv =
-      lockstore_keystore_remove_security_level(mKeystore, &coll, &mLocalKekRef);
+  rv = lockstore_keystore_remove_kek(mKeystore, &coll, &mLocalKekRef);
   ASSERT_EQ(rv, NS_ERROR_NOT_AVAILABLE);
 }
 
-TEST_F(LockstoreKeystoreTest, RemoveSecurityLevelLastRemaining) {
+TEST_F(LockstoreKeystoreTest, RemoveKekLastRemaining) {
   nsresult rv = lockstore_keystore_open(&mProfilePath, &mKeystore);
   ASSERT_NS_SUCCEEDED(rv);
 
@@ -303,7 +301,6 @@ TEST_F(LockstoreKeystoreTest, RemoveSecurityLevelLastRemaining) {
   rv = lockstore_keystore_create_dek(mKeystore, &coll, &mLocalKekRef, false);
   ASSERT_NS_SUCCEEDED(rv);
 
-  rv =
-      lockstore_keystore_remove_security_level(mKeystore, &coll, &mLocalKekRef);
+  rv = lockstore_keystore_remove_kek(mKeystore, &coll, &mLocalKekRef);
   ASSERT_EQ(rv, NS_ERROR_FAILURE);
 }
