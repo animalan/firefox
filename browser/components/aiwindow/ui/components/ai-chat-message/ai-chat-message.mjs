@@ -41,6 +41,7 @@ export class AIChatMessage extends MozLitElement {
     role: { type: String }, // "user" | "assistant"
     message: { type: String },
     messageId: { type: String, reflect: true, attribute: "data-message-id" },
+    complete: { type: Boolean },
     seenUrls: { type: Object, attribute: false },
     conversationId: { type: String },
   };
@@ -114,6 +115,24 @@ export class AIChatMessage extends MozLitElement {
       // The conversation changed. The unfurled URLs need to be recomputed as the seen
       // urls can be completely different.
       this.#unfurledUrlsNeedUpdating = true;
+    }
+  }
+
+  updated(changed) {
+    if (changed.has("complete") && this.complete && this.role === "assistant") {
+      const messageEl = this.shadowRoot?.querySelector(`.message-${this.role}`);
+      const text = messageEl
+        ? (messageEl.innerText || messageEl.textContent || "")
+            .replace(/\s+/g, " ")
+            .trim()
+        : "";
+      this.dispatchEvent(
+        new CustomEvent("ai-chat-message:complete", {
+          bubbles: true,
+          composed: true,
+          detail: { messageId: this.messageId, text },
+        })
+      );
     }
   }
 
