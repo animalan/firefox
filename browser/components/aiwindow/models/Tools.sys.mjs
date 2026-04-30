@@ -623,7 +623,8 @@ export class RunSearch {
       const result = await pageExtractor.getText({
         sufficientLength: RunSearch.MAX_CHARACTERS,
         cleanWhitespace: true,
-        removeBoilerplate: true,
+        removeBoilerplate: false,
+        sourceUrl: browser.currentURI?.spec,
       });
       if (!result) {
         return "No content could be extracted from the search results page.";
@@ -749,7 +750,8 @@ export class GetPageContent {
       return GetPageContent.#runExtraction(
         pageExtractor,
         conversation,
-        `${sanitizeUntrustedContent(tab.label)} (${url})`
+        `${sanitizeUntrustedContent(tab.label)} (${url})`,
+        url
       );
     }
 
@@ -769,7 +771,7 @@ export class GetPageContent {
     }
 
     return PageExtractorParent.getHeadlessExtractor(url, pageExtractor =>
-      GetPageContent.#runExtraction(pageExtractor, conversation, url)
+      GetPageContent.#runExtraction(pageExtractor, conversation, url, url)
     );
   }
 
@@ -780,15 +782,17 @@ export class GetPageContent {
    * @param {PageExtractorParent} pageExtractor
    * @param {ChatConversation} conversation
    * @param {string} label
+   * @param {string} sourceUrl
    * @returns {Promise<string>}
    *  A promise resolving to a formatted string containing the page content
    *  with mode and label information, or an error message if no content is available.
    */
-  static async #runExtraction(pageExtractor, conversation, label) {
+  static async #runExtraction(pageExtractor, conversation, label, sourceUrl) {
     const extraction = await pageExtractor.getText({
       sufficientLength: GetPageContent.MAX_CHARACTERS,
       cleanWhitespace: true,
       removeBoilerplate: true,
+      sourceUrl,
     });
 
     if (!extraction) {
