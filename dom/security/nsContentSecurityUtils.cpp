@@ -1399,6 +1399,7 @@ static nsLiteralCString sImgSrcHttpsAllowList[] = {
     "chrome://devtools/content/application/index.html"_ns,
     "chrome://devtools/content/framework/browser-toolbox/window.html"_ns,
     "chrome://devtools/content/framework/toolbox-window.xhtml"_ns,
+    "chrome://browser/content/contentsharing/contentSharingModal.xhtml"_ns,
 };
 // img-src http:
 //  UNSAFE! Do not use.
