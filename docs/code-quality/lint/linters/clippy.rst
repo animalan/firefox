@@ -33,7 +33,7 @@ Configuration
 -------------
 
 To enable clippy on new directory, add the path to the include
-section in the `clippy.yml <https://searchfox.org/firefox-main/source/tools/lint/clippy.yml>`_ file.
+section in the :searchfox:`clippy.yml <tools/lint/clippy.yml>` file.
 
 To enable additional clippy rules beyond the defaults, add them to the
 ``warn`` or ``deny`` lists in `clippy.yml <https://searchfox.org/mozilla-central/source/tools/lint/clippy.yml>`_:
@@ -51,5 +51,5 @@ The full list of available lints is at https://rust-lang.github.io/rust-clippy/m
 Sources
 -------
 
-* `Configuration (YAML) <https://searchfox.org/firefox-main/source/tools/lint/clippy.yml>`_
-* `Source <https://searchfox.org/firefox-main/source/tools/lint/clippy/__init__.py>`_
+* :searchfox:`Configuration (YAML) <tools/lint/clippy.yml>`
+* :searchfox:`Source <tools/lint/clippy/__init__.py>`

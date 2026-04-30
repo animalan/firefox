@@ -121,4 +121,4 @@ You're done!
 
 Your application should now load and display a webpage inside of GeckoView.
 
-To learn more about GeckoView's capabilities, review GeckoView's `JavaDoc <https://mozilla.github.io/geckoview/javadoc/mozilla-central/>`_ or the `reference application <https://searchfox.org/firefox-main/source/mobile/android/geckoview_example>`_.
+To learn more about GeckoView's capabilities, review GeckoView's `JavaDoc <https://mozilla.github.io/geckoview/javadoc/mozilla-central/>`_ or the :searchfox:`reference application <mobile/android/geckoview_example>`.

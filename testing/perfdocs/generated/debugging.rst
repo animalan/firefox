@@ -71,8 +71,8 @@ To retrieve the console.log() output from the Raptor content 'measure.js' code:
 
 Raptor automatically closes the test tab and the entire browser after test completion; which will close any open debug consoles. In order to have more time to review the console logs, Raptor can be temporarily hacked locally in order to prevent the test tab and browser from being closed. Currently this must be done manually, as follows:
 
-#. In the Raptor web extension runner, comment out the line that closes the test tab in the test clean-up. That line of `code is here <https://searchfox.org/mozilla-central/rev/3c85ea2f8700ab17e38b82d77cd44644b4dae703/testing/raptor/webext/raptor/runner.js#357>`_.
-#. Add a return statement at the top of the Raptor control server method that shuts-down the browser, the browser shutdown `method is here <https://searchfox.org/mozilla-central/rev/924e3d96d81a40d2f0eec1db5f74fc6594337128/testing/raptor/raptor/control_server.py#120>`_.
+#. In the Raptor web extension runner, comment out the line that closes the test tab in the test clean-up. That line of :searchfox:`code is here <mozilla-central/rev/3c85ea2f8700ab17e38b82d77cd44644b4dae703:testing/raptor/webext/raptor/runner.js#357>`.
+#. Add a return statement at the top of the Raptor control server method that shuts-down the browser, the browser shutdown :searchfox:`method is here <mozilla-central/rev/924e3d96d81a40d2f0eec1db5f74fc6594337128:testing/raptor/raptor/control_server.py#120>`.
 
 For **benchmark type tests** (i.e. speedometer, motionmark, etc.) Raptor doesn't inject 'measure.js' into the test page content; instead it injects ':searchfox:`benchmark-relay.js <testing/raptor/webext/raptor/benchmark-relay.js>`' into the benchmark test content. Benchmark-relay is as it sounds; it basically relays the test results coming from the benchmark test, to the Raptor web extension runner. Viewing the console.log() output from benchmark-relay is done the same was as noted for the 'measure.js' content above.
 

@@ -14,8 +14,7 @@ HTTPS-First exceptions to be set through remote settings if a site is known to
 be broken with HTTPS-First. A bad example of remote permission would be using
 them to set permissions of the type ``uitour``. Permissions of that type grant
 sites access to a set of special APIs. These kinds of permissions should be set
-directly in source at `browser/app/permissions
-<https://searchfox.org/firefox-main/source/browser/app/permissions>`__.
+directly in source at :searchfox:`browser/app/permissions`.
 
 To limit the types of permissions that are allowed to be set through remote
 settings, the permission types that are allowed to be set through remote

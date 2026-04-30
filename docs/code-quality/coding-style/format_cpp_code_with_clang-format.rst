@@ -159,15 +159,13 @@ wrapper).
 
 Coding style configuration is done within clang-format itself. When we
 change the configuration (incorrect configuration, new feature in clang,
-etc), we use `local
-overrides <https://searchfox.org/mozilla-central/rev/501eb4718d73870892d28f31a99b46f4783efaa0/.clang-format>`__.
+etc), we use :searchfox:`local overrides <mozilla-central/rev/501eb4718d73870892d28f31a99b46f4783efaa0:.clang-format>`.
 
 
 Ignored files & directories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We maintain a `list of ignored directories and
-files <https://searchfox.org/mozilla-central/rev/501eb4718d73870892d28f31a99b46f4783efaa0/.clang-format-ignore>`__,
+We maintain a :searchfox:`list of ignored directories and files <mozilla-central/rev/501eb4718d73870892d28f31a99b46f4783efaa0:.clang-format-ignore>`,
 which is used by ``./mach lint -l clang-format``. This is generally only used
 for code broken by clang-format, and third-party code.
 
@@ -185,8 +183,7 @@ reformat:
    my code which should not be reformatted
    // clang-format on
 
-You can find an `example of code not
-formatted <https://searchfox.org/mozilla-central/rev/501eb4718d73870892d28f31a99b46f4783efaa0/xpcom/io/nsEscape.cpp#22>`__.
+You can find an :searchfox:`example of code not formatted <mozilla-central/rev/501eb4718d73870892d28f31a99b46f4783efaa0:xpcom/io/nsEscape.cpp#22>`.
 
 
 Ignore lists

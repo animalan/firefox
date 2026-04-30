@@ -4,7 +4,7 @@
 Browser Usage Telemetry
 =======================
 
-The `BrowserUsageTelemetry.sys.mjs <https://searchfox.org/firefox-main/source/browser/modules/BrowserUsageTelemetry.sys.mjs>`_ module is the main module for measurements regarding the browser usage (e.g. tab and window counts, search counts, ...).
+The :searchfox:`BrowserUsageTelemetry.sys.mjs <browser/modules/BrowserUsageTelemetry.sys.mjs>` module is the main module for measurements regarding the browser usage (e.g. tab and window counts, search counts, ...).
 
 The measurements recording begins right after the ``SessionStore`` has finished restoring the session (i.e. restoring tabs/windows after Firefox starts).
 
@@ -17,7 +17,7 @@ The usage telemetry module currently measures these interactions with the browse
 - *navigation events*: at this time, this only counts the number of time a page load is triggered by a particular UI interaction (e.g. by searching through the URL bar, see ``browser.engagement.navigation.urlbar``).
 
 
-Please see `Scalars.yaml <https://searchfox.org/firefox-main/source/toolkit/components/telemetry/Scalars.yaml>`_ for the full list of tracked interactions.
+Please see :searchfox:`Scalars.yaml <toolkit/components/telemetry/Scalars.yaml>` for the full list of tracked interactions.
 
 Customizable UI
 ===============

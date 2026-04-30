@@ -366,7 +366,7 @@ class RaptorGatherer(FrameworkGatherer):
                 elif key == "secondary_url":
                     result += f"   * **{sub_title}**: `<{description[key]}>`__\n"
                 elif key == "link searchfox":
-                    result += f"   * **{sub_title}**: `<{description[key]}>`__\n"
+                    result += f"   * **{sub_title}**: :searchfox:`{description[key]}`\n"
                 elif key in ["playback_pageset_manifest"]:
                     result += (
                         f"   * **{sub_title}**: "

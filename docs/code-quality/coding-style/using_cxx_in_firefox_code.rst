@@ -315,12 +315,11 @@ rvalue references
 
 Attributes
   Several common attributes are defined in
-  `mozilla/Attributes.h <https://searchfox.org/firefox-main/source/mfbt/Attributes.h>`__
+  :searchfox:`mozilla/Attributes.h <mfbt/Attributes.h>`
   or nscore.h.
 
 Alignment
-  Some alignment utilities are defined in `mozilla/Alignment.h
-  <https://searchfox.org/firefox-main/source/mfbt/Alignment.h>`__.
+  Some alignment utilities are defined in :searchfox:`mozilla/Alignment.h <mfbt/Alignment.h>`.
 
 ``[[deprecated]]``
   If we have deprecated code, we should be removing it rather than marking it as
@@ -388,7 +387,7 @@ memory size tracking) or have more controllable performance
 characteristics.
 
 A list of approved standard library headers is maintained in
-`config/stl-headers.mozbuild <https://searchfox.org/firefox-main/source/config/stl-headers.mozbuild>`__.
+:searchfox:`config/stl-headers.mozbuild`.
 
 
 Data structures
@@ -439,7 +438,7 @@ Data structures
      -
      - Like ``std::set``, but for enum classes.
    * - ``mozilla::Hash{Map,Set}``
-     - `mozilla/HashTable.h <https://searchfox.org/firefox-main/source/mfbt/HashTable.h>`__
+     - :searchfox:`mozilla/HashTable.h <mfbt/HashTable.h>`
      - ``std::unordered_{map,set}``
      - A general purpose hash map and hash set.
    * - ``nsInterfaceHashtable``

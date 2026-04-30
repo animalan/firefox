@@ -137,7 +137,7 @@ Updating ICU will also update the language tag registry (which records language 
 
 Often a local patch won’t apply, or new patches must be applied to successfully build. In this case you’ll have to manually edit ``update-icu.sh`` to abort after only *some* patches have been applied, make whatever changes are necessary by hand, generate a new/updated patch file by hand, then carefully reattempt updating. (The people who have updated ICU in the past, usually jwalden and anba, follow this awkward process and don’t have good ideas on how to improve it.)
 
-Any time ICU is updated, you’ll need to fully rebuild whichever of SpiderMonkey or Gecko you’re building. For SpiderMonkey, delete your object directory and reconfigure from scratch. For Gecko, change the message in the top-level `CLOBBER <https://searchfox.org/firefox-main/source/CLOBBER>`__ file.
+Any time ICU is updated, you’ll need to fully rebuild whichever of SpiderMonkey or Gecko you’re building. For SpiderMonkey, delete your object directory and reconfigure from scratch. For Gecko, change the message in the top-level :searchfox:`CLOBBER` file.
 
 Updating tzdata
 ~~~~~~~~~~~~~~~
