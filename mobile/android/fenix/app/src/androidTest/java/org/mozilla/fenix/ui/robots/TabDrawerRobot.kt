@@ -32,6 +32,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
@@ -441,6 +442,39 @@ class TabDrawerRobot(private val composeTestRule: ComposeTestRule) {
         Log.i(TAG, "closeTabWithTitle: Clicked the close button for tab with title: $title")
     }
 
+    fun clickSearchTabsButton() {
+        Log.i(TAG, "clickSearchTabsButton: Trying to click the search tabs button")
+        composeTestRule.onNodeWithContentDescription(getStringResource(R.string.tab_manager_open_tab_search)).performClick()
+        Log.i(TAG, "clickSearchTabsButton: Clicked the search tabs button")
+    }
+
+    fun searchTab(tabDetails: String) {
+        Log.i(TAG, "searchTab: Trying to set tab search toolbar text to: $tabDetails")
+        composeTestRule.onNodeWithContentDescription("Search").performTextInput(tabDetails)
+        Log.i(TAG, "searchTab: Tab search toolbar text was set to: $tabDetails")
+    }
+
+    fun verifyNoTabsFoundScreen() {
+        Log.i(TAG, "verifyNoTabsFoundScreen: Trying to verify that the \"No matches found\" message is displayed")
+        composeTestRule.onNodeWithText(getStringResource(R.string.tab_manager_no_search_results)).assertIsDisplayed()
+        Log.i(TAG, "verifyNoTabsFoundScreen: Verified that the \"No matches found\" message is displayed")
+        Log.i(TAG, "verifyNoTabsFoundScreen: Trying to verify that the \"Try another search!\" message is displayed")
+        composeTestRule.onNodeWithText(getStringResource(R.string.tab_manager_no_search_results_additional_text)).assertIsDisplayed()
+        Log.i(TAG, "verifyNoTabsFoundScreen: Verified that the \"Try another search!\" message is displayed")
+    }
+
+    fun clickClearTabSearchButton() {
+        Log.i(TAG, "clickClearTabSearchButton: Trying to click the clear search tabs button")
+        composeTestRule.onNodeWithContentDescription("Clear text").performClick()
+        Log.i(TAG, "clickClearTabSearchButton: Clicked the clear search tabs button")
+    }
+
+    fun verifySearchedTabIsDisplayed(tabDetails: String) {
+        Log.i(TAG, "verifySearchedTabIsDisplayed: Trying to verify that tab: $tabDetails is displayed in the tab search")
+        composeTestRule.onNodeWithText(tabDetails).assertIsDisplayed()
+        Log.i(TAG, "verifySearchedTabIsDisplayed: Verified that tab: $tabDetails is displayed in the tab search")
+    }
+
     class Transition(private val composeTestRule: ComposeTestRule) {
 
         fun openNewTab(interact: SearchRobot.() -> Unit): SearchRobot.Transition {
@@ -591,6 +625,15 @@ class TabDrawerRobot(private val composeTestRule: ComposeTestRule) {
 
             ShareOverlayRobot().interact()
             return ShareOverlayRobot.Transition()
+        }
+
+        fun clickSearchedTab(tabDetails: String, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
+            Log.i(TAG, "clickSearchedTab: Trying to click tab: $tabDetails from the tab search")
+            composeTestRule.onNodeWithText(tabDetails).performClick()
+            Log.i(TAG, "clickSearchedTab: Clicked tab: $tabDetails from the tab search")
+
+            BrowserRobot(composeTestRule).interact()
+            return BrowserRobot.Transition(composeTestRule)
         }
     }
 }

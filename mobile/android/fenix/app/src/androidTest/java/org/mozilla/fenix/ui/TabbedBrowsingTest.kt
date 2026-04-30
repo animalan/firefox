@@ -571,4 +571,33 @@ class TabbedBrowsingTest {
             verifyOpenTabsOrder(title = webPages[1].title, position = 1)
         }
     }
+
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3968085
+    @SmokeTest
+    @Test
+    fun verifyTheSearchTabsFunctionalityTest() {
+        val firstWebPage = mockWebServer.getGenericAsset(1)
+        val secondWebPage = mockWebServer.getGenericAsset(2)
+
+        navigationToolbar(composeTestRule) {
+        }.enterURLAndEnterToBrowser(firstWebPage.url) {
+            waitForPageToLoad()
+            verifyPageContent(firstWebPage.content)
+        }.openTabDrawer(composeTestRule) {
+        }.openNewTab {
+        }.submitQuery(secondWebPage.url.toString()) {
+            waitForPageToLoad()
+            verifyPageContent(secondWebPage.content)
+        }.openTabDrawer(composeTestRule) {
+            clickSearchTabsButton()
+            searchTab("android")
+            verifyNoTabsFoundScreen()
+            clickClearTabSearchButton()
+            searchTab("localhost")
+            verifySearchedTabIsDisplayed(firstWebPage.title)
+        }.clickSearchedTab(firstWebPage.title) {
+            verifyPageContent(firstWebPage.content)
+            verifyTabCounter("2")
+        }
+    }
 }
