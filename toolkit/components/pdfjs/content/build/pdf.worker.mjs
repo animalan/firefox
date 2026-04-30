@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.7.288
- * pdfjsBuild = a1b7d0feb
+ * pdfjsVersion = 5.7.313
+ * pdfjsBuild = 34c3ee16f
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -4235,21 +4235,25 @@ class JBig2CCITTFaxImage {
 ;// ./src/core/decode_stream.js
 
 
+
 const emptyBuffer = new Uint8Array(0);
 class DecodeStream extends BaseStream {
+  buffer = emptyBuffer;
+  bufferLength = 0;
+  eof = false;
+  minBufferLength = 512;
+  pos = 0;
   constructor(maybeMinBufferLength) {
     super();
     this._rawMinBufferLength = maybeMinBufferLength || 0;
-    this.pos = 0;
-    this.bufferLength = 0;
-    this.eof = false;
-    this.buffer = emptyBuffer;
-    this.minBufferLength = 512;
     if (maybeMinBufferLength) {
       while (this.minBufferLength < maybeMinBufferLength) {
         this.minBufferLength *= 2;
       }
     }
+  }
+  readBlock() {
+    unreachable("Abstract method `readBlock` called");
   }
   get isEmpty() {
     while (!this.eof && this.bufferLength === 0) {
@@ -10552,9 +10556,6 @@ class CCITTFaxStream extends DecodeStream {
   get bytes() {
     return shadow(this, "bytes", this.stream.getBytes(this.maybeLength));
   }
-  readBlock() {
-    unreachable("CCITTFaxStream.readBlock");
-  }
   get isImageStream() {
     return true;
   }
@@ -10872,9 +10873,6 @@ class Jbig2Stream extends DecodeStream {
     return shadow(this, "bytes", this.stream.getBytes(this.maybeLength));
   }
   ensureBuffer(requested) {}
-  readBlock() {
-    unreachable("Jbig2Stream.readBlock");
-  }
   get isAsyncDecoder() {
     return true;
   }
@@ -10919,9 +10917,6 @@ class JpxStream extends DecodeStream {
     return shadow(this, "bytes", this.stream.getBytes(this.maybeLength));
   }
   ensureBuffer(requested) {}
-  readBlock(decoderOptions) {
-    unreachable("JpxStream.readBlock");
-  }
   get isAsyncDecoder() {
     return true;
   }
@@ -40780,77 +40775,73 @@ class Catalog {
     }
     return map;
   }
-  getPageIndex(pageRef) {
+  async getPageIndex(pageRef) {
     const cachedPageIndex = this.pageIndexCache.get(pageRef);
     if (cachedPageIndex !== undefined) {
-      return Promise.resolve(cachedPageIndex);
+      return cachedPageIndex;
     }
     const xref = this.xref;
-    function pagesBeforeRef(kidRef) {
-      let total = 0,
-        parentRef;
-      return xref.fetchAsync(kidRef).then(function (node) {
-        if (isRefsEqual(kidRef, pageRef) && !isDict(node, "Page") && !(node instanceof Dict && !node.has("Type") && node.has("Contents"))) {
-          throw new FormatError("The reference does not point to a /Page dictionary.");
-        }
-        if (!node) {
-          return null;
-        }
-        if (!(node instanceof Dict)) {
-          throw new FormatError("Node must be a dictionary.");
-        }
-        parentRef = node.getRaw("Parent");
-        return node.getAsync("Parent");
-      }).then(function (parent) {
-        if (!parent) {
-          return null;
-        }
-        if (!(parent instanceof Dict)) {
-          throw new FormatError("Parent must be a dictionary.");
-        }
-        return parent.getAsync("Kids");
-      }).then(function (kids) {
-        if (!kids) {
-          return null;
-        }
-        const kidPromises = [];
-        let found = false;
-        for (const kid of kids) {
-          if (!(kid instanceof Ref)) {
-            throw new FormatError("Kid must be a reference.");
-          }
-          if (isRefsEqual(kid, kidRef)) {
-            found = true;
-            break;
-          }
-          kidPromises.push(xref.fetchAsync(kid).then(function (obj) {
-            if (!(obj instanceof Dict)) {
-              throw new FormatError("Kid node must be a dictionary.");
-            }
-            if (obj.has("Count")) {
-              total += obj.get("Count");
-            } else {
-              total++;
-            }
-          }));
-        }
-        if (!found) {
-          throw new FormatError("Kid reference not found in parent's kids.");
-        }
-        return Promise.all(kidPromises).then(() => [total, parentRef]);
-      });
-    }
-    let total = 0;
-    const next = ref => pagesBeforeRef(ref).then(args => {
-      if (!args) {
-        this.pageIndexCache.put(pageRef, total);
-        return total;
+    let total = 0,
+      ref = pageRef;
+    while (true) {
+      const node = await xref.fetchAsync(ref);
+      if (isRefsEqual(ref, pageRef) && !isDict(node, "Page") && !(node instanceof Dict && !node.has("Type") && node.has("Contents"))) {
+        throw new FormatError("The reference does not point to a /Page dictionary.");
       }
-      const [count, parentRef] = args;
-      total += count;
-      return next(parentRef);
-    });
-    return next(pageRef);
+      if (!node) {
+        break;
+      }
+      if (!(node instanceof Dict)) {
+        throw new FormatError("Node must be a dictionary.");
+      }
+      const parentRef = node.getRaw("Parent");
+      const parent = await node.getAsync("Parent");
+      if (!parent) {
+        break;
+      }
+      if (!(parent instanceof Dict)) {
+        throw new FormatError("Parent must be a dictionary.");
+      }
+      const kids = await parent.getAsync("Kids");
+      if (!kids) {
+        break;
+      }
+      if (!Array.isArray(kids)) {
+        throw new FormatError("Kids must be an array.");
+      }
+      const kidPromises = [];
+      let found = false;
+      for (const kid of kids) {
+        if (!(kid instanceof Ref)) {
+          throw new FormatError("Kid must be a reference.");
+        }
+        if (isRefsEqual(kid, ref)) {
+          found = true;
+          break;
+        }
+        kidPromises.push(xref.fetchAsync(kid).then(obj => {
+          if (!(obj instanceof Dict)) {
+            throw new FormatError("Kid node must be a dictionary.");
+          }
+          if (obj.has("Count")) {
+            const count = obj.get("Count");
+            if (Number.isInteger(count) && count >= 0) {
+              total += count;
+              return;
+            }
+            throw new FormatError("Count must be a (positive) integer.");
+          }
+          total++;
+        }));
+      }
+      if (!found) {
+        throw new FormatError("Kid reference not found in parent's kids.");
+      }
+      await Promise.all(kidPromises);
+      ref = parentRef;
+    }
+    this.pageIndexCache.put(pageRef, total);
+    return total;
   }
   get baseUrl() {
     const uri = this.#catDict.get("URI");
@@ -62408,7 +62399,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "5.7.288";
+    const workerVersion = "5.7.313";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }
