@@ -5734,9 +5734,7 @@ static void EmitStoreBufferCheckForConstant(MacroAssembler& masm,
   masm.loadPtr(AbsoluteAddress(&arena->bufferedCells()), cells);
 
   size_t index = gc::ArenaCellSet::getCellIndex(cell);
-  size_t word;
-  uint32_t mask;
-  gc::ArenaCellSet::getWordIndexAndMask(index, &word, &mask);
+  auto [word, mask] = gc::ArenaCellSet::getWordIndexAndMask(index);
   size_t offset = gc::ArenaCellSet::offsetOfBits() + word * sizeof(uint32_t);
 
   masm.branchTest32(Assembler::NonZero, Address(cells, offset), Imm32(mask),

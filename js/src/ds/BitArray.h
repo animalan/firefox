@@ -23,23 +23,20 @@ namespace js {
 /**
  * Fixed size bit array using internal storage.
  */
-template <size_t nbits>
+template <size_t nbits, typename StorageType>
 class BitArray {
  public:
-  // Use a 32 bit word to make it easier to access a BitArray from JIT code.
-  using WordT = uint32_t;
-
-  static const size_t bitsPerElement = sizeof(WordT) * CHAR_BIT;
-  static const size_t numSlots =
-      nbits / bitsPerElement + (nbits % bitsPerElement == 0 ? 0 : 1);
+  using WordT = StorageType;
+  static constexpr size_t bitsPerElement = sizeof(WordT) * CHAR_BIT;
+  static constexpr size_t numWords = HowMany(nbits, bitsPerElement);
 
  private:
-  static const size_t paddingBits = (numSlots * bitsPerElement) - nbits;
+  static const size_t paddingBits = (numWords * bitsPerElement) - nbits;
   static_assert(paddingBits < bitsPerElement,
                 "More padding bits than expected.");
   static const WordT paddingMask = WordT(-1) >> paddingBits;
 
-  WordT map[numSlots];
+  WordT map[numWords];
 
  public:
   constexpr BitArray() : map() {};
@@ -47,34 +44,27 @@ class BitArray {
   void clear(bool value) {
     memset(map, value ? 0xFF : 0, sizeof(map));
     if (value) {
-      map[numSlots - 1] &= paddingMask;
+      map[numWords - 1] &= paddingMask;
     }
   }
 
-  inline bool get(size_t offset) const {
-    size_t index;
-    WordT mask;
-    getIndexAndMask(offset, &index, &mask);
-    MOZ_ASSERT(index < nbits);
+  inline bool get(size_t bitIndex) const {
+    auto [index, mask] = getIndexAndMask(bitIndex);
     return map[index] & mask;
   }
 
-  void set(size_t offset) {
-    size_t index;
-    WordT mask;
-    getIndexAndMask(offset, &index, &mask);
+  void set(size_t bitIndex) {
+    auto [index, mask] = getIndexAndMask(bitIndex);
     map[index] |= mask;
   }
 
-  void unset(size_t offset) {
-    size_t index;
-    WordT mask;
-    getIndexAndMask(offset, &index, &mask);
+  void unset(size_t bitIndex) {
+    auto [index, mask] = getIndexAndMask(bitIndex);
     map[index] &= ~mask;
   }
 
   bool isAllClear() const {
-    for (size_t i = 0; i < numSlots; i++) {
+    for (size_t i = 0; i < numWords; i++) {
       if (map[i]) {
         return false;
       }
@@ -83,25 +73,26 @@ class BitArray {
   }
 
   // For iterating over the set bits in the bit array, get a word at a time.
-  WordT getWord(size_t elementIndex) const {
-    MOZ_ASSERT(elementIndex < nbits);
-    return map[elementIndex];
+  WordT getWord(size_t wordIndex) const {
+    MOZ_ASSERT(wordIndex < numWords);
+    return map[wordIndex];
   }
 
   // Update a word at a time.
-  void setWord(size_t elementIndex, WordT value) {
-    MOZ_ASSERT(elementIndex < nbits);
-    map[elementIndex] = value;
+  void setWord(size_t wordIndex, WordT value) {
+    MOZ_ASSERT(wordIndex < numWords);
+    map[wordIndex] = value;
   }
 
-  static void getIndexAndMask(size_t offset, size_t* indexp, WordT* maskp) {
-    MOZ_ASSERT(offset < nbits);
-    static_assert(bitsPerElement == 32, "unexpected bitsPerElement value");
-    *indexp = offset / bitsPerElement;
-    *maskp = WordT(1) << (offset % bitsPerElement);
+  static auto getIndexAndMask(size_t bitIndex) {
+    MOZ_ASSERT(bitIndex < nbits);
+    size_t wordIndex = bitIndex / bitsPerElement;
+    MOZ_ASSERT(wordIndex < numWords);
+    WordT wordMask = WordT(1) << (bitIndex % bitsPerElement);
+    return std::pair{wordIndex, wordMask};
   }
 
-  static size_t offsetOfMap() { return offsetof(BitArray<nbits>, map); }
+  static size_t offsetOfMap() { return offsetof(BitArray, map); }
 };
 
 /**

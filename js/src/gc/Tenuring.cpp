@@ -444,9 +444,8 @@ template <typename T>
 void TenuringTracer::traceBufferedCells(Arena* arena, ArenaCellSet* cells) {
   for (size_t i = 0; i < MaxArenaCellIndex; i += cells->BitsPerWord) {
     ArenaCellSet::WordT bitset = cells->getWord(i / cells->BitsPerWord);
-    static_assert(std::is_same_v<ArenaCellSet::WordT, uint32_t> ||
-                      std::is_same_v<ArenaCellSet::WordT, uint64_t>,
-                  "unexpected word size");
+    static_assert(std::is_same_v<ArenaCellSet::WordT, uint32_t>,
+                  "unexpected word type");
 
     while (bitset) {
       size_t bit = i + std::countr_zero(bitset);
