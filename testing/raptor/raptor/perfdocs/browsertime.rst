@@ -11,7 +11,7 @@ Browsertime is a harness for running performance tests, similar to Mozilla's Rap
 Source code:
 
 - Our current Browsertime version uses the canonical repo.
-- In-tree: https://searchfox.org/mozilla-central/source/tools/browsertime and https://searchfox.org/mozilla-central/source/taskcluster/scripts/misc/browsertime.sh
+- In-tree: https://searchfox.org/firefox-main/source/tools/browsertime and https://searchfox.org/firefox-main/source/taskcluster/scripts/misc/browsertime.sh
 
 Running Locally
 ---------------
@@ -237,9 +237,9 @@ There are multiple ways of adding additional arguments to Browsertime from Rapto
 
 Other methods for adding additional arguments are:
 
-* Define additional arguments in `testing/raptor/raptor/browsertime/base.py <https://searchfox.org/mozilla-central/source/testing/raptor/raptor/browsertime/base.py#220-252>`_.
+* Define additional arguments in `testing/raptor/raptor/browsertime/base.py <https://searchfox.org/firefox-main/source/testing/raptor/raptor/browsertime/base.py#220-252>`_.
 
-* Add a ``browsertime_args`` entry to the appropriate manifest with the desired arguments, i.e. `browsertime-tp6.ini <https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.ini>`_ for desktop page load tests. `Example of browsertime_args format <https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-process-switch.ini#27>`_.
+* Add a ``browsertime_args`` entry to the appropriate manifest with the desired arguments, i.e. `browsertime-tp6.ini <https://searchfox.org/firefox-main/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.ini>`_ for desktop page load tests. `Example of browsertime_args format <https://searchfox.org/firefox-main/source/testing/raptor/raptor/tests/custom/browsertime-process-switch.ini#27>`_.
 
 Running Browsertime on Try
 --------------------------

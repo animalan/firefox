@@ -806,9 +806,9 @@ tests you are working on. For example, the following would only run the
 
 For more information on mochitest, see the `Mochitest Documentation`_.
 
-.. _gfx/layers/apz/test/mochitest: https://searchfox.org/mozilla-central/source/gfx/layers/apz/test/mochitest
-.. _test_group_hittest-2.html: https://searchfox.org/mozilla-central/source/gfx/layers/apz/test/mochitest/test_group_hittest-2.html
-.. _helper_hittest_overscroll.html: https://searchfox.org/mozilla-central/source/gfx/layers/apz/test/mochitest/helper_hittest_overscroll.html
+.. _gfx/layers/apz/test/mochitest: https://searchfox.org/firefox-main/source/gfx/layers/apz/test/mochitest
+.. _test_group_hittest-2.html: https://searchfox.org/firefox-main/source/gfx/layers/apz/test/mochitest/test_group_hittest-2.html
+.. _helper_hittest_overscroll.html: https://searchfox.org/firefox-main/source/gfx/layers/apz/test/mochitest/helper_hittest_overscroll.html
 .. _Mochitest Documentation: /testing/mochitest-plain/index.html
 
 GTest
@@ -824,7 +824,7 @@ these tests, run something like the following:
 For more information, see the `GTest Documentation`_.
 
 .. _GTest Documentation: /gtest/index.html
-.. _gfx/layers/apz/test/gtest/: https://searchfox.org/mozilla-central/source/gfx/layers/apz/test/gtest/
+.. _gfx/layers/apz/test/gtest/: https://searchfox.org/firefox-main/source/gfx/layers/apz/test/gtest/
 
 Reftests
 ~~~~~~~~
@@ -843,8 +843,8 @@ There is no defined process for choosing which directory the APZ reftests
 should be placed in, but in general reftests should exist where other
 similar tests do.
 
-.. _layout/reftests/async-scrolling/: https://searchfox.org/mozilla-central/source/layout/reftests/async-scrolling/
-.. _gfx/layers/apz/test/reftest: https://searchfox.org/mozilla-central/source/gfx/layers/apz/test/reftest/
+.. _layout/reftests/async-scrolling/: https://searchfox.org/firefox-main/source/layout/reftests/async-scrolling/
+.. _gfx/layers/apz/test/reftest: https://searchfox.org/firefox-main/source/gfx/layers/apz/test/reftest/
 .. _Reftest Documentation: /layout/Reftest.html
 
 Threading / Locking Overview

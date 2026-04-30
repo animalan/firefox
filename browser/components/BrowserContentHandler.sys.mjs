@@ -1281,8 +1281,8 @@ function maybeRecordToHandleTelemetry(uri, isLaunch) {
 
   if (uri instanceof Ci.nsIFileURL) {
     let extension = "." + uri.fileExtension.toLowerCase();
-    // Keep synchronized with https://searchfox.org/mozilla-central/source/browser/installer/windows/nsis/shared.nsh
-    // and https://searchfox.org/mozilla-central/source/browser/installer/windows/msix/AppxManifest.xml.in.
+    // Keep synchronized with https://searchfox.org/firefox-main/source/browser/installer/windows/nsis/shared.nsh
+    // and https://searchfox.org/firefox-main/source/browser/installer/windows/msix/AppxManifest.xml.in.
     let registeredExtensions = new Set([
       ".avif",
       ".htm",

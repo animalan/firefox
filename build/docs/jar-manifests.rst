@@ -87,7 +87,7 @@ It is also named according to the value passed by the variable ``@AB_CD@``, norm
      crashreporter                                    (%crashreporter/**/*.ftl)
      toolkit                                          (%toolkit/**/*.ftl)
 
-The percentage sign in front of the source paths designates the locale to target as a source. By default, this is ``en-US``. With this specific example, `/toolkit/locales/en-US <https://searchfox.org/mozilla-central/source/toolkit/locales/en-US>`_ would be targeted.
+The percentage sign in front of the source paths designates the locale to target as a source. By default, this is ``en-US``. With this specific example, `/toolkit/locales/en-US <https://searchfox.org/firefox-main/source/toolkit/locales/en-US>`_ would be targeted.
 Otherwise, the file from an alternate localization source tree ``/l10n/<locale>/toolkit/`` is read if building a localized version.
 The wildcards in ``**/*.ftl`` tell the processor to install all Fluent files within the ``crashreporter`` and ``toolkit`` directories, as well as their subdirectories.
 

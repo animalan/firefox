@@ -20,4 +20,4 @@ files under `taskcluster/gecko_taskgraph/transforms`_ which provide lots of
 additional detail, both in the code itself and in comments and docstrings.
 
 .. _Transforms: https://taskcluster-taskgraph.readthedocs.io/en/latest/concepts/transforms.html
-.. _taskcluster/gecko_taskgraph/transforms: https://searchfox.org/mozilla-central/source/taskcluster/gecko_taskgraph/transforms
+.. _taskcluster/gecko_taskgraph/transforms: https://searchfox.org/firefox-main/source/taskcluster/gecko_taskgraph/transforms

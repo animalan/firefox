@@ -245,8 +245,7 @@ class RaptorGatherer(FrameworkGatherer):
                 and subtest["name"] in test_manifest.source_documents[key].keys()
             ):
                 description["link searchfox"] = (
-                    "https://searchfox.org/mozilla-central/source/"
-                    + pathlib.Path(manifest_path).as_posix()
+                    pathlib.Path(manifest_path).as_posix()
                     + "#"
                     + test_manifest.source_documents[key][subtest["name"]]["lineno"]
                 )

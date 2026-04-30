@@ -201,7 +201,7 @@ With Mercurial
 ~~~~~~~~~~~~~~
 
 | The list is stored in
-  `https://searchfox.org/mozilla-central/source/.hg-annotate-ignore-revs </en-US/docs/>`__
+  `https://searchfox.org/firefox-main/source/.hg-annotate-ignore-revs </en-US/docs/>`__
 | Commit messages should also contain the string ``# ignore-this-changeset``
 
 The syntax in this file is generated using the following syntax:
@@ -214,6 +214,6 @@ With git
 ~~~~~~~~
 
 The list is stored in
-`https://searchfox.org/mozilla-central/source/.git-blame-ignore-revs </en-US/docs/>`__
+`https://searchfox.org/firefox-main/source/.git-blame-ignore-revs </en-US/docs/>`__
 and contains git revisions for both gecko-dev and the git cinnabar
 repository.

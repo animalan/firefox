@@ -77,7 +77,7 @@ def guess_mozinfo_from_task(task, repo="", app_version="", test_tags=[]):
         "ccov": setting["build"].get("ccov", False),
         "mingwclang": setting["build"].get("mingwclang", False),
         "nightly_build": "a1"
-        in app_version,  # https://searchfox.org/mozilla-central/source/build/moz.configure/init.configure#1101
+        in app_version,  # https://searchfox.org/firefox-main/source/build/moz.configure/init.configure#1101
         "release_or_beta": "a" not in app_version,
         "repo": repo,
     }

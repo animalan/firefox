@@ -95,9 +95,9 @@ If there is a key type, you should use an ``nsTHashMap``.
 ``nsTHashMap`` is a template with two parameters. The first is the hash key
 and the second is the data to be stored as the value in the map. Most of
 the time, you can simply pass the raw key type as the first parameter,
-so long as its supported by `nsTHashMap.h <https://searchfox.org/mozilla-central/source/xpcom/ds/nsTHashMap.h>`_.
+so long as its supported by `nsTHashMap.h <https://searchfox.org/firefox-main/source/xpcom/ds/nsTHashMap.h>`_.
 It is also possible to specify custom keys if necessary. See `nsHashKeys.h
-<https://searchfox.org/mozilla-central/source/xpcom/ds/nsHashKeys.h>`_ for examples.
+<https://searchfox.org/firefox-main/source/xpcom/ds/nsHashKeys.h>`_ for examples.
 
 There are a number of more esoteric hashkey classes in nsHashKeys.h, and
 you can always roll your own if none of these fit your needs (make sure
@@ -124,7 +124,7 @@ Hashtable API
 The hashtable classes all expose the same basic API. There are three
 key methods, ``Get``, ``InsertOrUpdate``, and ``Remove``, which retrieve entries from the
 hashtable, write entries into the hashtable, and remove entries from the
-hashtable respectively. See `nsBaseHashtable.h <https://searchfox.org/mozilla-central/source/xpcom/ds/nsBaseHashtable.h>`_
+hashtable respectively. See `nsBaseHashtable.h <https://searchfox.org/firefox-main/source/xpcom/ds/nsBaseHashtable.h>`_
 for more details.
 
 The hashtables that hold references to pointers (nsRefPtrHashtable and

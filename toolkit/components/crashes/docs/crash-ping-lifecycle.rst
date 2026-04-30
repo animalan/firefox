@@ -19,16 +19,16 @@ Ping Definitions
 * `Desktop crash ping <https://dictionary.telemetry.mozilla.org/apps/firefox_desktop/pings/crash>`_
 
   * `Desktop metrics definition
-    <https://searchfox.org/mozilla-central/source/toolkit/components/crashes/metrics.yaml>`_
+    <https://searchfox.org/firefox-main/source/toolkit/components/crashes/metrics.yaml>`_
   * `Desktop ping definition
-    <https://searchfox.org/mozilla-central/source/toolkit/components/crashes/pings.yaml>`_
+    <https://searchfox.org/firefox-main/source/toolkit/components/crashes/pings.yaml>`_
 
 * `Fenix crash ping <https://dictionary.telemetry.mozilla.org/apps/fenix/pings/crash>`_
 
   * `Fenix metrics definition
-    <https://searchfox.org/mozilla-central/source/mobile/android/android-components/components/lib/crash/metrics.yaml>`_
+    <https://searchfox.org/firefox-main/source/mobile/android/android-components/components/lib/crash/metrics.yaml>`_
   * `Fenix ping definition
-    <https://searchfox.org/mozilla-central/source/mobile/android/android-components/components/lib/crash/pings.yaml>`_
+    <https://searchfox.org/firefox-main/source/mobile/android/android-components/components/lib/crash/pings.yaml>`_
 
 BigQuery Tables
 ---------------
@@ -73,7 +73,7 @@ BigQuery Tables
 
 Source
 ------
-All crash ping metrics are set in bulk at the same time, and typically come directly from `crash annotations <https://searchfox.org/mozilla-central/source/toolkit/crashreporter/CrashAnnotations.yaml>`_:
+All crash ping metrics are set in bulk at the same time, and typically come directly from `crash annotations <https://searchfox.org/firefox-main/source/toolkit/crashreporter/CrashAnnotations.yaml>`_:
 
 * `Desktop <https://searchfox.org/mozilla-central/rev/b598575345077063c55b618e43ccaa6249505d02/toolkit/components/crashes/CrashManager.in.sys.mjs#787>`__
 * `Crashreporter client <https://searchfox.org/mozilla-central/rev/b598575345077063c55b618e43ccaa6249505d02/toolkit/crashreporter/client/app/src/net/ping/glean.rs#11>`__
@@ -128,7 +128,7 @@ efficient loading in the browser.
 Adding data to crash pings
 ==========================
 #. Add crash annotations to the `definition file
-   <https://searchfox.org/mozilla-central/source/toolkit/crashreporter/CrashAnnotations.yaml>`_ and
+   <https://searchfox.org/firefox-main/source/toolkit/crashreporter/CrashAnnotations.yaml>`_ and
    populate the annotations with the generated APIs.
 #. Define corresponding glean metrics to the files listed in `Ping Definitions`_.
 #. Update the code that populates the metrics listed in `Source`_.

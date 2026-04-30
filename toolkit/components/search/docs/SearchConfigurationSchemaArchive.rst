@@ -122,9 +122,9 @@ of the extension, ``web``.
 
 If a locale is not provided, ``webExtension.locales`` is set to ``default``.
 
-`Search Extensions directory <https://searchfox.org/mozilla-central/source/browser/components/search/extensions>`__
+`Search Extensions directory <https://searchfox.org/firefox-main/source/browser/components/search/extensions>`__
 
-`Example of a locales directory <https://searchfox.org/mozilla-central/source/browser/components/search/extensions/wikipedia/_locales>`__
+`Example of a locales directory <https://searchfox.org/firefox-main/source/browser/components/search/extensions/wikipedia/_locales>`__
 
 
 Special Attributes
@@ -581,5 +581,5 @@ Example:
 
 This would result in the order: ``engine2@ext, engine1@ext, engine3@ext``.
 
-.. _schema itself: https://searchfox.org/mozilla-central/source/toolkit/components/search/schema/
+.. _schema itself: https://searchfox.org/firefox-main/source/toolkit/components/search/schema/
 .. _the version comparator: https://developer.mozilla.org/en-US/docs/Mozilla/Toolkit_version_format

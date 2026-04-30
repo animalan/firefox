@@ -29,6 +29,6 @@ More information
 
 * Talk to us on `Matrix <https://chat.mozilla.org/#/room/#geckoview:mozilla.org>`_
 * `GeckoView Wiki <https://wiki.mozilla.org/Mobile/GeckoView>`_
-* `GeckoView Source Code <https://searchfox.org/mozilla-central/source/mobile/android/geckoview>`_
+* `GeckoView Source Code <https://searchfox.org/firefox-main/source/mobile/android/geckoview>`_
 * `Raise a bug on GeckoView code <https://bugzilla.mozilla.org/enter_bug.cgi?product=GeckoView>`_
 * `Raise a documentation bug <https://github.com/mozilla/geckoview/issues>`_

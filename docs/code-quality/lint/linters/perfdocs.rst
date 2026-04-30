@@ -120,10 +120,10 @@ Metrics that produce alerts can also be documented like so:
 
 The documented metrics must exist in the tests for the suite. If they are not, then validation will fail. The same is true if a metric in a test is not documented. Also, if ``metrics`` are defined, then a ``metrics.rst`` file is expected to be found in the ``perfdocs`` folder for the given suite. It must contain the string ``{metrics_documentation}`` where the documentation should be added. The ``metrics.rst`` is renamed ``{suite-name}-metrics.rst`` in the generated folder, so if it needs to be linked to in the ``index.rst`` file, it should contain a ``{metrics_rst_name}`` string for where the link should be added - it's expected to be found in a toctree section.
 
-Note that there needs to be a FrameworkGatherer implemented for the framework being documented since each of them may have different ways of parsing test manifests for the tests. See `RaptorGatherer <https://searchfox.org/mozilla-central/source/tools/lint/perfdocs/framework_gatherers.py>`_ for an example gatherer that was implemented for Raptor.
+Note that there needs to be a FrameworkGatherer implemented for the framework being documented since each of them may have different ways of parsing test manifests for the tests. See `RaptorGatherer <https://searchfox.org/firefox-main/source/tools/lint/perfdocs/framework_gatherers.py>`_ for an example gatherer that was implemented for Raptor.
 
 Sources
 -------
 
-* `Configuration <https://searchfox.org/mozilla-central/source/tools/lint/perfdocs.yml>`__
-* `Source <https://searchfox.org/mozilla-central/source/tools/lint/perfdocs>`__
+* `Configuration <https://searchfox.org/firefox-main/source/tools/lint/perfdocs.yml>`__
+* `Source <https://searchfox.org/firefox-main/source/tools/lint/perfdocs>`__

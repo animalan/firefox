@@ -425,9 +425,9 @@ needs to be implemented:
 
     :ref:`See the C++ markers guide for more details about it <marker-type-display-schema>`.
 
-.. _profiling_categories.yaml: https://searchfox.org/mozilla-central/source/mozglue/baseprofiler/build/profiling_categories.yaml
-.. _Profiling category pair: https://searchfox.org/mozilla-central/source/__GENERATED__/tools/profiler/rust-api/src/gecko_bindings/profiling_categories.rs
-.. _the list of categories: https://searchfox.org/mozilla-central/source/mozglue/baseprofiler/build/profiling_categories.yaml
+.. _profiling_categories.yaml: https://searchfox.org/firefox-main/source/mozglue/baseprofiler/build/profiling_categories.yaml
+.. _Profiling category pair: https://searchfox.org/firefox-main/source/__GENERATED__/tools/profiler/rust-api/src/gecko_bindings/profiling_categories.rs
+.. _the list of categories: https://searchfox.org/firefox-main/source/mozglue/baseprofiler/build/profiling_categories.yaml
 .. _MarkerOptions: https://searchfox.org/mozilla-central/define?q=rust_analyzer::cargo::gecko_profiler::0_1_0::options::marker::MarkerOptions
 .. _MarkerTiming: https://searchfox.org/mozilla-central/define?q=rust_analyzer::cargo::gecko_profiler::0_1_0::options::marker::MarkerTiming
 .. _MarkerStack: https://searchfox.org/mozilla-central/define?q=rust_analyzer::cargo::gecko_profiler::0_1_0::options::marker::[MarkerStack]

@@ -180,7 +180,7 @@ called ``fuzztest`` that is on the same level as gtests. If your component
 has no gtests, then a subdirectory either in tests or in your main directory
 will work. If such a directory does not exist yet in your component, then you
 need to create one with a suitable ``moz.build``. See  `the transport target
-for an example <https://searchfox.org/mozilla-central/source/dom/media/webrtc/transport/fuzztest/moz.build>`__
+for an example <https://searchfox.org/firefox-main/source/dom/media/webrtc/transport/fuzztest/moz.build>`__
 
 In order to include the new subdirectory into the build process, you will
 also have to modify the toplevel ``moz.build`` file accordingly. For this
@@ -279,7 +279,7 @@ but the macro invocation is quite similar:
   MOZ_FUZZING_INTERFACE_STREAM(FuzzingInitMyTarget, FuzzingRunMyTarget, MyTarget);
 
 For a live example, see also the `implementation of the STUN fuzzing target
-<https://searchfox.org/mozilla-central/source/dom/media/webrtc/transport/fuzztest/stun_parser_libfuzz.cpp>`__.
+<https://searchfox.org/firefox-main/source/dom/media/webrtc/transport/fuzztest/stun_parser_libfuzz.cpp>`__.
 
 Add instrumentation to the code being tested
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -446,7 +446,7 @@ There are a few minor differences though:
    but there is no obligation for you to use these.
 
 For a live example, see also the `implementation of the StructuredCloneReader target
-<https://searchfox.org/mozilla-central/source/js/src/fuzz-tests/testStructuredCloneReader.cpp>`__.
+<https://searchfox.org/firefox-main/source/js/src/fuzz-tests/testStructuredCloneReader.cpp>`__.
 
 
 Implementing in JS
@@ -470,7 +470,7 @@ As a rule of thumb, you should implement the target in JS if
 * or your target is not isolated enough for a C++ target and/or you need specific JS shell functions.
 
 
-There is an `example target <https://searchfox.org/mozilla-central/source/js/src/shell/jsrtfuzzing/jsrtfuzzing-example.js>`__
+There is an `example target <https://searchfox.org/firefox-main/source/js/src/shell/jsrtfuzzing/jsrtfuzzing-example.js>`__
 in-tree that shows roughly how to implement such a fuzzing target.
 
 To run such a target, you must run the ``js`` (shell) binary instead of the
@@ -481,7 +481,7 @@ your fuzzing target, e.g.
 
    $ FUZZER=/path/to/jsrtfuzzing-example.js obj-asan/dist/bin/js --fuzzing-safe --no-threads -- <libFuzzer options here>
 
-More elaborate targets can be found in `js/src/fuzz-tests/ <https://searchfox.org/mozilla-central/source/js/src/fuzz-tests/>`__.
+More elaborate targets can be found in `js/src/fuzz-tests/ <https://searchfox.org/firefox-main/source/js/src/fuzz-tests/>`__.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~

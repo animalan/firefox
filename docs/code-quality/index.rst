@@ -27,7 +27,7 @@ In this document, we try to list these all tools.
    * - Custom clang checker
      -
      -
-     - `Source <https://searchfox.org/mozilla-central/source/build/clang-plugin>`_
+     - `Source <https://searchfox.org/firefox-main/source/build/clang-plugin>`_
      -
    * - Clang-Tidy
      - Yes

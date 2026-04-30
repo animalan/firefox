@@ -18,7 +18,7 @@ The frontend part of the bookmarking experience includes various kind of views:
   * `Menus`_
   * `Toolbars`_
 
-  .. _Trees: https://searchfox.org/mozilla-central/source/browser/components/places/content/places-tree.js
+  .. _Trees: https://searchfox.org/firefox-main/source/browser/components/places/content/places-tree.js
   .. _Menus: https://searchfox.org/mozilla-central/rev/4c184ca81b28f1ccffbfd08f465709b95bcb4aa1/browser/components/places/content/browserPlacesViews.js#1990
   .. _Toolbars: https://searchfox.org/mozilla-central/rev/4c184ca81b28f1ccffbfd08f465709b95bcb4aa1/browser/components/places/content/browserPlacesViews.js#894
 
@@ -30,11 +30,11 @@ Fronted dialogs and panels are written using xhtml and shadow DOM. The bookmark 
 
 Most of the logic for the edit bookmark overlay lives in the generic script `editBookmark.js`_.
 
-.. _Controller: https://searchfox.org/mozilla-central/source/browser/components/places/content/controller.js
-.. _Places event: https://searchfox.org/mozilla-central/source/dom/chrome-webidl/PlacesEvent.webidl
+.. _Controller: https://searchfox.org/firefox-main/source/browser/components/places/content/controller.js
+.. _Places event: https://searchfox.org/firefox-main/source/dom/chrome-webidl/PlacesEvent.webidl
 .. _Model-View-Controller: https://en.wikipedia.org/wiki/Model–view–controller
-.. _editBookmarkPanel.inc.xhtml: https://searchfox.org/mozilla-central/source/browser/components/places/content/editBookmarkPanel.inc.xhtml
-.. _editBookmark.js: https://searchfox.org/mozilla-central/source/browser/components/places/content/editBookmark.js
+.. _editBookmarkPanel.inc.xhtml: https://searchfox.org/firefox-main/source/browser/components/places/content/editBookmarkPanel.inc.xhtml
+.. _editBookmark.js: https://searchfox.org/firefox-main/source/browser/components/places/content/editBookmark.js
 
 Structure of Frontend
 ^^^^^^^^^^^^^^^^^^^^^
@@ -55,15 +55,15 @@ Most part of frontend code is located in : `Browser/Components/Places/Content`_:
   - PlacesContextMenu.inc.xhtml - definition for context menu
   - `TreeView`_ - implementation of the tree view
 
-  .. _Browser/Components/Places/Content: https://searchfox.org/mozilla-central/source/browser/components/places/content
-  .. _BookmarkProperties: https://searchfox.org/mozilla-central/source/browser/components/places/content/bookmarkProperties.js
-  .. _BookmarksSidebar: https://searchfox.org/mozilla-central/source/browser/components/places/content/bookmarksSidebar.js
-  .. _BrowserPlacesViews: https://searchfox.org/mozilla-central/source/browser/components/places/content/browserPlacesViews.js
-  .. _EditBookmark: https://searchfox.org/mozilla-central/source/browser/components/places/content/editBookmark.js
-  .. _HistorySidebar: https://searchfox.org/mozilla-central/source/browser/components/places/content/historySidebar.js
-  .. _Places-menupopup: https://searchfox.org/mozilla-central/source/browser/components/places/content/places-menupopup.js
-  .. _Places-tree: https://searchfox.org/mozilla-central/source/browser/components/places/content/places-tree.js
-  .. _TreeView: https://searchfox.org/mozilla-central/source/browser/components/places/content/treeView.js
+  .. _Browser/Components/Places/Content: https://searchfox.org/firefox-main/source/browser/components/places/content
+  .. _BookmarkProperties: https://searchfox.org/firefox-main/source/browser/components/places/content/bookmarkProperties.js
+  .. _BookmarksSidebar: https://searchfox.org/firefox-main/source/browser/components/places/content/bookmarksSidebar.js
+  .. _BrowserPlacesViews: https://searchfox.org/firefox-main/source/browser/components/places/content/browserPlacesViews.js
+  .. _EditBookmark: https://searchfox.org/firefox-main/source/browser/components/places/content/editBookmark.js
+  .. _HistorySidebar: https://searchfox.org/firefox-main/source/browser/components/places/content/historySidebar.js
+  .. _Places-menupopup: https://searchfox.org/firefox-main/source/browser/components/places/content/places-menupopup.js
+  .. _Places-tree: https://searchfox.org/firefox-main/source/browser/components/places/content/places-tree.js
+  .. _TreeView: https://searchfox.org/firefox-main/source/browser/components/places/content/treeView.js
 
 
 Backend
@@ -85,8 +85,8 @@ Most part of backend code is located in : `Toolkit/Components/Places`_:
   - `PlacesUtils`_ - This module exports functions for Sync to use when applying remote records
   - :doc:`PlacesTransactions` - This module serves as the transactions manager for Places
 
-  .. _Toolkit/Components/Places: https://searchfox.org/mozilla-central/source/toolkit/components/places
-  .. _PlacesUtils: https://searchfox.org/mozilla-central/source/toolkit/components/places/PlacesUtils.sys.mjs
+  .. _Toolkit/Components/Places: https://searchfox.org/firefox-main/source/toolkit/components/places
+  .. _PlacesUtils: https://searchfox.org/firefox-main/source/toolkit/components/places/PlacesUtils.sys.mjs
 
 Storage
 -------
@@ -101,5 +101,5 @@ Synchronization
 Places works in strict contact with `Firefox Sync`_, to synchronize bookmarks and history across devices, thus you can meet Sync specific code in various parts of the Places codebase. Some of the code may refer to Weave, the old project name for Sync.
 
 .. _SQLite: https://www.sqlite.org/index.html
-.. _mozStorage: https://searchfox.org/mozilla-central/source/storage
+.. _mozStorage: https://searchfox.org/firefox-main/source/storage
 .. _Firefox Sync: https://www.mozilla.org/en-US/firefox/sync/

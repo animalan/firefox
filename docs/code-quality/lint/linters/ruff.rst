@@ -36,9 +36,9 @@ For a list of options, see the `settings documentation`_.
 Sources
 -------
 
-* `Configuration (YAML) <https://searchfox.org/mozilla-central/source/tools/lint/ruff.yml>`_
-* `Source <https://searchfox.org/mozilla-central/source/tools/lint/python/ruff.py>`_
+* `Configuration (YAML) <https://searchfox.org/firefox-main/source/tools/lint/ruff.yml>`_
+* `Source <https://searchfox.org/firefox-main/source/tools/lint/python/ruff.py>`_
 
-.. _pyproject.toml: https://searchfox.org/mozilla-central/source/pyproject.toml
+.. _pyproject.toml: https://searchfox.org/firefox-main/source/pyproject.toml
 .. _configuration documentation: https://beta.ruff.rs/docs/configuration/
 .. _settings documentation: https://beta.ruff.rs/docs/settings/

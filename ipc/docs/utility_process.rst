@@ -49,21 +49,21 @@ implementing the trivial example visible in `EmptyUtil
 
   - The specific sandboxing requirements can be implemented by tracking
     ``SandboxingKind``, and it starts within `UtilityProcessSandboxing header
-    <https://searchfox.org/mozilla-central/source/ipc/glue/UtilityProcessSandboxing.h>`_
+    <https://searchfox.org/firefox-main/source/ipc/glue/UtilityProcessSandboxing.h>`_
 
   - Try and make sure you at least add some ``gtest`` coverage of your new
     actor, for example like in `existing gtest
-    <https://searchfox.org/mozilla-central/source/ipc/glue/test/gtest/TestUtilityProcess.cpp>`_
+    <https://searchfox.org/firefox-main/source/ipc/glue/test/gtest/TestUtilityProcess.cpp>`_
 
   - Also ensure actual sandbox testing within
 
     + ``SandboxTest`` to start your new process,
-      `<https://searchfox.org/mozilla-central/source/security/sandbox/common/test/SandboxTest.cpp>`_
+      `<https://searchfox.org/firefox-main/source/security/sandbox/common/test/SandboxTest.cpp>`_
 
     + ``SandboxTestingChildTests`` to define the test
-      `<https://searchfox.org/mozilla-central/source/security/sandbox/common/test/SandboxTestingChildTests.h>`_
+      `<https://searchfox.org/firefox-main/source/security/sandbox/common/test/SandboxTestingChildTests.h>`_
 
     + ``SandboxTestingChild`` to run your test
-      `<https://searchfox.org/mozilla-central/source/security/sandbox/common/test/SandboxTestingChild.cpp>`_
+      `<https://searchfox.org/firefox-main/source/security/sandbox/common/test/SandboxTestingChild.cpp>`_
 
   - Please also consider having a look at :ref:`Process Bookkeeping <process-bookkeeping>` for anything you may want to ensure is supported by your new process, like e.g. profiler, crash reporting, etc.

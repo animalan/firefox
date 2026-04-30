@@ -1953,7 +1953,7 @@ export class FfiConverterSequenceTypeTabsGuid extends FfiConverterArrayBuffer {
 }
 
 /**
- * Note the canonical docs for this are in https://searchfox.org/mozilla-central/source/services/interfaces/mozIBridgedSyncEngine.idl
+ * Note the canonical docs for this are in https://searchfox.org/firefox-main/source/services/interfaces/mozIBridgedSyncEngine.idl
  * It's only actually used in desktop, but it's fine to expose this everywhere.
  * NOTE: all timestamps here are milliseconds.
  */
@@ -2057,7 +2057,7 @@ export class TabsBridgedEngineInterface {
 }
 
 /**
- * Note the canonical docs for this are in https://searchfox.org/mozilla-central/source/services/interfaces/mozIBridgedSyncEngine.idl
+ * Note the canonical docs for this are in https://searchfox.org/firefox-main/source/services/interfaces/mozIBridgedSyncEngine.idl
  * It's only actually used in desktop, but it's fine to expose this everywhere.
  * NOTE: all timestamps here are milliseconds.
  */

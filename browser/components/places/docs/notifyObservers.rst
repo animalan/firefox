@@ -31,5 +31,5 @@ Each successful operation is noticed by observer for these events and passed to 
   - ``“page-removed”`` - ``data: PlacesVisitRemoved`` Fired whenever a page or its visits are removed. This may be invoked when a page is removed from the store because it has no more visits, nor bookmarks. It may also be invoked when all or some of the page visits are removed, but the page itself is not removed from the store, because it may be bookmarked.
   - ``“purge-caches”`` - ``data: PlacesPurgeCaches`` Fired whenever changes happened that could not be observed through other notifications, for example a database fixup. When received, observers, especially data views, should drop any caches and reload from scratch.
 
-  .. _PlacesObservers.webidl: https://searchfox.org/mozilla-central/source/dom/chrome-webidl/PlacesObservers.webidl
-  .. _PlacesEvent.webidl: https://searchfox.org/mozilla-central/source/dom/chrome-webidl/PlacesEvent.webidl
+  .. _PlacesObservers.webidl: https://searchfox.org/firefox-main/source/dom/chrome-webidl/PlacesObservers.webidl
+  .. _PlacesEvent.webidl: https://searchfox.org/firefox-main/source/dom/chrome-webidl/PlacesEvent.webidl

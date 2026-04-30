@@ -49,7 +49,7 @@ described by number 1 below.
    a potential network request that could delay startup.
 
    b) Second, the ``SearchService`` `loads the JSON file <https://searchfox.org/mozilla-central/rev/47db1be98f8069b387ce07dcbea22d09f1854515/toolkit/components/search/SearchService.sys.mjs#1368>`_
-   containing the `SearchSettings <https://searchfox.org/mozilla-central/source/toolkit/components/search/SearchSettings.sys.mjs>`_.
+   containing the `SearchSettings <https://searchfox.org/firefox-main/source/toolkit/components/search/SearchSettings.sys.mjs>`_.
    This JSON file contains Search Engine metadata that is saved on the user's
    computer. It's information that helps the ``SearchService`` remember the
    user's custom settings for the Search Engines.

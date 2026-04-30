@@ -243,13 +243,13 @@ all API scripts look to the following source:
 
 - `SchemaAPIManager _createExtGlobal method <https://searchfox.org/mozilla-central/search?q=symbol:SchemaAPIManager%23_createExtGlobal&redirect=false>`_
 - Only available in the parent Firefox process:
-  `toolkit/components/extensions/parent/ext-toolkit.js <https://searchfox.org/mozilla-central/source/toolkit/components/extensions/parent/ext-toolkit.js>`_
+  `toolkit/components/extensions/parent/ext-toolkit.js <https://searchfox.org/firefox-main/source/toolkit/components/extensions/parent/ext-toolkit.js>`_
 - Only available in the child Firefox process:
-  `toolkit/components/extensions/child/ext-toolkit.js <https://searchfox.org/mozilla-central/source/toolkit/components/extensions/child/ext-toolkit.js>`_
+  `toolkit/components/extensions/child/ext-toolkit.js <https://searchfox.org/firefox-main/source/toolkit/components/extensions/child/ext-toolkit.js>`_
 - Only available in the Desktop builds:
-  `browser/components/extensions/parent/ext-browser.js <https://searchfox.org/mozilla-central/source/browser/components/extensions/parent/ext-browser.js>`_
+  `browser/components/extensions/parent/ext-browser.js <https://searchfox.org/firefox-main/source/browser/components/extensions/parent/ext-browser.js>`_
 - Only available in the Android builds:
-  `mobile/shared/components/extensions/ext-android.js <https://searchfox.org/mozilla-central/source/mobile/shared/components/extensions/ext-android.js>`_
+  `mobile/shared/components/extensions/ext-android.js <https://searchfox.org/firefox-main/source/mobile/shared/components/extensions/ext-android.js>`_
 
 .. warning::
    The extension API authors should never redefine these globals to avoid introducing potential

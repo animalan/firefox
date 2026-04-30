@@ -52,9 +52,9 @@ lengthy multi-stage build process is unnecessary for most local development. The
 upstream `LLVM Getting Started Guide`_ has instructions on how to build
 clang more directly.
 
-.. _build-clang.py: https://searchfox.org/mozilla-central/source/build/build-clang/build-clang.py
-.. _build-clang README: https://searchfox.org/mozilla-central/source/build/build-clang/README
-.. _build-clang: https://searchfox.org/mozilla-central/source/build/build-clang/
+.. _build-clang.py: https://searchfox.org/firefox-main/source/build/build-clang/build-clang.py
+.. _build-clang README: https://searchfox.org/firefox-main/source/build/build-clang/README
+.. _build-clang: https://searchfox.org/firefox-main/source/build/build-clang/
 .. _LLVM Getting Started Guide: https://llvm.org/docs/GettingStarted.html
 
 Rust
@@ -117,7 +117,7 @@ do not currently implement this and will fail if ``rustfmt`` is busted. Some
 attempt was made to work around it, but `more work is needed`_.
 
 .. _Rust's ci: https://github.com/rust-lang/rust/pull/77875#issuecomment-736092083
-.. _repack_rust.py: https://searchfox.org/mozilla-central/source/taskcluster/scripts/misc/repack_rust.py
+.. _repack_rust.py: https://searchfox.org/firefox-main/source/taskcluster/scripts/misc/repack_rust.py
 .. _fetch of the rust tree: https://searchfox.org/mozilla-central/rev/168c45a7acc44e9904cfd4eebcb9eb080e05699c/taskcluster/ci/toolchain/rust.yml#69-71
 .. _clang and binutils toolchains: https://searchfox.org/mozilla-central/rev/168c45a7acc44e9904cfd4eebcb9eb080e05699c/taskcluster/ci/toolchain/rust.yml#72-74
 .. _the --patch flag: https://searchfox.org/mozilla-central/rev/168c45a7acc44e9904cfd4eebcb9eb080e05699c/taskcluster/scripts/misc/repack_rust.py#667-675

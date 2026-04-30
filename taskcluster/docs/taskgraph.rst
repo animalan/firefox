@@ -116,7 +116,7 @@ There are several configuration settings that are pertain to the entire
 taskgraph. These are specified in :file:`config.yml` at the root of the
 taskgraph configuration (typically :file:`taskcluster`). The available
 settings are documented inline in `taskcluster/gecko_taskgraph/config.py
-<https://searchfox.org/mozilla-central/source/taskcluster/gecko_taskgraph/config.py>`_.
+<https://searchfox.org/firefox-main/source/taskcluster/gecko_taskgraph/config.py>`_.
 
 .. _taskgraph-trust-domain:
 
@@ -131,7 +131,7 @@ For more information, see Taskgraph's `actions documentation`_.
 
 .. _graph generation documentation: https://taskcluster-taskgraph.readthedocs.io/en/latest/concepts/task-graphs.html
 .. _this guide: https://taskcluster-taskgraph.readthedocs.io/en/latest/howto/run-locally.html
-.. _taskcluster/kinds: https://searchfox.org/mozilla-central/source/taskcluster/kinds
+.. _taskcluster/kinds: https://searchfox.org/firefox-main/source/taskcluster/kinds
 .. _kind documentation: https://taskcluster-taskgraph.readthedocs.io/en/latest/concepts/kind.html
 .. _loader documentation: https://taskcluster-taskgraph.readthedocs.io/en/latest/concepts/loading.html
 .. _transforms documentation: https://taskcluster-taskgraph.readthedocs.io/en/latest/concepts/transforms.html

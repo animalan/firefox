@@ -1995,7 +1995,7 @@ public class GeckoSession {
   public @interface LoadFlags {}
 
   // These flags follow similarly named ones in Gecko's nsIWebNavigation.idl
-  // https://searchfox.org/mozilla-central/source/docshell/base/nsIWebNavigation.idl
+  // https://searchfox.org/firefox-main/source/docshell/base/nsIWebNavigation.idl
   //
   // We do not use the same values directly in order to insulate ourselves from
   // changes in Gecko. Instead, the flags are converted in GeckoViewNavigation.sys.mjs.
@@ -4822,10 +4822,10 @@ public class GeckoSession {
      *     document.getFailedCertSecurityInfo(), returns FailedCertSecurityInfo -
      *     document.getNetErrorInfo(), returns NetErrorInfo document.reloadWithHttpsOnlyException()
      * @see <a
-     *     href="https://searchfox.org/mozilla-central/source/dom/webidl/FailedCertSecurityInfo.webidl">FailedCertSecurityInfo
+     *     href="https://searchfox.org/firefox-main/source/dom/webidl/FailedCertSecurityInfo.webidl">FailedCertSecurityInfo
      *     IDL</a>
      * @see <a
-     *     href="https://searchfox.org/mozilla-central/source/dom/webidl/NetErrorInfo.webidl">NetErrorInfo
+     *     href="https://searchfox.org/firefox-main/source/dom/webidl/NetErrorInfo.webidl">NetErrorInfo
      *     IDL</a>
      */
     @UiThread

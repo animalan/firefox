@@ -111,7 +111,7 @@ Advanced usage
 Shared suppression files
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-`/build/valgrind/ <https://searchfox.org/mozilla-central/source/build/valgrind/>`__
+`/build/valgrind/ <https://searchfox.org/firefox-main/source/build/valgrind/>`__
 contains the suppression files used by the periodic Valgrind jobs on
 Treeherder. Some of these files are platform-specific.
 

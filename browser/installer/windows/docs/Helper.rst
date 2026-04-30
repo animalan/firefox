@@ -35,5 +35,5 @@ The helper also implements the ``/SetAsDefaultAppUser`` switch, which is invoked
 On Windows 10 neither SetAsDefaultAppUser nor SetAsDefaultAppGlobal is effective because the default programs settings can only be modified by the Windows settings app. However they do still write the registry entries that are needed to get us an entry in the system default browser menu, should those entries not already exist (the installer always creates them, but running Firefox without having run the installer is supported). ShowShortcuts and HideShortcuts are never called on Windows 10 because the SPAD control panel no longer exists.
 
 
-.. _uninstaller.nsi: https://searchfox.org/mozilla-central/source/browser/installer/windows/nsis/uninstaller.nsi
-.. _shared.nsh: https://searchfox.org/mozilla-central/source/browser/installer/windows/nsis/shared.nsh
+.. _uninstaller.nsi: https://searchfox.org/firefox-main/source/browser/installer/windows/nsis/uninstaller.nsi
+.. _shared.nsh: https://searchfox.org/firefox-main/source/browser/installer/windows/nsis/shared.nsh

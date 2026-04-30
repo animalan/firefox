@@ -2799,7 +2799,7 @@ security.ui.certerror:
       - 1553181
       - 1629826
     description: >
-      The about:certerror page is loaded, keyed by error code, see https://searchfox.org/mozilla-central/source/security/nss/lib/mozpkix/include/pkix/Result.h
+      The about:certerror page is loaded, keyed by error code, see https://searchfox.org/firefox-main/source/security/nss/lib/mozpkix/include/pkix/Result.h
     expiry_version: never
     notification_emails:
       - jhofmann@mozilla.com
@@ -2833,7 +2833,7 @@ security.ui.certerror:
       - 1553181
       - 1629826
     description: >
-      User interaction by click events on the cert error page. Keyed by error code, see https://searchfox.org/mozilla-central/source/security/nss/lib/mozpkix/include/pkix/Result.h
+      User interaction by click events on the cert error page. Keyed by error code, see https://searchfox.org/firefox-main/source/security/nss/lib/mozpkix/include/pkix/Result.h
     expiry_version: never
     notification_emails:
       - jhofmann@mozilla.com

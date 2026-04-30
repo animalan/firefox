@@ -13,10 +13,10 @@ named after the `bronze automaton from Greek myth <https://en.wikipedia.org/wiki
    :local:
 
 Talos tests are run in a similar manner to xpcshell and mochitests. They are started via
-the command :code:`mach talos-test`. A `python script <https://searchfox.org/mozilla-central/source/testing/talos>`_
+the command :code:`mach talos-test`. A `python script <https://searchfox.org/firefox-main/source/testing/talos>`_
 then launches Firefox, which runs the tests via JavaScript special powers. The test timing
 information is recorded in a text log file, e.g. :code:`browser_output.txt`, and then processed
-into the `JSON format supported by Perfherder <https://searchfox.org/mozilla-central/source/testing/mozharness/external_tools/performance-artifact-schema.json>`_.
+into the `JSON format supported by Perfherder <https://searchfox.org/firefox-main/source/testing/mozharness/external_tools/performance-artifact-schema.json>`_.
 
 Talos bugs can be filed in `Testing::Talos <https://bugzilla.mozilla.org/enter_bug.cgi?product=Testing&component=Talos>`_.
 
@@ -123,23 +123,23 @@ At a glance
 ***********
 
 -  Tests are defined in
-   `testing/talos/talos/test.py <https://searchfox.org/mozilla-central/source/testing/talos/talos/test.py>`__
+   `testing/talos/talos/test.py <https://searchfox.org/firefox-main/source/testing/talos/talos/test.py>`__
 -  Treeherder abbreviations are defined in
-   `taskcluster/kinds/test/talos.yml <https://searchfox.org/mozilla-central/source/taskcluster/kinds/test/talos.yml>`__
+   `taskcluster/kinds/test/talos.yml <https://searchfox.org/firefox-main/source/taskcluster/kinds/test/talos.yml>`__
 -  Suites are defined for production in
-   `testing/talos/talos.json <https://searchfox.org/mozilla-central/source/testing/talos/talos.json>`__
+   `testing/talos/talos.json <https://searchfox.org/firefox-main/source/testing/talos/talos.json>`__
 
 Test lifecycle
 **************
 
 -  Taskcluster schedules `talos
-   jobs <https://searchfox.org/mozilla-central/source/taskcluster/kinds/test/talos.yml>`__
+   jobs <https://searchfox.org/firefox-main/source/taskcluster/kinds/test/talos.yml>`__
 -  Taskcluster runs a Talos job on a hardware machine when one is
    available - this is bootstrapped by
-   `mozharness <https://searchfox.org/mozilla-central/source/testing/mozharness/mozharness/mozilla/testing/talos.py>`__
+   `mozharness <https://searchfox.org/firefox-main/source/testing/mozharness/mozharness/mozilla/testing/talos.py>`__
 
    -  mozharness downloads the build, talos.zip (found in
-      `talos.json <https://searchfox.org/mozilla-central/source/testing/talos/talos.json>`__),
+      `talos.json <https://searchfox.org/firefox-main/source/testing/talos/talos.json>`__),
       and creates a virtualenv for running the test.
    -  mozharness `configures the test and runs
       it <https://wiki.mozilla.org/TestEngineering/Performance/Talos/Running#How_Talos_is_Run_in_Production>`__

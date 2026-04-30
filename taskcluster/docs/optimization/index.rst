@@ -17,4 +17,4 @@ Other Strategies
 There are many other undocumented strategies available here. See the
 `taskcluster/gecko_taskgraph/optimize`_ module for more available strategies.
 
-.. _taskcluster/gecko_taskgraph/optimize: https://searchfox.org/mozilla-central/source/taskcluster/gecko_taskgraph/optimize
+.. _taskcluster/gecko_taskgraph/optimize: https://searchfox.org/firefox-main/source/taskcluster/gecko_taskgraph/optimize

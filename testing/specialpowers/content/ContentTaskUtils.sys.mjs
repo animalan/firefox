@@ -219,7 +219,7 @@ export var ContentTaskUtils = {
 
   /**
    * Gets an instance of the `EventUtils` helper module for usage in
-   * content tasks. See https://searchfox.org/mozilla-central/source/testing/mochitest/tests/SimpleTest/EventUtils.js
+   * content tasks. See https://searchfox.org/firefox-main/source/testing/mochitest/tests/SimpleTest/EventUtils.js
    *
    * @param content
    *        The `content` global object from your content task.

@@ -33,7 +33,7 @@ for contributing high-quality and actionable bugs and code.
 
 [_Marionette_]: ./index.rst
 [_geckodriver_]: /testing/geckodriver/index.rst
-[_webdriver_]: https://searchfox.org/mozilla-central/source/testing/webdriver/README.md
+[_webdriver_]: https://searchfox.org/firefox-main/source/testing/webdriver/README.md
 [WebDriver protocol]: https://w3c.github.io/webdriver/webdriver-spec.html#protocol
 [Community Participation Guidelines]: https://www.mozilla.org/en-US/about/governance/policies/participation/
 
@@ -51,7 +51,7 @@ We have collected a lot of good advice for working on Marionette
 code in our [code style document], which we highly recommend you read.
 
 [ask questions]: index.rst#Communication
-[mozilla-central]: https://searchfox.org/mozilla-central/source/remote/marionette/
+[mozilla-central]: https://searchfox.org/firefox-main/source/remote/marionette/
 [Testing :: Marionette]: https://bugzilla.mozilla.org/buglist.cgi?resolution=---&component=Marionette
 [good first bugs]: https://codetribute.mozilla.org/projects/automation?project%3DMarionette
 [code style document]: CodeStyle.md

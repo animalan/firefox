@@ -100,7 +100,7 @@ newtab:
       Recorded when newtab UI is opened via `about:newtab` or `about:home` or
       `about:welcome` and has been made visible (see `visibility_event_rcvd_ts`
       in
-      [detect-user-session-start.js](https://searchfox.org/mozilla-central/source/browser/components/newtab/content-src/lib/detect-user-session-start.js)).
+      [detect-user-session-start.js](https://searchfox.org/firefox-main/source/browser/components/newtab/content-src/lib/detect-user-session-start.js)).
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1766887
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1786670

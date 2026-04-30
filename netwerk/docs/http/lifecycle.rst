@@ -205,16 +205,16 @@ Useful Code Samples and References
 
 - nsIHttpProtocolHandler_ defines a lot of observer topics, and has a lot of details.
 
-.. _nsIHttpChannel: https://searchfox.org/mozilla-central/source/netwerk/protocol/http/nsIHttpChannel.idl
-.. _nsIChannel: https://searchfox.org/mozilla-central/source/netwerk/base/nsIChannel.idl
-.. _nsIUploadChannel: https://searchfox.org/mozilla-central/source/netwerk/base/nsIUploadChannel.idl
-.. _nsITraceableChannel: https://searchfox.org/mozilla-central/source/netwerk/base/nsITraceableChannel.idl
-.. _nsISeekableStream: https://searchfox.org/mozilla-central/source/xpcom/io/nsISeekableStream.idl
-.. _nsIObserverService: https://searchfox.org/mozilla-central/source/xpcom/ds/nsIObserverService.idl
-.. _nsIHttpProtocolHandler: https://searchfox.org/mozilla-central/source/netwerk/protocol/http/nsIHttpProtocolHandler.idl
-.. _nsIStreamListenerTee: https://searchfox.org/mozilla-central/source/netwerk/base/nsIStreamListenerTee.idl
-.. _nsIPipe: https://searchfox.org/mozilla-central/source/xpcom/io/nsIPipe.idl
+.. _nsIHttpChannel: https://searchfox.org/firefox-main/source/netwerk/protocol/http/nsIHttpChannel.idl
+.. _nsIChannel: https://searchfox.org/firefox-main/source/netwerk/base/nsIChannel.idl
+.. _nsIUploadChannel: https://searchfox.org/firefox-main/source/netwerk/base/nsIUploadChannel.idl
+.. _nsITraceableChannel: https://searchfox.org/firefox-main/source/netwerk/base/nsITraceableChannel.idl
+.. _nsISeekableStream: https://searchfox.org/firefox-main/source/xpcom/io/nsISeekableStream.idl
+.. _nsIObserverService: https://searchfox.org/firefox-main/source/xpcom/ds/nsIObserverService.idl
+.. _nsIHttpProtocolHandler: https://searchfox.org/firefox-main/source/netwerk/protocol/http/nsIHttpProtocolHandler.idl
+.. _nsIStreamListenerTee: https://searchfox.org/firefox-main/source/netwerk/base/nsIStreamListenerTee.idl
+.. _nsIPipe: https://searchfox.org/firefox-main/source/xpcom/io/nsIPipe.idl
 
-.. _test_basic_functionality.js: https://searchfox.org/mozilla-central/source/netwerk/test/httpserver/test/test_basic_functionality.js
-.. _test_traceable_channel.js: https://searchfox.org/mozilla-central/source/netwerk/test/unit/test_traceable_channel.js
-.. _network-helper.js: https://searchfox.org/mozilla-central/source/devtools/shared/webconsole/network-helper.js
+.. _test_basic_functionality.js: https://searchfox.org/firefox-main/source/netwerk/test/httpserver/test/test_basic_functionality.js
+.. _test_traceable_channel.js: https://searchfox.org/firefox-main/source/netwerk/test/unit/test_traceable_channel.js
+.. _network-helper.js: https://searchfox.org/firefox-main/source/devtools/shared/webconsole/network-helper.js

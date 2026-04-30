@@ -34,7 +34,7 @@ Most tests are registered using tests manifests and the **PERFTESTS_MANIFESTS**
 variable in `moz.build` files - it's good practice to name this file
 `perftest.toml`. **This doesn't apply to mochitest tests**, they should use the manifest variable of the respective flavour/subsuite that the test is running in.
 
-Example of such a file: https://searchfox.org/mozilla-central/source/testing/performance/perftest.toml
+Example of such a file: https://searchfox.org/firefox-main/source/testing/performance/perftest.toml
 
 
 XPCShell
@@ -265,7 +265,7 @@ A Python module can be used to run functions during a run lifecycle. Available h
 
 - **before_iterations(args)** runs before everything is started. Gets the args, which
   can be changed. The **args** argument also contains a **virtualenv** variable that
-  can be used for installing Python packages (e.g. through `install_package <https://searchfox.org/mozilla-central/source/python/mozperftest/mozperftest/utils.py#115-144>`_).
+  can be used for installing Python packages (e.g. through `install_package <https://searchfox.org/firefox-main/source/python/mozperftest/mozperftest/utils.py#115-144>`_).
 - **before_runs(env)** runs before the test is launched. Can be used to
   change the running environment.
 - **after_runs(env)** runs after the test is done.

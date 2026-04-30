@@ -14,7 +14,7 @@ a permission consists of the following:
 
 For storing arbitrary preferences per origin instead of just permission values,
 the `content pref service
-<https://searchfox.org/mozilla-central/source/dom/interfaces/base/nsIContentPrefService2.idl>`__
+<https://searchfox.org/firefox-main/source/dom/interfaces/base/nsIContentPrefService2.idl>`__
 offers a good alternative to the permission manager.
 
 The permission manager also supports :doc:`browser-scoped (per-tab) temporary
@@ -22,7 +22,7 @@ permissions <browser-scoped>` that are not stored to disk and are automatically
 cleared when their tab is closed.
 
 The `site permission manager
-<https://searchfox.org/mozilla-central/source/browser/modules/SitePermissions.sys.mjs>`__
+<https://searchfox.org/firefox-main/source/browser/modules/SitePermissions.sys.mjs>`__
 builds on top of both regular and browser-scoped permissions, and makes user
 interfaces easier.
 
@@ -35,7 +35,7 @@ interface. This interface is available through the
 ``Services.perms`` getter in JavaScript. Below is a list of the most common
 methods, and examples on how to use them with JavaScript. For a full list of
 signatures, see `nsIPermissionManager.idl
-<https://searchfox.org/mozilla-central/source/netwerk/base/nsIPermissionManager.idl>`__.
+<https://searchfox.org/firefox-main/source/netwerk/base/nsIPermissionManager.idl>`__.
 
 ``testExactPermissionFromPrincipal``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

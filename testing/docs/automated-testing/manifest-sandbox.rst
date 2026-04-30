@@ -26,7 +26,7 @@ How to Add a Keyword
 Where to add the new key depends on what type of information it is.
 
 1. If the key is a property of the build, you'll need to patch `this file
-   <https://searchfox.org/mozilla-central/source/python/mozbuild/mozbuild/mozinfo.py>`_.
+   <https://searchfox.org/firefox-main/source/python/mozbuild/mozbuild/mozinfo.py>`_.
 2. If the key is a property of the test environment, you'll need to patch
    `mozinfo <https://firefox-source-docs.mozilla.org/mozbase/mozinfo.html>`_.
 3. If the key is a runtime configuration, for example based on a pref that is
@@ -56,7 +56,7 @@ In this case, ``cocoaWidget`` and ``isDebugbuild`` are booleans.
 The test will download the build's ``target.mozinfo.json``, then in addition to
 the mozinfo, will query runtime info from the browser to build a sandbox of
 keywords. This logic lives in `manifest.sys.mjs
-<https://searchfox.org/mozilla-central/source/layout/tools/reftest/manifest.sys.mjs#439>`__.
+<https://searchfox.org/firefox-main/source/layout/tools/reftest/manifest.sys.mjs#439>`__.
 
 How to Add a Keyword
 ~~~~~~~~~~~~~~~~~~~~
@@ -64,7 +64,7 @@ How to Add a Keyword
 Where to add the new key depends on what type of information it is.
 
 1. If the key is a property of the build, you'll need to patch `this file
-   <https://searchfox.org/mozilla-central/source/python/mozbuild/mozbuild/mozinfo.py>`_.
+   <https://searchfox.org/firefox-main/source/python/mozbuild/mozbuild/mozinfo.py>`_.
 2. If the key is a property of the test environment or a runtime configuration,
    then you'll need need to update manifest sandbox.
 

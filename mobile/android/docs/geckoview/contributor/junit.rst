@@ -5,7 +5,7 @@ Junit Test Framework
 GeckoView has `a lot
 <https://searchfox.org/mozilla-central/rev/36904ac58d2528fc59f640db57cc9429103368d3/mobile/android/geckoview/src/androidTest/java/org/mozilla/geckoview/test/rule/GeckoSessionTestRule.java>`_
 of `custom
-<https://searchfox.org/mozilla-central/source/mobile/android/geckoview/src/androidTest/assets/web_extensions/test-support>`_
+<https://searchfox.org/firefox-main/source/mobile/android/geckoview/src/androidTest/assets/web_extensions/test-support>`_
 code that is used to run junit tests. This document is an overview of what this
 code does and how it works.
 
@@ -317,7 +317,7 @@ The test runner extension
 
 To run arbitrary javascript in GeckoView, the test runner installs a `support
 extension
-<https://searchfox.org/mozilla-central/source/mobile/android/geckoview/src/androidTest/assets/web_extensions/test-support>`_.
+<https://searchfox.org/firefox-main/source/mobile/android/geckoview/src/androidTest/assets/web_extensions/test-support>`_.
 
 The test framework then `establishes
 <https://searchfox.org/mozilla-central/rev/95d8478112eecdd0ee249a941788e03f47df240b/mobile/android/geckoview/src/androidTest/java/org/mozilla/geckoview/test/rule/GeckoSessionTestRule.java#1827>`_

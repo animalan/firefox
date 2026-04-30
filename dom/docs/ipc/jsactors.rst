@@ -540,7 +540,7 @@ And more
 .. _Electrolysis Project: https://wiki.mozilla.org/Electrolysis
 .. _IPC Actors: https://developer.mozilla.org/en-US/docs/Mozilla/IPDL/Tutorial
 .. _Context Menu Fission Port: https://hg.mozilla.org/mozilla-central/rev/adc60720b7b8
-.. _JSProcessActor.webidl: https://searchfox.org/mozilla-central/source/dom/chrome-webidl/JSProcessActor.webidl
-.. _JSWindowActor.webidl: https://searchfox.org/mozilla-central/source/dom/chrome-webidl/JSWindowActor.webidl
-.. _BrowserElementParent.sys.mjs: https://searchfox.org/mozilla-central/source/toolkit/actors/BrowserElementParent.sys.mjs
+.. _JSProcessActor.webidl: https://searchfox.org/firefox-main/source/dom/chrome-webidl/JSProcessActor.webidl
+.. _JSWindowActor.webidl: https://searchfox.org/firefox-main/source/dom/chrome-webidl/JSWindowActor.webidl
+.. _BrowserElementParent.sys.mjs: https://searchfox.org/firefox-main/source/toolkit/actors/BrowserElementParent.sys.mjs
 .. _Transferable: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects

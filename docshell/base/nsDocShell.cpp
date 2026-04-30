@@ -7797,7 +7797,7 @@ bool nsDocShell::IsSameDocumentNavigation(nsDocShellLoadState* aLoadState,
               // At this point the requested URI is for sure a fragment
               // navigation via HTTP and HTTPS-Only mode or HTTPS-First is
               // enabled. Also it is not interfering the upgrade order of
-              // https://searchfox.org/mozilla-central/source/netwerk/base/nsNetUtil.cpp#2948-2953.
+              // https://searchfox.org/firefox-main/source/netwerk/base/nsNetUtil.cpp#2948-2953.
               // Since we are on an HTTPS site the fragment
               // navigation should also be an HTTPS.
               // For that reason we should upgrade the URI to HTTPS.

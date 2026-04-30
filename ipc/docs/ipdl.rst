@@ -97,7 +97,7 @@ that represents the child.  The generated files are then automatically included
 in the C++ build process.  The generated classes contain public methods for
 sending the protocol messages, which client code will use as the entry-point to
 IPC communication.  The generated methods are built atop our IPC framework,
-defined in `/ipc <https://searchfox.org/mozilla-central/source/ipc>`_, that
+defined in `/ipc <https://searchfox.org/firefox-main/source/ipc>`_, that
 standardizes the safe and secure use of sockets, pipes, shared memory, etc on
 all supported platforms.  See `Using The IPDL compiler`_ for more on
 integration with the build process.
@@ -108,9 +108,9 @@ also add routines (``ParamTraits``) that define serialization and
 deserialization for any types used in the payload of a message that aren't
 already known to the IPDL system.  Primitive types, and a bunch of Mozilla
 types, have predefined ``ParamTraits`` (`here
-<https://searchfox.org/mozilla-central/source/ipc/glue/IPCMessageUtils.h>`__
+<https://searchfox.org/firefox-main/source/ipc/glue/IPCMessageUtils.h>`__
 and `here
-<https://searchfox.org/mozilla-central/source/ipc/glue/IPCMessageUtilsSpecializations.h>`__).
+<https://searchfox.org/firefox-main/source/ipc/glue/IPCMessageUtilsSpecializations.h>`__).
 
 .. note::
     Among other things, client code that uses the generated code must include
@@ -606,7 +606,7 @@ discussed in the next chapter; messages in particular are covered in `Actors
 and Messages in C++`_.  For suggestions on best practices when designing your
 IPDL actor approach, see `IPDL Best Practices`_.
 
-.. _builtin.py: https://searchfox.org/mozilla-central/source/ipc/ipdl/ipdl/builtin.py
+.. _builtin.py: https://searchfox.org/firefox-main/source/ipc/ipdl/ipdl/builtin.py
 
 IPDL Syntax Quick Reference
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -799,11 +799,11 @@ without inclusion.  An incomplete list includes: C++ primitives, strings
 (``std`` and ``mozilla``), vectors (``std`` and ``mozilla``), ``RefPtr<T>``
 (for serializable ``T``), ``UniquePtr<T>``, ``nsCOMPtr<T>``, ``nsTArray<T>``,
 ``std::unordered_map<T>``, ``nsresult``, etc.  See `builtin.py
-<https://searchfox.org/mozilla-central/source/ipc/ipdl/ipdl/builtin.py>`_,
+<https://searchfox.org/firefox-main/source/ipc/ipdl/ipdl/builtin.py>`_,
 `ipc_message_utils.h
-<https://searchfox.org/mozilla-central/source/ipc/chromium/src/chrome/common/ipc_message_utils.h>`_
+<https://searchfox.org/firefox-main/source/ipc/chromium/src/chrome/common/ipc_message_utils.h>`_
 and `IPCMessageUtilsSpecializations.h
-<https://searchfox.org/mozilla-central/source/ipc/glue/IPCMessageUtilsSpecializations.h>`_.
+<https://searchfox.org/firefox-main/source/ipc/glue/IPCMessageUtilsSpecializations.h>`_.
 
 ``ParamTraits`` typically bootstrap with the ``ParamTraits`` of more basic
 types, until they hit bedrock (e.g. one of the basic types above).  In the most
@@ -1111,7 +1111,7 @@ handler before their values can be used (as opposed to validation in
 ``ParamTraits``).  They therefore have access to any state that the message
 handler does.  Their APIs, along with a list of macros that are used to
 validate them, are detailed `here
-<https://searchfox.org/mozilla-central/source/mfbt/Tainting.h>`__.
+<https://searchfox.org/firefox-main/source/mfbt/Tainting.h>`__.
 
 Send methods that are not for async messages with return values follow a
 simpler form; they return a ``bool`` indicating success or failure and return

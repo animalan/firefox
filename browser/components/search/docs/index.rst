@@ -22,4 +22,4 @@ Most of the search code lives in `browser/components/search`_.
    telemetry
 
 .. _toolkit Search Service: /toolkit/search/index.html
-.. _browser/components/search: https://searchfox.org/mozilla-central/source/browser/components/search
+.. _browser/components/search: https://searchfox.org/firefox-main/source/browser/components/search

@@ -155,7 +155,7 @@ class ServerLocations:
         :param check_for_primary: if True, a ``MissingPrimaryLocationError`` exception is raised
           if no primary is found
 
-        .. _server-locations.txt: http://searchfox.org/mozilla-central/source/build/pgo/server-locations.txt # noqa
+        .. _server-locations.txt: http://searchfox.org/firefox-main/source/build/pgo/server-locations.txt # noqa
 
         The only exception is that the port, if not defined, defaults to 80 or 443.
 

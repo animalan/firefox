@@ -168,8 +168,8 @@ Platforms that are currently supported in CI
 Sources
 -------
 
-* `Configuration (YAML) <https://searchfox.org/mozilla-central/source/tools/lint/test-manifest-toml.yml>`_
-* `Source <https://searchfox.org/mozilla-central/source/tools/lint/test-manifest-toml/__init__.py>`_
+* `Configuration (YAML) <https://searchfox.org/firefox-main/source/tools/lint/test-manifest-toml.yml>`_
+* `Source <https://searchfox.org/firefox-main/source/tools/lint/test-manifest-toml/__init__.py>`_
 
 Developer Information
 ---------------------

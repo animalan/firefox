@@ -14,7 +14,7 @@ More information about this component including design, writing, and localizatio
 
 ## Code
 
-The source for `moz-radio-group` and `moz-radio` can be found under [toolkit/content/widgets/moz-radio-group/](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/moz-radio-group/).
+The source for `moz-radio-group` and `moz-radio` can be found under [toolkit/content/widgets/moz-radio-group/](https://searchfox.org/firefox-main/source/toolkit/content/widgets/moz-radio-group/).
 
 ## When to use `moz-radio-group`
 

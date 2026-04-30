@@ -228,7 +228,7 @@ Finally, follow the next command to get the API hash for the CHANGELOG:
 
     ./mach lint --linter android-api-lint
 
-In the `CHANGELOG` `file <https://searchfox.org/mozilla-central/source/mobile/android/geckoview/src/main/java/org/mozilla/geckoview/doc-files/CHANGELOG.md>`_.
+In the `CHANGELOG` `file <https://searchfox.org/firefox-main/source/mobile/android/geckoview/src/main/java/org/mozilla/geckoview/doc-files/CHANGELOG.md>`_.
 at the bottom, swap `[api-version]` with the new hash provided by the linter and add an entry for what changed.
 
 The feature and methods should also be documented in the changelog similar to the example below.

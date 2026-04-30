@@ -49,7 +49,7 @@ class DefaultDownloadFileUtils(
 
     /**
      * Keep aligned with desktop generic content types:
-     * https://searchfox.org/mozilla-central/source/browser/components/downloads/DownloadsCommon.jsm#208
+     * https://searchfox.org/firefox-main/source/browser/components/downloads/DownloadsCommon.jsm#208
      */
     private val genericContentTypes = arrayOf(
         "application/octet-stream",

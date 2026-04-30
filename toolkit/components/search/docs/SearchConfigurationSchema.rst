@@ -385,6 +385,6 @@ configuration, the following algorithm is used by the search engine selector:
 
 #. Otherwise, the locale used doesn't matter, and either form may be used.
 
-.. _schema itself: https://searchfox.org/mozilla-central/source/toolkit/components/search/schema/
+.. _schema itself: https://searchfox.org/firefox-main/source/toolkit/components/search/schema/
 .. _the version comparator: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/version/format
-.. _search-config-v2: https://searchfox.org/mozilla-central/source/services/settings/dumps/main/search-config-v2.json
+.. _search-config-v2: https://searchfox.org/firefox-main/source/services/settings/dumps/main/search-config-v2.json

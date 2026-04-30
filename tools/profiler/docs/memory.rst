@@ -11,7 +11,7 @@ uses a technique of hooking into malloc that could be a little more risky to app
 the broader population of Firefox users.
 
 This implementation is located in: `tools/profiler/core/memory_hooks.cpp
-<https://searchfox.org/mozilla-central/source/tools/profiler/core/memory_hooks.cpp>`_
+<https://searchfox.org/firefox-main/source/tools/profiler/core/memory_hooks.cpp>`_
 
 It works by hooking into all of the malloc calls. When the profiler is running, it
 performs a `Bernoulli trial`_ that will pass for a given probability of per-byte
@@ -43,4 +43,4 @@ of cheap counting instrumentation.
 .. _Bernoulli trial: https://en.wikipedia.org/wiki/Bernoulli_trial
 .. _Firefox Profiler docs: https://profiler.firefox.com/docs/#/./memory-allocations
 .. _Firefox Profiler memory track: https://profiler.firefox.com/docs/#/./memory-allocations?id=memory-track
-.. _Profiler Counters: https://searchfox.org/mozilla-central/source/tools/profiler/public/ProfilerCounts.h
+.. _Profiler Counters: https://searchfox.org/firefox-main/source/tools/profiler/public/ProfilerCounts.h

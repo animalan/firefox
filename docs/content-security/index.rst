@@ -103,6 +103,6 @@ References
 ----------
 The interface definition in source code have a lot of detailed comments:
 
-- The `nsIPrincipal <https://searchfox.org/mozilla-central/source/caps/nsIPrincipal.idl>`_ interface definition.
-- The `nsILoadInfo <https://searchfox.org/mozilla-central/source/netwerk/base/nsILoadInfo.idl>`_ interface definition.
-- The `nsIContentSecurityManager <https://searchfox.org/mozilla-central/source/dom/interfaces/security/nsIContentSecurityManager.idl>`_ interface definition
+- The `nsIPrincipal <https://searchfox.org/firefox-main/source/caps/nsIPrincipal.idl>`_ interface definition.
+- The `nsILoadInfo <https://searchfox.org/firefox-main/source/netwerk/base/nsILoadInfo.idl>`_ interface definition.
+- The `nsIContentSecurityManager <https://searchfox.org/firefox-main/source/dom/interfaces/security/nsIContentSecurityManager.idl>`_ interface definition

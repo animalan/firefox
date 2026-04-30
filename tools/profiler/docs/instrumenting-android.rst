@@ -95,7 +95,7 @@ profiler is active. Here's an example:
     components.core.engine.profiler?.addMarker("Marker Name", info)
   }
 
-.. _ProfilerController Java file: https://searchfox.org/mozilla-central/source/mobile/android/geckoview/src/main/java/org/mozilla/geckoview/ProfilerController.java
+.. _ProfilerController Java file: https://searchfox.org/firefox-main/source/mobile/android/geckoview/src/main/java/org/mozilla/geckoview/ProfilerController.java
 .. _javadoc: https://mozilla.github.io/geckoview/javadoc/mozilla-central/org/mozilla/geckoview/ProfilerController.html
-.. _Profiler interface here: https://searchfox.org/mozilla-central/source/mobile/android/android-components/components/concept/base/src/main/java/mozilla/components/concept/base/profiler/Profiler.kt
-.. _implementation here: https://searchfox.org/mozilla-central/source/mobile/android/android-components/components/browser/engine-gecko/src/main/java/mozilla/components/browser/engine/gecko/profiler/Profiler.kt
+.. _Profiler interface here: https://searchfox.org/firefox-main/source/mobile/android/android-components/components/concept/base/src/main/java/mozilla/components/concept/base/profiler/Profiler.kt
+.. _implementation here: https://searchfox.org/firefox-main/source/mobile/android/android-components/components/browser/engine-gecko/src/main/java/mozilla/components/browser/engine/gecko/profiler/Profiler.kt

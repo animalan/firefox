@@ -103,9 +103,9 @@ because when composition string is already separated to multiple clauses, that
 means that the composition string has already been converted by IME at least
 once.
 
-.. _nsISelectionController: https://searchfox.org/mozilla-central/source/dom/base/nsISelectionController.idl
-.. _mozilla::SelectionType: https://searchfox.org/mozilla-central/source/dom/base/nsISelectionController.idl
-.. _mozilla::TextRangeType: https://searchfox.org/mozilla-central/source/widget/TextRange.h
+.. _nsISelectionController: https://searchfox.org/firefox-main/source/dom/base/nsISelectionController.idl
+.. _mozilla::SelectionType: https://searchfox.org/firefox-main/source/dom/base/nsISelectionController.idl
+.. _mozilla::TextRangeType: https://searchfox.org/firefox-main/source/widget/TextRange.h
 
 Modules handling IME composition
 ================================
@@ -277,12 +277,12 @@ composition to IME is perefored synchronously. See
 editor/libeditor
 ----------------
 
-`mozilla::EditorEventListener <https://searchfox.org/mozilla-central/source/editor/libeditor/EditorEventListener.cpp>`__
+`mozilla::EditorEventListener <https://searchfox.org/firefox-main/source/editor/libeditor/EditorEventListener.cpp>`__
 listens for trusted DOM ``compositionstart``, ``text`` and ``compositionend``
 events and notifies
-`mozilla::EditorBase <https://searchfox.org/mozilla-central/source/editor/libeditor/EditorBase.cpp>`__
+`mozilla::EditorBase <https://searchfox.org/firefox-main/source/editor/libeditor/EditorBase.cpp>`__
 and
-`mozilla::TextEditor <https://searchfox.org/mozilla-central/source/editor/libeditor/TextEditor.cpp>`__
+`mozilla::TextEditor <https://searchfox.org/firefox-main/source/editor/libeditor/TextEditor.cpp>`__
 of the events.
 
 When ``EditorBase`` receives an ``eCompositionStart``
@@ -291,7 +291,7 @@ instance and stores it.
 
 When ``TextEditor`` receives an ``eCompositionChange`` (DOM ``"text"``) event,
 it creates or modifies a text node which includes the composition string and
-`mozilla::CompositionTransaction <https://searchfox.org/mozilla-central/source/editor/libeditor/CompositionTransaction.cpp>`__
+`mozilla::CompositionTransaction <https://searchfox.org/firefox-main/source/editor/libeditor/CompositionTransaction.cpp>`__
 (it was called ``IMETextTxn``) sets IME selections for representing the clauses
 of the composition string.
 
@@ -413,7 +413,7 @@ mozilla::ContentCacheInChild
 ----------------------------
 
 This exists only in remote processes. This is created as a member of
-`PuppetWidget <https://searchfox.org/mozilla-central/source/widget/PuppetWidget.cpp>`__.
+`PuppetWidget <https://searchfox.org/firefox-main/source/widget/PuppetWidget.cpp>`__.
 When ``PuppetWidget`` receives notifications to IME from ``IMEContentObserver``
 in the remote process, it makes this class modify its cached content. Then,
 this class do that with ``WidgetQueryContentEvents``. Finally, ``PuppetWidget``
@@ -488,7 +488,7 @@ Style of each clause
 --------------------
 
 The style of each IME selection is managed by
-`LookAndFeel <https://searchfox.org/mozilla-central/source/widget/LookAndFeel.h>`__
+`LookAndFeel <https://searchfox.org/firefox-main/source/widget/LookAndFeel.h>`__
 class per platform. Therefore, it can be overridden by prefs.
 
 Background color, foreground color (text color) and underline color can be
@@ -510,7 +510,7 @@ specified with following prefs. The values must be string of "#rrggbb" format.
 Underline style can be specified with the following prefs. The values are
 integer,  0: none, 1: dotted, 2: dashed, 3: solid, 4: double, 5: wavy (The
 values same as ``mozilla::StyleTextDecorationStyle`` defined in
-`nsStyleConsts.h <https://searchfox.org/mozilla-central/source/layout/style/nsStyleConsts.h>`__).
+`nsStyleConsts.h <https://searchfox.org/firefox-main/source/layout/style/nsStyleConsts.h>`__).
 
 * ``ui.IMERawInputUnderlineStyle``
 * ``ui.IMESelectedRawTextUnderlineStyle``
@@ -524,7 +524,7 @@ normal width, 200 means double width.
 On some platforms, IME may support its own style for each clause. Currently,
 this feature is supported in TSF mode of Windows and on Linux. The style
 information is stored in ``TextRangeStyle`` which is defined in
-`TextRange.h <https://searchfox.org/mozilla-central/source/widget/TextRange.h>`__.
+`TextRange.h <https://searchfox.org/firefox-main/source/widget/TextRange.h>`__.
 It's a member of ``TextRange``. ``TextRange`` is stored in ``mRanges`` of
 ``WidgetCompositionEvent`` only when its message is ``eCompositionChange``.
 
@@ -707,7 +707,7 @@ focused editor, this is sent to widget. But this is sent only when result of
 ``nsIWidget::GetIMEUpdatePreference()`` includes
 ``NOTIFY_MOUSE_BUTTON_EVENT_ON_CHAR``. This is sent with various information.
 See ``IMENotification::mMouseButtonEventData`` in
-`IMEData.h <https://searchfox.org/mozilla-central/source/widget/IMEData.h>`__
+`IMEData.h <https://searchfox.org/firefox-main/source/widget/IMEData.h>`__
 for the detail.
 
 If native IME supports mouse button event handling, ``widget`` should notify
@@ -842,7 +842,7 @@ of the new focused node (calls ``IMEStateManager::OnChangeFocus()``).
 returns the result.
 
 Next, ``IMEStateManager`` initializes ``InputContext`` (defined in
-`IMEData.h <https://searchfox.org/mozilla-central/source/widget/IMEData.h>`__)
+`IMEData.h <https://searchfox.org/firefox-main/source/widget/IMEData.h>`__)
 with the desired IME state and node information. Then, it calls
 ``nsIWidget::SetInputContext()`` with the ``InputContext``.
 
@@ -917,26 +917,26 @@ How does Gecko disable IME in IMM mode on Windows
 
 Every window on Windows is associated an ``IMContext``. When Gecko disables
 IME,
-`mozilla::widget::IMEHandler <https://searchfox.org/mozilla-central/source/widget/windows/WinIMEHandler.cpp>`__::SetInputContext()
+`mozilla::widget::IMEHandler <https://searchfox.org/firefox-main/source/widget/windows/WinIMEHandler.cpp>`__::SetInputContext()
 disassociates the context from the window.
 
 How does Gecko disable IME in TSF mode on Windows
 """""""""""""""""""""""""""""""""""""""""""""""""
 
-`mozilla::widget::TSFTextStore <https://searchfox.org/mozilla-central/source/widget/windows/TSFTextStore.cpp>`__
+`mozilla::widget::TSFTextStore <https://searchfox.org/firefox-main/source/widget/windows/TSFTextStore.cpp>`__
 sets focus to a dummy context which disables the keyboard.
 
 How does Gecko disable IME on Mac
 """""""""""""""""""""""""""""""""
 
-`mozilla::widget::TextInputHandler <https://searchfox.org/mozilla-central/source/widget/cocoa/TextInputHandler.mm>`__::HandleKeyDownEvent()
+`mozilla::widget::TextInputHandler <https://searchfox.org/firefox-main/source/widget/cocoa/TextInputHandler.mm>`__::HandleKeyDownEvent()
 doesn't call focused view's interpretKeyEvents. This prevents native key events
 to be passed to IME.
 
 How does Gecko disable IME on GTK
 """""""""""""""""""""""""""""""""
 
-`mozilla::widget::IMContextWrapper <https://searchfox.org/mozilla-central/source/widget/gtk/IMContextWrapper.cpp>`__
+`mozilla::widget::IMContextWrapper <https://searchfox.org/firefox-main/source/widget/gtk/IMContextWrapper.cpp>`__
 sets focus to a dummy context which doesn't have IME composition.
 
 How does Gecko disable IME on Android
@@ -989,7 +989,7 @@ This class manages input method context of each window and makes ``IMMHandler``
 or ``TSFTextStore`` work with active IME and focused editor. This class has
 only static members, i.e., never created its instance.
 
-__ https://searchfox.org/mozilla-central/source/widget/windows/WinIMEHandler.cpp
+__ https://searchfox.org/firefox-main/source/widget/windows/WinIMEHandler.cpp
 
 `mozilla::widget::IMMHandler`__
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1004,7 +1004,7 @@ Typically, a process creates windows with default IM context. Therefore, this
 design is enough (ideally, an instance should be created per IM context,
 though). The singleton instance is created when it becomes necessary.
 
-__ https://searchfox.org/mozilla-central/source/widget/windows/IMMHandler.cpp
+__ https://searchfox.org/firefox-main/source/widget/windows/IMMHandler.cpp
 
 `mozilla::widget::TSFTextStore`__
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1062,30 +1062,30 @@ position's character rect (for a popup to indicate current input mode or next
 word suggestion list) or first character rect of the target clause of current
 composition (for a candidate list window of conversion).
 
-__ https://searchfox.org/mozilla-central/source/widget/windows/TSFTextStore.cpp
+__ https://searchfox.org/firefox-main/source/widget/windows/TSFTextStore.cpp
 
 Mac
 ---
 
 Both IME and key events are handled in
-`TextInputHandler.mm <https://searchfox.org/mozilla-central/source/widget/cocoa/TextInputHandler.mm>`__.
+`TextInputHandler.mm <https://searchfox.org/firefox-main/source/widget/cocoa/TextInputHandler.mm>`__.
 
 ``mozilla::widget::TextInputHandlerBase`` is the most base class.
 ``mozilla::widget::IMEInputHandler`` inherits ``TextInputHandlerBase`` and
 handles IME related events. ``mozilla::widget::TextInputHandler`` inherits
 ``TextInputHandlerBase`` and implements ``NSTextInput`` protocol of Cocoa. Its
 instance is created per
-`nsChildView <https://searchfox.org/mozilla-central/source/widget/cocoa/nsChildView.mm>`__
+`nsChildView <https://searchfox.org/firefox-main/source/widget/cocoa/nsChildView.mm>`__
 instance.
 
 GTK
 ---
 
-`mozilla::widget::IMContextWrapper <https://searchfox.org/mozilla-central/source/widget/gtk/IMContextWrapper.cpp>`__
+`mozilla::widget::IMContextWrapper <https://searchfox.org/firefox-main/source/widget/gtk/IMContextWrapper.cpp>`__
 handles IME. The instance is created per top level window.
 
 Android
 -------
 
-`org.mozilla.geckoview.GeckoEditable <https://searchfox.org/mozilla-central/source/mobile/android/geckoview/src/main/java/org/mozilla/geckoview/GeckoEditable.java>`__ handles native IME events and `mozilla::widget::GeckoEditableSupport <https://searchfox.org/mozilla-central/source/widget/android/GeckoEditableSupport.cpp>`__
+`org.mozilla.geckoview.GeckoEditable <https://searchfox.org/firefox-main/source/mobile/android/geckoview/src/main/java/org/mozilla/geckoview/GeckoEditable.java>`__ handles native IME events and `mozilla::widget::GeckoEditableSupport <https://searchfox.org/firefox-main/source/widget/android/GeckoEditableSupport.cpp>`__
 dispatches ``Widget*Event``.

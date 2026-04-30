@@ -12,7 +12,7 @@ import org.mozilla.fenix.components.search.HISTORY_SEARCH_ENGINE_ID
 import org.mozilla.fenix.components.search.TABS_SEARCH_ENGINE_ID
 
 // List of well known search domains, taken from
-// https://searchfox.org/mozilla-central/source/toolkit/components/search/SearchService.jsm#2405
+// https://searchfox.org/firefox-main/source/toolkit/components/search/SearchService.jsm#2405
 private val wellKnownSearchDomains = setOf(
     "aol",
     "ask",

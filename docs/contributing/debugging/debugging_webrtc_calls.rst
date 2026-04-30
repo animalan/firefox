@@ -913,20 +913,20 @@ Here is a list of helpful substring selectors for executing specific WebRTC gtes
      - Files
    * - :code:`*Jsep*`
      - JSEP (signalling) tests
-     - `jsep_session_unittest.cpp <https://searchfox.org/mozilla-central/source/media/webrtc/signaling/gtest/jsep_session_unittest.cpp>`__
-       `jsep_trak_unittest.cpp <https://searchfox.org/mozilla-central/source/media/webrtc/signaling/gtest/jsep_track_unittest.cpp>`__
+     - `jsep_session_unittest.cpp <https://searchfox.org/firefox-main/source/media/webrtc/signaling/gtest/jsep_session_unittest.cpp>`__
+       `jsep_trak_unittest.cpp <https://searchfox.org/firefox-main/source/media/webrtc/signaling/gtest/jsep_track_unittest.cpp>`__
    * - :code:`*Sdp*`
      - SDP parsing tests
-     - `sdp_unittests.cpp <https://searchfox.org/mozilla-central/source/media/webrtc/signaling/gtest/sdp_unittests.cpp>`__
+     - `sdp_unittests.cpp <https://searchfox.org/firefox-main/source/media/webrtc/signaling/gtest/sdp_unittests.cpp>`__
    * - :code:`*MediaPipeline*`
      - MediaPipline and MediaPipeline filter tests for RTP media handling
-     - `mediapipeline_unittest.cpp <https://searchfox.org/mozilla-central/source/media/webrtc/signaling/gtest/mediapipeline_unittest.cpp>`__
+     - `mediapipeline_unittest.cpp <https://searchfox.org/firefox-main/source/media/webrtc/signaling/gtest/mediapipeline_unittest.cpp>`__
    * - :code:`*AudioConduit*`
      - AudioConduit tests for libwebrtc glue for RTP audio media
-     - `audioconduit_unittests.cpp <https://searchfox.org/mozilla-central/source/media/webrtc/signaling/gtest/audioconduit_unittests.cpp>`__
+     - `audioconduit_unittests.cpp <https://searchfox.org/firefox-main/source/media/webrtc/signaling/gtest/audioconduit_unittests.cpp>`__
    * - :code:`*VideoConduit*`
      - VideoConduit tests for libwebrtc glue for RTP video media
-     - `videoconduit_unittests.cpp <https://searchfox.org/mozilla-central/source/media/webrtc/signaling/gtest/videoconduit_unittests.cpp>`__
+     - `videoconduit_unittests.cpp <https://searchfox.org/firefox-main/source/media/webrtc/signaling/gtest/videoconduit_unittests.cpp>`__
 
 For more general information about gtests see the documentation `here </gtest/index.html>`__.
 
@@ -955,115 +955,115 @@ provided below to help one navigate.
      - Component
      - Description
      - Notes
-   * - `dom/media/webrtc <https://searchfox.org/mozilla-central/source/dom/media/webrtc>`__
+   * - `dom/media/webrtc <https://searchfox.org/firefox-main/source/dom/media/webrtc>`__
      - WebRTC
      - This is the primary directory for Firefox WebRTC code
      -
-   * - `dom/media/webrtc/common <https://searchfox.org/mozilla-central/source/dom/media/webrtc/common>`__
+   * - `dom/media/webrtc/common <https://searchfox.org/firefox-main/source/dom/media/webrtc/common>`__
      - WebRTC
      - This contains WebRTC related utility code
      -
-   * - `dom/media/webrtc/jsapi <https://searchfox.org/mozilla-central/source/dom/media/webrtc/jsapi>`__
+   * - `dom/media/webrtc/jsapi <https://searchfox.org/firefox-main/source/dom/media/webrtc/jsapi>`__
      - JS API
      - This contains the C++ implementations of the JavaScript WebRTC interfaces
      -
-   * - `dom/media/webrtc/jsep <https://searchfox.org/mozilla-central/source/dom/media/webrtc/jsep>`__
+   * - `dom/media/webrtc/jsep <https://searchfox.org/firefox-main/source/dom/media/webrtc/jsep>`__
      - Signalling
      - This is the JSEP state engine implementation
      -
-   * - `dom/media/webrtc/libwebrtcglue <https://searchfox.org/mozilla-central/source/dom/media/webrtc/libwebrtcglue>`__
+   * - `dom/media/webrtc/libwebrtcglue <https://searchfox.org/firefox-main/source/dom/media/webrtc/libwebrtcglue>`__
      - WebRTC (various)
      - This is the glue code between libwebrtc and Firefox
      -
-   * - `dom/media/webrtc/libwebrtc_overrides <https://searchfox.org/mozilla-central/source/dom/media/webrtc/libwebrtc_overrides>`__
+   * - `dom/media/webrtc/libwebrtc_overrides <https://searchfox.org/firefox-main/source/dom/media/webrtc/libwebrtc_overrides>`__
      - WebRTC (various)
      - Firefox-specific overrides for libwebrtc components
      -
-   * - `dom/media/webrtc/sdp <https://searchfox.org/mozilla-central/source/dom/media/webrtc/sdp>`__
+   * - `dom/media/webrtc/sdp <https://searchfox.org/firefox-main/source/dom/media/webrtc/sdp>`__
      - Signalling
      - This contains the SDP parsing interface
      -
-   * - `dom/media/webrtc/tests <https://searchfox.org/mozilla-central/source/dom/media/webrtc/tests>`__
+   * - `dom/media/webrtc/tests <https://searchfox.org/firefox-main/source/dom/media/webrtc/tests>`__
      - Tests
      - This contains `some` of the WebRTC related tests
      -
-   * - `dom/media/webrtc/third_party_build <https://searchfox.org/mozilla-central/source/dom/media/webrtc/third_party_build>`__
+   * - `dom/media/webrtc/third_party_build <https://searchfox.org/firefox-main/source/dom/media/webrtc/third_party_build>`__
      - Build
      - The scripting and configuration for vendoring new versions of libwebrtc are here
      - This is unlikely to be of concern for debugging
-   * - `dom/media/webrtc/transport <https://searchfox.org/mozilla-central/source/dom/media/webrtc/transport>`__
+   * - `dom/media/webrtc/transport <https://searchfox.org/firefox-main/source/dom/media/webrtc/transport>`__
      - Network
      - This contains the ICE implementation, the MDNS implementation, and transport code
      -
-   * - `dom/media/webrtc/transport/ipc <https://searchfox.org/mozilla-central/source/dom/media/webrtc/transport/ipc>`__
+   * - `dom/media/webrtc/transport/ipc <https://searchfox.org/firefox-main/source/dom/media/webrtc/transport/ipc>`__
      - Network
      - IPDL protocols for WebRTC transport, including STUN address requests and WebRTC TCP sockets
      -
-   * - `dom/media/webrtc/transportbridge <https://searchfox.org/mozilla-central/source/dom/media/webrtc/transportbridge>`__
+   * - `dom/media/webrtc/transportbridge <https://searchfox.org/firefox-main/source/dom/media/webrtc/transportbridge>`__
      - WebRTC
      - This contains the MediaPipeline and MediaPipeline filter code which is glue between transport and the libwebrtc RTP stack
      -
-   * - `third_party/libsrtp <https://searchfox.org/mozilla-central/source/third_party/libsrtp>`__
+   * - `third_party/libsrtp <https://searchfox.org/firefox-main/source/third_party/libsrtp>`__
      - Network
      - This is the SRTP implementation used by Firefox
      -
-   * - `third_party/libwebrtc <https://searchfox.org/mozilla-central/source/third_party/libwebrtc>`__
+   * - `third_party/libwebrtc <https://searchfox.org/firefox-main/source/third_party/libwebrtc>`__
      - WebRTC (various)
      - libwebrtc handles many aspects of WebRTC calls above the transport layer and below the presentation layer
      -
-   * - `third_party/rust/webrtc-sdp <https://searchfox.org/mozilla-central/source/third_party/rust/webrtc-sdp>`__
+   * - `third_party/rust/webrtc-sdp <https://searchfox.org/firefox-main/source/third_party/rust/webrtc-sdp>`__
      - Signalling
      - webrtc-sdp is a Rust implementation of a WebRTC-only SDP parser
      -
-   * - `third_party/sipcc <https://searchfox.org/mozilla-central/source/third_party/sipcc>`__
+   * - `third_party/sipcc <https://searchfox.org/firefox-main/source/third_party/sipcc>`__
      - Signalling
      - sipcc is a C implementation of a general SDP parser
      - this carries many local modifications
-   * - `dom/media <https://searchfox.org/mozilla-central/source/dom/media>`__
+   * - `dom/media <https://searchfox.org/firefox-main/source/dom/media>`__
      - Media Capture
      - GetUserMedia and related classes are here
      - There are many other unrelated media source files here
-   * - `dom/media/systemservices <https://searchfox.org/mozilla-central/source/dom/media/systemservices>`__
+   * - `dom/media/systemservices <https://searchfox.org/firefox-main/source/dom/media/systemservices>`__
      - Media Capture
      - System services for media capture including camera/microphone access
      - Contains CamerasChild, CamerasParent, VideoEngine, and platform-specific implementations
-   * - `dom/media/encoder <https://searchfox.org/mozilla-central/source/dom/media/encoder>`__
+   * - `dom/media/encoder <https://searchfox.org/firefox-main/source/dom/media/encoder>`__
      - Media Encoding
      - Media encoders for recording, including Opus and VP8 track encoders
      -
-   * - `dom/media/gmp <https://searchfox.org/mozilla-central/source/dom/media/gmp>`__
+   * - `dom/media/gmp <https://searchfox.org/firefox-main/source/dom/media/gmp>`__
      - Media Codecs
      - Gecko Media Plugin (GMP) framework for sandboxed codec plugins
      - Used by WebRTC for H.264 codec support
-   * - `dom/media/platforms <https://searchfox.org/mozilla-central/source/dom/media/platforms>`__
+   * - `dom/media/platforms <https://searchfox.org/firefox-main/source/dom/media/platforms>`__
      - Media Codecs
      - Platform-specific encoder/decoder implementations (Apple, Android, FFmpeg, WMF)
      - Contains PlatformEncoderModule and EncoderConfig used by WebRTC
-   * - `netwerk/sctp/datachannel <https://searchfox.org/mozilla-central/source/netwerk/sctp/datachannel>`__
+   * - `netwerk/sctp/datachannel <https://searchfox.org/firefox-main/source/netwerk/sctp/datachannel>`__
      - Data Channels
      - SCTP-based data channel implementation
      -
-   * - `browser/components/webrtc <https://searchfox.org/mozilla-central/source/browser/components/webrtc>`__
+   * - `browser/components/webrtc <https://searchfox.org/firefox-main/source/browser/components/webrtc>`__
      - Browser UI
      - Browser-level WebRTC UI components including permission prompts and indicators
      -
-   * - `toolkit/content/aboutwebrtc <https://searchfox.org/mozilla-central/source/toolkit/content/aboutwebrtc>`__
+   * - `toolkit/content/aboutwebrtc <https://searchfox.org/firefox-main/source/toolkit/content/aboutwebrtc>`__
      - Debugging
      - Implementation of the about:webrtc debugging page
      -
-   * - `media/webrtc/signaling <https://searchfox.org/mozilla-central/source/media/webrtc/signaling>`__
+   * - `media/webrtc/signaling <https://searchfox.org/firefox-main/source/media/webrtc/signaling>`__
      - Signalling
      - WebRTC signaling implementation and GTests
      -
-   * - `browser/base/content/test/webrtc <https://searchfox.org/mozilla-central/source/browser/base/content/test/webrtc>`__
+   * - `browser/base/content/test/webrtc <https://searchfox.org/firefox-main/source/browser/base/content/test/webrtc>`__
      - Tests
      - Browser chrome tests for WebRTC getUserMedia and getDisplayMedia
      -
-   * - `testing/web-platform/tests/webrtc <https://searchfox.org/mozilla-central/source/testing/web-platform/tests/webrtc>`__
+   * - `testing/web-platform/tests/webrtc <https://searchfox.org/firefox-main/source/testing/web-platform/tests/webrtc>`__
      - Tests
      - Web Platform Tests for WebRTC conformance
      - Also includes webrtc-encoded-transform, webrtc-extensions, webrtc-ice, webrtc-identity, webrtc-priority, webrtc-stats, webrtc-svc
-   * - `dom/webidl <https://searchfox.org/mozilla-central/source/dom/webidl>`__
+   * - `dom/webidl <https://searchfox.org/firefox-main/source/dom/webidl>`__
      - WebIDL (JS API)
      - This contains the WebIDL definitions for the WebRTC JS API amongst many other WebIDL definitions
      -  :code:`RTC*.webidl`

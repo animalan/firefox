@@ -133,23 +133,23 @@ const embedHelperLib = (() => {
             border: 0;
   
             /* Colours match light/dark theme from
-              https://searchfox.org/mozilla-central/source/browser/themes/addons/light/manifest.json
-              https://searchfox.org/mozilla-central/source/browser/themes/addons/dark/manifest.json */
+              https://searchfox.org/firefox-main/source/browser/themes/addons/light/manifest.json
+              https://searchfox.org/firefox-main/source/browser/themes/addons/dark/manifest.json */
             background-color: light-dark(rgb(0, 97, 224), rgb(0, 221, 255));
             color: light-dark(rgb(251, 251, 254), rgb(43, 42, 51));
           }
   
           #smartblock-placeholder-button:hover {
             /* Colours match light/dark theme from
-              https://searchfox.org/mozilla-central/source/browser/themes/addons/light/manifest.json
-              https://searchfox.org/mozilla-central/source/browser/themes/addons/dark/manifest.json */
+              https://searchfox.org/firefox-main/source/browser/themes/addons/light/manifest.json
+              https://searchfox.org/firefox-main/source/browser/themes/addons/dark/manifest.json */
             background-color: light-dark(rgb(2, 80, 187), rgb(128, 235, 255));
           }
 
           #smartblock-placeholder-button:hover:active {
             /* Colours match light/dark theme from
-              https://searchfox.org/mozilla-central/source/browser/themes/addons/light/manifest.json
-              https://searchfox.org/mozilla-central/source/browser/themes/addons/dark/manifest.json */
+              https://searchfox.org/firefox-main/source/browser/themes/addons/light/manifest.json
+              https://searchfox.org/firefox-main/source/browser/themes/addons/dark/manifest.json */
             background-color: light-dark(rgb(5, 62, 148), rgb(170, 242, 255));
           }
   

@@ -29,7 +29,7 @@ Engines when referring to Add-ons Search Engines.
 
 The list of Add-on Search Engines provided by Firefox and their extension files
 can be found in `mozilla-central/browser/components/search/extensions
-<https://searchfox.org/mozilla-central/source/browser/components/search/extensions>`__.
+<https://searchfox.org/firefox-main/source/browser/components/search/extensions>`__.
 Within each Add-on Search Engine folder, there is a manifest.json file. One of the
 keys in that manifest.json file is `chrome_settings_overrides`, whose value is an object
 that describes how to construct the url, images, strings, icon, etc. Here’s an example of

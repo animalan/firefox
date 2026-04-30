@@ -51,7 +51,7 @@ HTMLTextAreaElement.prototype.setUserInput = setUserInput;
 
 // Mimic the behavior of .getAutocompleteInfo()
 // It should return an object with a fieldName property matching the autocomplete attribute
-// only if it's a valid value from this list https://searchfox.org/mozilla-central/source/dom/base/AutocompleteFieldList.h#89-149
+// only if it's a valid value from this list https://searchfox.org/firefox-main/source/dom/base/AutocompleteFieldList.h#89-149
 // Also found here: https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete
 HTMLElement.prototype.getAutocompleteInfo = function () {
   const autocomplete = this.getAttribute("autocomplete");

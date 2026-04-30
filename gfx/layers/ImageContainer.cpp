@@ -645,7 +645,7 @@ ImageContainer::GetMacIOSurfaceRecycleAllocator() {
 #endif
 
 // -
-// https://searchfox.org/mozilla-central/source/dom/media/ipc/RemoteImageHolder.cpp#46
+// https://searchfox.org/firefox-main/source/dom/media/ipc/RemoteImageHolder.cpp#46
 
 Maybe<PlanarYCbCrData> PlanarYCbCrData::From(
     const SurfaceDescriptorBuffer& sdb) {

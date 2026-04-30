@@ -532,7 +532,7 @@ class StringTest {
 
     // BEGIN test cases borrowed from desktop (shortUrl is used for Top Sites on new tab)
     // Test cases are modified, as we show the eTLD
-    // (https://searchfox.org/mozilla-central/source/toolkit/modules/tests/xpcshell/test_NewTabUtils.js)
+    // (https://searchfox.org/firefox-main/source/toolkit/modules/tests/xpcshell/test_NewTabUtils.js)
     @Test
     fun `should return a blank string if url is blank`() {
         "" shortenedShouldBecome ""

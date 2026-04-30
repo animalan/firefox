@@ -55,8 +55,8 @@ See ``ExtensionBrowser`` and ``ExtensionGlobalsMixin`` interfaces defined from
 ExtensionBrowser.webidl_ and ``mozilla::extensions::ExtensionAPIAllowed`` defined in
 ExtensionBrowser.cpp_.
 
-.. _ExtensionBrowser.webidl: https://searchfox.org/mozilla-central/source/dom/webidl/ExtensionBrowser.webidl
-.. _ExtensionBrowser.cpp: https://searchfox.org/mozilla-central/source/toolkit/components/extensions/webidl-api/ExtensionBrowser.cpp
+.. _ExtensionBrowser.webidl: https://searchfox.org/firefox-main/source/dom/webidl/ExtensionBrowser.webidl
+.. _ExtensionBrowser.cpp: https://searchfox.org/firefox-main/source/toolkit/components/extensions/webidl-api/ExtensionBrowser.cpp
 
 Why do all the webidl interfaces for WebExtensions API use LegacyNoInterfaceObject?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

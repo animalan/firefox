@@ -16,7 +16,7 @@ Security issues
     to scrutinize whether the object might be destroyed before the last
     possible use of the raw pointer. For example: if you have a local variable
     that points to an object that's owned by a `frame's property table
-    <https://searchfox.org/mozilla-central/source/layout/base/FrameProperties.h>`__,
+    <https://searchfox.org/firefox-main/source/layout/base/FrameProperties.h>`__,
     then consider whether the frame might remove/replace the property-table
     entry (or whether the frame itself might be destroyed) inside any of the
     function calls that happen while the local pointer is in scope.

@@ -19,7 +19,7 @@ if (typeof Mozilla == "undefined") {
      *
      * For security/privacy reasons `Mozilla.UITour` will only work on a list of allowed
      * secure origins. The list of allowed origins can be found in
-     * https://searchfox.org/mozilla-central/source/browser/app/permissions.
+     * https://searchfox.org/firefox-main/source/browser/app/permissions.
      *
      * @since 29
      * @namespace

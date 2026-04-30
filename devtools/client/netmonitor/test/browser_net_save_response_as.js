@@ -63,7 +63,7 @@ add_task(async function () {
   const buffer = await IOUtils.read(savedPath);
   const savedFileContent = new TextDecoder().decode(buffer);
 
-  // The content is set by https://searchfox.org/mozilla-central/source/devtools/client/netmonitor/test/sjs_content-type-test-server.sjs#360
+  // The content is set by https://searchfox.org/firefox-main/source/devtools/client/netmonitor/test/sjs_content-type-test-server.sjs#360
   // (the "gzip" case)
   is(
     savedFileContent,

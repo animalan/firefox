@@ -106,7 +106,7 @@ Example
 -------
 
 Here is an example of an external linter that shells out to the Python ruff linter,
-let's call the file ``ruff_lint.py`` (`in-tree version <https://searchfox.org/mozilla-central/source/tools/lint/python/ruff.py>`__):
+let's call the file ``ruff_lint.py`` (`in-tree version <https://searchfox.org/firefox-main/source/tools/lint/python/ruff.py>`__):
 
 .. code-block:: python
 
@@ -224,7 +224,7 @@ They should be pretty easy to write as most of the work is managed by the Mozlin
 framework. The key declaration is the ``LINTER`` variable which must match
 the linker declaration.
 
-As an example, the `ruff test <https://searchfox.org/mozilla-central/source/tools/lint/test/test_ruff.py>`_ looks like the following snippet:
+As an example, the `ruff test <https://searchfox.org/firefox-main/source/tools/lint/test/test_ruff.py>`_ looks like the following snippet:
 
 .. code-block:: python
 
@@ -256,7 +256,7 @@ To run a specific test:
 
     ./mach python-test --subsuite mozlint tools/lint/test/test_black.py
 
-More tests can be `found in-tree <https://searchfox.org/mozilla-central/source/tools/lint/test>`_.
+More tests can be `found in-tree <https://searchfox.org/firefox-main/source/tools/lint/test>`_.
 
 Tracking fixed issues
 ---------------------
@@ -308,7 +308,7 @@ complicated as pulling a whole graph of tools, plugins and their dependencies.
 Either way, to reduce the burden on users, linters should strive to provide
 automated bootstrapping of all their dependencies. To help with this,
 ``mozlint`` allows linters to define a ``setup`` config, which has the same
-path object format as an external payload. For example (`in-tree version <https://searchfox.org/mozilla-central/source/tools/lint/ruff.yml>`__):
+path object format as an external payload. For example (`in-tree version <https://searchfox.org/firefox-main/source/tools/lint/ruff.yml>`__):
 
 .. code-block:: yaml
 
@@ -347,7 +347,7 @@ Adding the linter to the CI
 
 First, the job will have to be declared in Taskcluster.
 
-This should be done in the `mozlint Taskcluster configuration <https://searchfox.org/mozilla-central/source/taskcluster/kinds/source-test/mozlint.yml>`_.
+This should be done in the `mozlint Taskcluster configuration <https://searchfox.org/firefox-main/source/taskcluster/kinds/source-test/mozlint.yml>`_.
 You will need to define a symbol, how it is executed and on what kind of change.
 
 For example, for ruff, the configuration is the following:
@@ -365,8 +365,8 @@ For example, for ruff, the configuration is the following:
                 - '**/*.py'
                 - '**/.ruff.toml'
 
-If the linter requires an external program, you will have to install it in the `setup script <https://searchfox.org/mozilla-central/source/taskcluster/docker/lint/system-setup.sh>`_
-and maybe install the necessary files in the `Docker configuration <https://searchfox.org/mozilla-central/source/taskcluster/docker/lint/Dockerfile>`_.
+If the linter requires an external program, you will have to install it in the `setup script <https://searchfox.org/firefox-main/source/taskcluster/docker/lint/system-setup.sh>`_
+and maybe install the necessary files in the `Docker configuration <https://searchfox.org/firefox-main/source/taskcluster/docker/lint/Dockerfile>`_.
 
 .. note::
 

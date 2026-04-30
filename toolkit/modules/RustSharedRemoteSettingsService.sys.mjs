@@ -23,7 +23,7 @@ import { Utils } from "resource://services-settings/Utils.sys.mjs";
  * general-purpose Remote settings client, use the JS one:
  *
  * - https://firefox-source-docs.mozilla.org/services/settings/index.html
- * - https://searchfox.org/mozilla-central/source/services/settings/remote-settings.sys.mjs
+ * - https://searchfox.org/firefox-main/source/services/settings/remote-settings.sys.mjs
  */
 class _SharedRemoteSettingsService {
   #config;

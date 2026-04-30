@@ -42,15 +42,15 @@ be brought up to our design systems standards.
 * When there is only one action.
 * When the actions are frequently needed.
 * In the browser chrome, you probably want to use
-  [menupopup](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/menupopup.js)
+  [menupopup](https://searchfox.org/firefox-main/source/toolkit/content/widgets/menupopup.js)
   or
-  [panel](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/panel.js)
+  [panel](https://searchfox.org/firefox-main/source/toolkit/content/widgets/panel.js)
   instead.
 
 ## Basic usage
 
 The source for `panel-list` can be found under
-[toolkit/content/widgets/panel-list/panel-list.mjs](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/panel-list/panel-list.mjs).
+[toolkit/content/widgets/panel-list/panel-list.mjs](https://searchfox.org/firefox-main/source/toolkit/content/widgets/panel-list/panel-list.mjs).
 You can find an examples of `panel-list` in use in the Firefox codebase in both
 [about:addons](https://searchfox.org/mozilla-central/rev/6f4bc07bd9eb07ed34774841ecf3b1f3678791e8/toolkit/mozapps/extensions/content/aboutaddons.html#209,252,280)
 and the

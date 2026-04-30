@@ -82,4 +82,4 @@ The ``description`` key (optional in user presets but required for shared preset
 readable string describing what the preset selects and when to use it. All other values in the
 preset are forwarded to the specified selector as is.
 
-.. _tools/tryselect/try_presets.yml: https://searchfox.org/mozilla-central/source/tools/tryselect/try_presets.yml
+.. _tools/tryselect/try_presets.yml: https://searchfox.org/firefox-main/source/tools/tryselect/try_presets.yml

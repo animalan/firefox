@@ -61,9 +61,9 @@ Recycled chunk
 .. _ProfileChunkManager: https://searchfox.org/mozilla-central/search?q=ProfileBufferChunkManager.h&path=&case=true&regexp=false
 .. _ProfileBufferChunk: https://searchfox.org/mozilla-central/search?q=ProfileBufferChunk&path=&case=true&regexp=false
 .. _ProfileBufferChunkManagerWithLocalLimit: https://searchfox.org/mozilla-central/search?q=ProfileBufferChunkManagerWithLocalLimit&case=true&path=
-.. _ProfilerParent.h: https://searchfox.org/mozilla-central/source/tools/profiler/public/ProfilerParent.h
-.. _ProfilerChild.h: https://searchfox.org/mozilla-central/source/tools/profiler/public/ProfilerChild.h
-.. _ProfileBuffer.h: https://searchfox.org/mozilla-central/source/tools/profiler/core/ProfileBuffer.h
+.. _ProfilerParent.h: https://searchfox.org/firefox-main/source/tools/profiler/public/ProfilerParent.h
+.. _ProfilerChild.h: https://searchfox.org/firefox-main/source/tools/profiler/public/ProfilerChild.h
+.. _ProfileBuffer.h: https://searchfox.org/firefox-main/source/tools/profiler/core/ProfileBuffer.h
 .. _ProfileBuffer: https://searchfox.org/mozilla-central/search?q=ProfileBuffer&path=&case=true&regexp=false
 .. _ProfilerParent: https://searchfox.org/mozilla-central/search?q=ProfilerParent&path=&case=true&regexp=false
 .. _ProfilerChild: https://searchfox.org/mozilla-central/search?q=ProfilerChild&path=&case=true&regexp=false

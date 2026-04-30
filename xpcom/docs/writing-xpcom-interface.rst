@@ -10,9 +10,9 @@ In order to write code that works in native code (C++, Rust), and JavaScript con
 
 This mechanism starts with an :ref:`XPIDL` file to define the shape of the interface. In the `build system`_, this file is processed, and `Rust`_ and `C++`_ code is automatically generated.
 
-.. _build system: https://searchfox.org/mozilla-central/source/xpcom/idl-parser/xpidl
-.. _Rust: https://searchfox.org/mozilla-central/source/__GENERATED__/dist/xpcrs/rt
-.. _C++: https://searchfox.org/mozilla-central/source/__GENERATED__/dist/include
+.. _build system: https://searchfox.org/firefox-main/source/xpcom/idl-parser/xpidl
+.. _Rust: https://searchfox.org/firefox-main/source/__GENERATED__/dist/xpcrs/rt
+.. _C++: https://searchfox.org/firefox-main/source/__GENERATED__/dist/include
 
 Next, the interface's methods and attributes must be implemented. This can be done through either a JSM module, or through a C++ interface class. Once these steps are done, the new files must be added to the appropriate :code:`moz.build` files to ensure the build system knows how to find them and process them.
 
@@ -97,7 +97,7 @@ Once :code:`./mach build` is run, the XPIDL parser will read this file, and give
 
 :code:`{obj-directory}/dist/include/nsIComponentName.h`
 
-It might be useful to check out what was automatically generated here, or see the existing `generated C++ header files on SearchFox <https://searchfox.org/mozilla-central/source/__GENERATED__/dist/>`_.
+It might be useful to check out what was automatically generated here, or see the existing `generated C++ header files on SearchFox <https://searchfox.org/firefox-main/source/__GENERATED__/dist/>`_.
 
 Writing the C++ implementation
 ------------------------------
