@@ -248,7 +248,7 @@ impl IPCServer {
                         IPCConnection {
                             connector,
                             endpoint: IPCEndpoint::Child,
-                            process: Some(ProcessId::for_child(reply.child_pid, reply.id)),
+                            process: Some(ProcessId::for_child(reply.child_pid, message.id)),
                             process_handle: get_process_handle(reply)?,
                         },
                     );

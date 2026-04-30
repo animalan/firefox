@@ -46,7 +46,7 @@ impl CrashHelperClient {
         Ok(())
     }
 
-    fn register_child_process(&mut self) -> Result<IPCConnector> {
+    fn register_child_process(&mut self, id: GeckoChildId) -> Result<IPCConnector> {
         let ipc_channel = IPCClientChannel::new()?;
         let (server_endpoint, client_endpoint) = ipc_channel.deconstruct();
 
@@ -62,7 +62,7 @@ impl CrashHelperClient {
             self.connector.set_process(process_handle);
         }
 
-        let message = messages::RegisterChildProcess::new(server_endpoint.into_ancillary());
+        let message = messages::RegisterChildProcess::new(id, server_endpoint.into_ancillary());
         self.connector.send_message(message)?;
 
         Ok(client_endpoint)
@@ -221,10 +221,11 @@ pub unsafe extern "C" fn set_crash_report_path(
 #[no_mangle]
 pub unsafe extern "C" fn register_child_ipc_channel(
     client: *mut CrashHelperClient,
+    id: GeckoChildId,
     connector: *mut RawIPCConnector,
 ) -> bool {
     let client = client.as_mut().unwrap();
-    if let Ok(client_endpoint) = client.register_child_process() {
+    if let Ok(client_endpoint) = client.register_child_process(id) {
         let raw_connector = client_endpoint.into_raw_connector();
         unsafe {
             connector.write(raw_connector);

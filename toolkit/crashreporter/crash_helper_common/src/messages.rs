@@ -715,14 +715,16 @@ impl Message for UnregisterAuxvInfo {
  * endpoint which the crash helper will use to talk to the child. */
 
 pub struct RegisterChildProcess {
+    pub id: GeckoChildId,
     pub ancillary_data: [AncillaryData; CONNECTOR_ANCILLARY_DATA_LEN],
 }
 
 impl RegisterChildProcess {
     pub fn new(
+        id: GeckoChildId,
         ancillary_data: [AncillaryData; CONNECTOR_ANCILLARY_DATA_LEN],
     ) -> RegisterChildProcess {
-        RegisterChildProcess { ancillary_data }
+        RegisterChildProcess { id, ancillary_data }
     }
 }
 
@@ -732,7 +734,7 @@ impl Message for RegisterChildProcess {
     }
 
     fn payload_size(&self) -> usize {
-        0
+        size_of::<GeckoChildId>()
     }
 
     fn ancillary_data_len(&self) -> usize {
@@ -741,15 +743,21 @@ impl Message for RegisterChildProcess {
 
     fn encode(self) -> (Bytes, Bytes, Vec<AncillaryData>) {
         let header = Header::encode(Self::kind(), self.payload_size());
-        let payload = Bytes::new();
+        let mut payload = BytesMut::with_capacity(self.payload_size());
 
-        (header, payload, self.ancillary_data.into())
+        payload.put_i32_ne(self.id);
+
+        (header, payload.freeze(), self.ancillary_data.into())
     }
 
     fn decode(
-        _data: Vec<u8>,
+        data: Vec<u8>,
         ancillary_data: Vec<AncillaryData>,
     ) -> Result<RegisterChildProcess, MessageError> {
+        let mut data = Bytes::from(data);
+
+        let id = data.try_get_i32_ne()?;
+
         let mut iter = ancillary_data.into_iter();
         #[cfg(any(target_os = "ios", target_os = "macos"))]
         let ancillary_data: [AncillaryData; CONNECTOR_ANCILLARY_DATA_LEN] = {
@@ -761,7 +769,7 @@ impl Message for RegisterChildProcess {
         let ancillary_data: [AncillaryData; CONNECTOR_ANCILLARY_DATA_LEN] =
             [iter.next().ok_or(MessageError::MissingAncillary)?];
 
-        Ok(RegisterChildProcess { ancillary_data })
+        Ok(RegisterChildProcess { id, ancillary_data })
     }
 }
 
