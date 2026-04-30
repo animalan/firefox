@@ -429,10 +429,13 @@ pub fn mach_msg_recv(
         )
     };
 
-    if msg.header().msgh_id == MACH_NOTIFY_NO_SENDERS {
+    let msgh_id = msg.header().msgh_id;
+    if msgh_id == MACH_NOTIFY_NO_SENDERS {
         // We've got a message, but it's a disconnection
         return Err(PlatformError::NoMoreSenders);
     }
+
+    assert!(msgh_id == 0, "Unexpected mach message id: {msgh_id:x}");
 
     if rv == MACH_MSG_SUCCESS {
         Ok(msg)
