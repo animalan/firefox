@@ -789,12 +789,18 @@ void HttpConnectionUDP::ResetTransaction(nsHttpTransaction* aHttpTransaction) {
   LOG(("HttpConnectionUDP::ResetTransaction [this=%p mState=%d]\n", this,
        static_cast<uint32_t>(mState)));
 
-  RefPtr<nsHttpConnectionInfo> wildCardProxyCi;
-  nsresult rv = mConnInfo->CreateWildCard(getter_AddRefs(wildCardProxyCi));
-  if (NS_FAILED(rv)) {
-    CloseTransaction(mHttp3Session, rv);
-    aHttpTransaction->Close(rv);
-    return;
+  if (!mAlreadyWildcard) {
+    RefPtr<nsHttpConnectionInfo> wildCardProxyCi;
+    nsresult rv = mConnInfo->CreateWildCard(getter_AddRefs(wildCardProxyCi));
+    if (NS_FAILED(rv)) {
+      CloseTransaction(mHttp3Session, rv);
+      aHttpTransaction->Close(rv);
+      return;
+    }
+    gHttpHandler->ConnMgr()->MoveToWildCardConnEntry(mConnInfo, wildCardProxyCi,
+                                                     this);
+    mConnInfo = wildCardProxyCi;
+    mAlreadyWildcard = true;
   }
 
   // Both Http3Session and nsHttpTransaction keeps a strong reference to a
@@ -816,9 +822,7 @@ void HttpConnectionUDP::ResetTransaction(nsHttpTransaction* aHttpTransaction) {
     mHttp3Session->SetConnection(aHttpTransaction->Connection());
   }
   aHttpTransaction->SetConnection(nullptr);
-  gHttpHandler->ConnMgr()->MoveToWildCardConnEntry(mConnInfo, wildCardProxyCi,
-                                                   this);
-  mConnInfo = wildCardProxyCi;
+
   aHttpTransaction->DoNotRemoveAltSvc();
   // This transaction may have NS_HTTP_STICKY_CONNECTION set, so we must call
   // MakeRestartable() explicitly to ensure it can be restarted.

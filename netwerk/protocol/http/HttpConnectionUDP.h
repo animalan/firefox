@@ -153,6 +153,7 @@ class HttpConnectionUDP final : public HttpConnectionBase,
   bool mProxyConnectSucceeded = false;
   nsTArray<RefPtr<nsHttpTransaction>> mQueuedHttpConnectTransaction;
   nsTArray<RefPtr<nsHttpTransaction>> mQueuedConnectUdpTransaction;
+  bool mAlreadyWildcard = false;
 };
 
 }  // namespace net
