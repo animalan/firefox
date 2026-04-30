@@ -1004,14 +1004,17 @@ function do_note_exception(ex, text) {
 
 function do_report_result(passed, text, stack, todo) {
   // Match names like head.js, head_foo.js, and foo_head.js, but not
-  // test_headache.js
+  // test_headache.js. Stack may be a pre-formatted string (e.g., for uncaught
+  // Promise rejections, where the original frame is stringified eagerly because
+  // the context may be gone by the time the rejection is reported); in that
+  // case stack.filename is undefined and the loop is skipped.
   while (/(\/head(_.+)?|head)\.js$/.test(stack.filename) && stack.caller) {
     stack = stack.caller;
   }
 
-  let name = _gRunningTest ? _gRunningTest.name : stack.name;
+  let name = _gRunningTest ? _gRunningTest.name : (stack.name ?? "");
   let message;
-  if (name) {
+  if (name && stack.lineNumber) {
     message = "[" + name + " : " + stack.lineNumber + "] " + text;
   } else {
     message = text;
