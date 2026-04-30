@@ -897,12 +897,7 @@ export var BrowserTestUtils = {
             Services.ww.unregisterNotification(observe);
           }
 
-          // Add these event listeners now since they may fire before the
-          // DOMContentLoaded event down below.
-          let promises = [
-            this.waitForEvent(win, "focus", true),
-            this.waitForEvent(win, "activate"),
-          ];
+          let promises = [];
 
           if (url || waitForAnyURLLoaded) {
             await this.waitForEvent(win, "DOMContentLoaded");
@@ -931,6 +926,8 @@ export var BrowserTestUtils = {
           }
 
           await Promise.all(promises);
+
+          await this.ensureWindowActivated(win);
 
           if (anyWindow) {
             Services.ww.unregisterNotification(observe);
@@ -1068,6 +1065,25 @@ export var BrowserTestUtils = {
   },
 
   /**
+   * Ensures a chrome window is activated. On Windows, new windows may be shown
+   * without OS activation (SW_SHOWNOACTIVATE) when another process has the
+   * foreground, so focus/activate events never fire. This checks whether
+   * activation already occurred and forces it if not.
+   *
+   * @param {ChromeWindow} win
+   */
+  async ensureWindowActivated(win) {
+    if (Services.focus.activeWindow !== win) {
+      let activatePromise = Promise.all([
+        this.waitForEvent(win, "focus", true),
+        this.waitForEvent(win, "activate"),
+      ]);
+      win.focus();
+      await activatePromise;
+    }
+  },
+
+  /**
    * @param win (optional)
    *        The window we should wait to have "domwindowclosed" sent through
    *        the observer service for. If this is not supplied, we'll just
@@ -1113,31 +1129,25 @@ export var BrowserTestUtils = {
       ...options,
     });
 
-    let promises = [
-      this.waitForEvent(win, "focus", true),
-      this.waitForEvent(win, "activate"),
-    ];
-
     // Wait for browser-delayed-startup-finished notification, it indicates
     // that the window has loaded completely and is ready to be used for
     // testing.
-    promises.push(
+    let promises = [
       TestUtils.topicObserved(
         "browser-delayed-startup-finished",
         subject => subject == win
-      ).then(() => win)
-    );
-
-    promises.push(
+      ).then(() => win),
       this.firstBrowserLoaded(win, !options.waitForTabURL, browser => {
         return (
           !options.waitForTabURL ||
           options.waitForTabURL == browser.currentURI.spec
         );
-      })
-    );
+      }),
+    ];
 
     await Promise.all(promises);
+
+    await this.ensureWindowActivated(win);
     ChromeUtils.addProfilerMarker(
       "BrowserTestUtils",
       { startTime, category: "Test" },
