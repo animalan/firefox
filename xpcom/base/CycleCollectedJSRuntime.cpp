@@ -1945,8 +1945,7 @@ IncrementalFinalizeRunnable::Run() {
   }
 
   MOZ_ASSERT(mRuntime->mFinalizeRunnable == this);
-  auto timerId =
-      glean::cycle_collector::deferred_finalize_async.ProcessGet().Start();
+  auto timerId = glean::cycle_collector::deferred_finalize_async.Start();
   ReleaseNow(true);
 
   if (mDeferredFinalizeFunctions.Length()) {
@@ -1958,8 +1957,8 @@ IncrementalFinalizeRunnable::Run() {
     MOZ_ASSERT(!mRuntime);
   }
 
-  glean::cycle_collector::deferred_finalize_async.ProcessGet()
-      .StopAndAccumulate(std::move(timerId));
+  glean::cycle_collector::deferred_finalize_async.StopAndAccumulate(
+      std::move(timerId));
 
   return NS_OK;
 }
