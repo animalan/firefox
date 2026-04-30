@@ -6,11 +6,17 @@
 #define PerfStats_h
 
 #include "mozilla/Atomics.h"
+#include "mozilla/RefPtr.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/StaticMutex.h"
-#include "mozilla/StaticPtr.h"
-#include "mozilla/MozPromise.h"
 #include <limits>
+#include <cstdint>
+
+#include <string>
+#include <vector>
+
+#ifdef MOZILLA_INTERNAL_API
+extern "C" bool NS_IsMainThread();
+#endif
 
 // PerfStats
 //
@@ -81,14 +87,31 @@
 
 namespace mozilla {
 
+template <typename ResolveValueT, typename RejectValueT, bool IsExclusive>
+class MozPromise;
+
 namespace dom {
 // Forward declaration.
 class ContentParent;
 }  // namespace dom
 
+// Forward declaration needed by namespace detail below.
+class PerfStats;
+
+namespace detail {
+// Exposed as free variables so that GCC generates proper weak GOT relocations
+// when accessed from inline function bodies in shared libraries. GCC does not
+// propagate the weak attribute from class static member declarations to inline
+// code accesses, unlike for free extern variables.
+MFBT_DATA extern Atomic<uint64_t, MemoryOrdering::Relaxed>
+    sPerfStatsCollectionMask;
+MFBT_DATA extern Atomic<PerfStats*, MemoryOrdering::SequentiallyConsistent>
+    sPerfStatsSingleton;
+}  // namespace detail
+
 class PerfStats {
  public:
-  typedef MozPromise<nsCString, bool, true> PerfStatsPromise;
+  using PerfStatsPromise = MozPromise<std::string, bool, true>;
 
   // MetricMask is a bitmask based on 'Metric', i.e. Metric::LayerBuilding (2)
   // is synonymous to 1 << 2 in MetricMask.
@@ -102,30 +125,49 @@ class PerfStats {
         Max
   };
 
-  static void RecordMeasurementStart(Metric aMetric) {
-    if (!(sCollectionMask & (1 << static_cast<MetricMask>(aMetric)))) {
+  // Main thread only
+  static MFBT_API void RecordMeasurementStart(Metric aMetric) {
+    // Since the Start/End calls use a single variable to track the time,
+    // multiple calls to Start from multiple threads would cause race
+    // conditions. When needing to record PerfStats off the main thread use the
+    // atomic RecordMeasurement call.
+#ifdef MOZILLA_INTERNAL_API
+    MOZ_ASSERT(NS_IsMainThread());
+#endif
+    if (!(detail::sPerfStatsCollectionMask &
+          (MetricMask(1) << static_cast<MetricMask>(aMetric)))) {
       return;
     }
     RecordMeasurementStartInternal(aMetric);
   }
 
-  static void RecordMeasurementEnd(Metric aMetric) {
-    if (!(sCollectionMask & (1 << static_cast<MetricMask>(aMetric)))) {
+  // Main thread only
+  static MFBT_API void RecordMeasurementEnd(Metric aMetric) {
+#ifdef MOZILLA_INTERNAL_API
+    MOZ_ASSERT(NS_IsMainThread());
+#endif
+    if (!(detail::sPerfStatsCollectionMask &
+          (MetricMask(1) << static_cast<MetricMask>(aMetric)))) {
       return;
     }
     RecordMeasurementEndInternal(aMetric);
   }
 
-  static void RecordMeasurement(Metric aMetric, TimeDuration aDuration) {
-    if (!(sCollectionMask & (1 << static_cast<MetricMask>(aMetric)))) {
+  // This may be called off the main thread.
+  static MFBT_API void RecordMeasurement(Metric aMetric,
+                                         TimeDuration aDuration) {
+    if (!(detail::sPerfStatsCollectionMask &
+          (MetricMask(1) << static_cast<MetricMask>(aMetric)))) {
       return;
     }
     RecordMeasurementInternal(aMetric, aDuration);
   }
 
-  static void RecordMeasurementCounter(Metric aMetric,
-                                       MetricMask aIncrementAmount) {
-    if (!(sCollectionMask & (1 << static_cast<MetricMask>(aMetric)))) {
+  // This may be called off the main thread.
+  static MFBT_API void RecordMeasurementCounter(Metric aMetric,
+                                                MetricMask aIncrementAmount) {
+    if (!(detail::sPerfStatsCollectionMask &
+          (MetricMask(1) << static_cast<MetricMask>(aMetric)))) {
       return;
     }
     RecordMeasurementCounterInternal(aMetric, aIncrementAmount);
@@ -134,51 +176,86 @@ class PerfStats {
   template <Metric N>
   class AutoMetricRecording {
    public:
-    AutoMetricRecording() { PerfStats::RecordMeasurementStart(N); }
-    ~AutoMetricRecording() { PerfStats::RecordMeasurementEnd(N); }
+    AutoMetricRecording() {
+      if (detail::sPerfStatsCollectionMask &
+          (MetricMask(1) << static_cast<MetricMask>(N))) {
+        mStart = TimeStamp::Now();
+      }
+    }
+    ~AutoMetricRecording() {
+      if (!mStart.IsNull()) {
+        RecordMeasurementInternal(N, TimeStamp::Now() - mStart);
+      }
+    }
+
+   private:
+    TimeStamp mStart;
   };
 
   static void SetCollectionMask(MetricMask aMask);
   static MetricMask GetCollectionMask();
 
-  static RefPtr<PerfStatsPromise> CollectPerfStatsJSON() {
-    return GetSingleton()->CollectPerfStatsJSONInternal();
-  }
-
-  static nsCString CollectLocalPerfStatsJSON() {
-    return GetSingleton()->CollectLocalPerfStatsJSONInternal();
-  }
-
+  static RefPtr<PerfStatsPromise> CollectPerfStatsJSON();
+  static std::string CollectLocalPerfStatsJSON();
   static void StorePerfStats(dom::ContentParent* aParent,
-                             const nsACString& aPerfStats) {
-    GetSingleton()->StorePerfStatsInternal(aParent, aPerfStats);
-  }
+                             const std::string& aPerfStats);
 
   // Returns the mask with the bit set for a given metric name, or 0 if not
   // found
   static MetricMask GetFeatureMask(const char* aMetricName);
 
  private:
-  static PerfStats* GetSingleton();
-  static void RecordMeasurementStartInternal(Metric aMetric);
-  static void RecordMeasurementEndInternal(Metric aMetric);
-  static void RecordMeasurementInternal(Metric aMetric, TimeDuration aDuration);
+  static PerfStats* GetSingleton() {
+    if (!detail::sPerfStatsSingleton) {
+      static PerfStats sInstance;
+      detail::sPerfStatsSingleton.compareExchange(nullptr, &sInstance);
+    }
+    return detail::sPerfStatsSingleton;
+  }
+
+  static void RecordMeasurementStartInternal(Metric aMetric) {
+    GetSingleton()->mRecordedStarts[static_cast<size_t>(aMetric)] =
+        TimeStamp::Now();
+  }
+
+  static void RecordMeasurementEndInternal(Metric aMetric) {
+    PerfStats* singleton = GetSingleton();
+    auto idx = static_cast<MetricMask>(aMetric);
+    singleton->mRecordedTimes[idx].fetch_add(
+        (TimeStamp::Now() - singleton->mRecordedStarts[idx]).ToMilliseconds(),
+        std::memory_order_relaxed);
+    ++singleton->mRecordedCounts[idx];
+  }
+
+  static void RecordMeasurementInternal(Metric aMetric,
+                                        TimeDuration aDuration) {
+    PerfStats* singleton = GetSingleton();
+    auto idx = static_cast<MetricMask>(aMetric);
+    singleton->mRecordedTimes[idx].fetch_add(aDuration.ToMilliseconds(),
+                                             std::memory_order_relaxed);
+    ++singleton->mRecordedCounts[idx];
+  }
+
   static void RecordMeasurementCounterInternal(Metric aMetric,
-                                               MetricCounter aIncrementAmount);
+                                               MetricCounter aIncrementAmount) {
+    PerfStats* singleton = GetSingleton();
+    auto idx = static_cast<MetricMask>(aMetric);
+    singleton->mRecordedTimes[idx].fetch_add(double(aIncrementAmount),
+                                             std::memory_order_relaxed);
+    ++singleton->mRecordedCounts[idx];
+  }
 
   void ResetCollection();
   void StorePerfStatsInternal(dom::ContentParent* aParent,
-                              const nsACString& aPerfStats);
+                              const std::string& aPerfStats);
   RefPtr<PerfStatsPromise> CollectPerfStatsJSONInternal();
-  nsCString CollectLocalPerfStatsJSONInternal();
+  std::string CollectLocalPerfStatsJSONInternal();
 
-  static Atomic<MetricMask, MemoryOrdering::Relaxed> sCollectionMask;
-  static StaticMutex sMutex MOZ_UNANNOTATED;
-  static StaticAutoPtr<PerfStats> sSingleton;
   TimeStamp mRecordedStarts[static_cast<MetricMask>(Metric::Max)];
-  double mRecordedTimes[static_cast<MetricMask>(Metric::Max)];
-  MetricCounter mRecordedCounts[static_cast<MetricMask>(Metric::Max)];
-  nsTArray<nsCString> mStoredPerfStats;
+  std::atomic<double> mRecordedTimes[static_cast<MetricMask>(Metric::Max)];
+  Atomic<MetricCounter, MemoryOrdering::Relaxed>
+      mRecordedCounts[static_cast<MetricMask>(Metric::Max)];
+  std::vector<std::string> mStoredPerfStats;
 };
 
 static_assert(static_cast<PerfStats::MetricMask>(1)

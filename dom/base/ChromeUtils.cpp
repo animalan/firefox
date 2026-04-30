@@ -2257,8 +2257,9 @@ already_AddRefed<Promise> ChromeUtils::CollectPerfStats(GlobalObject& aGlobal,
 
   extPromise->Then(
       GetCurrentSerialEventTarget(), __func__,
-      [promise](const nsCString& aResult) {
-        promise->MaybeResolve(NS_ConvertUTF8toUTF16(aResult));
+      [promise](const std::string& aResult) {
+        promise->MaybeResolve(
+            NS_ConvertUTF8toUTF16(aResult.c_str(), aResult.length()));
       },
       [promise](bool aValue) { promise->MaybeReject(NS_ERROR_FAILURE); });
 

@@ -5649,7 +5649,8 @@ mozilla::ipc::IPCResult ContentParent::RecvShutdownProfile(
 
 mozilla::ipc::IPCResult ContentParent::RecvShutdownPerfStats(
     const nsACString& aPerfStats) {
-  PerfStats::StorePerfStats(this, aPerfStats);
+  PerfStats::StorePerfStats(
+      this, std::string(aPerfStats.Data(), aPerfStats.Length()));
   return IPC_OK();
 }
 

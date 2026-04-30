@@ -2349,7 +2349,8 @@ mozilla::ipc::IPCResult ContentChild::RecvUpdatePerfStatsCollectionMask(
 
 mozilla::ipc::IPCResult ContentChild::RecvCollectPerfStatsJSON(
     CollectPerfStatsJSONResolver&& aResolver) {
-  aResolver(PerfStats::CollectLocalPerfStatsJSON());
+  auto s = PerfStats::CollectLocalPerfStatsJSON();
+  aResolver(nsCString(s.c_str(), s.length()));
   return IPC_OK();
 }
 
@@ -3203,7 +3204,8 @@ void ContentChild::ShutdownInternal() {
   }
 
   if (PerfStats::GetCollectionMask() != 0) {
-    SendShutdownPerfStats(PerfStats::CollectLocalPerfStatsJSON());
+    auto s = PerfStats::CollectLocalPerfStatsJSON();
+    SendShutdownPerfStats(nsCString(s.c_str(), s.length()));
   }
 
   // Start a timer that will ensure we quickly exit after a reasonable period
