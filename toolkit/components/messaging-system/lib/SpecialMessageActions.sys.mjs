@@ -262,6 +262,8 @@ export const SpecialMessageActions = {
       "browser.smartwindow.firstrun.hasCompleted",
       "browser.smartwindow.firstrun.modelChoice",
       "browser.smartwindow.sidebar.openByDefault",
+      "browser.smartwindow.memories.generateFromConversation",
+      "browser.smartwindow.memories.generateFromHistory",
       "browser.crashReports.unsubmittedCheck.autoSubmit2",
       "browser.dataFeatureRecommendations.enabled",
       "browser.ipProtection.enabled",
