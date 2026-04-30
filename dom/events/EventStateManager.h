@@ -540,6 +540,8 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
 
   bool IsTrackingDragGesture() const { return mGestureDownContent != nullptr; }
 
+  nsIContent* GetURLTargetContent() const { return mURLTargetContent; }
+
  protected:
   /*
    * If aTargetFrame's widget has a cached cursor value, resets the cursor

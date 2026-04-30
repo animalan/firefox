@@ -32,6 +32,7 @@
 #include "mozilla/ContentEvents.h"
 #include "mozilla/DisplayPortUtils.h"
 #include "mozilla/EventDispatcher.h"
+#include "mozilla/EventStateManager.h"
 #include "mozilla/LookAndFeel.h"
 #include "mozilla/MathAlgorithms.h"
 #include "mozilla/Preferences.h"
@@ -7802,13 +7803,16 @@ Maybe<SnapDestination> ScrollContainerFrame::GetSnapPointForResnap() {
   nsIContent* focusedContent =
       GetContent()->GetComposedDoc()->GetUnretargetedFocusedContent();
 
+  nsIContent* targetContent =
+      PresContext()->EventStateManager()->GetURLTargetContent();
+
   // While we are reconstructing this scroll container, we might be in the
   // process of restoring the scroll position, we need to respect it.
   nsPoint currentOrRestorePos =
       NeedRestorePosition() ? mRestorePos : GetScrollPosition();
   return ScrollSnapUtils::GetSnapPointForResnap(
       ComputeScrollSnapInfo(), GetLayoutScrollRange(), currentOrRestorePos,
-      mLastSnapTargetIds, focusedContent, GetWritingMode());
+      mLastSnapTargetIds, focusedContent, targetContent, GetWritingMode());
 }
 
 bool ScrollContainerFrame::NeedsResnap() {

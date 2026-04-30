@@ -53,7 +53,8 @@ struct ScrollSnapUtils {
       const ScrollSnapInfo& aSnapInfo, const nsRect& aScrollRange,
       const nsPoint& aCurrentPosition,
       const UniquePtr<ScrollSnapTargetIds>& aLastSnapTargetIds,
-      const nsIContent* aFocusedContent, const WritingMode aWritingMode);
+      const nsIContent* aFocusedContent, const nsIContent* aTargetContent,
+      const WritingMode aWritingMode);
 
   static ScrollSnapTargetId GetTargetIdFor(const nsIFrame* aFrame);
 
