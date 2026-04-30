@@ -27,6 +27,7 @@ const AREAS = [
   "preferencesPaneSearchResults",
   "preferencesPaneSync",
   "preferencesPaneContainers",
+  "preferencesPaneAbout",
   "preferencesPaneAccessibility",
 ];
 

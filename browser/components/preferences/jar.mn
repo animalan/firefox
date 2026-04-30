@@ -28,6 +28,7 @@ browser.jar:
    content/browser/preferences/etp-advanced-banner.svg
    content/browser/preferences/spell-check-promo.svg
    content/browser/preferences/OnDeviceModelManager.mjs
+   content/browser/preferences/config/about-firefox.mjs                 (config/about-firefox.mjs)
    content/browser/preferences/config/account-sync.mjs                  (config/account-sync.mjs)
    content/browser/preferences/config/accessibility.mjs                 (config/accessibility.mjs)
    content/browser/preferences/config/aiFeatures.mjs                    (config/aiFeatures.mjs)

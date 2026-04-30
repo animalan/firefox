@@ -79,6 +79,9 @@ pane-ai-controls-title = AI controls
 category-ai-controls =
     .tooltiptext = { pane-ai-controls-title }
 
+pane-about-firefox-title = About { -brand-short-name }
+  .title = { pane-about-firefox-title }
+
 pane-accessibility-title = Accessibility
   .title = { pane-accessibility-title }
 
@@ -717,6 +720,11 @@ play-drm-content =
 
 play-drm-content-learn-more = Learn more
 
+## About Firefox
+
+about-firefox-header =
+    .heading = About { -brand-short-name }
+
 ## Firefox updates
 
 update-application-heading =
@@ -744,8 +752,8 @@ update-application-auto =
     .label = Automatically install updates (recommended)
     .accesskey = A
 
-update-application-check-choose =
-    .label = Check for updates but let you choose to install them
+update-application-check-choose-2 =
+    .label = Check for updates, but choose when to install
     .accesskey = C
 
 update-application-background-enabled =
@@ -755,8 +763,8 @@ update-application-background-enabled =
 update-application-warning-cross-user-setting-2 =
     .message = This setting will apply to all Windows accounts and { -brand-short-name } profiles using this installation of { -brand-short-name }.
 
-update-application-suppress-prompts =
-    .label = Show fewer update notification prompts
+update-application-suppress-prompts-2 =
+    .label = Show fewer update reminders
     .accesskey = n
 
 update-setting-write-failure-title2 = Error saving Update settings

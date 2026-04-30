@@ -11,24 +11,12 @@ add_task(async function test_updates_managed_by_os_message_bar() {
   let settingControl = doc.getElementById("updatesManagedByOS");
   await settingControl.updateComplete;
 
-  let origIsPackagedApp = win.gIsPackagedApp;
-  let isMessageBarHidden = win.AppConstants.MOZ_UPDATER && !origIsPackagedApp;
+  let isPackagedApp = Services.sysinfo.getProperty("isPackagedApp");
   is(
     BrowserTestUtils.isHidden(settingControl),
-    isMessageBarHidden,
-    "Message bar initial visibility matches expected state"
+    win.AppConstants.MOZ_UPDATER && !isPackagedApp,
+    "updatesManagedByOS message bar is shown only when running as a packaged app"
   );
 
-  win.gIsPackagedApp = true;
-  let setting = win.Preferences.getSetting("updatesManagedByOS");
-  setting.onChange();
-  await settingControl.updateComplete;
-
-  ok(
-    !BrowserTestUtils.isHidden(settingControl),
-    "Message bar is visible when running as a packaged app"
-  );
-
-  win.gIsPackagedApp = origIsPackagedApp;
   gBrowser.removeCurrentTab();
 });

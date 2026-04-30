@@ -194,6 +194,14 @@ var SettingGroupManager = ChromeUtils.importESModule(
  * @type {Record<string, SettingPaneConfig>}
  */
 const CONFIG_PANES = Object.freeze({
+  about: {
+    l10nId: "about-firefox-header",
+    iconSrc: "chrome://browser/skin/sidebar/firefox.svg",
+    groupIds: ["updates", "support"],
+    module: "chrome://browser/content/preferences/config/about-firefox.mjs",
+    visible: () =>
+      Services.prefs.getBoolPref("browser.settings-redesign.enabled", false),
+  },
   accessibility: {
     l10nId: "preferences-accessibility-header",
     groupIds: [

@@ -154,6 +154,7 @@ const PREFERENCES_PANES = [
   "paneExperimental",
   "paneMoreFromMozilla",
   "paneAi",
+  "paneAbout",
   "paneAccessibility",
   "paneLanguages",
 ];
