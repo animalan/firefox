@@ -392,6 +392,7 @@ add_task(async function test_splitview_replaceTab_activates_panels() {
   await checkSplitViewPanelVisible(tab3, true);
 
   splitView.close();
+  BrowserTestUtils.removeTab(tab1);
 });
 
 add_task(async function test_split_view_preserves_multiple_pairings() {
