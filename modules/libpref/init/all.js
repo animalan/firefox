@@ -4121,3 +4121,8 @@ pref("captchadetection.actor.enabled", true);
 // Make general.smoothScroll sticky to avoid being clobbered by
 // preferes-reduced-motion system setting.
 pref("general.smoothScroll", true, sticky);
+
+// Trigger FOG's Artifact Build support on artifact builds.
+#ifdef MOZ_ARTIFACT_BUILDS
+  pref("telemetry.fog.artifact_build", true);
+#endif
