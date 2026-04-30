@@ -5,9 +5,9 @@
 #ifndef vm_ArgumentsObject_h
 #define vm_ArgumentsObject_h
 
+#include "ds/BitArray.h"
 #include "gc/Barrier.h"
 #include "gc/GCArray.h"
-#include "util/BitArray.h"
 #include "vm/NativeObject.h"
 
 namespace js {
@@ -29,6 +29,9 @@ class RareArgumentsData {
   // ArgumentsObject::isElementDeleted comment.
   size_t deletedBits_[1];
 
+  using BitArray = ExternalBitArray<size_t>;
+  using ConstBitArray = ExternalBitArray<const size_t>;
+
   RareArgumentsData() = default;
   RareArgumentsData(const RareArgumentsData&) = delete;
   void operator=(const RareArgumentsData&) = delete;
@@ -39,11 +42,11 @@ class RareArgumentsData {
 
   bool isElementDeleted(size_t len, size_t i) const {
     MOZ_ASSERT(i < len);
-    return IsBitArrayElementSet(deletedBits_, len, i);
+    return ConstBitArray(deletedBits_, len).get(i);
   }
   void markElementDeleted(size_t len, size_t i) {
     MOZ_ASSERT(i < len);
-    SetBitArrayElement(deletedBits_, len, i);
+    BitArray(deletedBits_, len).set(i);
   }
 };
 

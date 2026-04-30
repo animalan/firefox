@@ -9,10 +9,10 @@
 
 #include <algorithm>
 
+#include "ds/BitArray.h"
 #include "gc/GCContext.h"
 #include "jit/CalleeToken.h"
 #include "jit/JitFrames.h"
-#include "util/BitArray.h"
 #include "vm/GlobalObject.h"
 #include "vm/Stack.h"
 
@@ -26,7 +26,8 @@ using namespace js;
 
 /* static */
 size_t RareArgumentsData::bytesRequired(size_t numActuals) {
-  size_t extraBytes = NumWordsForBitArrayOfLength(numActuals) * sizeof(size_t);
+  size_t extraBytes =
+      BitArray::NumWordsForLength(numActuals) * sizeof(BitArray::WordT);
   return offsetof(RareArgumentsData, deletedBits_) + extraBytes;
 }
 
