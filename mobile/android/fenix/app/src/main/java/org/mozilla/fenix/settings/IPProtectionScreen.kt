@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import mozilla.components.ExperimentalAndroidComponentsApi
 import mozilla.components.compose.base.annotation.FlexibleWindowPreview
 import mozilla.components.compose.base.button.FilledButton
 import mozilla.components.concept.engine.ipprotection.IPProtectionHandler
@@ -59,13 +60,16 @@ private const val BYTES_PER_GIB = 1024 * 1024 * 1024f
 private val PROMO_CARD_CORNER_RADIUS = 28.dp
 private val PROMO_ILLUSTRATION_SIZE = 60.dp
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 private fun IPProtectionHandler.StateInfo.isSwitchChecked() =
     proxyState == PROXY_STATE_ACTIVE || proxyState == PROXY_STATE_ACTIVATING
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 private fun IPProtectionHandler.StateInfo.isToggleEnabled() =
     proxyState == PROXY_STATE_ACTIVE || proxyState == PROXY_STATE_ACTIVATING ||
         proxyState == PROXY_STATE_READY || proxyState == PROXY_STATE_ERROR
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 private fun IPProtectionHandler.StateInfo.useColorfulIllustration() =
     proxyState == PROXY_STATE_ACTIVE || proxyState == PROXY_STATE_ACTIVATING
 
@@ -77,6 +81,7 @@ private fun IPProtectionHandler.StateInfo.useColorfulIllustration() =
  * @param onLearnMoreClick Called when any "Learn more" link is tapped.
  * @param onGetStartedClick Called when the "Get started" button is tapped.
  */
+@OptIn(ExperimentalAndroidComponentsApi::class)
 @Composable
 fun IPProtectionScreen(
     state: IPProtectionHandler.StateInfo,
@@ -132,6 +137,7 @@ fun IPProtectionScreen(
     }
 }
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 @Composable
 private fun DataLimitSection(
     state: IPProtectionHandler.StateInfo,
@@ -321,6 +327,7 @@ private fun VpnPromoCard(
     }
 }
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 private fun dataLimitDescription(state: IPProtectionHandler.StateInfo, format: String): String {
     with(state) {
         val remainingGib = remaining / BYTES_PER_GIB
@@ -329,6 +336,7 @@ private fun dataLimitDescription(state: IPProtectionHandler.StateInfo, format: S
     }
 }
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 private fun dataProgress(state: IPProtectionHandler.StateInfo): Float {
     with(state) {
         if (max <= 0L || remaining < 0L) return 0f
@@ -336,6 +344,7 @@ private fun dataProgress(state: IPProtectionHandler.StateInfo): Float {
     }
 }
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 @FlexibleWindowPreview
 @Composable
 private fun IPProtectionScreenActivePreview(
@@ -355,6 +364,7 @@ private fun IPProtectionScreenActivePreview(
     }
 }
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 @FlexibleWindowPreview
 @Composable
 private fun IPProtectionScreenNotEnrolledPreview(
@@ -372,6 +382,7 @@ private fun IPProtectionScreenNotEnrolledPreview(
     }
 }
 
+@OptIn(ExperimentalAndroidComponentsApi::class)
 @FlexibleWindowPreview
 @Composable
 private fun IPProtectionScreenPausedPreview(

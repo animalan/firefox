@@ -9,6 +9,7 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.JsonReader
 import androidx.annotation.MainThread
+import mozilla.components.ExperimentalAndroidComponentsApi
 import mozilla.components.concept.base.profiler.Profiler
 import mozilla.components.concept.engine.activity.ActivityDelegate
 import mozilla.components.concept.engine.activity.OrientationDelegate
@@ -250,6 +251,7 @@ interface Engine :
      *
      * @return An [IPProtectionHandler] to control the IP protection proxy and manage auth tokens.
      */
+    @ExperimentalAndroidComponentsApi
     fun registerIPProtectionDelegate(
         delegate: IPProtectionDelegate,
     ): IPProtectionHandler = throw UnsupportedOperationException("IP Protection is not available in this engine")
@@ -257,6 +259,7 @@ interface Engine :
     /**
      * Un-registers the attached [IPProtectionDelegate] if one was added with [registerIPProtectionDelegate].
      */
+    @ExperimentalAndroidComponentsApi
     fun unregisterIPProtectionDelegate(): Unit =
         throw UnsupportedOperationException("IP Protection is not available in this engine")
 

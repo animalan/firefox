@@ -48,6 +48,7 @@ projects:
     - components:feature-fxsuggest
     - components:feature-importer
     - components:feature-intent
+    - components:feature-ipprotection
     - components:feature-logins
     - components:feature-media
     - components:feature-privatemode

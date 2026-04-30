@@ -571,6 +571,7 @@ dependencies {
     implementation project(':components:feature-fxsuggest')
     implementation project(':components:feature-importer')
     implementation project(':components:feature-intent')
+    implementation project(':components:feature-ipprotection')
     implementation project(':components:feature-logins')
     implementation project(':components:feature-media')
     implementation project(':components:feature-privatemode')

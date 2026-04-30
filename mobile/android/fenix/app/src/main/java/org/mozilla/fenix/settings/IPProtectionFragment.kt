@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import mozilla.components.ExperimentalAndroidComponentsApi
 import mozilla.components.concept.engine.ipprotection.IPProtectionHandler
 import org.mozilla.fenix.R
 import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
@@ -20,6 +21,7 @@ import org.mozilla.fenix.theme.FirefoxTheme
 /** Fragment hosting the IP Protection settings screen. */
 class IPProtectionFragment : Fragment(), SystemInsetsPaddedFragment {
 
+    @OptIn(ExperimentalAndroidComponentsApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

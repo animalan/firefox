@@ -4,10 +4,13 @@
 
 package mozilla.components.concept.engine.ipprotection
 
+import mozilla.components.ExperimentalAndroidComponentsApi
+
 /**
  * App-to-engine handle for controlling the IP protection proxy. Returned by
  * [mozilla.components.concept.engine.Engine.registerIPProtectionDelegate].
  */
+@ExperimentalAndroidComponentsApi
 interface IPProtectionHandler {
 
     /**
@@ -19,6 +22,11 @@ interface IPProtectionHandler {
      * Deactivates the IP protection proxy.
      */
     fun deactivate()
+
+    /**
+     * Initializes the proxy state machine.
+     */
+    fun init()
 
     /**
      * Sets the [TokenProvider] used to supply authentication tokens to the IP protection service.

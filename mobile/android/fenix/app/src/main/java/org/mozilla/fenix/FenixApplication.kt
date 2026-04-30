@@ -54,6 +54,7 @@ import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
 import mozilla.components.feature.addons.update.GlobalAddonDependencyProvider
 import mozilla.components.feature.autofill.AutofillUseCases
 import mozilla.components.feature.fxsuggest.GlobalFxSuggestDependencyProvider
+import mozilla.components.feature.ipprotection.DefaultIPProtectionFeature
 import mozilla.components.feature.search.ext.buildSearchUrl
 import mozilla.components.feature.search.ext.waitForSelectedOrDefaultSearchEngine
 import mozilla.components.feature.summarize.settings.SummarizationSettings
@@ -106,6 +107,7 @@ import org.mozilla.fenix.components.Components
 import org.mozilla.fenix.components.Core
 import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.initializeGlean
+import org.mozilla.fenix.components.ipprotection.IPProtectionFeatureIntegration
 import org.mozilla.fenix.components.metrics.MozillaProductDetector
 import org.mozilla.fenix.components.startMetricsIfEnabled
 import org.mozilla.fenix.experiments.maybeFetchExperiments
@@ -375,6 +377,8 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
         }
 
         setupPush()
+
+        maybeSetupIPProtection()
 
         GlobalFxSuggestDependencyProvider.initialize(components.fxSuggest.storage)
 
@@ -654,6 +658,21 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
             // Initialize the service. This could potentially be done in a coroutine in the future.
             it.initialize()
         }
+    }
+
+    private fun maybeSetupIPProtection() {
+        IPProtectionFeatureIntegration(
+            feature = DefaultIPProtectionFeature(
+                engine = components.core.engine,
+                lazyAccountManager = lazy { components.backgroundServices.accountManager },
+                store = components.ipProtectionStore,
+                browserStore = components.core.store,
+                tabsUseCases = components.useCases.tabsUseCases,
+            ),
+            pref = settings().preferences,
+            prefKey = getString(R.string.pref_key_enable_ip_protection),
+            lifecycleOwner = ProcessLifecycleOwner.get(),
+        ).start()
     }
 
     private fun setupCrashReporting(): CrashReporter {
