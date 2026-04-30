@@ -1318,6 +1318,7 @@ ResourceCommand.TYPES = ResourceCommand.prototype.TYPES = {
   ROOT_NODE: "root-node",
   STYLESHEET: "stylesheet",
   NETWORK_EVENT: "network-event",
+  NETWORK_EVENT_DECODED_BODY_SIZE: "network-event-decoded-body-size",
   WEBSOCKET: "websocket",
   WEBTRANSPORT: "webtransport",
   COOKIE: "cookies",

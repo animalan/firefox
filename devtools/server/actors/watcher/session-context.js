@@ -194,6 +194,7 @@ function getWatcherSupportedResources(_type) {
     [Resources.TYPES.SESSION_STORAGE]: true,
     [Resources.TYPES.PLATFORM_MESSAGE]: true,
     [Resources.TYPES.NETWORK_EVENT]: true,
+    [Resources.TYPES.NETWORK_EVENT_DECODED_BODY_SIZE]: true,
     [Resources.TYPES.NETWORK_EVENT_STACKTRACE]: true,
     [Resources.TYPES.REFLOW]: true,
     [Resources.TYPES.STYLESHEET]: true,
