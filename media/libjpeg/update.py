@@ -31,7 +31,7 @@ C_FILES_INCLUDED_BY_OTHERS = {
     "jstdhuff.c",   # included by jcparam.c
 }
 
-JCONFIG_TEMPLATES = ["jconfig.h.in", "jconfigint.h.in", "jversion.h.in", "simd/arm/neon-compat.h.in"]
+JCONFIG_TEMPLATES = ["src/jconfig.h.in", "src/jconfigint.h.in", "src/jversion.h.in", "simd/arm/neon-compat.h.in"]
 
 # Together with the header extension patterns (".h", ".h.in", ".inc", ".inc.h") checked
 # in check_vcs_changes(), this set forms the complete allow list for new vendored files
@@ -92,17 +92,18 @@ def _iter_sources_items(text, list_vars):
             yield from list_vars.get(m.group(2), [])
 
 
-def parse_moz_build_sources(path, root_only=False):
+def parse_moz_build_sources(path, exclude_prefix=None):
     """Return the set of bare filenames from SOURCES blocks in a moz.build.
 
     Handles both literal SOURCES += [...] blocks and SOURCES += varname assignments.
-    root_only: if True, skip entries that contain '/' (e.g. SIMD subdirectory files).
+    exclude_prefix: if set, skip entries that start with this prefix (e.g. 'simd/' to
+    exclude SIMD files from the JPEG_SOURCES comparison).
     """
     text = path.read_text()
     list_vars = _collect_list_vars(text)
     sources = set()
     for item in _iter_sources_items(text, list_vars):
-        if root_only and "/" in item:
+        if exclude_prefix and item.startswith(exclude_prefix):
             continue
         sources.add(os.path.basename(item))
     return sources
@@ -146,15 +147,15 @@ def check_source_lists():
     resolved["JPEG_SOURCES"] = [f for f in base_jpeg if f not in UPSTREAM_SOURCES_NOT_BUILT]
 
     checks = [
-        ("JPEG16_SOURCES", VENDOR_DIR / "jpeg16" / "moz.build", False),
-        ("JPEG12_SOURCES", VENDOR_DIR / "jpeg12" / "moz.build", False),
-        ("JPEG_SOURCES",   VENDOR_DIR / "moz.build",            True),
+        ("JPEG16_SOURCES", VENDOR_DIR / "jpeg16" / "moz.build", None),
+        ("JPEG12_SOURCES", VENDOR_DIR / "jpeg12" / "moz.build", None),
+        ("JPEG_SOURCES",   VENDOR_DIR / "moz.build",            "simd/"),
     ]
 
     ok = True
-    for var_name, moz_build_path, root_only in checks:
-        cmake_set = set(resolved[var_name])
-        moz_set = parse_moz_build_sources(moz_build_path, root_only)
+    for var_name, moz_build_path, exclude_prefix in checks:
+        cmake_set = {os.path.basename(f) for f in resolved[var_name]}
+        moz_set = parse_moz_build_sources(moz_build_path, exclude_prefix)
         added = cmake_set - moz_set
         removed = moz_set - cmake_set
         if added or removed:

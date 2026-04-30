@@ -127,6 +127,14 @@ for x in data['vendoring']['exclude']:
 * Update the release field in moz.yaml (the revision field is updated
   automatically by update.py).
 
+== (libjpeg-turbo v3.1.0) ==
+
+* Updated to v3.1.0 release.
+* All source files moved upstream to src/ subdirectory.
+* Updated moz.build, jpeg12/moz.build, jpeg16/moz.build for new src/ paths.
+* Updated mozilla.diff patch target to src/jmorecfg.h.
+* Updated moz.yaml exclude list and update.py for new src/ layout.
+
 == September 14, 2024 (libjpeg-turbo v3.0.4 f29eda648547b36aa594c4116c7764a6c8a079b9 2024-09-14) ==
 
 * Updated to v3.0.4 release.

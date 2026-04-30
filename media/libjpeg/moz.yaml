@@ -32,76 +32,60 @@ vendoring:
 
   exclude:
     # Build system support files
-    - cmakescripts
-    - jconfig.txt
-    - libjpeg.map.in
-    # Documentation
-    - BUILDING.md
-    - change.log
-    - coderules.txt
-    - doxygen-extra.css
-    - doxygen.config
-    - libjpeg.txt
-    - structure.txt
-    - usage.txt
-    - wizard.txt
-    # Man pages
-    - cjpeg.1
-    - djpeg.1
-    - jpegtran.1
-    - rdjpgcom.1
-    - wrjpgcom.1
-    # Test files
-    - croptest.in
-    - jcstest.c
-    - strtest.c
-    - tjbenchtest.in
-    - tjexampletest.in
+    - src/jconfig.txt
+    - src/libjpeg.map.in
+    # Test files (in src/; test/ directory is excluded below)
+    - src/jcstest.c
+    - src/strtest.c
     # Standalone utility programs and TurboJPEG API (not used by Firefox)
-    - bmpsizetest.c
-    - cdjpeg.c
-    - cdjpeg.h
-    - cderror.h
-    - cjpeg.c
-    - cmyk.h
-    - djpeg.c
-    - example.c
-    - jdatadst-tj.c
-    - jdatasrc-tj.c
-    - jpegtran.c
-    - rdbmp.c
-    - rdcolmap.c
-    - rdgif.c
-    - rdjpgcom.c
-    - rdppm.c
-    - rdswitch.c
-    - rdtarga.c
-    - tjbench.c
-    - tjexample.c
-    - tjunittest.c
-    - tjutil.c
-    - tjutil.h
-    - transupp.c
-    - transupp.h
-    - turbojpeg.c
-    - turbojpeg-jni.c
-    - turbojpeg-mapfile
-    - turbojpeg-mapfile.jni
-    - turbojpeg-mp.c
-    - turbojpeg.h
-    - wrbmp.c
-    - wrgif.c
-    - wrjpgcom.c
-    - wrppm.c
-    - wrtarga.c
+    - src/cdjpeg.c
+    - src/cdjpeg.h
+    - src/cderror.h
+    - src/cjpeg.c
+    - src/cmyk.h
+    - src/djpeg.c
+    - src/example.c
+    - src/jdatadst-tj.c
+    - src/jdatasrc-tj.c
+    - src/jpegtran.c
+    - src/rdbmp.c
+    - src/rdcolmap.c
+    - src/rdgif.c
+    - src/rdjpgcom.c
+    - src/rdppm.c
+    - src/rdswitch.c
+    - src/rdtarga.c
+    - src/tjbench.c
+    - src/tjcomp.c
+    - src/tjdecomp.c
+    - src/tjtran.c
+    - src/tjunittest.c
+    - src/tjutil.c
+    - src/tjutil.h
+    - src/transupp.c
+    - src/transupp.h
+    - src/turbojpeg.c
+    - src/turbojpeg-mapfile
+    - src/turbojpeg-mapfile.jni
+    - src/turbojpeg-mp.c
+    - src/turbojpeg.h
+    - src/wrbmp.c
+    - src/wrgif.c
+    - src/wrjpgcom.c
+    - src/wrppm.c
+    - src/wrtarga.c
+    # Root-level documentation
+    - BUILDING.md
     # Directories not needed in the Firefox tree
+    - cmakescripts
     - doc
     - fuzz
     - java
     - jna
-    - md5
     - release
     - sharedlib
+    - src/md5
+    - test
     - testimages
     - win
 
