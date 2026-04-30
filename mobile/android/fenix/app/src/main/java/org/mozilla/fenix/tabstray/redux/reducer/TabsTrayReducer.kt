@@ -33,15 +33,12 @@ internal object TabsTrayReducer {
                  -> handleSelectionModeActions(state, action)
 
             // Tab Update Actions
-            is TabsTrayAction.UpdateNormalTabs,
-            is TabsTrayAction.UpdatePrivateTabs,
             is TabsTrayAction.UpdateSelectedTabId,
             is TabsTrayAction.TabDataUpdateReceived,
                  -> handleTabUpdates(state, action)
 
             // Inactive Tabs Actions
             is TabsTrayAction.UpdateInactiveExpanded,
-            is TabsTrayAction.UpdateInactiveTabs,
             is TabsTrayAction.DismissInactiveTabsCFR,
             is TabsTrayAction.DismissInactiveTabsAutoCloseDialog,
                  -> handleInactiveTabsActions(state, action)
@@ -114,14 +111,6 @@ internal object TabsTrayReducer {
 
     private fun handleTabUpdates(state: TabsTrayState, action: TabsTrayAction): TabsTrayState {
         return when (action) {
-            is TabsTrayAction.UpdateNormalTabs -> state.copy(
-                normalTabsState = state.normalTabsState.copy(
-                    items = action.tabs,
-                ),
-            )
-            is TabsTrayAction.UpdatePrivateTabs -> state.copy(
-                privateBrowsing = state.privateBrowsing.copy(tabs = action.tabs),
-            )
             is TabsTrayAction.UpdateSelectedTabId -> state.copy(selectedTabId = action.tabId)
             is TabsTrayAction.TabDataUpdateReceived -> state.copy(
                 selectedTabId = action.tabStorageUpdate.selectedTabId,
@@ -147,8 +136,6 @@ internal object TabsTrayReducer {
         return when (action) {
             is TabsTrayAction.UpdateInactiveExpanded ->
                 state.copy(inactiveTabs = state.inactiveTabs.copy(isExpanded = action.expanded))
-            is TabsTrayAction.UpdateInactiveTabs ->
-                state.copy(inactiveTabs = state.inactiveTabs.copy(tabs = action.tabs))
             is TabsTrayAction.DismissInactiveTabsCFR ->
                 state.copy(inactiveTabs = state.inactiveTabs.copy(showCFR = false))
             is TabsTrayAction.DismissInactiveTabsAutoCloseDialog ->

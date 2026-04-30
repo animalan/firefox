@@ -47,12 +47,14 @@ class TabsTrayTelemetryMiddleware(
 
     private fun handleGeneralTabsTrayAction(action: TabsTrayAction) {
         when (action) {
-            is TabsTrayAction.UpdateInactiveTabs -> {
+            is TabsTrayAction.TabDataUpdateReceived -> {
                 if (shouldReportInactiveTabMetrics) {
                     shouldReportInactiveTabMetrics = false
 
-                    TabsTray.hasInactiveTabs.record(TabsTray.HasInactiveTabsExtra(action.tabs.size))
-                    Metrics.inactiveTabsCount.set(action.tabs.size.toLong())
+                    TabsTray.hasInactiveTabs.record(
+                        TabsTray.HasInactiveTabsExtra(action.tabStorageUpdate.inactiveTabs.size),
+                    )
+                    Metrics.inactiveTabsCount.set(action.tabStorageUpdate.inactiveTabs.size.toLong())
                 }
             }
             is TabsTrayAction.EnterSelectMode -> {

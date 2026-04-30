@@ -424,15 +424,7 @@ private fun TabsTrayPreview(
                 tabsTrayStore.dispatch(TabsTrayAction.PageSelected(page))
             },
             tabInteractionHandler = NoOpTabInteractionHandler,
-            onTabClose = { tab ->
-                if (tab.private) {
-                    val newTabs = tabsTrayStore.state.privateBrowsing.tabs - tab
-                    tabsTrayStore.dispatch(TabsTrayAction.UpdatePrivateTabs(newTabs))
-                } else {
-                    val newTabs = tabsTrayStore.state.normalTabsState.items - tab
-                    tabsTrayStore.dispatch(TabsTrayAction.UpdateNormalTabs(newTabs))
-                }
-
+            onTabClose = { _ ->
                 scope.launch {
                     snackbarHostState.displaySnackbar(
                         visuals = SnackbarVisuals(
@@ -462,8 +454,6 @@ private fun TabsTrayPreview(
                 tabsTrayStore.dispatch(TabsTrayAction.UpdateInactiveExpanded(expanded))
             },
             onDeleteAllInactiveTabsClick = {
-                tabsTrayStore.dispatch(TabsTrayAction.UpdateInactiveTabs(emptyList()))
-
                 scope.launch {
                     snackbarHostState.displaySnackbar(
                         visuals = SnackbarVisuals(
@@ -480,10 +470,7 @@ private fun TabsTrayPreview(
                 showInactiveTabsAutoCloseDialogState = !showInactiveTabsAutoCloseDialogState
             },
             onInactiveTabClick = {},
-            onInactiveTabClose = { tab ->
-                val newTabs = tabsTrayStore.state.inactiveTabs.tabs - tab
-                tabsTrayStore.dispatch(TabsTrayAction.UpdateInactiveTabs(newTabs))
-
+            onInactiveTabClose = { _ ->
                 scope.launch {
                     snackbarHostState.displaySnackbar(
                         visuals = SnackbarVisuals(
@@ -520,22 +507,8 @@ private fun TabsTrayPreview(
             onInactiveTabsCFRShown = {},
             onInactiveTabsCFRClick = {},
             onInactiveTabsCFRDismiss = {},
-            onOpenNewNormalTabClicked = {
-                val newTab = createTab(
-                    url = "www.mozilla.com",
-                    private = false,
-                )
-                val allTabs = tabsTrayStore.state.normalTabsState.items + newTab
-                tabsTrayStore.dispatch(TabsTrayAction.UpdateNormalTabs(allTabs))
-            },
-            onOpenNewPrivateTabClicked = {
-                val newTab = createTab(
-                    url = "www.mozilla.com",
-                    private = true,
-                )
-                val allTabs = tabsTrayStore.state.privateBrowsing.tabs + newTab
-                tabsTrayStore.dispatch(TabsTrayAction.UpdatePrivateTabs(allTabs))
-            },
+            onOpenNewNormalTabClicked = {},
+            onOpenNewPrivateTabClicked = {},
             onSyncedTabsFabClicked = {
                 val newSyncedTabList = tabsTrayStore.state.sync.syncedTabs + generateFakeSyncedTabsList()
                 tabsTrayStore.dispatch(TabsTrayAction.UpdateSyncedTabs(newSyncedTabList))

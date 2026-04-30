@@ -20,6 +20,7 @@ import org.mozilla.fenix.GleanMetrics.TabsTray
 import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.nimbus.FakeNimbusEventStore
 import org.mozilla.fenix.tabstray.data.TabGroupTheme
+import org.mozilla.fenix.tabstray.data.TabStorageUpdate
 import org.mozilla.fenix.tabstray.data.TabsTrayItem
 import org.mozilla.fenix.tabstray.data.createTab
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination
@@ -55,10 +56,23 @@ class TabsTrayTelemetryMiddlewareTest {
         assertNull(TabsTray.hasInactiveTabs.testGetValue())
         assertNull(Metrics.inactiveTabsCount.testGetValue())
 
-        store.dispatch(TabsTrayAction.UpdateInactiveTabs(emptyList()))
+        store.dispatch(
+            TabsTrayAction.TabDataUpdateReceived(
+                TabStorageUpdate(
+                    selectedTabId = "id",
+                    normalItems = emptyList(),
+                    normalTabCount = 0,
+                    selectedNormalItemIndex = 0,
+                    inactiveTabs = listOf(mockk(), mockk()),
+                    privateTabs = emptyList(),
+                    selectedPrivateItemIndex = 0,
+                    tabGroups = emptyList(),
+                ),
+            ),
+        )
         assertNotNull(TabsTray.hasInactiveTabs.testGetValue())
         assertNotNull(Metrics.inactiveTabsCount.testGetValue())
-        assertEquals(0L, Metrics.inactiveTabsCount.testGetValue())
+        assertEquals(2L, Metrics.inactiveTabsCount.testGetValue())
     }
 
     @Test

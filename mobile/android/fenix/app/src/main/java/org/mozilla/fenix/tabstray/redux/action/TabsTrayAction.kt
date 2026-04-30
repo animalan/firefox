@@ -77,21 +77,6 @@ sealed interface TabsTrayAction : Action {
     data class UpdateInactiveExpanded(val expanded: Boolean) : TabsTrayAction
 
     /**
-     * Updates the list of tabs in [org.mozilla.fenix.tabstray.redux.state.TabsTrayState.inactiveTabs].
-     */
-    data class UpdateInactiveTabs(val tabs: List<TabsTrayItem.Tab>) : TabsTrayAction
-
-    /**
-     * Updates the list of tabs in [org.mozilla.fenix.tabstray.redux.state.TabsTrayState.normalTabs].
-     */
-    data class UpdateNormalTabs(val tabs: List<TabsTrayItem>) : TabsTrayAction
-
-    /**
-     * Updates the list of tabs in [org.mozilla.fenix.tabstray.redux.state.TabsTrayState.privateTabs].
-     */
-    data class UpdatePrivateTabs(val tabs: List<TabsTrayItem>) : TabsTrayAction
-
-    /**
      * Updates the list of synced tabs in [org.mozilla.fenix.tabstray.redux.state.TabsTrayState.syncedTabs].
      */
     data class UpdateSyncedTabs(val tabs: List<SyncedTabsListItem>) : TabsTrayAction
