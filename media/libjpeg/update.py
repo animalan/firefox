@@ -23,15 +23,20 @@ UPSTREAM_SOURCES_NOT_BUILT = {
 # These .c files are #included by other .c files and are not compiled directly.
 # They do not appear in CMakeLists.txt source lists.
 C_FILES_INCLUDED_BY_OTHERS = {
-    "jccolext.c",   # included by jccolor.c
-    "jdcol565.c",   # included by jdcolor.c
-    "jdcolext.c",   # included by jdcolor.c
-    "jdmrg565.c",   # included by jdmerge.c
-    "jdmrgext.c",   # included by jdmerge.c
-    "jstdhuff.c",   # included by jcparam.c
+    "jccolext.c",  # included by jccolor.c
+    "jdcol565.c",  # included by jdcolor.c
+    "jdcolext.c",  # included by jdcolor.c
+    "jdmrg565.c",  # included by jdmerge.c
+    "jdmrgext.c",  # included by jdmerge.c
+    "jstdhuff.c",  # included by jcparam.c
 }
 
-JCONFIG_TEMPLATES = ["src/jconfig.h.in", "src/jconfigint.h.in", "src/jversion.h.in", "simd/arm/neon-compat.h.in"]
+JCONFIG_TEMPLATES = [
+    "src/jconfig.h.in",
+    "src/jconfigint.h.in",
+    "src/jversion.h.in",
+    "simd/arm/neon-compat.h.in",
+]
 
 # Together with the header extension patterns (".h", ".h.in", ".inc", ".inc.h") checked
 # in check_vcs_changes(), this set forms the complete allow list for new vendored files
@@ -39,14 +44,23 @@ JCONFIG_TEMPLATES = ["src/jconfig.h.in", "src/jconfigint.h.in", "src/jversion.h.
 # moves within the tree don't require updating this set. "CMakeLists.txt" matches both
 # the root and simd/CMakeLists.txt via basename.
 # When upstream adds a new non-compiled file that stays in the tree, add it here.
-KNOWN_NON_MOZ_BUILD_FILES = {
-    # Build system files (needed by update.py to check source lists)
-    "CMakeLists.txt",
-    # Metadata and licenses
-    "LICENSE.md", "README.md", "README.ijg", "ChangeLog.md",
-    # Mozilla-specific files (kept in-tree via moz.yaml keep: or patches:)
-    "MOZCHANGES", "update.py", "mozilla.diff",
-} | UPSTREAM_SOURCES_NOT_BUILT | C_FILES_INCLUDED_BY_OTHERS
+KNOWN_NON_MOZ_BUILD_FILES = (
+    {
+        # Build system files (needed by update.py to check source lists)
+        "CMakeLists.txt",
+        # Metadata and licenses
+        "LICENSE.md",
+        "README.md",
+        "README.ijg",
+        "ChangeLog.md",
+        # Mozilla-specific files (kept in-tree via moz.yaml keep: or patches:)
+        "MOZCHANGES",
+        "update.py",
+        "mozilla.diff",
+    }
+    | UPSTREAM_SOURCES_NOT_BUILT
+    | C_FILES_INCLUDED_BY_OTHERS
+)
 
 
 def parse_cmake_var(text, var_name):
@@ -137,11 +151,13 @@ def check_source_lists():
     # Use only the first set() call for JPEG_SOURCES; subsequent ones add arithmetic
     # files conditionally. Filter those via UPSTREAM_SOURCES_NOT_BUILT as well.
     base_jpeg = parse_cmake_var(text, "JPEG_SOURCES")
-    jpeg_sources = [f for f in base_jpeg if Path(f).name not in UPSTREAM_SOURCES_NOT_BUILT]
+    jpeg_sources = [
+        f for f in base_jpeg if Path(f).name not in UPSTREAM_SOURCES_NOT_BUILT
+    ]
 
     # Split into direct src/*.c files and wrapper files.
     # Wrapper files live under src/wrapper/ and have -8/-12/-16 suffixes.
-    cmake_direct = set()   # basenames of src/*.c compiled directly
+    cmake_direct = set()  # basenames of src/*.c compiled directly
     cmake_wrapper = set()  # basenames of src/wrapper/*.c files
 
     for f in jpeg_sources:
@@ -156,7 +172,7 @@ def check_source_lists():
 
     ok = True
     for cmake_set, moz_set, label in [
-        (cmake_direct,  moz_main,    "JPEG direct sources (moz.build)"),
+        (cmake_direct, moz_main, "JPEG direct sources (moz.build)"),
         (cmake_wrapper, moz_wrapper, "JPEG wrapper sources (src/wrapper/moz.build)"),
     ]:
         added = cmake_set - moz_set
@@ -191,21 +207,38 @@ def _has_vcs_changes(vcs, root, path):
     if vcs == "hg":
         tip = subprocess.run(
             ["hg", "status", "--change", ".", rel],
-            capture_output=True, text=True, cwd=str(root),
+            capture_output=True,
+            text=True,
+            cwd=str(root),
         )
         wdir = subprocess.run(
             ["hg", "status", rel],
-            capture_output=True, text=True, cwd=str(root),
+            capture_output=True,
+            text=True,
+            cwd=str(root),
         )
         return bool(tip.stdout.strip() or wdir.stdout.strip())
     else:
         tip = subprocess.run(
-            ["git", "diff-tree", "--no-commit-id", "-r", "--name-only", "HEAD", "--", rel],
-            capture_output=True, text=True, cwd=str(root),
+            [
+                "git",
+                "diff-tree",
+                "--no-commit-id",
+                "-r",
+                "--name-only",
+                "HEAD",
+                "--",
+                rel,
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(root),
         )
         wdir = subprocess.run(
             ["git", "status", "--porcelain", rel],
-            capture_output=True, text=True, cwd=str(root),
+            capture_output=True,
+            text=True,
+            cwd=str(root),
         )
         return bool(tip.stdout.strip() or wdir.stdout.strip())
 
@@ -327,7 +360,8 @@ def check_jconfig_changes():
         return True
 
     changed = [
-        fname for fname in JCONFIG_TEMPLATES
+        fname
+        for fname in JCONFIG_TEMPLATES
         if _has_vcs_changes(vcs, root, VENDOR_DIR / fname)
     ]
 
@@ -354,11 +388,16 @@ def _get_vcs_changes(vcs, root, rel_vendor, *, committed):
     if vcs == "hg":
         # hg status --change . shows files changed in the working directory's
         # parent revision (the most recently committed revision).
-        flags = ["--change", ".", "--added", "--removed"] if committed else \
-                ["--added", "--removed", "--deleted", "--unknown"]
+        flags = (
+            ["--change", ".", "--added", "--removed"]
+            if committed
+            else ["--added", "--removed", "--deleted", "--unknown"]
+        )
         result = subprocess.run(
             ["hg", "status"] + flags + [rel_vendor],
-            capture_output=True, text=True, cwd=str(root),
+            capture_output=True,
+            text=True,
+            cwd=str(root),
         )
         new_files, removed_files = [], []
         for line in result.stdout.splitlines():
@@ -370,9 +409,20 @@ def _get_vcs_changes(vcs, root, rel_vendor, *, committed):
     else:
         if committed:
             result = subprocess.run(
-                ["git", "diff-tree", "--no-commit-id", "-r", "--name-status",
-                 "--diff-filter=AD", "HEAD", "--", rel_vendor],
-                capture_output=True, text=True, cwd=str(root),
+                [
+                    "git",
+                    "diff-tree",
+                    "--no-commit-id",
+                    "-r",
+                    "--name-status",
+                    "--diff-filter=AD",
+                    "HEAD",
+                    "--",
+                    rel_vendor,
+                ],
+                capture_output=True,
+                text=True,
+                cwd=str(root),
             )
             new_files, removed_files = [], []
             for line in result.stdout.splitlines():
@@ -384,7 +434,9 @@ def _get_vcs_changes(vcs, root, rel_vendor, *, committed):
         else:
             result = subprocess.run(
                 ["git", "status", "--porcelain", rel_vendor],
-                capture_output=True, text=True, cwd=str(root),
+                capture_output=True,
+                text=True,
+                cwd=str(root),
             )
             new_files, removed_files = [], []
             for line in result.stdout.splitlines():
@@ -427,7 +479,9 @@ def check_vcs_changes():
     all_moz_build_sources = collect_all_moz_build_sources()
 
     tip_new, tip_removed = _get_tip_changes(vcs, root, rel_vendor)
-    uncommitted_new, uncommitted_removed = _get_uncommitted_changes(vcs, root, rel_vendor)
+    uncommitted_new, uncommitted_removed = _get_uncommitted_changes(
+        vcs, root, rel_vendor
+    )
 
     ok = True
 
@@ -445,13 +499,16 @@ def check_vcs_changes():
             unhandled_new.append(f)
 
         still_in_moz_build = [
-            f for f in tip_removed
+            f
+            for f in tip_removed
             if Path(f).relative_to(rel_vendor_path).as_posix() in all_moz_build_sources
         ]
 
         if unhandled_new or still_in_moz_build:
             ok = False
-            print("\nUnhandled file changes in the vendored tree (from the fetch commit):")
+            print(
+                "\nUnhandled file changes in the vendored tree (from the fetch commit):"
+            )
             for f in sorted(unhandled_new):
                 print(f"  new (unhandled):              {f}")
             for f in sorted(still_in_moz_build):
@@ -461,10 +518,14 @@ def check_vcs_changes():
             print("    - Add to SOURCES in moz.build if Firefox needs to build it.")
             print("    - Add to 'exclude:' in moz.yaml if Firefox doesn't need it.")
             print("    - Add to KNOWN_NON_MOZ_BUILD_FILES in update.py if it stays in")
-            print("      the tree but isn't compiled (e.g. a new metadata or config file).")
+            print(
+                "      the tree but isn't compiled (e.g. a new metadata or config file)."
+            )
             print("  For removed files still in moz.build: remove them from SOURCES.")
         else:
-            print("\nFile changes in the vendored tree (from the fetch commit, all handled):")
+            print(
+                "\nFile changes in the vendored tree (from the fetch commit, all handled):"
+            )
             for f in sorted(tip_new):
                 print(f"  new:     {f}")
             for f in sorted(tip_removed):
@@ -472,12 +533,16 @@ def check_vcs_changes():
 
         print()
         print("  To find renames between upstream tags:")
-        print("    git -C /path/to/libjpeg-turbo diff -M50 --diff-filter=R --name-status OLD_TAG..NEW_TAG")
+        print(
+            "    git -C /path/to/libjpeg-turbo diff -M50 --diff-filter=R --name-status OLD_TAG..NEW_TAG"
+        )
         if vcs == "hg":
             print()
             print("  If files were renamed upstream, record the move with:")
             print("    hg mv --after OLD_NAME NEW_NAME")
-            print("  (The file is already at NEW_NAME on disk; --after just records it.)")
+            print(
+                "  (The file is already at NEW_NAME on disk; --after just records it.)"
+            )
         else:
             print()
             print("  If files were renamed upstream, record the rename with:")
