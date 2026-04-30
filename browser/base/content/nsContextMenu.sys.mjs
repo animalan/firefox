@@ -30,6 +30,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SearchUtils: "moz-src:///toolkit/components/search/SearchUtils.sys.mjs",
   ShortcutUtils: "resource://gre/modules/ShortcutUtils.sys.mjs",
   TranslationsParent: "resource://gre/actors/TranslationsParent.sys.mjs",
+  TranslationsUtils:
+    "chrome://global/content/translations/TranslationsUtils.mjs",
   WebsiteFilter: "resource:///modules/policies/WebsiteFilter.sys.mjs",
 });
 
@@ -2601,10 +2603,23 @@ export class nsContextMenu {
    * @returns {Promise<void>}
    */
   async localizeTranslateSelectionItem(translateSelectionItem) {
-    const { targetLanguage } = await this.#translationsLangPairPromise;
+    const { sourceLanguage, targetLanguage } =
+      await this.#translationsLangPairPromise;
 
     if (targetLanguage) {
-      // A valid to-language exists, so localize the menuitem for that language.
+      if (
+        lazy.TranslationsUtils.langTagsMatch(sourceLanguage, targetLanguage)
+      ) {
+        translateSelectionItem.removeAttribute("target-language");
+        this.document.l10n.setAttributes(
+          translateSelectionItem,
+          this.isTextSelected
+            ? "main-context-menu-translate-selection"
+            : "main-context-menu-translate-link-text"
+        );
+        return;
+      }
+
       let displayName;
 
       try {
