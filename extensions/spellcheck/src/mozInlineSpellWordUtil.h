@@ -63,7 +63,7 @@ class NodeOffsetRange {
   NodeOffset mEnd;
 
  public:
-  NodeOffsetRange() {}
+  NodeOffsetRange() = default;
   NodeOffsetRange(NodeOffset b, NodeOffset e)
       : mBegin(std::move(b)), mEnd(std::move(e)) {}
 
