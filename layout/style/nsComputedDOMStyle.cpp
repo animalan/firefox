@@ -1098,7 +1098,7 @@ void nsComputedDOMStyle::UpdateCurrentStyleSources(
       const auto* style = mInnerFrame->Style();
       if (auto* data = mInnerFrame->GetProperty(
               nsIFrame::LastSuccessfulPositionFallback())) {
-        style = data->mStyle.get();
+        style = data->mLastStyle.get();
       }
       SetFrameComputedStyle(std::move(style), currentGeneration);
       NS_ASSERTION(mComputedStyle, "Frame without style?");

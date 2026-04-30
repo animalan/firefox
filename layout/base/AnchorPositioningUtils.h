@@ -238,8 +238,13 @@ class AnchorPosReferenceData {
 };
 
 struct LastSuccessfulPositionData {
-  RefPtr<const ComputedStyle> mStyle;
-  uint32_t mIndex = 0;
+  // The style + index of our last reflow.
+  RefPtr<const ComputedStyle> mLastStyle;
+  Maybe<uint32_t> mLastIndex;
+  // The "recorded" index that we start looking fallbacks from.
+  // https://drafts.csswg.org/css-anchor-position/#last-successful-recording
+  Maybe<uint32_t> mRecordedIndex;
+  // Whether we tried all fallbacks or not.
   bool mTriedAllFallbacks = false;
 };
 

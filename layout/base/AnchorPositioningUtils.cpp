@@ -1199,19 +1199,34 @@ static bool TriggerFallbackReflow(PresShell* aPresShell, nsIFrame* aPositioned,
 
   const bool positionedFitsInCB = AnchorPositioningUtils::FitsInContainingBlock(
       aPositioned, aReferencedAnchors);
-  if (positionedFitsInCB) {
-    return false;
-  }
-
-  // TODO(bug 1987964): Try to only do this when the scroll offset changes?
   auto* lastSuccessfulPosition =
       aPositioned->GetProperty(nsIFrame::LastSuccessfulPositionFallback());
-  const bool needsRetry =
-      aEvaluateAllFallbacksIfNeeded ||
-      (lastSuccessfulPosition && !lastSuccessfulPosition->mTriedAllFallbacks);
+
+  const bool needsRetry = [&] {
+    if (positionedFitsInCB) {
+      return false;
+    }
+    // TODO(bug 1987964): Try to only do this when the scroll offset changes?
+    if (aEvaluateAllFallbacksIfNeeded) {
+      return true;
+    }
+    return lastSuccessfulPosition && lastSuccessfulPosition->mLastIndex &&
+           !lastSuccessfulPosition->mTriedAllFallbacks;
+  }();
+
   if (!needsRetry) {
+    // Record our last successful fallback.
+    if (lastSuccessfulPosition) {
+      if (lastSuccessfulPosition->mLastIndex) {
+        lastSuccessfulPosition->mRecordedIndex =
+            lastSuccessfulPosition->mLastIndex;
+      } else {
+        aPositioned->RemoveProperty(nsIFrame::LastSuccessfulPositionFallback());
+      }
+    }
     return false;
   }
+  // We'll be back, no need to record the last fallback.
   aPresShell->MarkPositionedFrameForReflow(aPositioned);
   return true;
 }

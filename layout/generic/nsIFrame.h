@@ -4517,6 +4517,21 @@ class nsIFrame : public nsQueryFrame {
     return storedValue;
   }
 
+  // As above, but creates a default-constructed T if it doesn't exist, and
+  // doesn't override the existing property if it does.
+  template <typename T>
+  FrameProperties::PropertyType<T> GetOrCreateDeletableProperty(
+      FrameProperties::Descriptor<T> aProperty) {
+    bool found;
+    using DataType = std::remove_pointer_t<FrameProperties::PropertyType<T>>;
+    DataType* storedValue = GetProperty(aProperty, &found);
+    if (!found) {
+      storedValue = new DataType{};
+      AddProperty(aProperty, storedValue);
+    }
+    return storedValue;
+  }
+
   void RemoveAllProperties() { mProperties.RemoveAll(this); }
 
   // nsIFrames themselves are in the nsPresArena, and so are not measured here.
