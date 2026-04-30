@@ -269,13 +269,6 @@ export let PlacesBrowserStartup = {
       }
 
       this._bookmarksBackupIdleTime = idleTime;
-
-      if (this._isNewProfile) {
-        // New profiles may have existing bookmarks (imported from another browser or
-        // copied into the profile) and we want to show the bookmark toolbar for them
-        // in some cases.
-        await lazy.PlacesUIUtils.maybeToggleBookmarkToolbarVisibility();
-      }
     })()
       .catch(ex => {
         console.error(ex);
