@@ -2,14 +2,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use crate::cms::{QcmsCms, RenderingIntent, SRGB_ICC};
 use jxl::api::{
-    JxlBitstreamInput, JxlColorEncoding, JxlColorProfile, JxlColorType, JxlDataFormat,
-    JxlDecoderInner, JxlDecoderOptions, JxlOutputBuffer, JxlPixelFormat, ProcessingResult,
-    VisibleFrameInfo,
+    JxlBitstreamInput, JxlColorType, JxlDataFormat, JxlDecoderInner, JxlDecoderOptions,
+    JxlOutputBuffer, JxlPixelFormat, ProcessingResult, VisibleFrameInfo,
 };
 use jxl::headers::extra_channels::ExtraChannel;
-use qcms::Profile;
 
 pub struct JxlApiDecoder {
     pub inner: JxlDecoderInner,
@@ -41,38 +38,11 @@ impl From<jxl::error::Error> for Error {
 }
 
 impl JxlApiDecoder {
-    pub fn new(
-        metadata_only: bool,
-        premultiply: bool,
-        rendering_intent: RenderingIntent,
-        output_profile: Option<&'static Profile>,
-        output_icc: Option<&[u8]>,
-    ) -> Self {
+    pub fn new(metadata_only: bool, premultiply: bool, _has_cms: bool) -> Self {
         let mut options = JxlDecoderOptions::default();
         options.premultiply_output = premultiply;
-        if output_profile.is_some() {
-            options.cms = Some(Box::new(QcmsCms::new(rendering_intent, output_profile))
-                as Box<dyn jxl::api::JxlCms>);
-        }
 
-        let mut inner = JxlDecoderInner::new(options);
-
-        if output_profile.is_some() {
-            let output_profile = match output_icc {
-                // Unfortunately we have to copy the icc bytes here.
-                Some(icc) => JxlColorProfile::Icc(icc.to_vec()),
-                None => {
-                    if static_prefs::pref!("image.jxl.force_icc_slow_path") {
-                        JxlColorProfile::Icc(SRGB_ICC.clone())
-                    } else {
-                        JxlColorProfile::Simple(JxlColorEncoding::srgb(/* grayscale */ false))
-                    }
-                }
-            };
-            inner
-                .set_output_color_profile(output_profile)
-                .expect("Output color profile should be valid");
-        }
+        let inner = JxlDecoderInner::new(options);
 
         Self {
             inner,
@@ -86,7 +56,6 @@ impl JxlApiDecoder {
     pub fn new_scanner() -> Self {
         let mut options = JxlDecoderOptions::default();
         options.scan_frames_only = true;
-        options.cms = None;
 
         let inner = JxlDecoderInner::new(options);
 

@@ -26,27 +26,8 @@ nsJXLDecoder::nsJXLDecoder(RasterImage* aImage) : Decoder(aImage) {
 
 nsresult nsJXLDecoder::InitInternal() {
   bool premultiply = !(GetSurfaceFlags() & SurfaceFlags::NO_PREMULTIPLY_ALPHA);
-
-  qcms_profile* outputProfile = nullptr;
-  const uint8_t* iccData = nullptr;
-  size_t iccLen = 0;
-
-  // All jpeg xl images are tagged with some color space info, so we provide an
-  // output color space exactly when cms is not turned off completely.
-  if (GetCMSOutputProfile() && mCMSMode != CMSMode::Off) {
-    outputProfile = GetCMSOutputProfile();
-    if (!qcms_profile_is_sRGB(GetCMSOutputProfile())) {
-      const auto& outputICC = gfxPlatform::GetCMSOutputICCProfileData();
-      if (outputICC.isSome() && !outputICC->IsEmpty()) {
-        iccData = outputICC->Elements();
-        iccLen = outputICC->Length();
-      }
-    }
-  }
-
-  mDecoder.reset(jxl_decoder_new(IsMetadataDecode(), premultiply,
-                                 gfxPlatform::GetRenderingIntent(),
-                                 outputProfile, iccData, iccLen));
+  bool hasCMS = GetCMSOutputProfile() && mCMSMode != CMSMode::Off;
+  mDecoder.reset(jxl_decoder_new(IsMetadataDecode(), premultiply, hasCMS));
   if (WantsFrameCount()) {
     mScanner.reset(jxl_scanner_new());
   }
