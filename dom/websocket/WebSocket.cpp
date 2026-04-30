@@ -99,9 +99,9 @@ class WebSocketImplProxy final : public nsIWebSocketImpl,
     mOwner = nullptr;
   }
 
-  void BindToGlobal(nsIGlobalObject* aOwner) {
-    GlobalTeardownObserver::BindToGlobal(aOwner);
-    GlobalFreezeObserver::BindToGlobal(aOwner);
+  void BindToGlobal(nsIGlobalObject* aGlobal) {
+    GlobalTeardownObserver::BindToGlobal(aGlobal);
+    GlobalFreezeObserver::BindToGlobal(aGlobal);
   }
 
   void DisconnectFromOwner() override;

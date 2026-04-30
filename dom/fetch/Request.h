@@ -26,7 +26,7 @@ class Request final : public FetchBody<Request>, public nsWrapperCache {
                                                         FetchBody<Request>)
 
  public:
-  Request(nsIGlobalObject* aOwner, SafeRefPtr<InternalRequest> aRequest,
+  Request(nsIGlobalObject* aGlobal, SafeRefPtr<InternalRequest> aRequest,
           AbortSignal* aSignal);
 
   JSObject* WrapObject(JSContext* aCx,
@@ -109,7 +109,7 @@ class Request final : public FetchBody<Request>, public nsWrapperCache {
                                          const CallerType aCallerType,
                                          ErrorResult& rv);
 
-  nsIGlobalObject* GetParentObject() const { return mOwner; }
+  nsIGlobalObject* GetParentObject() const { return mGlobal; }
 
   SafeRefPtr<Request> Clone(ErrorResult& aRv);
 

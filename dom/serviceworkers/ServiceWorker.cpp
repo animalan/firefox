@@ -35,8 +35,8 @@ namespace mozilla::dom {
 
 // static
 already_AddRefed<ServiceWorker> ServiceWorker::Create(
-    nsIGlobalObject* aOwner, const ServiceWorkerDescriptor& aDescriptor) {
-  RefPtr<ServiceWorker> ref = new ServiceWorker(aOwner, aDescriptor);
+    nsIGlobalObject* aGlobal, const ServiceWorkerDescriptor& aDescriptor) {
+  RefPtr<ServiceWorker> ref = new ServiceWorker(aGlobal, aDescriptor);
   return ref.forget();
 }
 
