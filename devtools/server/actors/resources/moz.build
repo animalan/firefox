@@ -20,7 +20,6 @@ DevToolsModules(
     "jstracer-trace.js",
     "last-private-context-exit.js",
     "network-events-content.js",
-    "network-events-decoded-body-size.js",
     "network-events-stacktraces.js",
     "network-events.js",
     "parent-process-document-event.js",

@@ -298,9 +298,7 @@ class NetworkEventContentWatcher {
         break;
       }
       case NETWORK_EVENT_TYPES.RESPONSE_CONTENT:
-        if (updateResource.contentSize !== undefined) {
-          resourceUpdates.contentSize = updateResource.contentSize;
-        }
+        resourceUpdates.contentSize = updateResource.contentSize;
         resourceUpdates.mimeType = updateResource.mimeType;
         resourceUpdates.transferredSize = updateResource.transferredSize;
         break;

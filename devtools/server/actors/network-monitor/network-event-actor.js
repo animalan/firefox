@@ -440,7 +440,7 @@ class NetworkEventActor extends Actor {
    * @return object
    *         The response packet - network response content.
    */
-  async getResponseContent() {
+  getResponseContent() {
     if (!this._response.content.text && this._memoryCacheData) {
       const data = this._memoryCacheData;
       this._memoryCacheData = null;
@@ -461,20 +461,6 @@ class NetworkEventActor extends Actor {
           this._discardResponseBody = true;
         }
       }
-    }
-
-    if (!this._response.content.text && this._response.content.encodedData) {
-      this._response.content.text =
-        await lazy.NetworkUtils.decodeResponseChunks(
-          this._response.content.encodedData,
-          {
-            charset: this._response.content.contentCharset,
-            compressionEncodings: this._response.content.compressionEncodings,
-            encodedBodySize: this._response.content.encodedBodySize,
-            encoding: this._response.content.encoding,
-          }
-        );
-      delete this._response.content.encodedData;
     }
 
     const content = { ...this._response.content };

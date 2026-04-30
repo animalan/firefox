@@ -15,7 +15,6 @@ const TYPES = {
   ERROR_MESSAGE: "error-message",
   LAST_PRIVATE_CONTEXT_EXIT: "last-private-context-exit",
   NETWORK_EVENT: "network-event",
-  NETWORK_EVENT_DECODED_BODY_SIZE: "network-event-decoded-body-size",
   NETWORK_EVENT_STACKTRACE: "network-event-stacktrace",
   PLATFORM_MESSAGE: "platform-message",
   REFLOW: "reflow",
@@ -99,9 +98,6 @@ const FrameTargetResources = augmentResourceDictionary({
   },
   [TYPES.NETWORK_EVENT]: {
     path: "devtools/server/actors/resources/network-events-content",
-  },
-  [TYPES.NETWORK_EVENT_DECODED_BODY_SIZE]: {
-    path: "devtools/server/actors/resources/network-events-decoded-body-size",
   },
   [TYPES.NETWORK_EVENT_STACKTRACE]: {
     path: "devtools/server/actors/resources/network-events-stacktraces",
