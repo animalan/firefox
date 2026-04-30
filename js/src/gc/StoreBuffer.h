@@ -647,10 +647,6 @@ class ArenaCellSet {
 
   WordT getWord(size_t wordIndex) const { return bits.getWord(wordIndex); }
 
-  void setWord(size_t wordIndex, WordT value) {
-    bits.setWord(wordIndex, value);
-  }
-
   // Sweep this set, returning whether it also needs to be swept later.
   void trace(TenuringTracer& mover);
 
