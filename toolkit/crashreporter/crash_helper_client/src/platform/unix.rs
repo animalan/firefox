@@ -50,6 +50,9 @@ impl CrashHelperClient {
             server_endpoint,
         )?;
 
+        let rendezvous = Self::prepare_for_minidump(Some(pid), /* id */ 0).unwrap();
+        client_endpoint.send_message(rendezvous)?;
+
         Ok(CrashHelperClient {
             connector: client_endpoint,
             spawner_thread: None,

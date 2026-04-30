@@ -15,6 +15,10 @@ impl CrashHelperClient {
         // SAFETY: The `server_socket` passed in from the application is valid
         let connector = unsafe { IPCConnector::from_raw_connector(server_socket)? };
 
+        let rendezvous =
+            Self::prepare_for_minidump(/* crash_helper_pid */ None, /* id */ 0).unwrap();
+        connector.send_message(rendezvous)?;
+
         Ok(CrashHelperClient {
             connector,
             spawner_thread: None,

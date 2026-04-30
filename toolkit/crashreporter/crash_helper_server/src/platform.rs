@@ -12,10 +12,10 @@ pub(crate) use android::PROXY_RENDEZ_VOUS;
 mod unix;
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-pub(crate) use unix::{daemonize, PROXY_RENDEZ_VOUS};
+pub(crate) use unix::{daemonize, get_client_handle, PROXY_RENDEZ_VOUS};
 
 #[cfg(target_os = "windows")]
 mod windows;
 
 #[cfg(target_os = "windows")]
-pub(crate) use windows::{daemonize, PROXY_RENDEZ_VOUS};
+pub(crate) use windows::{daemonize, get_client_handle, PROXY_RENDEZ_VOUS};

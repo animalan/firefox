@@ -4,7 +4,7 @@
 
 use anyhow::{bail, Result};
 use crash_helper_common::{
-    messages::{self, Header, Message},
+    messages::{self, Header, Message, ProcessRendezVous},
     AncillaryData, GeckoChildId, IPCConnector, IPCConnectorKey, IPCEvent, IPCListener, IPCQueue,
     Pid, ProcessHandle,
 };
@@ -75,12 +75,23 @@ pub(crate) struct IPCServer {
 
 impl IPCServer {
     pub(crate) fn new(
-        #[allow(unused)] client_pid: Pid,
+        client_pid: Pid,
+        client_handle: Option<ProcessHandle>,
         listener: IPCListener,
         connector: IPCConnector,
         breakpad_data: BreakpadData,
         minidump_path: OsString,
     ) -> Result<IPCServer> {
+        // If the client process handle was not provided at launch then it will
+        // be sent by the client using a regular `ProcessRendezVous` message.
+        let client_handle = match client_handle {
+            Some(handle) => handle,
+            None => {
+                let message = connector.recv_reply::<ProcessRendezVous>()?;
+                message.get_process_handle()
+            }
+        };
+
         let crash_generator = Box::new(Mutex::new(CrashGenerator::new(minidump_path.clone())));
 
         // SAFETY: We widen the lifetime of this crash generator reference
@@ -110,7 +121,10 @@ impl IPCServer {
                 connector,
                 endpoint: IPCEndpoint::Parent,
                 id: Some(0),
-                process: None,
+                process: Some(ProcessId {
+                    pid: client_pid,
+                    handle: client_handle,
+                }),
             },
         );
 
