@@ -12,6 +12,7 @@
 #include "mozilla/Maybe.h"
 #include "mozilla/Span.h"
 #include "mozilla/TextUtils.h"
+#include "mozilla/UsingEnum.h"
 
 #include <algorithm>
 #include <string>
@@ -25,7 +26,6 @@
 #include "builtin/intl/LocaleNegotiation.h"
 #include "builtin/intl/ParameterNegotiation.h"
 #include "builtin/intl/StringAsciiChars.h"
-#include "builtin/intl/UsingEnum.h"
 #include "builtin/String.h"
 #include "js/Conversions.h"
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
@@ -207,11 +207,7 @@ enum class LocaleHourCycle { H11, H12, H23, H24 };
 
 static constexpr std::string_view LocaleHourCycleToString(
     LocaleHourCycle hourCycle) {
-#ifndef USING_ENUM
-  using enum LocaleHourCycle;
-#else
-  USING_ENUM(LocaleHourCycle, H11, H12, H23, H24);
-#endif
+  MOZ_USING_ENUM(LocaleHourCycle, H11, H12, H23, H24);
   switch (hourCycle) {
     case H11:
       return "h11";
@@ -227,11 +223,7 @@ static constexpr std::string_view LocaleHourCycleToString(
 
 static JSLinearString* ToUnicodeValue(JSContext* cx,
                                       LocaleHourCycle hourCycle) {
-#ifndef USING_ENUM
-  using enum LocaleHourCycle;
-#else
-  USING_ENUM(LocaleHourCycle, H11, H12, H23, H24);
-#endif
+  MOZ_USING_ENUM(LocaleHourCycle, H11, H12, H23, H24);
   switch (hourCycle) {
     case H11:
       return cx->names().h11;
@@ -249,11 +241,7 @@ enum class LocaleCaseFirst { Upper, Lower, False };
 
 static constexpr std::string_view LocaleCaseFirstToString(
     LocaleCaseFirst caseFirst) {
-#ifndef USING_ENUM
-  using enum LocaleCaseFirst;
-#else
-  USING_ENUM(LocaleCaseFirst, False, Lower, Upper);
-#endif
+  MOZ_USING_ENUM(LocaleCaseFirst, False, Lower, Upper);
   switch (caseFirst) {
     case False:
       return "false";
@@ -267,11 +255,7 @@ static constexpr std::string_view LocaleCaseFirstToString(
 
 static JSLinearString* ToUnicodeValue(JSContext* cx,
                                       LocaleCaseFirst caseFirst) {
-#ifndef USING_ENUM
-  using enum LocaleCaseFirst;
-#else
-  USING_ENUM(LocaleCaseFirst, False, Lower, Upper);
-#endif
+  MOZ_USING_ENUM(LocaleCaseFirst, False, Lower, Upper);
   switch (caseFirst) {
     case False:
       return cx->names().false_;

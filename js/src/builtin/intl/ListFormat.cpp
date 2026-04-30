@@ -6,6 +6,7 @@
 
 #include "mozilla/Assertions.h"
 #include "mozilla/intl/ListFormat.h"
+#include "mozilla/UsingEnum.h"
 
 #include <stddef.h>
 
@@ -15,7 +16,6 @@
 #include "builtin/intl/LocaleNegotiation.h"
 #include "builtin/intl/Packed.h"
 #include "builtin/intl/ParameterNegotiation.h"
-#include "builtin/intl/UsingEnum.h"
 #include "gc/GCContext.h"
 #include "js/ForOfIterator.h"
 #include "js/Utility.h"
@@ -150,11 +150,7 @@ void js::intl::ListFormatObject::setOptions(const ListFormatOptions& options) {
 
 static constexpr std::string_view ListFormatTypeToString(
     ListFormatOptions::Type type) {
-#ifndef USING_ENUM
-  using enum ListFormatOptions::Type;
-#else
-  USING_ENUM(ListFormatOptions::Type, Conjunction, Disjunction, Unit);
-#endif
+  MOZ_USING_ENUM(ListFormatOptions::Type, Conjunction, Disjunction, Unit);
   switch (type) {
     case Conjunction:
       return "conjunction";
@@ -168,11 +164,7 @@ static constexpr std::string_view ListFormatTypeToString(
 
 static constexpr std::string_view ListFormatStyleToString(
     ListFormatOptions::Style style) {
-#ifndef USING_ENUM
-  using enum ListFormatOptions::Style;
-#else
-  USING_ENUM(ListFormatOptions::Style, Long, Short, Narrow);
-#endif
+  MOZ_USING_ENUM(ListFormatOptions::Style, Long, Short, Narrow);
   switch (style) {
     case Long:
       return "long";

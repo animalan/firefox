@@ -12,6 +12,7 @@
 #include "mozilla/intl/NumberFormat.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/Span.h"
+#include "mozilla/UsingEnum.h"
 
 #include <array>
 #include <charconv>
@@ -28,7 +29,6 @@
 #include "builtin/intl/NumberFormat.h"
 #include "builtin/intl/Packed.h"
 #include "builtin/intl/ParameterNegotiation.h"
-#include "builtin/intl/UsingEnum.h"
 #include "builtin/temporal/Duration.h"
 #include "gc/AllocKind.h"
 #include "gc/GCContext.h"
@@ -269,11 +269,7 @@ void js::intl::DurationFormatObject::finalize(JS::GCContext* gcx,
 }
 
 static constexpr std::string_view DisplayToString(DurationDisplay display) {
-#ifndef USING_ENUM
-  using enum DurationDisplay;
-#else
-  USING_ENUM(DurationDisplay, Auto, Always);
-#endif
+  MOZ_USING_ENUM(DurationDisplay, Auto, Always);
   switch (display) {
     case Auto:
       return "auto";
@@ -284,11 +280,7 @@ static constexpr std::string_view DisplayToString(DurationDisplay display) {
 }
 
 static constexpr std::string_view DurationStyleToString(DurationStyle style) {
-#ifndef USING_ENUM
-  using enum DurationStyle;
-#else
-  USING_ENUM(DurationStyle, Long, Short, Narrow, Numeric, TwoDigit);
-#endif
+  MOZ_USING_ENUM(DurationStyle, Long, Short, Narrow, Numeric, TwoDigit);
   switch (style) {
     case Long:
       return "long";
@@ -305,11 +297,7 @@ static constexpr std::string_view DurationStyleToString(DurationStyle style) {
 }
 
 static constexpr std::string_view BaseStyleToString(DurationBaseStyle style) {
-#ifndef USING_ENUM
-  using enum DurationBaseStyle;
-#else
-  USING_ENUM(DurationBaseStyle, Long, Short, Narrow, Digital);
-#endif
+  MOZ_USING_ENUM(DurationBaseStyle, Long, Short, Narrow, Digital);
   switch (style) {
     case Long:
       return "long";
@@ -1673,11 +1661,7 @@ static bool FormatNumericUnits(JSContext* cx,
 }
 
 static auto ToListFormatStyle(DurationBaseStyle style) {
-#ifndef USING_ENUM
-  using enum mozilla::intl::ListFormat::Style;
-#else
-  USING_ENUM(mozilla::intl::ListFormat::Style, Long, Short, Narrow);
-#endif
+  MOZ_USING_ENUM(mozilla::intl::ListFormat::Style, Long, Short, Narrow);
   switch (style) {
     case DurationBaseStyle::Long:
       return Long;

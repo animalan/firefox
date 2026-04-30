@@ -8,6 +8,7 @@
 
 #include "mozilla/Assertions.h"
 #include "mozilla/UniquePtr.h"
+#include "mozilla/UsingEnum.h"
 
 #include "jspubtd.h"
 #include "NamespaceImports.h"
@@ -17,7 +18,6 @@
 #include "builtin/intl/LocaleNegotiation.h"
 #include "builtin/intl/ParameterNegotiation.h"
 #include "builtin/intl/StringAsciiChars.h"
-#include "builtin/intl/UsingEnum.h"
 #include "gc/AllocKind.h"
 #include "gc/GCContext.h"
 #include "icu4x/GraphemeClusterSegmenter.hpp"
@@ -113,11 +113,7 @@ const ClassSpec SegmenterObject::classSpec_ = {
 
 static constexpr std::string_view GranularityToString(
     SegmenterGranularity granularity) {
-#ifndef USING_ENUM
-  using enum SegmenterGranularity;
-#else
-  USING_ENUM(SegmenterGranularity, Grapheme, Word, Sentence);
-#endif
+  MOZ_USING_ENUM(SegmenterGranularity, Grapheme, Word, Sentence);
   switch (granularity) {
     case Grapheme:
       return "grapheme";

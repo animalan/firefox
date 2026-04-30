@@ -9,6 +9,7 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/intl/DisplayNames.h"
 #include "mozilla/Span.h"
+#include "mozilla/UsingEnum.h"
 
 #include "jspubtd.h"
 
@@ -17,7 +18,6 @@
 #include "builtin/intl/LocaleNegotiation.h"
 #include "builtin/intl/Packed.h"
 #include "builtin/intl/ParameterNegotiation.h"
-#include "builtin/intl/UsingEnum.h"
 #include "builtin/Number.h"
 #include "gc/AllocKind.h"
 #include "gc/GCContext.h"
@@ -198,11 +198,7 @@ void js::intl::DisplayNamesObject::setOptions(
 
 static constexpr std::string_view DisplayNamesStyleToString(
     DisplayNamesOptions::Style style) {
-#ifndef USING_ENUM
-  using enum DisplayNamesOptions::Style;
-#else
-  USING_ENUM(DisplayNamesOptions::Style, Long, Short, Narrow, Abbreviated);
-#endif
+  MOZ_USING_ENUM(DisplayNamesOptions::Style, Long, Short, Narrow, Abbreviated);
   switch (style) {
     case Long:
       return "long";
@@ -218,12 +214,8 @@ static constexpr std::string_view DisplayNamesStyleToString(
 
 static constexpr std::string_view DisplayNamesTypeToString(
     DisplayNamesOptions::Type type) {
-#ifndef USING_ENUM
-  using enum DisplayNamesOptions::Type;
-#else
-  USING_ENUM(DisplayNamesOptions::Type, Language, Region, Script, Currency,
-             Calendar, DateTimeField, Weekday, Month, Quarter, DayPeriod);
-#endif
+  MOZ_USING_ENUM(DisplayNamesOptions::Type, Language, Region, Script, Currency,
+                 Calendar, DateTimeField, Weekday, Month, Quarter, DayPeriod);
   switch (type) {
     case Language:
       return "language";
@@ -251,11 +243,7 @@ static constexpr std::string_view DisplayNamesTypeToString(
 
 static constexpr std::string_view FallbackToString(
     DisplayNamesOptions::Fallback fallback) {
-#ifndef USING_ENUM
-  using enum DisplayNamesOptions::Fallback;
-#else
-  USING_ENUM(DisplayNamesOptions::Fallback, Code, None);
-#endif
+  MOZ_USING_ENUM(DisplayNamesOptions::Fallback, Code, None);
   switch (fallback) {
     case Code:
       return "code";
@@ -267,11 +255,7 @@ static constexpr std::string_view FallbackToString(
 
 static constexpr std::string_view LanguageDisplayToString(
     DisplayNamesOptions::LanguageDisplay languageDisplay) {
-#ifndef USING_ENUM
-  using enum DisplayNamesOptions::LanguageDisplay;
-#else
-  USING_ENUM(DisplayNamesOptions::LanguageDisplay, Dialect, Standard);
-#endif
+  MOZ_USING_ENUM(DisplayNamesOptions::LanguageDisplay, Dialect, Standard);
   switch (languageDisplay) {
     case Dialect:
       return "dialect";

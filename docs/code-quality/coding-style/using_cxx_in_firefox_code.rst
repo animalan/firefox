@@ -361,7 +361,8 @@ Coroutines
   Clang's implementation of coroutines is `"out of maintenance" on Windows <https://reviews.llvm.org/D146187?id=506821>`__ due to `ABI and stability issues on 32-bit Windows <https://github.com/llvm/llvm-project/issues/59382>`__.
 
 ``using enum``
-  Not supported until GCC 11 and we still support GCC 10. If you're eager to use ``using enum`` in the meantime, consider promoting UsingEnum.h's ``USING_ENUM`` macro to MFBT for reuse.
+  Not supported until GCC 11 and we still support GCC 10. In the meantime, use
+  ``mozilla/UsingEnum.h``'s ``MOZ_USING_ENUM`` macro.
 
 
 C++ and Mozilla standard libraries

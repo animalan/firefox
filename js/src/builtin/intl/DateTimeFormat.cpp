@@ -15,6 +15,7 @@
 #include "mozilla/intl/TimeZone.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/Span.h"
+#include "mozilla/UsingEnum.h"
 
 #include "builtin/Array.h"
 #include "builtin/Date.h"
@@ -25,7 +26,6 @@
 #include "builtin/intl/Packed.h"
 #include "builtin/intl/ParameterNegotiation.h"
 #include "builtin/intl/SharedIntlData.h"
-#include "builtin/intl/UsingEnum.h"
 #include "builtin/temporal/Calendar.h"
 #include "builtin/temporal/Instant.h"
 #include "builtin/temporal/PlainDate.h"
@@ -339,11 +339,7 @@ void js::intl::DateTimeFormatObject::setOptions(
 
 static constexpr std::string_view HourCycleToString(
     DateTimeFormatOptions::HourCycle hourCycle) {
-#ifndef USING_ENUM
-  using enum DateTimeFormatOptions::HourCycle;
-#else
-  USING_ENUM(DateTimeFormatOptions::HourCycle, H11, H12, H23, H24);
-#endif
+  MOZ_USING_ENUM(DateTimeFormatOptions::HourCycle, H11, H12, H23, H24);
   switch (hourCycle) {
     case H11:
       return "h11";
@@ -425,12 +421,8 @@ static constexpr std::string_view YearToString(
 
 static constexpr std::string_view MonthToString(
     DateTimeFormatOptions::Month month) {
-#ifndef USING_ENUM
-  using enum DateTimeFormatOptions::Month;
-#else
-  USING_ENUM(DateTimeFormatOptions::Month, TwoDigit, Numeric, Narrow, Short,
-             Long);
-#endif
+  MOZ_USING_ENUM(DateTimeFormatOptions::Month, TwoDigit, Numeric, Narrow, Short,
+                 Long);
   switch (month) {
     case TwoDigit:
       return "2-digit";
@@ -472,12 +464,8 @@ static constexpr std::string_view SecondToString(
 
 static constexpr std::string_view TimeZoneNameToString(
     DateTimeFormatOptions::TimeZoneName timeZoneName) {
-#ifndef USING_ENUM
-  using enum DateTimeFormatOptions::TimeZoneName;
-#else
-  USING_ENUM(DateTimeFormatOptions::TimeZoneName, Short, Long, ShortOffset,
-             LongOffset, ShortGeneric, LongGeneric);
-#endif
+  MOZ_USING_ENUM(DateTimeFormatOptions::TimeZoneName, Short, Long, ShortOffset,
+                 LongOffset, ShortGeneric, LongGeneric);
   switch (timeZoneName) {
     case Short:
       return "short";
@@ -499,11 +487,7 @@ enum class FormatMatcher { Basic, BestFit };
 
 static constexpr std::string_view FormatMatcherToString(
     FormatMatcher formatMatcher) {
-#ifndef USING_ENUM
-  using enum FormatMatcher;
-#else
-  USING_ENUM(FormatMatcher, Basic, BestFit);
-#endif
+  MOZ_USING_ENUM(FormatMatcher, Basic, BestFit);
   switch (formatMatcher) {
     case Basic:
       return "basic";
@@ -972,11 +956,7 @@ static bool MozDateTimeFormat(JSContext* cx, unsigned argc, Value* vp) {
 }
 
 static auto ToRequired(DateTimeFormatKind kind) {
-#ifndef USING_ENUM
-  using enum DateTimeFormatOptions::Required;
-#else
-  USING_ENUM(DateTimeFormatOptions::Required, Any, Date, Time);
-#endif
+  MOZ_USING_ENUM(DateTimeFormatOptions::Required, Any, Date, Time);
   switch (kind) {
     case DateTimeFormatKind::All:
       return Any;
@@ -989,11 +969,7 @@ static auto ToRequired(DateTimeFormatKind kind) {
 }
 
 static auto ToDefaults(DateTimeFormatKind kind) {
-#ifndef USING_ENUM
-  using enum DateTimeFormatOptions::Defaults;
-#else
-  USING_ENUM(DateTimeFormatOptions::Defaults, All, Date, Time);
-#endif
+  MOZ_USING_ENUM(DateTimeFormatOptions::Defaults, All, Date, Time);
   switch (kind) {
     case DateTimeFormatKind::All:
       return All;
@@ -1143,11 +1119,7 @@ static bool ResolveLocale(JSContext* cx,
     localeOptions.setUnicodeExtension(UnicodeExtensionKey::HourCycle, nullptr);
   } else {
     if (auto hourCycle = dtfOptions.hourCycle) {
-#ifndef USING_ENUM
-      using enum DateTimeFormatOptions::HourCycle;
-#else
-      USING_ENUM(DateTimeFormatOptions::HourCycle, H11, H12, H23, H24);
-#endif
+      MOZ_USING_ENUM(DateTimeFormatOptions::HourCycle, H11, H12, H23, H24);
 
       JSLinearString* hc;
       switch (*hourCycle) {
@@ -1218,12 +1190,7 @@ static bool ResolveLocale(JSContext* cx,
   auto hc = resolved.extension(UnicodeExtensionKey::HourCycle);
   if (hc) {
     MOZ_ASSERT(dtfOptions.hour12.isNothing());
-
-#ifndef USING_ENUM
-    using enum DateTimeFormatOptions::HourCycle;
-#else
-    USING_ENUM(DateTimeFormatOptions::HourCycle, H11, H12, H23, H24);
-#endif
+    MOZ_USING_ENUM(DateTimeFormatOptions::HourCycle, H11, H12, H23, H24);
     if (StringEqualsLiteral(hc, "h11")) {
       dtfOptions.hourCycle = mozilla::Some(H11);
     } else if (StringEqualsLiteral(hc, "h12")) {
@@ -1332,11 +1299,8 @@ static UniqueChars DateTimeFormatLocale(
   }
 
   if (hourCycle) {
-#ifndef USING_ENUM
-    using enum mozilla::intl::DateTimeFormat::HourCycle;
-#else
-    USING_ENUM(mozilla::intl::DateTimeFormat::HourCycle, H11, H12, H23, H24);
-#endif
+    MOZ_USING_ENUM(mozilla::intl::DateTimeFormat::HourCycle, H11, H12, H23,
+                   H24);
 
     JSAtom* hourCycleStr;
     switch (*hourCycle) {
@@ -1379,11 +1343,7 @@ struct DateTimeFormatArgs {
  * Get the "required" argument passed to CreateDateTimeFormat.
  */
 static auto GetRequired(DateTimeFormatOptions::Required required) {
-#ifndef USING_ENUM
-  using enum Required;
-#else
-  USING_ENUM(Required, Date, Time, Any);
-#endif
+  MOZ_USING_ENUM(Required, Date, Time, Any);
   switch (required) {
     case DateTimeFormatOptions::Required::Date:
       return Date;
@@ -1399,11 +1359,7 @@ static auto GetRequired(DateTimeFormatOptions::Required required) {
  * Get the "defaults" argument passed to CreateDateTimeFormat.
  */
 static auto GetDefaults(DateTimeFormatOptions::Defaults defaults) {
-#ifndef USING_ENUM
-  using enum Defaults;
-#else
-  USING_ENUM(Defaults, Date, Time, All);
-#endif
+  MOZ_USING_ENUM(Defaults, Date, Time, All);
   switch (defaults) {
     case DateTimeFormatOptions::Defaults::Date:
       return Date;
