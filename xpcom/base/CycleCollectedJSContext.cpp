@@ -170,34 +170,37 @@ size_t CycleCollectedJSContext::SizeOfExcludingThis(
   return 0;
 }
 
-enum { INCUMBENT_SETTING_SLOT, SCHEDULING_STATE_SLOT, HOSTDEFINED_DATA_SLOTS };
+enum {
+  SCHEDULING_STATE_SLOT,
+  SCHEDULING_STATE_SLOT_COUNT
+};
 
-// Finalizer for instances of HostDefinedData.
-void FinalizeHostDefinedData(JS::GCContext* gcx, JSObject* objSelf) {
-  JS::Value slotEvent = JS::GetReservedSlot(objSelf, SCHEDULING_STATE_SLOT);
+void FinalizeSchedulingStateWrapper(JS::GCContext* aGCX, JSObject* aObjSelf) {
+  JS::Value slotEvent = JS::GetReservedSlot(
+      aObjSelf, SCHEDULING_STATE_SLOT);
   if (slotEvent.isUndefined()) {
     return;
   }
 
   WebTaskSchedulingState* schedulingState =
       static_cast<WebTaskSchedulingState*>(slotEvent.toPrivate());
-  JS_SetReservedSlot(objSelf, SCHEDULING_STATE_SLOT, JS::UndefinedValue());
+  JS_SetReservedSlot(aObjSelf, SCHEDULING_STATE_SLOT,
+                     JS::UndefinedValue());
   schedulingState->Release();
 }
 
-static const JSClassOps sHostDefinedData = {
-    nullptr /* addProperty */, nullptr /* delProperty */,
-    nullptr /* enumerate */,   nullptr /* newEnumerate */,
-    nullptr /* resolve */,     nullptr /* mayResolve */,
-    FinalizeHostDefinedData /* finalize */
+static const JSClassOps sSchedulingStateWrapper = {
+    nullptr /* addProperty */,     nullptr /* delProperty */,
+    nullptr /* enumerate */,       nullptr /* newEnumerate */,
+    nullptr /* resolve */,         nullptr /* mayResolve */,
+    FinalizeSchedulingStateWrapper /* finalize */
 };
 
-// Implements `HostDefined` in https://html.spec.whatwg.org/#hostmakejobcallback
-static const JSClass sHostDefinedDataClass = {
-    "HostDefinedData",
-    JSCLASS_HAS_RESERVED_SLOTS(HOSTDEFINED_DATA_SLOTS) |
+static const JSClass sSchedulingStateClass = {
+    "SchedulingStateWrapper",
+    JSCLASS_HAS_RESERVED_SLOTS(SCHEDULING_STATE_SLOT_COUNT) |
         JSCLASS_FOREGROUND_FINALIZE,
-    &sHostDefinedData};
+    &sSchedulingStateWrapper};
 
 bool CycleCollectedJSContext::getHostDefinedGlobal(
     JSContext* aCx, JS::MutableHandle<JSObject*> out) const {
@@ -230,40 +233,46 @@ void CycleCollectedJSContext::traceNonGCThingMicroTask(JSTracer* trc,
 }
 
 bool CycleCollectedJSContext::getHostDefinedData(
-    JSContext* aCx, JS::MutableHandle<JSObject*> aData) const {
+    JSContext* aCx, JS::MutableHandle<JSObject*> aIncumbentGlobal,
+    JS::MutableHandle<JSObject*> aOptionalHostDefinedData) const {
   nsIGlobalObject* global = mozilla::dom::GetIncumbentGlobal();
   if (!global) {
-    aData.set(nullptr);
+    aIncumbentGlobal.set(nullptr);
+    aOptionalHostDefinedData.set(nullptr);
     return true;
   }
 
   JS::Rooted<JSObject*> incumbentGlobal(aCx, global->GetGlobalJSObject());
-
   if (!incumbentGlobal) {
-    aData.set(nullptr);
+    aIncumbentGlobal.set(nullptr);
+    aOptionalHostDefinedData.set(nullptr);
     return true;
   }
 
-  JSAutoRealm ar(aCx, incumbentGlobal);
+  aIncumbentGlobal.set(incumbentGlobal);
 
-  JS::Rooted<JSObject*> objResult(aCx,
-                                  JS_NewObject(aCx, &sHostDefinedDataClass));
-  if (!objResult) {
-    aData.set(nullptr);
+  // A performance note: On promise heavy benchmarks the allocation of an
+  // object can be heavy, which is why this is conditional on the existence
+  // of schedulingState.
+  mozilla::dom::WebTaskSchedulingState* schedulingState =
+      mozilla::dom::GetWebTaskSchedulingState();
+  if (!schedulingState) {
+    return true;
+  }
+
+  JS::Rooted<JSObject*> schedulingStateResult(
+      aCx, JS_NewObjectWithGivenProto(aCx, &sSchedulingStateClass, nullptr));
+  if (!schedulingStateResult) {
+    aOptionalHostDefinedData.set(nullptr);
     return false;
   }
 
-  JS_SetReservedSlot(objResult, INCUMBENT_SETTING_SLOT,
-                     JS::ObjectValue(*incumbentGlobal));
-
-  if (mozilla::dom::WebTaskSchedulingState* schedulingState =
-          mozilla::dom::GetWebTaskSchedulingState()) {
-    schedulingState->AddRef();
-    JS_SetReservedSlot(objResult, SCHEDULING_STATE_SLOT,
-                       JS::PrivateValue(schedulingState));
-  }
-
-  aData.set(objResult);
+  // This ref will be removed by FinalizeSchedulingStateWrapper.
+  schedulingState->AddRef();
+  JS_SetReservedSlot(schedulingStateResult,
+                     SCHEDULING_STATE_SLOT,
+                     JS::PrivateValue(schedulingState));
+  aOptionalHostDefinedData.set(schedulingStateResult);
 
   return true;
 }
@@ -777,41 +786,31 @@ class MOZ_STACK_CLASS StatefulMicroTask {
   bool mWillPerform = false;
 };
 
+// Given a (possibly null) incumbent global JS object and
+// optionalHostDefinedData extract the nsIGlobalObject native global and
+// WebTaskSchedulingState.
 void ExtractIncumbentAndSchedulingState(
-    JS::Handle<MayConsumeMicroTask> aMicroTask,
-    JS::Handle<JSObject*> aHostDefinedData, nsIGlobalObject*& aIncumbentGlobal,
+    JS::Handle<JSObject*> aIncumbentGlobalObj,
+    JS::Handle<JSObject*> aOptionalHostDefinedData,
+    nsIGlobalObject*& aIncumbentGlobal,
     WebTaskSchedulingState*& aSchedulingState) {
   MOZ_ASSERT(!aIncumbentGlobal && !aSchedulingState);
+  MOZ_ASSERT_IF(!aIncumbentGlobalObj, !aOptionalHostDefinedData);
 
-  if (aHostDefinedData) {
-    MOZ_RELEASE_ASSERT(JS::GetClass(aHostDefinedData.get()) ==
-                       &sHostDefinedDataClass);
-    JS::Value incumbentGlobalVal =
-        JS::GetReservedSlot(aHostDefinedData, INCUMBENT_SETTING_SLOT);
+  if (aIncumbentGlobalObj) {
     // hostDefinedData is only created when incumbent global exists.
-    MOZ_ASSERT(incumbentGlobalVal.isObject());
-    aIncumbentGlobal = xpc::NativeGlobal(&incumbentGlobalVal.toObject());
+    aIncumbentGlobal = xpc::NativeGlobal(aIncumbentGlobalObj);
 
-    JS::Value state =
-        JS::GetReservedSlot(aHostDefinedData, SCHEDULING_STATE_SLOT);
-    if (!state.isUndefined()) {
-      aSchedulingState =
-          static_cast<WebTaskSchedulingState*>(state.toPrivate());
-    }
-  } else {
-    // There are two possible causes for aHostDefinedData to be missing.
-    //   1. It's optimized out, the SpiderMonkey expects the embedding to
-    //   retrieve it on their own.
-    //   2. It's the special case for debugger usage.
-    //
-    // MG:XXX: The handling of incumbent global can be made appreciably more
-    // harmonious through co-evolution with the JS engine, but I have tried to
-    // avoid doing too much divergence for now.
-    JSObject* incumbentGlobalJS =
-        aMicroTask.get().MaybeGetHostDefinedGlobalFromJSMicroTask();
-    MOZ_ASSERT_IF(incumbentGlobalJS, !js::IsWrapper(incumbentGlobalJS));
-    if (incumbentGlobalJS) {
-      aIncumbentGlobal = xpc::NativeGlobal(incumbentGlobalJS);
+    if (aOptionalHostDefinedData) {
+      MOZ_ASSERT(JS::GetClass(aOptionalHostDefinedData) ==
+                 &sSchedulingStateClass);
+      JS::Value state =
+          JS::GetReservedSlot(aOptionalHostDefinedData,
+                              SCHEDULING_STATE_SLOT);
+      if (!state.isUndefined()) {
+        aSchedulingState =
+            static_cast<WebTaskSchedulingState*>(state.toPrivate());
+      }
     }
   }
 }
@@ -838,10 +837,12 @@ void MaybeGetFlowMarker(
 // Extract the data required to run a task.
 //
 // Returns false if the task is in an unrunnable state.
-static bool ExtractTaskData(JS::Handle<MayConsumeMicroTask> aMicroTask,
-                            JS::MutableHandle<JSObject*> aCallbackGlobal,
-                            JS::MutableHandle<JSObject*> aHostDefinedData,
-                            JS::MutableHandle<JSObject*> aAllocStack) {
+static bool ExtractTaskData(
+    JS::Handle<MayConsumeMicroTask> aMicroTask,
+    JS::MutableHandle<JSObject*> aCallbackGlobal,
+    JS::MutableHandle<JSObject*> aIncumbentGlobal,
+    JS::MutableHandle<JSObject*> aOptionalHostDefinedData,
+    JS::MutableHandle<JSObject*> aAllocStack) {
   aCallbackGlobal.set(aMicroTask.get().GetExecutionGlobalFromJSMicroTask());
   if (!aCallbackGlobal) {
     return false;
@@ -850,7 +851,7 @@ static bool ExtractTaskData(JS::Handle<MayConsumeMicroTask> aMicroTask,
   // Don't run if we fail to unwrap the host defined data, as that
   // would indicate the target realm is gone.
   if (!aMicroTask.get().MaybeGetHostDefinedDataFromJSMicroTask(
-          aHostDefinedData)) {
+          aIncumbentGlobal, aOptionalHostDefinedData)) {
     return false;
   }
 
@@ -936,16 +937,18 @@ void RunJSMicroTask(JSContext* aCx, CycleCollectedJSContext* aCCJS,
   auto ignoreMicroTasks = mozilla::MakeScopeExit(
       [&aMicroTask]() { aMicroTask.get().IgnoreJSMicroTask(); });
 
-  JS::RootedTuple<JSObject*, JSObject*, JSObject*, WontConsumeMicroTask,
-                  JSObject*, JSObject*, JSObject*>
+  JS::RootedTuple<JSObject*, JSObject*, JSObject*, JSObject*,
+                  WontConsumeMicroTask, JSObject*, JSObject*, JSObject*,
+                  JSObject*>
       roots(aCx);
 
   JS::RootedField<JSObject*, 0> callbackGlobal(roots);
-  JS::RootedField<JSObject*, 1> hostDefinedData(roots);
-  JS::RootedField<JSObject*, 2> allocStack(roots);
+  JS::RootedField<JSObject*, 1> incumbentGlobalObj(roots);
+  JS::RootedField<JSObject*, 2> optionalHostDefinedData(roots);
+  JS::RootedField<JSObject*, 3> allocStack(roots);
 
-  if (!ExtractTaskData(aMicroTask, &callbackGlobal, &hostDefinedData,
-                       &allocStack)) {
+  if (!ExtractTaskData(aMicroTask, &callbackGlobal, &incumbentGlobalObj,
+                       &optionalHostDefinedData, &allocStack)) {
     return;
   }
 
@@ -957,8 +960,9 @@ void RunJSMicroTask(JSContext* aCx, CycleCollectedJSContext* aCCJS,
 
   // Promises carry along a web-task scheduling state as well.
   WebTaskSchedulingState* schedulingState = nullptr;
-  ExtractIncumbentAndSchedulingState(aMicroTask, hostDefinedData,
-                                     incumbentGlobal, schedulingState);
+  ExtractIncumbentAndSchedulingState(incumbentGlobalObj,
+                                     optionalHostDefinedData, incumbentGlobal,
+                                     schedulingState);
 
   const bool isMainThread = NS_IsMainThread();
 
@@ -1045,7 +1049,7 @@ void RunJSMicroTask(JSContext* aCx, CycleCollectedJSContext* aCCJS,
     }
 
     do {
-      JS::RootedField<WontConsumeMicroTask, 3> peekTask(roots,
+      JS::RootedField<WontConsumeMicroTask, 4> peekTask(roots,
                                                         PeekNextMicroTask(aCx));
 
       // We can only coalesce JS tasks.
@@ -1053,12 +1057,14 @@ void RunJSMicroTask(JSContext* aCx, CycleCollectedJSContext* aCCJS,
         break;
       }
 
-      JS::RootedField<JSObject*, 4> peekedCallbackGlobal(roots);
-      JS::RootedField<JSObject*, 5> peekedHostDefined(roots);
-      JS::RootedField<JSObject*, 6> peekedAllocStack(roots);
+      JS::RootedField<JSObject*, 5> peekedCallbackGlobal(roots);
+      JS::RootedField<JSObject*, 6> peekedIncumbentGlobalObj(roots);
+      JS::RootedField<JSObject*, 7> peekedOptionalHostDefinedData(roots);
+      JS::RootedField<JSObject*, 8> peekedAllocStack(roots);
 
-      if (!ExtractTaskData(peekTask, &peekedCallbackGlobal, &peekedHostDefined,
-                           &peekedAllocStack)) {
+      if (!ExtractTaskData(peekTask, &peekedCallbackGlobal,
+                           &peekedIncumbentGlobalObj,
+                           &peekedOptionalHostDefinedData, &peekedAllocStack)) {
         break;
       }
 
@@ -1071,9 +1077,9 @@ void RunJSMicroTask(JSContext* aCx, CycleCollectedJSContext* aCCJS,
 
       nsIGlobalObject* peekedIncumbentGlobal = nullptr;
       WebTaskSchedulingState* peekedSchedulingState = nullptr;
-      ExtractIncumbentAndSchedulingState(peekTask, peekedHostDefined,
-                                         peekedIncumbentGlobal,
-                                         peekedSchedulingState);
+      ExtractIncumbentAndSchedulingState(
+          peekedIncumbentGlobalObj, peekedOptionalHostDefinedData,
+          peekedIncumbentGlobal, peekedSchedulingState);
 
       // Change of global
       if (peekedIncumbentGlobal != incumbentGlobal) {
@@ -1460,29 +1466,18 @@ void FinalizationRegistryCleanup::Init() {
 
 /* static */
 void FinalizationRegistryCleanup::QueueCallback(JSFunction* aDoCleanup,
-                                                JSObject* aHostDefinedData,
+                                                JSObject* aIncumbentGlobal,
                                                 void* aData) {
   FinalizationRegistryCleanup* cleanup =
       static_cast<FinalizationRegistryCleanup*>(aData);
-  cleanup->QueueCallback(aDoCleanup, aHostDefinedData);
+  cleanup->QueueCallback(aDoCleanup, aIncumbentGlobal);
 }
 
 void FinalizationRegistryCleanup::QueueCallback(JSFunction* aDoCleanup,
-                                                JSObject* aHostDefinedData) {
+                                                JSObject* aIncumbentGlobal) {
   MOZ_ASSERT_IF(!mCallbacks.empty(), mPendingRunnable);
 
-  JSObject* incumbentGlobal = nullptr;
-
-  // Extract incumbentGlobal from aHostDefinedData.
-  if (aHostDefinedData) {
-    MOZ_RELEASE_ASSERT(JS::GetClass(aHostDefinedData) ==
-                       &sHostDefinedDataClass);
-    JS::Value global =
-        JS::GetReservedSlot(aHostDefinedData, INCUMBENT_SETTING_SLOT);
-    incumbentGlobal = &global.toObject();
-  }
-
-  MOZ_ALWAYS_TRUE(mCallbacks.append(Callback{aDoCleanup, incumbentGlobal}));
+  MOZ_ALWAYS_TRUE(mCallbacks.append(Callback{aDoCleanup, aIncumbentGlobal}));
 
   if (!mPendingRunnable) {
     mPendingRunnable = new CleanupRunnable(this);

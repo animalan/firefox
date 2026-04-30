@@ -536,7 +536,7 @@ class GCRuntime {
   void setHostCleanupFinalizationRegistryCallback(
       JSHostCleanupFinalizationRegistryCallback callback, void* data);
   void callHostCleanupFinalizationRegistryCallback(JSFunction* doCleanup,
-                                                   JSObject* hostDefinedData);
+                                                   JSObject* incumbentGlobal);
   [[nodiscard]] bool addWeakPointerZonesCallback(
       JSWeakPointerZonesCallback callback, void* data);
   void removeWeakPointerZonesCallback(JSWeakPointerZonesCallback callback);

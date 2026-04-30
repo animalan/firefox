@@ -1488,14 +1488,48 @@ NativeObject* js::InitClass(JSContext* cx, HandleObject obj,
  * it - e.g. EnqueuePromiseReactionJob - can then unwrap the object and get
  * its global without fear of unwrapping too far.
  */
-bool js::GetObjectFromHostDefinedData(JSContext* cx, MutableHandleObject obj) {
-  if (!cx->runtime()->getHostDefinedData(cx, obj)) {
+bool js::GetObjectFromHostDefinedData(
+    JSContext* cx, MutableHandleObject incumbentGlobalRepresentative,
+    MutableHandleObject optionalHostDefinedData) {
+  // Note! To avoid re-rooting we're using the variable
+  // incumbentGlobalRepresentative, however, it is not 'the representative'
+  // until the getObjectPrototypeBelow
+  //
+  // Slightly confusing but intentional as this path can be quite hot.
+  if (!cx->runtime()->getHostDefinedData(cx, incumbentGlobalRepresentative,
+                                         optionalHostDefinedData)) {
     return false;
   }
 
-  // The object might be from a different compartment, so wrap it.
-  if (obj && !cx->compartment()->wrap(cx, obj)) {
+  if (!incumbentGlobalRepresentative) {
+    MOZ_ASSERT(!optionalHostDefinedData);
+    return true;
+  }
+
+  MOZ_ASSERT(incumbentGlobalRepresentative->is<GlobalObject>());
+
+  // After this line it's now actually the representative.
+  incumbentGlobalRepresentative.set(
+      &incumbentGlobalRepresentative->as<GlobalObject>().getObjectPrototype());
+
+  return cx->compartment()->wrap(cx, incumbentGlobalRepresentative);
+}
+
+/* See above GetObjectFromHostDefinedData comment */
+bool js::GetIncumbentGlobalRepresentative(
+    JSContext* cx, MutableHandleObject incumbentGlobalRepresentative) {
+  if (!cx->jobQueue->getHostDefinedGlobal(cx, incumbentGlobalRepresentative)) {
     return false;
+  }
+
+  if (incumbentGlobalRepresentative) {
+    MOZ_ASSERT(incumbentGlobalRepresentative->is<GlobalObject>());
+    incumbentGlobalRepresentative.set(
+        &incumbentGlobalRepresentative->as<GlobalObject>()
+             .getObjectPrototype());
+    if (!cx->compartment()->wrap(cx, incumbentGlobalRepresentative)) {
+      return false;
+    }
   }
 
   return true;

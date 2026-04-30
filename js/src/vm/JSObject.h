@@ -1092,8 +1092,12 @@ extern bool TestIntegrityLevel(JSContext* cx, HandleObject obj,
     JSContext* cx, HandleObject obj, JSProtoKey ctorKey,
     bool (*isDefaultSpecies)(JSContext*, JSFunction*));
 
-extern bool GetObjectFromHostDefinedData(JSContext* cx,
-                                         MutableHandleObject obj);
+extern bool GetObjectFromHostDefinedData(
+    JSContext* cx, MutableHandleObject incumbentGlobal,
+    MutableHandleObject optionalHostDefinedData);
+
+extern bool GetIncumbentGlobalRepresentative(
+    JSContext* cx, MutableHandleObject incumbentGlobalRepresentative);
 
 #ifdef DEBUG
 inline bool IsObjectValueInCompartment(const Value& v, JS::Compartment* comp) {

@@ -417,8 +417,9 @@ struct JSRuntime {
   js::UnprotectedData<JS::ConsumeStreamCallback> consumeStreamCallback;
   js::UnprotectedData<JS::ReportStreamErrorCallback> reportStreamErrorCallback;
 
-  bool getHostDefinedData(JSContext* cx,
-                          JS::MutableHandle<JSObject*> data) const;
+  bool getHostDefinedData(
+      JSContext* cx, JS::MutableHandle<JSObject*> incumbentGlobal,
+      JS::MutableHandle<JSObject*> optionalHostDefinedData) const;
 
   void addUnhandledRejectedPromise(JSContext* cx, js::HandleObject promise);
   void removeUnhandledRejectedPromise(JSContext* cx, js::HandleObject promise);
