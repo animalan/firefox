@@ -42,7 +42,9 @@ class nsJXLDecoder final : public Decoder {
     Gray8,       // u8 G
     GrayAlpha8,  // u8 G,A
     Cmyk8,       // u8 C,M,Y,_ (4th byte unused); u8 K in mKBuffer
-    Rgba16f,     // f16 R,G,B,A, native-endian; only when has_cms=true
+    Rgba16f,     // f16 R,G,B,A, native-endian; HDR images when CMS was
+                 // requested (mTransform may still be null if transform
+                 // creation failed)
   };
 
   enum class FrameOutputResult {
