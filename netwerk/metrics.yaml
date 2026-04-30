@@ -2445,6 +2445,7 @@ network.dns:
     bugs:
       - https://bugzil.la/1691408
       - https://bugzil.la/1694949
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2032398
     data_reviews:
       - https://bugzil.la/1691408
       - https://bugzil.la/1694949
@@ -2491,7 +2492,6 @@ network.dns:
         description: >
           Time from first confirmation attempt to event being recorded
         type: string
-    telemetry_mirror: NetworkDns_Trrconfirmation_Context
 
 network.sso:
   entra_success:
