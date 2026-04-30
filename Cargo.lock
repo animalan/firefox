@@ -6392,6 +6392,8 @@ dependencies = [
  "libc",
  "log",
  "nserror",
+ "nsstring",
+ "thin-vec",
  "webrtc-sdp",
 ]
 
