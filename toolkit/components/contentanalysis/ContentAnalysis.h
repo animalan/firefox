@@ -97,6 +97,10 @@ class ContentAnalysisRequest final : public nsIContentAnalysisRequest {
                          nsCOMPtr<nsIURI> aUrl, nsString aPrinterName,
                          Reason aReason,
                          dom::WindowGlobalParent* aWindowGlobalParent);
+
+  ContentAnalysisRequest(const ContentAnalysisRequest&) = delete;
+  ContentAnalysisRequest& operator=(ContentAnalysisRequest&) = delete;
+
   static nsresult GetFileDigest(const nsAString& aFilePath,
                                 nsCString& aDigestString);
 
@@ -106,9 +110,6 @@ class ContentAnalysisRequest final : public nsIContentAnalysisRequest {
  private:
   virtual ~ContentAnalysisRequest();
   ContentAnalysisRequest() = default;
-
-  ContentAnalysisRequest(const ContentAnalysisRequest&) = delete;
-  ContentAnalysisRequest& operator=(ContentAnalysisRequest&) = delete;
 
   // See nsIContentAnalysisRequest for values
   AnalysisType mAnalysisType;
@@ -198,6 +199,9 @@ class ContentAnalysis final : public nsIContentAnalysis,
 
   ContentAnalysis();
 
+  ContentAnalysis(const ContentAnalysis&) = delete;
+  ContentAnalysis& operator=(ContentAnalysis&) = delete;
+
 #if defined(XP_WIN)
   struct PrintAllowedResult final {
     bool mAllowed;
@@ -285,9 +289,6 @@ class ContentAnalysis final : public nsIContentAnalysis,
 
  private:
   virtual ~ContentAnalysis();
-  // Remove unneeded copy constructor/assignment
-  ContentAnalysis(const ContentAnalysis&) = delete;
-  ContentAnalysis& operator=(ContentAnalysis&) = delete;
   // Only call this through CreateClientIfNecessary(), as it provides
   // synchronization to avoid doing this multiple times at once.
   nsresult CreateContentAnalysisClient(nsCString&& aPipePathName,
@@ -533,12 +534,12 @@ class ContentAnalysisResponse final : public nsIContentAnalysisResponse,
   void SetIsSyntheticResponse(bool aIsSyntheticResponse) {
     mIsSyntheticResponse = aIsSyntheticResponse;
   }
-
- private:
-  virtual ~ContentAnalysisResponse() = default;
   // Remove unneeded copy constructor/assignment
   ContentAnalysisResponse(const ContentAnalysisResponse&) = delete;
   ContentAnalysisResponse& operator=(ContentAnalysisResponse&) = delete;
+
+ private:
+  virtual ~ContentAnalysisResponse() = default;
   explicit ContentAnalysisResponse(
       content_analysis::sdk::ContentAnalysisResponse&& aResponse,
       const nsCString& aUserActionId);

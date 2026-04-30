@@ -28,6 +28,7 @@ class nsUrlClassifierStreamUpdater final
       public nsINamed {
  public:
   nsUrlClassifierStreamUpdater();
+  nsUrlClassifierStreamUpdater(nsUrlClassifierStreamUpdater&) = delete;
 
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIURLCLASSIFIERSTREAMUPDATER
@@ -46,9 +47,6 @@ class nsUrlClassifierStreamUpdater final
   // When the dbservice sends an UpdateComplete or UpdateFailure, we call this
   // to reset the stream updater.
   void DownloadDone();
-
-  // Disallow copy constructor
-  nsUrlClassifierStreamUpdater(nsUrlClassifierStreamUpdater&);
 
   nsresult AddRequestBody(const nsACString& aRequestBody);
 
