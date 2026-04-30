@@ -193,8 +193,7 @@ export class StructuredLogger {
     expected = "PASS",
     message = null,
     stack = null,
-    extra = null,
-    time = null
+    extra = null
   ) {
     var data = {
       test: this.#testId(test),
@@ -213,9 +212,6 @@ export class StructuredLogger {
     }
     if (extra !== null) {
       data.extra = extra;
-    }
-    if (time !== null) {
-      data.time = time;
     }
 
     this.logData("test_status", data);

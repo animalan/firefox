@@ -1525,7 +1525,6 @@ Tester.prototype = {
             ? {
                 name: err.message,
                 stack: err.stack,
-                time: err.time,
                 allowFailure: currentTest.allowFailure,
               }
             : {
@@ -1778,13 +1777,10 @@ function isErrorOrException(err) {
  *     false    false    todoCount    TEST-KNOWN-FAIL         FAIL     FAIL
  *     false    true     todoCount    TEST-KNOWN-FAIL         FAIL     FAIL
  */
-function testResult({ name, pass, todo, ex, stack, allowFailure, time }) {
+function testResult({ name, pass, todo, ex, stack, allowFailure }) {
   this.info = false;
   this.name = name;
   this.msg = "";
-  if (time) {
-    this.time = time;
-  }
 
   if (allowFailure && !pass) {
     this.allowedFailure = true;
