@@ -378,6 +378,48 @@
     "releaseChannelCollection": "opt-out",
     "description": "Whether a content process was launched synchronously (unnecessarily delaying UI response)."
   },
+  "CYCLE_COLLECTOR": {
+    "record_in_processes": ["main", "content"],
+    "products": ["firefox", "fennec"],
+    "alert_emails": ["dev-telemetry-gc-alerts@mozilla.org"],
+    "expires_in_version": "never",
+    "kind": "exponential",
+    "high": 10000,
+    "n_buckets": 50,
+    "description": "Time spent on one cycle collection (ms)"
+  },
+  "CYCLE_COLLECTOR_WORKER": {
+    "record_in_processes": ["main", "content"],
+    "products": ["firefox", "fennec"],
+    "alert_emails": ["dev-telemetry-gc-alerts@mozilla.org"],
+    "expires_in_version": "never",
+    "kind": "exponential",
+    "high": 10000,
+    "n_buckets": 50,
+    "description": "Time spent on one cycle collection in a worker (ms)"
+  },
+  "CYCLE_COLLECTOR_FULL": {
+    "record_in_processes": ["main", "content"],
+    "products": ["firefox", "fennec"],
+    "alert_emails": ["dev-telemetry-gc-alerts@mozilla.org"],
+    "expires_in_version": "never",
+    "kind": "exponential",
+    "high": 10000,
+    "n_buckets": 50,
+    "description": "Full pause time for one cycle collection, including preparation (ms)"
+  },
+  "CYCLE_COLLECTOR_MAX_PAUSE": {
+    "record_in_processes": ["main", "content"],
+    "products": ["firefox", "fennec"],
+    "alert_emails": ["dev-telemetry-gc-alerts@mozilla.org"],
+    "bug_numbers": [1364503],
+    "expires_in_version": "never",
+    "kind": "exponential",
+    "high": 10000,
+    "n_buckets": 50,
+    "releaseChannelCollection": "opt-out",
+    "description": "Longest pause for an individual slice of one cycle collection, including preparation (ms)"
+  },
   "CYCLE_COLLECTOR_FINISH_IGC": {
     "record_in_processes": ["main", "content"],
     "products": ["firefox", "fennec"],
@@ -470,6 +512,26 @@
     "kind": "boolean",
     "description": "Needed garbage collection before cycle collection in a worker."
   },
+  "CYCLE_COLLECTOR_TIME_BETWEEN": {
+    "record_in_processes": ["main", "content"],
+    "products": ["firefox", "fennec"],
+    "alert_emails": ["dev-telemetry-gc-alerts@mozilla.org"],
+    "expires_in_version": "never",
+    "kind": "exponential",
+    "high": 120,
+    "n_buckets": 50,
+    "description": "Time spent in between cycle collections (seconds)"
+  },
+  "CYCLE_COLLECTOR_ASYNC_SNOW_WHITE_FREEING": {
+    "record_in_processes": ["main", "content"],
+    "products": ["firefox", "fennec"],
+    "alert_emails": ["dev-telemetry-gc-alerts@mozilla.org"],
+    "expires_in_version": "never",
+    "kind": "exponential",
+    "high": 10000,
+    "n_buckets": 50,
+    "description": "Time spent on one asynchronous SnowWhite freeing (ms)"
+  },
   "CYCLE_COLLECTOR_SLICE_DURING_IDLE": {
     "record_in_processes": ["main", "content"],
     "products": ["firefox", "fennec"],
@@ -480,6 +542,15 @@
     "n_buckets": 50,
     "bug_numbers": [1372042],
     "description": "Percent of cycle collector slice done during idle time"
+  },
+  "DEFERRED_FINALIZE_ASYNC": {
+    "record_in_processes": ["main", "content"],
+    "products": ["firefox", "fennec"],
+    "expires_in_version": "never",
+    "kind": "exponential",
+    "high": 10000,
+    "n_buckets": 50,
+    "description": "Pause time for asynchronous deferred finalization (ms)"
   },
   "DEVICE_RESET_REASON": {
     "record_in_processes": ["main", "content", "gpu"],
@@ -521,6 +592,16 @@
     "bug_numbers": [1235407],
     "releaseChannelCollection": "opt-out",
     "description": "GPU Forced Device Reset Reason (OpenSharedHandle)"
+  },
+  "FORGET_SKIPPABLE_MAX": {
+    "record_in_processes": ["main", "content"],
+    "products": ["firefox", "fennec"],
+    "alert_emails": ["dev-telemetry-gc-alerts@mozilla.org"],
+    "expires_in_version": "never",
+    "kind": "exponential",
+    "high": 10000,
+    "n_buckets": 50,
+    "description": "Max time spent on one forget skippable (ms)"
   },
   "FORGET_SKIPPABLE_DURING_IDLE": {
     "record_in_processes": ["main", "content"],

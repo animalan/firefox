@@ -154,14 +154,13 @@ class AsyncFreeSnowWhite : public Runnable {
     AUTO_PROFILER_LABEL_RELEVANT_FOR_JS("Incremental CC", GCCC);
     AUTO_PROFILER_LABEL("AsyncFreeSnowWhite::Run", GCCC_FreeSnowWhite);
 
-    auto timerId =
-        glean::cycle_collector::async_snow_white_freeing.ProcessGet().Start();
+    auto timerId = glean::cycle_collector::async_snow_white_freeing.Start();
     // 2 ms budget, given that kICCSliceBudget is only 3 ms
     SliceBudget budget = SliceBudget(TimeBudget(2));
     bool hadSnowWhiteObjects =
         nsCycleCollector_doDeferredDeletionWithBudget(budget);
-    glean::cycle_collector::async_snow_white_freeing.ProcessGet()
-        .StopAndAccumulate(std::move(timerId));
+    glean::cycle_collector::async_snow_white_freeing.StopAndAccumulate(
+        std::move(timerId));
     if (hadSnowWhiteObjects && !mContinuation) {
       mContinuation = true;
       if (NS_FAILED(Dispatch())) {
@@ -2578,31 +2577,31 @@ static void AccumulateTelemetryCallback(JSMetric id,
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_MINOR_US:
-      glean::javascript_gc::minor_time.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::minor_time.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_PREPARE_MS:
-      glean::javascript_gc::prepare_time.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::prepare_time.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_MARK_ROOTS_US:
-      glean::javascript_gc::mark_roots_time.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::mark_roots_time.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_MARK_MS:
-      glean::javascript_gc::mark_time.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::mark_time.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_SWEEP_MS:
-      glean::javascript_gc::sweep_time.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::sweep_time.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_COMPACT_MS:
-      glean::javascript_gc::compact_time.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::compact_time.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_SLICE_MS:
-      glean::javascript_gc::slice_time.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::slice_time.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::ION_COMPILE_TIME:
@@ -2610,7 +2609,7 @@ static void AccumulateTelemetryCallback(JSMetric id,
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_BUDGET_MS_2:
-      glean::javascript_gc::budget.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::budget.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_BUDGET_OVERRUN:
@@ -2626,27 +2625,27 @@ static void AccumulateTelemetryCallback(JSMetric id,
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_MARK_GRAY_MS_2:
-      glean::javascript_gc::mark_gray.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::mark_gray.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_MARK_WEAK_MS:
-      glean::javascript_gc::mark_weak.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::mark_weak.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_TIME_BETWEEN_S:
-      glean::javascript_gc::time_between.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::time_between.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_TIME_BETWEEN_SLICES_MS:
-      glean::javascript_gc::time_between_slices.ProcessGet()
-          .AccumulateRawDuration(sample.as<TimeDuration>());
+      glean::javascript_gc::time_between_slices.AccumulateRawDuration(
+          sample.as<TimeDuration>());
       break;
     case JSMetric::GC_TIME_BETWEEN_MINOR_MS:
-      glean::javascript_gc::time_between_minor.ProcessGet()
-          .AccumulateRawDuration(sample.as<TimeDuration>());
+      glean::javascript_gc::time_between_minor.AccumulateRawDuration(
+          sample.as<TimeDuration>());
       break;
     case JSMetric::GC_TASK_START_DELAY_US:
-      glean::javascript_gc::task_start_delay.ProcessGet().AccumulateRawDuration(
+      glean::javascript_gc::task_start_delay.AccumulateRawDuration(
           sample.as<TimeDuration>());
       break;
     case JSMetric::GC_MMU_50:
