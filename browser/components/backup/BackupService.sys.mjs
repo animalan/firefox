@@ -82,6 +82,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   JsonSchema: "resource://gre/modules/JsonSchema.sys.mjs",
   NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
+  ProfileAge: "resource://gre/modules/ProfileAge.sys.mjs",
   SelectableProfileService:
     "resource:///modules/profiles/SelectableProfileService.sys.mjs",
   UIState: "resource://services-sync/UIState.sys.mjs",
@@ -1392,6 +1393,9 @@ export class BackupService extends EventTarget {
       payload.backup_legacy_client_id = backupMetadata.healthTelemetryEnabled
         ? backupMetadata.legacyClientID || null
         : null;
+      payload.intermediate_profile_creation_date =
+        backupMetadata.intermediateProfileCreationDate ?? null;
+      payload.restore_source = backupMetadata.restoreSource || null;
     }
     Glean.browserBackup.restoredProfileData.set(payload);
   }
@@ -3062,6 +3066,8 @@ export class BackupService extends EventTarget {
    * @param {boolean} [replaceCurrentProfile=false]
    *   An optional argument that determines if the backed up profile should replace
    *   the current profile, or add a new profile.
+   * @param {string} [source=null]
+   *   Which UI initiated the restore (e.g. "onboarding", "preferences").
    * @returns {Promise<nsIToolkitProfile>}
    *   The nsIToolkitProfile that was created for the recovered profile.
    * @throws {Exception}
@@ -3074,7 +3080,8 @@ export class BackupService extends EventTarget {
     shouldLaunchOrQuit = false,
     profilePath = PathUtils.profileDir,
     profileRootPath = null,
-    replaceCurrentProfile = false
+    replaceCurrentProfile = false,
+    source = null
   ) {
     const status = this.restoreEnabledStatus;
     if (!status.enabled) {
@@ -3095,6 +3102,16 @@ export class BackupService extends EventTarget {
     try {
       this.#_state.recoveryInProgress = true;
       this.#_state.recoveryErrorCode = 0;
+
+      try {
+        let profileAge = await lazy.ProfileAge();
+        this.#_state.intermediateProfileCreationDate = await profileAge.created;
+      } catch (e) {
+        lazy.logConsole.warn("Failed to get intermediate profile date", e);
+        this.#_state.intermediateProfileCreationDate = null;
+      }
+
+      this.#_state.restoreSource = source;
       this.stateUpdate();
       const RECOVERY_FILE_DEST_PATH = PathUtils.join(
         profilePath,
@@ -3527,6 +3544,9 @@ export class BackupService extends EventTarget {
             legacyClientID: this.#_state.backupFileInfo.legacyClientID,
             healthTelemetryEnabled:
               this.#_state.backupFileInfo.healthTelemetryEnabled,
+            intermediateProfileCreationDate:
+              this.#_state.intermediateProfileCreationDate,
+            restoreSource: this.#_state.restoreSource,
           },
         };
       } catch {}
@@ -3705,6 +3725,9 @@ export class BackupService extends EventTarget {
               legacyClientID: this.#_state.backupFileInfo.legacyClientID,
               healthTelemetryEnabled:
                 this.#_state.backupFileInfo.healthTelemetryEnabled,
+              intermediateProfileCreationDate:
+                this.#_state.intermediateProfileCreationDate,
+              restoreSource: this.#_state.restoreSource,
             },
           };
         } catch {}

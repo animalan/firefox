@@ -54,6 +54,13 @@ add_task(async function test_internal_post_recovery() {
     true
   );
 
+  let { ProfileAge } = ChromeUtils.importESModule(
+    "resource://gre/modules/ProfileAge.sys.mjs"
+  );
+  let profileAge = await ProfileAge();
+  expectedRestoreAttributes.intermediate_profile_creation_date =
+    await profileAge.created;
+
   // Intercept the telemetry that we want to check for before it gets submitted
   // and cleared out.
   let restoredProfileLaunchedEvents;
