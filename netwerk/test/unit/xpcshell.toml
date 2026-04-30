@@ -1046,6 +1046,7 @@ skip-if = [
 ["test_http3_proxy.js"]
 head = "head_cookies.js head_channels.js head_cache.js head_http3.js http3_proxy_common.js"
 run-sequentially = ["true"] # node server exceptions dont replay well
+requesttimeoutfactor = 2
 skip-if = [
   "os == 'android'",
   "os == 'mac' && os_version == '10.15' && arch == 'x86_64'",
@@ -1067,6 +1068,7 @@ skip-if = [
 ["test_http3_proxy_no_speculative.js"]
 head = "head_cookies.js head_channels.js head_cache.js head_http3.js http3_proxy_common.js"
 run-sequentially = ["true"] # node server exceptions dont replay well
+requesttimeoutfactor = 2
 skip-if = [
   "os == 'android'",
   "os == 'mac' && os_version == '10.15' && arch == 'x86_64'",

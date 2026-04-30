@@ -499,7 +499,7 @@ async function test_http_connect_websocket() {
   await wss.stop();
 }
 
-async function test_inner_connection_fallback() {
+async function test_inner_connection_fallback(ServerClass) {
   info("Running test_inner_connection_fallback");
   let h3Port = Services.env.get("MOZHTTP3_PORT_NO_RESPONSE");
   info(`h3Port = ${h3Port}`);
@@ -507,7 +507,7 @@ async function test_inner_connection_fallback() {
   // Register the connect-udp proxy.
   pps.registerFilter(proxyFilter, 10);
 
-  let server = new NodeHTTPSServer();
+  let server = new ServerClass();
   await server.start(h3Port);
 
   // Register multiple endpoints
@@ -550,6 +550,8 @@ async function test_inner_connection_fallback() {
     Assert.equal(buf, `fallback${i + 1}`);
   }
   await server.stop();
+
+  pps.unregisterFilter(proxyFilter);
 }
 
 const CC = Components.Constructor;
@@ -626,8 +628,6 @@ async function test_http_connect_only() {
     "network.http.http3.alt-svc-mapping-for-testing",
     ""
   );
-
-  pps.unregisterFilter(proxyFilter);
 
   let echo = new NodeTCPEchoServer();
   await echo.start();

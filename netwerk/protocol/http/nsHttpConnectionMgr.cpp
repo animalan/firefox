@@ -1462,46 +1462,58 @@ nsresult nsHttpConnectionMgr::TryDispatchTransaction(
   // look for existing spdy connection - that's always best because it is
   // essentially pipelining without head of line blocking
 
-  // For WebSocket/WebTransport through H3 proxy, we need to create a TCP
-  // tunnel through the H3 proxy first. But if there's already an H2 session
-  // available (from a previously established tunnel), we should use that
-  // instead of creating a new tunnel.
-  // The WebSocket transaction doesn't have a connection set (it was queued
-  // without one in DnsAndConnectSocket::SetupConn to avoid triggering reclaim
-  // when we clear it here).
-  if ((trans->IsWebsocketUpgrade() || trans->IsForWebTransport()) &&
-      ent->IsHttp3ProxyConnection()) {
-    // First check if there's an H2 session available (from existing tunnel)
-    // This handles the case where the tunnel was already established and the
-    // WebSocket transaction was reset to wait for H2 negotiation.
-    // We can't use GetH2orH3ActiveConn because it skips H3 proxy entries when
-    // looking for H2 connections. We use GetH2TunnelActiveConn to directly
-    // look for an H2 tunnel connection in the active connections.
+  if (ent->IsHttp3ProxyConnection()) {
     RefPtr<nsHttpConnection> h2Tunnel = ent->GetH2TunnelActiveConn();
-    if (h2Tunnel) {
-      LOG(
-          ("TryDispatchTransaction: WebSocket through H3 proxy - using "
-           "existing H2 tunnel"));
-      return TryDispatchExtendedCONNECTransaction(ent, trans, h2Tunnel);
-    }
+    // For WebSocket/WebTransport through H3 proxy, we need to create a TCP
+    // tunnel through the H3 proxy first. But if there's already an H2 session
+    // available (from a previously established tunnel), we should use that
+    // instead of creating a new tunnel.
+    // The WebSocket transaction doesn't have a connection set (it was queued
+    // without one in DnsAndConnectSocket::SetupConn to avoid triggering reclaim
+    // when we clear it here).
+    if (trans->IsWebsocketUpgrade() || trans->IsForWebTransport()) {
+      // First check if there's an H2 session available (from existing tunnel)
+      // This handles the case where the tunnel was already established and the
+      // WebSocket transaction was reset to wait for H2 negotiation.
+      // We can't use GetH2orH3ActiveConn because it skips H3 proxy entries when
+      // looking for H2 connections. We use GetH2TunnelActiveConn to directly
+      // look for an H2 tunnel connection in the active connections.
+      if (h2Tunnel) {
+        LOG(
+            ("TryDispatchTransaction: WebSocket through H3 proxy - using "
+             "existing H2 tunnel"));
+        return TryDispatchExtendedCONNECTransaction(ent, trans, h2Tunnel);
+      }
 
-    // No H2 session available yet - create a tunnel through the H3 proxy
-    RefPtr<HttpConnectionBase> conn = GetH2orH3ActiveConn(ent, true, false);
-    RefPtr<HttpConnectionUDP> connUDP = do_QueryObject(conn);
-    if (connUDP) {
-      LOG(("TryDispatchTransaction: WebSocket through HTTP/3 proxy"));
-      RefPtr<HttpConnectionBase> tunnelConn;
-      nsresult rv =
-          connUDP->CreateTunnelStream(trans, getter_AddRefs(tunnelConn), true);
-      if (NS_FAILED(rv)) {
-        return rv;
+      // No H2 session available yet - create a tunnel through the H3 proxy
+      RefPtr<HttpConnectionBase> conn = GetH2orH3ActiveConn(ent, true, false);
+      RefPtr<HttpConnectionUDP> connUDP = do_QueryObject(conn);
+      if (connUDP) {
+        LOG(("TryDispatchTransaction: WebSocket through HTTP/3 proxy"));
+        RefPtr<HttpConnectionBase> tunnelConn;
+        nsresult rv = connUDP->CreateTunnelStream(
+            trans, getter_AddRefs(tunnelConn), true);
+        if (NS_FAILED(rv)) {
+          return rv;
+        }
+        ent->InsertIntoActiveConns(tunnelConn);
+        tunnelConn->SetInTunnel();
+        if (trans->IsWebsocketUpgrade()) {
+          trans->SetIsHttp2Websocket(true);
+        }
+        return DispatchTransaction(ent, trans, tunnelConn);
       }
-      ent->InsertIntoActiveConns(tunnelConn);
-      tunnelConn->SetInTunnel();
-      if (trans->IsWebsocketUpgrade()) {
-        trans->SetIsHttp2Websocket(true);
+    } else {
+      // Handle the case where some transactions have NS_HTTP_DISALLOW_HTTP3 set
+      // while we’re using an HTTP/3 proxy. The flag applies to HTTP/3 to the
+      // *origin server*, not to an HTTP/3 proxy, so we can’t reuse
+      // GetH2orH3ActiveConn.
+      // TODO: This is a workaround and we should revisit this.
+      if (h2Tunnel) {
+        LOG(("   dispatch to spdy: [conn=%p]\n", h2Tunnel.get()));
+        trans->RemoveDispatchedAsBlocking(); /* just in case */
+        return DispatchTransaction(ent, trans, h2Tunnel);
       }
-      return DispatchTransaction(ent, trans, tunnelConn);
     }
   }
 
@@ -1959,6 +1971,7 @@ nsresult nsHttpConnectionMgr::ProcessNewTransaction(nsHttpTransaction* trans) {
       ent = specificEnt;
       bool atLimit = AtActiveConnectionLimit(ent, trans->Caps());
       if (atLimit) {
+        LOG(("hit limit in proxy conn"));
         rv = NS_ERROR_NOT_AVAILABLE;
       } else {
         RefPtr<HttpConnectionBase> newTunnel;
