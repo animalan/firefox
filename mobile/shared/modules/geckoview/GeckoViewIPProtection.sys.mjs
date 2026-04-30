@@ -10,6 +10,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   EventDispatcher: "resource://gre/modules/Messaging.sys.mjs",
   IPPAndroidAuthProvider:
     "moz-src:///toolkit/components/ipprotection/fxa/IPPAndroidAuthProvider.sys.mjs",
+  IPPGpiAuthProvider:
+    "moz-src:///toolkit/components/ipprotection/gpi/IPPGpiAuthProvider.sys.mjs",
   IPPProxyManager:
     "moz-src:///toolkit/components/ipprotection/IPPProxyManager.sys.mjs",
   IPProtectionActivator:
@@ -19,6 +21,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
 });
 
 const { debug, warn } = GeckoViewUtils.initLogging("GeckoViewIPProtection");
+
+const AUTH_PROVIDER_PREF = "toolkit.ipProtection.android.authProvider";
 
 let initialized = false;
 
@@ -74,12 +78,24 @@ export const GeckoViewIPProtection = {
             "IPProtectionService:StateChanged",
             GeckoViewIPProtection
           );
-          lazy.IPProtectionActivator.setAuthProvider(
-            lazy.IPPAndroidAuthProvider
-          );
-          lazy.IPProtectionActivator.addHelpers(
-            lazy.IPPAndroidAuthProvider.helpers
-          );
+          let providerName = Services.prefs.getCharPref(AUTH_PROVIDER_PREF, "");
+          if (!providerName) {
+            providerName = aData?.isSignedIn ? "fxa" : "gpi";
+            Services.prefs.setCharPref(AUTH_PROVIDER_PREF, providerName);
+          }
+          if (providerName === "fxa") {
+            lazy.IPProtectionActivator.setAuthProvider(
+              lazy.IPPAndroidAuthProvider
+            );
+            lazy.IPProtectionActivator.addHelpers(
+              lazy.IPPAndroidAuthProvider.helpers
+            );
+          } else {
+            lazy.IPProtectionActivator.setAuthProvider(lazy.IPPGpiAuthProvider);
+            lazy.IPProtectionActivator.addHelpers(
+              lazy.IPPGpiAuthProvider.helpers
+            );
+          }
           lazy.IPProtectionActivator.init();
         }
         aCallback.onSuccess();
