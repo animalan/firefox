@@ -950,7 +950,7 @@ add_task(async function test_IPPProxyManager_restores_cached_usage() {
   Services.prefs.setBoolPref("browser.ipProtection.cacheDisabled", false);
 
   const { ProxyUsage } = ChromeUtils.importESModule(
-    "moz-src:///toolkit/components/ipprotection/GuardianClient.sys.mjs"
+    "moz-src:///toolkit/components/ipprotection/GuardianTypes.sys.mjs"
   );
 
   const cachedUsage = new ProxyUsage(

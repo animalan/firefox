@@ -21,7 +21,7 @@ ChromeUtils.defineESModuleGetters(this, {
   IPPProxyManager:
     "moz-src:///toolkit/components/ipprotection/IPPProxyManager.sys.mjs",
   ProxyUsage:
-    "moz-src:///toolkit/components/ipprotection/GuardianClient.sys.mjs",
+    "moz-src:///toolkit/components/ipprotection/GuardianTypes.sys.mjs",
 });
 
 const mockIdleService = {

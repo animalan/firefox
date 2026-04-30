@@ -18,6 +18,7 @@ MOZ_SRC_FILES += [
     "fxa/IPPFxaAuthProvider.sys.mjs",
     "fxa/IPPSignInWatcher.sys.mjs",
     "GuardianClient.sys.mjs",
+    "GuardianTypes.sys.mjs",
     "IPPAuthProvider.sys.mjs",
     "IPPAutoRestore.sys.mjs",
     "IPPAutoStart.sys.mjs",
