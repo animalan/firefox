@@ -75,16 +75,20 @@ internal class BottomSheetScene<T : Any>(
 class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
 
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
-        val lastEntry = entries.lastOrNull()
+        val bottomSheetEntries = entries.trailingBottomSheetEntries()
+        val lastEntry = bottomSheetEntries.lastOrNull()
         val bottomSheetProperties = lastEntry?.metadata?.get(BOTTOM_SHEET_KEY) as? ModalBottomSheetProperties
         val skipPartiallyExpanded = lastEntry?.metadata?.get(SKIP_PARTIALLY_EXPANDED_KEY) as? Boolean ?: false
         val handleContentDescription = lastEntry?.metadata?.get(HANDLE_CONTENT_DESCRIPTION_KEY) as? String ?: ""
         return bottomSheetProperties?.let { properties ->
+            val underlyingEntries = entries.dropLast(bottomSheetEntries.size)
             @Suppress("UNCHECKED_CAST")
             BottomSheetScene(
-                key = lastEntry.contentKey as T,
-                previousEntries = entries.dropLast(1),
-                overlaidEntries = entries.dropLast(1),
+                // Reuse the first trailing bottom sheet entry as the key,
+                // so future sheet destinations render in the same BottomSheet container.
+                key = bottomSheetEntries.first().contentKey as T,
+                previousEntries = underlyingEntries,
+                overlaidEntries = underlyingEntries,
                 entry = lastEntry,
                 modalBottomSheetProperties = properties,
                 skipPartiallyExpanded = skipPartiallyExpanded,
@@ -119,4 +123,20 @@ class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
         private const val SKIP_PARTIALLY_EXPANDED_KEY = "skip_partially_expanded"
         private const val HANDLE_CONTENT_DESCRIPTION_KEY = "handle_content_description"
     }
+}
+
+/**
+ * Returns the sequence of trailing bottom sheet entries at the end of the back stack.
+ *
+ * For example, these back stacks would return the following bottom sheet entries:
+ * - `Root, ExpandedTabGroup, EditTabGroup` returns `ExpandedTabGroup, EditTabGroup`
+ * - `Root, TabSearch, AddToTabGroup` returns `AddToTabGroup`
+ */
+private fun <T : Any> List<NavEntry<T>>.trailingBottomSheetEntries(): List<NavEntry<T>> {
+    val lastNonBottomSheetIndex = indexOfLast { entry ->
+        entry.metadata[BottomSheetSceneStrategy.BOTTOM_SHEET_KEY] == null
+    }
+    val firstTrailingBottomSheetIndex = lastNonBottomSheetIndex + 1
+
+    return subList(firstTrailingBottomSheetIndex, size)
 }
