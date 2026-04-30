@@ -38,36 +38,6 @@ export let ProfileDataUpgrader = {
       });
   },
 
-  _migrateBackupProfilesPref() {
-    const oldPref = "browser.backup.enabled_on.profiles";
-    try {
-      let rawValue = Services.prefs.getStringPref(oldPref, "");
-      if (!rawValue) {
-        return;
-      }
-
-      let parsed;
-      try {
-        parsed = JSON.parse(rawValue);
-      } catch {
-        console.error(
-          `Failed to parse ${oldPref} during migration. Value: ${rawValue}`
-        );
-        return;
-      }
-
-      if (Array.isArray(parsed)) {
-        return;
-      }
-
-      // Convert keys to array
-      let profilesArray = Object.keys(parsed);
-      Services.prefs.setStringPref(oldPref, JSON.stringify(profilesArray));
-    } catch (e) {
-      console.error(`Error during migration of ${oldPref}:`, e);
-    }
-  },
-
   /**
    * This method transforms data in the profile directory so that it can be
    * used in the current version of Firefox. It is organized similar to
@@ -1019,10 +989,6 @@ export let ProfileDataUpgrader = {
       // Clear prefs removed by bug 2018089 and bug 2018516.
       Services.prefs.clearUserPref("widget.macos.native-anchored-menulists");
       Services.prefs.clearUserPref("widget.macos.native-anchored-select");
-    }
-
-    if (existingDataVersion < 171) {
-      this._migrateBackupProfilesPref();
     }
 
     // Update the migration version.
