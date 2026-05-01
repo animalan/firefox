@@ -1636,14 +1636,6 @@ add_task(async function testGraduateFirefoxLabsAutoPip() {
 
   const ENABLED_PREF = getEnabledPrefForFeature("auto-pip");
 
-  Services.fog.applyServerKnobsConfig(
-    JSON.stringify({
-      metrics_enabled: {
-        "nimbus_events.enrollment_status": true,
-      },
-    })
-  );
-
   Services.prefs.setBoolPref(ENABLED_PREF, true);
 
   const { cleanup, manager } = await NimbusTestUtils.setupTest({

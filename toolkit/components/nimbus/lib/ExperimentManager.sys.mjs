@@ -352,7 +352,6 @@ export class ExperimentManager {
       const cfg = {
         metrics_enabled: {
           "nimbus_targeting_environment.targeting_context_value": false,
-          "nimbus_events.enrollment_status": false,
         },
       };
 
