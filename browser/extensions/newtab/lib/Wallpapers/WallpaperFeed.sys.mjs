@@ -367,7 +367,8 @@ export class WallpaperFeed {
         if (
           action.data.name === "newtabWallpapers.customColor.enabled" ||
           action.data.name === "newtabWallpapers.customWallpaper.enabled" ||
-          action.data.name === "newtabWallpapers.enabled"
+          action.data.name === "newtabWallpapers.enabled" ||
+          action.data.name === "nova.enabled"
         ) {
           this.wallpaperTeardown();
           await this.wallpaperSetup(false /* isStartup */);
