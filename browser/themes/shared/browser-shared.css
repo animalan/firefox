@@ -705,8 +705,8 @@ menupopup::part(drop-indicator) {
    themes cannot set */
 #DateTimePickerPanel {
   color-scheme: env(-moz-content-preferred-color-scheme);
-  --panel-background: Field;
-  --panel-color: FieldText;
+  --panel-background-color: Field;
+  --panel-text-color: FieldText;
 }
 
 #widget-overflow .webextension-popup-browser {

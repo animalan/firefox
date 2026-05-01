@@ -113,6 +113,11 @@ const TOKEN_CATEGORIES = [
     purposes: [PURPOSE.SEMANTIC],
   },
   {
+    name: "space",
+    alternateNames: ["padding", "margin", "inset", "gap"],
+    purposes: [PURPOSE.SEMANTIC, PURPOSE.STORYBOOK],
+  },
+  {
     name: "box-shadow",
     purposes: [PURPOSE.SEMANTIC, PURPOSE.STORYBOOK],
   },
@@ -136,11 +141,6 @@ const TOKEN_CATEGORIES = [
   {
     name: "size",
     alternateNames: ["height", "width", "transform"],
-    purposes: [PURPOSE.SEMANTIC, PURPOSE.STORYBOOK],
-  },
-  {
-    name: "space",
-    alternateNames: ["padding", "margin", "inset", "gap"],
     purposes: [PURPOSE.SEMANTIC, PURPOSE.STORYBOOK],
   },
   {

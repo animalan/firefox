@@ -46,7 +46,7 @@ menupopup {
     -moz-default-appearance: menupopup;
     /* The mica backdrop takes care of our shadow, border, and border-radius */
     --panel-border-color: transparent;
-    --panel-shadow-margin: 0px;
+    --panel-box-shadow-margin: 0px;
     --panel-border-radius: 0px;
   }
 
@@ -66,7 +66,7 @@ menupopup {
 
   > menu > menupopup {
     /* Vertically align nested menupopups: the shadow plus the top padding plus top border */
-    margin-top: calc(-1 * (var(--panel-shadow-margin) + var(--panel-padding-block) + 1px));
+    margin-top: calc(-1 * (var(--panel-box-shadow-margin) + var(--panel-padding-block) + 1px));
   }
 }
 

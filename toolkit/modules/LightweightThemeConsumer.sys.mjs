@@ -57,13 +57,13 @@ const toolkitVariableMap = [
     },
   ],
   [
-    "--panel-background",
+    "--panel-background-color",
     {
       lwtProperty: "popup",
     },
   ],
   [
-    "--panel-color",
+    "--panel-text-color",
     {
       lwtProperty: "popup_text",
     },
