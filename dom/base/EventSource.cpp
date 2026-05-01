@@ -119,11 +119,11 @@ class EventSourceImpl final : public nsIChannelEventSink,
     Close();
     GlobalTeardownObserver::DisconnectFromOwner();
   }
-  void FrozenCallback(nsIGlobalObject* aOwner) override {
+  void FrozenCallback(nsIGlobalObject* aGlobal) override {
     DebugOnly<nsresult> rv = Freeze();
     MOZ_ASSERT(NS_SUCCEEDED(rv), "Freeze() failed");
   }
-  void ThawedCallback(nsIGlobalObject* aOwner) override {
+  void ThawedCallback(nsIGlobalObject* aGlobal) override {
     DebugOnly<nsresult> rv = Thaw();
     MOZ_ASSERT(NS_SUCCEEDED(rv), "Thaw() failed");
   }

@@ -713,7 +713,7 @@ PersistentStoragePermissionRequest::Allow(JS::Handle<JS::Value> aChoices) {
  * StorageManager
  ******************************************************************************/
 
-StorageManager::StorageManager(nsIGlobalObject* aGlobal) : mOwner(aGlobal) {
+StorageManager::StorageManager(nsIGlobalObject* aGlobal) : mGlobal(aGlobal) {
   MOZ_ASSERT(aGlobal);
 }
 
@@ -730,11 +730,11 @@ NS_IMPL_CYCLE_COLLECTING_RELEASE(StorageManager)
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(StorageManager)
 NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(StorageManager)
   tmp->Shutdown();
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mOwner)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mGlobal)
   NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(StorageManager)
-  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mOwner)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mGlobal)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mFileSystemManager)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
@@ -747,9 +747,9 @@ void StorageManager::Shutdown() {
 
 already_AddRefed<FileSystemManager> StorageManager::GetFileSystemManager() {
   if (!mFileSystemManager) {
-    MOZ_ASSERT(mOwner);
+    MOZ_ASSERT(mGlobal);
 
-    mFileSystemManager = MakeRefPtr<FileSystemManager>(mOwner, this);
+    mFileSystemManager = MakeRefPtr<FileSystemManager>(mGlobal, this);
   }
 
   return do_AddRef(mFileSystemManager);
@@ -765,23 +765,23 @@ JSObject* StorageManager::WrapObject(JSContext* aCx,
 // WebIDL Interface
 
 already_AddRefed<Promise> StorageManager::Persisted(ErrorResult& aRv) {
-  MOZ_ASSERT(mOwner);
+  MOZ_ASSERT(mGlobal);
 
-  return ExecuteOpOnMainOrWorkerThread(mOwner, RequestResolver::Type::Persisted,
-                                       aRv);
+  return ExecuteOpOnMainOrWorkerThread(mGlobal,
+                                       RequestResolver::Type::Persisted, aRv);
 }
 
 already_AddRefed<Promise> StorageManager::Persist(ErrorResult& aRv) {
-  MOZ_ASSERT(mOwner);
+  MOZ_ASSERT(mGlobal);
 
-  return ExecuteOpOnMainOrWorkerThread(mOwner, RequestResolver::Type::Persist,
+  return ExecuteOpOnMainOrWorkerThread(mGlobal, RequestResolver::Type::Persist,
                                        aRv);
 }
 
 already_AddRefed<Promise> StorageManager::Estimate(ErrorResult& aRv) {
-  MOZ_ASSERT(mOwner);
+  MOZ_ASSERT(mGlobal);
 
-  return ExecuteOpOnMainOrWorkerThread(mOwner, RequestResolver::Type::Estimate,
+  return ExecuteOpOnMainOrWorkerThread(mGlobal, RequestResolver::Type::Estimate,
                                        aRv);
 }
 

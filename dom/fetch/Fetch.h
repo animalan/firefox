@@ -224,13 +224,13 @@ class FetchBody : public FetchBodyBase, public AbortFollower {
                                         ErrorResult& aRv);
 
  protected:
-  nsCOMPtr<nsIGlobalObject> mOwner;
+  nsCOMPtr<nsIGlobalObject> mGlobal;
 
   // This is the Reader used to retrieve data from the body. This needs to be
   // traversed by subclasses.
   RefPtr<FetchStreamReader> mFetchStreamReader;
 
-  explicit FetchBody(nsIGlobalObject* aOwner);
+  explicit FetchBody(nsIGlobalObject* aGlobal);
 
   virtual ~FetchBody();
 
@@ -265,7 +265,7 @@ class EmptyBody final : public FetchBody<EmptyBody> {
       AbortSignalImpl* aAbortSignalImpl, const nsACString& aMimeType,
       const nsACString& aMixedCaseMimeType, ErrorResult& aRv);
 
-  nsIGlobalObject* GetParentObject() const { return mOwner; }
+  nsIGlobalObject* GetParentObject() const { return mGlobal; }
 
   AbortSignalImpl* GetSignalImpl() const override { return mAbortSignalImpl; }
   AbortSignalImpl* GetSignalImplToConsumeBody() const final { return nullptr; }

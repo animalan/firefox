@@ -49,7 +49,7 @@ class GlobalTeardownObserver
  protected:
   virtual ~GlobalTeardownObserver();
 
-  void BindToGlobal(nsIGlobalObject* aOwner);
+  void BindToGlobal(nsIGlobalObject* aGlobal);
 
  private:
   // The parent global object.  The global will clear this when
