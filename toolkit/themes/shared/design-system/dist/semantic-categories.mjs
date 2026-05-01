@@ -316,6 +316,7 @@ export const tokensTable = {
       value: "var(--background-color-information)",
       name: "--message-bar-background-color",
     },
+    { value: "var(--border-color)", name: "--page-nav-hr-background-color" },
     {
       value: {
         default: "color-mix(in lch, currentColor 8%, transparent)",
@@ -655,6 +656,10 @@ export const tokensTable = {
         prefersContrast: "var(--border-color)",
       },
       name: "--message-bar-border-color",
+    },
+    {
+      value: "var(--border-color-transparent)",
+      name: "--page-nav-border-color",
     },
     {
       value: {
@@ -1137,6 +1142,10 @@ export const tokensTable = {
       value: "calc(-1 * var(--border-width))",
       name: "--toolbarbutton-outline-offset",
     },
+    {
+      value: "var(--focus-outline-inset)",
+      name: "--page-nav-focus-outline-inset",
+    },
     { value: "calc(-1 * var(--border-width))", name: "--tab-outline-offset" },
   ],
   "outline-width": [{ value: "2px", name: "--focus-outline-width" }],
@@ -1240,6 +1249,7 @@ export const tokensTable = {
       value: "var(--size-item-large)",
       name: "--message-bar-container-min-height",
     },
+    { value: "var(--icon-size-large)", name: "--page-nav-heading-logo-size" },
     { value: "var(--size-image-xlarge)", name: "--promo-image-size" },
     {
       value: "calc(2 * var(--size-image-xlarge))",
@@ -1288,6 +1298,10 @@ export const tokensTable = {
     { value: "9px", name: "--toolbarbutton-inner-padding-touch" },
     { value: "8px", name: "--toolbarbutton-inner-padding-touch-narrow" },
     { value: "var(--space-small)", name: "--breadcrumb-gap" },
+    { value: "var(--space-xsmall)", name: "--page-nav-button-gap" },
+    { value: "var(--space-large)", name: "--page-nav-gap" },
+    { value: "64px", name: "--page-nav-margin-block-start" },
+    { value: "40px", name: "--page-nav-margin-inline-start" },
     { value: "var(--space-medium)", name: "--promo-padding" },
     {
       value: "var(--reorderable-list-indicator-size)",
@@ -2818,6 +2832,14 @@ export const variableLookupTable = {
   "message-bar-icon-color": "var(--icon-color-information)",
   "message-bar-icon-size": "var(--icon-size)",
   "message-bar-text-color": "var(--text-color)",
+  "page-nav-border-color": "var(--border-color-transparent)",
+  "page-nav-button-gap": "var(--space-xsmall)",
+  "page-nav-focus-outline-inset": "var(--focus-outline-inset)",
+  "page-nav-gap": "var(--space-large)",
+  "page-nav-heading-logo-size": "var(--icon-size-large)",
+  "page-nav-hr-background-color": "var(--border-color)",
+  "page-nav-margin-block-start": "64px",
+  "page-nav-margin-inline-start": "40px",
   "promo-background-color": {
     default: "color-mix(in lch, currentColor 8%, transparent)",
     prefersContrast: "var(--background-color-canvas)",

@@ -141,6 +141,7 @@ toolkit.jar:
    content/global/elements/moz-input-url.mjs    (widgets/moz-input-url/moz-input-url.mjs)
    content/global/elements/moz-page-header.css    (widgets/moz-page-header/moz-page-header.css)
    content/global/elements/moz-page-header.mjs    (widgets/moz-page-header/moz-page-header.mjs)
+   content/global/elements/moz-page-nav.tokens.css    (widgets/moz-page-nav/moz-page-nav.tokens.css)
    content/global/elements/moz-page-nav.css    (widgets/moz-page-nav/moz-page-nav.css)
    content/global/elements/moz-page-nav-button.css    (widgets/moz-page-nav/moz-page-nav-button.css)
    content/global/elements/moz-page-nav.mjs    (widgets/moz-page-nav/moz-page-nav.mjs)
