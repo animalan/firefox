@@ -70,165 +70,34 @@ if (lazy.AppConstants.MOZ_DATA_REPORTING) {
   ]);
 }
 
-export class PermissionsDataHelpers {
-  /**
-   * Displays the location exceptions dialog where specific site location
-   * preferences can be set.
-   */
-  static showLocationExceptions() {
-    let params = { permissionType: "geo" };
-
+/**
+ * Displays a dialog for managing permission exceptions for a specific permission type.
+ *
+ * @param {object} options
+ * @param {string} options.permissionType - The type of permission to manage.
+ * @param {string} [options.dialogType="site"] - The dialog type: "site" or "permission".
+ */
+export function showPermissionExceptions({
+  permissionType,
+  dialogType = "site",
+}) {
+  if (dialogType === "site") {
     window.gSubDialog.open(
       "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
       { features: "resizable=yes" },
-      params
+      { permissionType }
     );
-  }
-
-  /**
-   * Displays the camera exceptions dialog where specific site camera
-   * preferences can be set.
-   */
-  static showCameraExceptions() {
-    let params = { permissionType: "camera" };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
-      { features: "resizable=yes" },
-      params
-    );
-  }
-
-  /**
-   * Displays the loopback network exceptions dialog where specific site loopback network
-   * preferences can be set.
-   */
-  static showLoopbackNetworkExceptions() {
-    let params = { permissionType: "loopback-network" };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
-      { features: "resizable=yes" },
-      params
-    );
-  }
-
-  /**
-   * Displays the local network exceptions dialog where specific site local network
-   * preferences can be set.
-   */
-  static showLocalNetworkExceptions() {
-    let params = { permissionType: "local-network" };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
-      { features: "resizable=yes" },
-      params
-    );
-  }
-
-  /**
-   * Displays the microphone exceptions dialog where specific site microphone
-   * preferences can be set.
-   */
-  static showMicrophoneExceptions() {
-    let params = { permissionType: "microphone" };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
-      { features: "resizable=yes" },
-      params
-    );
-  }
-
-  /**
-   * Displays the speaker exceptions dialog where specific site speaker
-   * preferences can be set.
-   */
-  static showSpeakerExceptions() {
-    let params = { permissionType: "speaker" };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
-      { features: "resizable=yes" },
-      params
-    );
-  }
-
-  /**
-   * Displays the notifications exceptions dialog where specific site notification
-   * preferences can be set.
-   */
-  static showNotificationExceptions() {
-    let params = { permissionType: "desktop-notification" };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
-      { features: "resizable=yes" },
-      params
-    );
-  }
-
-  static showAutoplayMediaExceptions() {
-    var params = { permissionType: "autoplay-media" };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
-      { features: "resizable=yes" },
-      params
-    );
-  }
-
-  /**
-   * Displays the XR exceptions dialog where specific site XR
-   * preferences can be set.
-   */
-  static showXRExceptions() {
-    let params = { permissionType: "xr" };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
-      { features: "resizable=yes" },
-      params
-    );
-  }
-
-  /**
-   * Displays the popup exceptions dialog where specific site popup preferences
-   * can be set.
-   */
-  static showPopupExceptions() {
-    var params = {
-      blockVisible: false,
-      sessionVisible: false,
-      allowVisible: true,
-      prefilledHost: "",
-      permissionType: "popup",
-    };
-
+  } else {
     window.gSubDialog.open(
       "chrome://browser/content/preferences/dialogs/permissions.xhtml",
       { features: "resizable=yes" },
-      params
-    );
-  }
-
-  /**
-   * Displays the exceptions lists for add-on installation warnings.
-   */
-  static showAddonExceptions() {
-    var params = {
-      blockVisible: false,
-      sessionVisible: false,
-      allowVisible: true,
-      prefilledHost: "",
-      permissionType: "install",
-    };
-
-    window.gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/permissions.xhtml",
-      undefined,
-      params
+      {
+        blockVisible: false,
+        sessionVisible: false,
+        allowVisible: true,
+        prefilledHost: "",
+        permissionType,
+      }
     );
   }
 }
@@ -244,53 +113,93 @@ Preferences.addSetting({
 Preferences.addSetting({
   id: "permissionBox",
 });
+/**
+ * Displays the location exceptions dialog where specific site location
+ * preferences can be set.
+ */
 Preferences.addSetting({
   id: "locationSettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showLocationExceptions(),
+  onUserClick: () => showPermissionExceptions({ permissionType: "geo" }),
 });
+/**
+ * Displays the camera exceptions dialog where specific site camera
+ * preferences can be set.
+ */
 Preferences.addSetting({
   id: "cameraSettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showCameraExceptions(),
+  onUserClick: () => showPermissionExceptions({ permissionType: "camera" }),
 });
+/**
+ * Displays the loopback network exceptions dialog where specific site loopback network
+ * preferences can be set.
+ */
 Preferences.addSetting({
   id: "loopbackNetworkSettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showLoopbackNetworkExceptions(),
+  onUserClick: () =>
+    showPermissionExceptions({
+      permissionType: "loopback-network",
+    }),
   deps: ["enabledLNA"],
   visible: deps => {
     return deps.enabledLNA.value;
   },
 });
+/**
+ * Displays the local network exceptions dialog where specific site local network
+ * preferences can be set.
+ */
 Preferences.addSetting({
   id: "localNetworkSettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showLocalNetworkExceptions(),
+  onUserClick: () =>
+    showPermissionExceptions({ permissionType: "local-network" }),
   deps: ["enabledLNA"],
   visible: deps => {
     return deps.enabledLNA.value;
   },
 });
+/**
+ * Displays the microphone exceptions dialog where specific site microphone
+ * preferences can be set.
+ */
 Preferences.addSetting({
   id: "microphoneSettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showMicrophoneExceptions(),
+  onUserClick: () => showPermissionExceptions({ permissionType: "microphone" }),
 });
+/**
+ * Displays the speaker exceptions dialog where specific site speaker
+ * preferences can be set.
+ */
 Preferences.addSetting({
   id: "speakerSettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showSpeakerExceptions(),
+  onUserClick: () => showPermissionExceptions({ permissionType: "speaker" }),
   deps: ["enabledSpeakerControl"],
   visible: ({ enabledSpeakerControl }) => {
     return enabledSpeakerControl.value;
   },
 });
+/**
+ * Displays the notifications exceptions dialog where specific site notification
+ * preferences can be set.
+ */
 Preferences.addSetting({
   id: "notificationSettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showNotificationExceptions(),
+  onUserClick: () =>
+    showPermissionExceptions({
+      permissionType: "desktop-notification",
+    }),
 });
 Preferences.addSetting({
   id: "autoplaySettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showAutoplayMediaExceptions(),
+  onUserClick: () =>
+    showPermissionExceptions({ permissionType: "autoplay-media" }),
 });
+/**
+ * Displays the XR exceptions dialog where specific site XR
+ * preferences can be set.
+ */
 Preferences.addSetting({
   id: "xrSettingsButton",
-  onUserClick: () => PermissionsDataHelpers.showXRExceptions(),
+  onUserClick: () => showPermissionExceptions({ permissionType: "xr" }),
 });
 Preferences.addSetting({
   id: "popupPolicy",
@@ -329,10 +238,18 @@ Preferences.addSetting({
   disabled: ({ popupPolicy, redirectPolicy }) =>
     popupPolicy.locked && redirectPolicy.locked,
 });
+/**
+ * Displays the popup exceptions dialog where specific site popup preferences
+ * can be set.
+ */
 Preferences.addSetting({
   id: "popupAndRedirectPolicyButton",
   deps: ["popupPolicy", "redirectPolicy"],
-  onUserClick: () => PermissionsDataHelpers.showPopupExceptions(),
+  onUserClick: () =>
+    showPermissionExceptions({
+      permissionType: "popup",
+      dialogType: "permission",
+    }),
   disabled: ({ popupPolicy, redirectPolicy }) =>
     !popupPolicy.value ||
     !redirectPolicy.value ||
@@ -342,10 +259,17 @@ Preferences.addSetting({
   id: "warnAddonInstall",
   pref: "xpinstall.whitelist.required",
 });
+/**
+ * Displays the exceptions lists for add-on installation warnings.
+ */
 Preferences.addSetting({
   id: "addonExceptions",
   deps: ["warnAddonInstall"],
-  onUserClick: () => PermissionsDataHelpers.showAddonExceptions(),
+  onUserClick: () =>
+    showPermissionExceptions({
+      permissionType: "install",
+      dialogType: "permission",
+    }),
   disabled: ({ warnAddonInstall }) => {
     return !warnAddonInstall.value || warnAddonInstall.locked;
   },
