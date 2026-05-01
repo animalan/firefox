@@ -834,6 +834,14 @@ export let BrowserUsageTelemetry = {
         : "context-copy-url";
     }
 
+    if (node.classList?.contains("share-qrcode-item")) {
+      return "generate-qr-code";
+    }
+
+    if (node.classList?.contains("share-windows-item")) {
+      return "microsoft-system-share";
+    }
+
     if (node.hasAttribute("data-share-name")) {
       return "share-macos-provider";
     }

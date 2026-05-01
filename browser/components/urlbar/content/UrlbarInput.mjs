@@ -4628,7 +4628,7 @@ ${
     contextMenu.addEventListener("popupshowing", () => {
       let browser = this.window.gBrowser?.selectedBrowser;
       if (browser) {
-        lazy.SharingUtils.updateShareURLMenuItem(browser, null, separator);
+        lazy.SharingUtils.ensureShareMenu(browser, null, separator);
       }
     });
   }

@@ -1857,13 +1857,11 @@ let gFileMenu = {
     this.updateImportCommandEnabledState();
     if (typeof gBrowser != "undefined") {
       this.updateTabCloseCountState();
-      if (AppConstants.platform == "macosx") {
-        SharingUtils.updateShareURLMenuItem(
-          gBrowser.selectedBrowser,
-          null,
-          document.getElementById("menu_savePage")
-        );
-      }
+      SharingUtils.ensureShareMenu(
+        gBrowser.selectedBrowser,
+        null,
+        document.getElementById("menu_savePage")
+      );
     }
     PrintUtils.updatePrintSetupMenuHiddenState();
 
