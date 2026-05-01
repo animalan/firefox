@@ -17359,18 +17359,6 @@
   value: true
   mirror: always
 
-# Always partition web storage APIs except cookies.
-- name: privacy.partition.always_partition_third_party_non_cookie_storage
-  type: RelaxedAtomicBool
-  value: true
-  mirror: always
-
-# Exclude session storage from the above preference.
-- name: privacy.partition.always_partition_third_party_non_cookie_storage.exempt_sessionstorage
-  type: RelaxedAtomicBool
-  value: false
-  mirror: always
-
 - name: privacy.partition.bloburl_per_partition_key
   type: bool
   value: true
