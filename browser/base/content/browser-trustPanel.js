@@ -127,6 +127,7 @@ class TrustPanel {
    */
   #qwacStatusPromise = null;
 
+  #host = null;
   #uri = null;
   #uriHasHost = null;
   #pageExtensionPolicy = null;
@@ -135,9 +136,6 @@ class TrustPanel {
 
   #popupToggleDelayTimer = null;
   #openingReason = null;
-
-  #breaches = [];
-  #breachesPromise = null;
 
   #blockers = {
     SocialTracking,
@@ -154,12 +152,6 @@ class TrustPanel {
       }
     }
 
-    void this.#ensureBreachesLoaded().then(() => {
-      if (this.#uri) {
-        this.#updateUrlbarIcon();
-      }
-    });
-
     // Add an observer to listen to requests to open the protections panel
     Services.obs.addObserver(this, "smartblock:open-protections-panel");
   }
@@ -172,27 +164,6 @@ class TrustPanel {
     }
 
     Services.obs.removeObserver(this, "smartblock:open-protections-panel");
-  }
-
-  // Ensures breach data is loaded into the local cache (`#breaches`).
-  // Multiple callers will share the same in-flight request via
-  // `#breachesPromise` to avoid duplicate fetches.
-  #ensureBreachesLoaded() {
-    if (this.#breaches.length) {
-      return Promise.resolve();
-    }
-    if (this.#breachesPromise) {
-      return this.#breachesPromise;
-    }
-    this.#breachesPromise = RemoteSettings("fxmonitor-breaches")
-      .get()
-      .then(breaches => {
-        this.#breaches = breaches ?? [];
-      })
-      .finally(() => {
-        this.#breachesPromise = null;
-      });
-    return this.#breachesPromise;
   }
 
   get #popup() {
@@ -361,6 +332,7 @@ class TrustPanel {
     this.#qwac = null;
     this.#qwacStatusPromise = null;
     this.#pageExtensionPolicy = WebExtensionPolicy.getByURI(uri);
+
     this.#updateUrlbarIcon();
   }
 
@@ -380,39 +352,27 @@ class TrustPanel {
 
   #updateUrlbarIcon() {
     let icon = document.getElementById("trust-icon-container");
-    let targetClasses = new Set();
-    targetClasses.add(this.#isSecurePage() ? "secure" : "insecure");
+    icon.className =
+      this.#isSecurePage() || this.#isCertUserOverridden
+        ? "secure"
+        : "insecure";
 
-    if (this.#breachedStatusSync() === "breached") {
-      targetClasses.add("breached");
-    }
     if (!this.#trackingProtectionEnabled) {
-      targetClasses.add("inactive");
+      icon.classList.add("inactive");
     }
+
     if (this.#isAboutNetErrorPage || this.#isCertUserOverridden) {
-      targetClasses.add("warning");
+      icon.classList.add("warning");
     }
 
-    icon.className = "";
-
-    // Handle the breach animation guard (restart only on fresh URI).
-    if (targetClasses.has("breached")) {
-      let browser = gBrowser.selectedBrowser;
-      if (browser.lastAnimatedBreachURI !== this.#uri?.spec) {
-        // This is a fresh visit: trigger the animation.
-        targetClasses.add("breach-animating");
-        browser.lastAnimatedBreachURI = this.#uri?.spec;
-        // Logic will re-add breached, and since it's the first time for
-        // breach-animating, the CSS animation will play.
-      }
-    }
-
-    icon.classList.add(...targetClasses);
     icon.setAttribute("tooltiptext", this.#tooltipText());
     icon.classList.toggle("chickletShown", this.#isInternalSecurePage);
   }
 
   async #updatePopup() {
+    this.#host = BrowserUtils.formatURIForDisplay(this.#uri, {
+      onlyBaseDomain: true,
+    });
     this.#popup.setAttribute("connection", this.#connectionState());
     this.#popup.setAttribute(
       "tracking-protection",
@@ -885,18 +845,6 @@ class TrustPanel {
       !this.#isURILoadedFromFile &&
       this.#state & Ci.nsIWebProgressListener.STATE_IS_SECURE
     );
-  }
-
-  // Using a getter rather than a method reduces call-site noise (this.#host vs
-  // this.#host()) and avoids churn when the implementation changes. Semantically,
-  // this behaves like a property derived from #uri, so a getter is the right fit.
-  get #host() {
-    if (!this.#uri) {
-      return null;
-    }
-    return BrowserUtils.formatURIForDisplay(this.#uri, {
-      onlyBaseDomain: true,
-    });
   }
 
   get #isEV() {
@@ -1599,39 +1547,6 @@ class TrustPanel {
     return breaches.find(breach => {
       return breach.Domain && Services.eTLD.hasRootDomain(site, breach.Domain);
     });
-  }
-
-  // The urlbar icon is part of core browser chrome state, not a data-driven UI.
-  // It is updated synchronously in updateIdentity(), so we need a synchronous version
-  // of getBreachForSite.
-  // TODO: Consolidate this with the async getBreachForSite() used in updatePopup()
-  // into a single #getBreachForSite(host) that operates purely on the in-memory
-  // this.#breaches cache, so all filtering logic (e.g. age, dismissed status) lives
-  // in one place and the two implementations cannot drift apart.
-  #getBreachForSiteSync(site) {
-    if (!site || !this.#breaches.length) {
-      return null;
-    }
-
-    return this.#breaches.find(breach => {
-      return breach.Domain && Services.eTLD.hasRootDomain(site, breach.Domain);
-    });
-  }
-
-  #breachedStatusSync() {
-    if (!UrlbarPrefs.get("trustPanel.breachAlerts")) {
-      return "disabled";
-    }
-
-    return this.#getBreachForSiteSync(this.#host) ? "breached" : "not-breached";
-  }
-
-  /**
-   * Internal test helper to reset the breach cache.
-   */
-  resetBreachCacheForTest() {
-    this.#breachesPromise = null;
-    this.#breaches = [];
   }
 }
 
