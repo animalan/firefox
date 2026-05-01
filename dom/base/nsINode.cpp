@@ -109,7 +109,6 @@
 #include "nsRange.h"
 #include "nsString.h"
 #include "nsStyleConsts.h"
-#include "nsTHashMap.h"
 #include "nsTextNode.h"
 #include "nsUnicharUtils.h"
 #include "nsWindowSizes.h"
@@ -276,127 +275,7 @@ void nsINode::SetNamespacePrefix(nsAtom* aPrefix) {
       nsINode::ELEMENT_NODE);
 }
 
-// Cache for parents with many children. Speeds up index-based child lookups
-// (GetChildAt) and reverse lookups (ComputeIndexOf) using a lazily-populated
-// contiguous array, with a hashmap for O(1) reverse lookups on large lists.
-class ChildIndexCache {
- public:
-  // Minimum child count for using the array cache for either lookup.
-  static constexpr uint32_t kThreshold = 32;
-  // Minimum child count for using the hashmap for ComputeIndexOf lookups.
-  static constexpr uint32_t kHashMapThreshold = 128;
-
-  static nsIContent* GetChildAt(const nsINode* aParent, uint32_t aIndex) {
-    MOZ_ASSERT(aParent->GetChildCount() > aIndex,
-               "Caller should have checked bounds");
-    auto& entry =
-        sCache.LookupOrInsertWith(aParent, [&] { return MakeEntry(aParent); });
-    if (aIndex < entry.mChildren.Length()) {
-      return entry.mChildren[aIndex];
-    }
-    PopulateTo(entry, aParent, aIndex);
-    return entry.mChildren[aIndex];
-  }
-
-  static uint32_t ComputeIndexOf(const nsINode* aParent,
-                                 const nsIContent* aChild) {
-    MOZ_ASSERT(aChild->GetParentNode() == aParent,
-               "Child is not actually a child of parent");
-    auto& entry =
-        sCache.LookupOrInsertWith(aParent, [&] { return MakeEntry(aParent); });
-
-    // Only use the hash map if the parent has enough children to make it
-    // worthwhile, otherwise scanning the array is likely faster and doesn't use
-    // extra memory.
-    const bool useHashMap = aParent->GetChildCount() >= kHashMapThreshold;
-
-    if (useHashMap) {
-      // First check if the child is already in the cache.
-      if (auto result = entry.mIndexMap.MaybeGet(aChild)) {
-        return *result;
-      }
-    }
-
-    // Scan the already-populated array portion, building hashmap entries as
-    // we go for children that haven't been indexed yet.
-    // If the hashmap is not used (child count below hashmap threshold), this is
-    // the main O(n) lookup loop.
-    for (auto index :
-         IntegerRange(entry.mIndexMap.Count(), entry.mChildren.Length())) {
-      if (useHashMap) {
-        entry.mIndexMap.InsertOrUpdate(entry.mChildren[index], index);
-      }
-      if (entry.mChildren[index] == aChild) {
-        return index;
-      }
-    }
-
-    // Extend the child array frontier, continuing to build the hashmap.
-    nsIContent* current = entry.mChildren.IsEmpty()
-                              ? aParent->GetFirstChild()
-                              : entry.mChildren.LastElement()->GetNextSibling();
-    while (current) {
-      const uint32_t index = entry.mChildren.Length();
-      entry.mChildren.AppendElement(current);
-      if (useHashMap) {
-        entry.mIndexMap.InsertOrUpdate(current, index);
-      }
-      if (current == aChild) {
-        return index;
-      }
-      current = current->GetNextSibling();
-    }
-    MOZ_ASSERT_UNREACHABLE("Child is not actually a child of parent");
-    return 0;
-  }
-
-  static void Invalidate(const nsINode* aParent) {
-    auto entry = sCache.Lookup(aParent);
-    if (entry) {
-      entry.Data().mChildren.ClearAndRetainStorage();
-      entry.Data().mIndexMap.Clear();
-    }
-  }
-
-  static void Remove(const nsINode* aParent) { sCache.Remove(aParent); }
-
- private:
-  struct Entry {
-    nsTArray<nsIContent*> mChildren;
-    nsTHashMap<const nsIContent*, uint32_t> mIndexMap;
-  };
-
-  static void PopulateTo(Entry& aEntry, const nsINode* aParent,
-                         uint32_t aIndex) {
-    if (aEntry.mChildren.Capacity() < aParent->GetChildCount()) {
-      aEntry.mChildren.SetCapacity(aParent->GetChildCount());
-    }
-    nsIContent* current =
-        aEntry.mChildren.IsEmpty()
-            ? aParent->GetFirstChild()
-            : aEntry.mChildren.LastElement()->GetNextSibling();
-    while (current) {
-      aEntry.mChildren.AppendElement(current);
-      if (aEntry.mChildren.Length() - 1 == aIndex) {
-        return;
-      }
-      current = current->GetNextSibling();
-    }
-  }
-
-  static Entry MakeEntry(const nsINode* aParent) {
-    Entry entry;
-    entry.mChildren.SetCapacity(aParent->GetChildCount());
-    return entry;
-  }
-
-  static nsTHashMap<const nsINode*, Entry> sCache;
-};
-
-nsTHashMap<const nsINode*, ChildIndexCache::Entry> ChildIndexCache::sCache;
-
 nsINode::~nsINode() {
-  ChildIndexCache::Remove(this);
   MOZ_ASSERT(!HasSlots(), "LastRelease was not called?");
   MOZ_ASSERT(mSubtreeRoot == this, "Didn't restore state properly?");
 }
@@ -1995,7 +1874,6 @@ void nsINode::InsertChildToChildList(nsIContent* aKid,
   MOZ_ASSERT(aNextSibling);
 
   RemoveFromCache(this);
-  ChildIndexCache::Invalidate(this);
 
   nsIContent* previousSibling = aNextSibling->mPreviousOrLastSibling;
   aNextSibling->mPreviousOrLastSibling = aKid;
@@ -2017,7 +1895,6 @@ void nsINode::DisconnectChild(nsIContent* aKid) {
   MOZ_ASSERT(GetChildCount() > 0);
 
   RemoveFromCache(this);
-  ChildIndexCache::Invalidate(this);
 
   nsIContent* previousSibling = aKid->GetPreviousSibling();
   nsCOMPtr<nsIContent> ref = aKid;
@@ -2043,10 +1920,6 @@ void nsINode::DisconnectChild(nsIContent* aKid) {
 nsIContent* nsINode::GetChildAt_Deprecated(uint32_t aIndex) const {
   if (aIndex >= GetChildCount()) {
     return nullptr;
-  }
-
-  if (GetChildCount() >= ChildIndexCache::kThreshold) {
-    return ChildIndexCache::GetChildAt(this, aIndex);
   }
 
   nsIContent* child = mFirstChild;
@@ -2100,10 +1973,6 @@ Maybe<uint32_t> nsINode::ComputeIndexOf(const nsINode* aPossibleChild) const {
   if (aPossibleChild == GetLastChild()) {
     MOZ_ASSERT(GetChildCount());
     return Some(GetChildCount() - 1);
-  }
-  const nsIContent* contentChild = nsIContent::FromNode(aPossibleChild);
-  if (contentChild && GetChildCount() >= ChildIndexCache::kThreshold) {
-    return Some(ChildIndexCache::ComputeIndexOf(this, contentChild));
   }
 
   if (MaybeCachesComputedIndex()) {
