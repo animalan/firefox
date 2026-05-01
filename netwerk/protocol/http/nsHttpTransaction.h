@@ -161,7 +161,7 @@ class nsHttpTransaction final : public nsAHttpTransaction,
                                     bool onlyIfNull = false);
   void SetResponseEnd(mozilla::TimeStamp timeStamp, bool onlyIfNull = false);
 
-  [[nodiscard]] bool Do0RTT(bool aCanSendEarlyData) override;
+  [[nodiscard]] bool Do0RTT() override;
   [[nodiscard]] nsresult Finish0RTT(bool aRestart,
                                     bool aAlpnChanged /* ignored */) override;
 
@@ -627,8 +627,8 @@ class nsHttpTransaction final : public nsAHttpTransaction,
   Atomic<bool, Relaxed> mIsForWebTransport{false};
   bool mIsResettingForTunnelConn = false;
 
-  bool mResumptionAttempted = false;
-  bool ShouldRestartOnResumptionError(nsresult reason);
+  bool mEarlyDataWasAvailable = false;
+  bool ShouldRestartOn0RttError(nsresult reason);
 
   nsCOMPtr<nsIEarlyHintObserver> mEarlyHintObserver MOZ_GUARDED_BY(mLock);
   // This hash key is set when a transaction is inserted into the connection
