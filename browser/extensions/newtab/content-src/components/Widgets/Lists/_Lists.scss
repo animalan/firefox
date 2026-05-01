@@ -61,7 +61,6 @@
   --lists-size-transition-duration: 180ms;
   --lists-size-transition-easing: ease;
 
-  background: var(--lists-surface-color);
   border-radius: var(--border-radius-large);
   padding-block-start: var(--space-medium);
   // @backward-compat { version 150 } D281466/D283723 renamed design tokens; remove once Firefox 150 is on Release.
@@ -103,10 +102,6 @@
   position: relative;
   display: flex;
   flex-direction: column;
-
-  &:hover {
-    background: var(--lists-surface-color);
-  }
 
   @media (forced-colors: active) {
     --lists-surface-color: Canvas;

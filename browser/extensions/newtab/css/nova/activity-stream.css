@@ -4698,7 +4698,6 @@ button.arrow-button:dir(rtl) {
   --widget-celebration-subhead-delay: 280ms;
   --lists-size-transition-duration: 180ms;
   --lists-size-transition-easing: ease;
-  background: var(--lists-surface-color);
   border-radius: var(--border-radius-large);
   padding-block-start: var(--space-medium);
   box-shadow: var(--card-box-shadow, var(--box-shadow-card));
@@ -4733,9 +4732,6 @@ button.arrow-button:dir(rtl) {
 }
 .darkWallpaper .classic-enabled .lists .empty-list {
   color-scheme: dark;
-}
-.lists:hover {
-  background: var(--lists-surface-color);
 }
 @media (forced-colors: active) {
   .lists {
