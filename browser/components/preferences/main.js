@@ -322,6 +322,7 @@ Preferences.addSetting(
       return !this.startWithLastProfile || !launchOnLoginApproved.value;
     },
     onUserChange(checked) {
+      Glean.launchOnLogin.userToggle.record({ enabled: checked });
       if (checked) {
         // windowsLaunchOnLogin has been checked: create registry key or shortcut
         // The shortcut is created with the same AUMID as Firefox itself. However,
