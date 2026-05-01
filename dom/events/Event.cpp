@@ -291,7 +291,7 @@ already_AddRefed<Document> Event::GetDocument() const {
     return nullptr;
   }
 
-  nsIGlobalObject* global = eventTarget->GetOwnerGlobal();
+  nsIGlobalObject* global = eventTarget->GetRelevantGlobal();
   if (!global) {
     return nullptr;
   }
@@ -383,7 +383,7 @@ bool Event::ShouldIgnoreChromeEventTargetListener() const {
   if (NS_WARN_IF(!et)) {
     return false;
   }
-  nsIGlobalObject* global = et->GetOwnerGlobal();
+  nsIGlobalObject* global = et->GetRelevantGlobal();
   if (NS_WARN_IF(!global)) {
     return false;
   }

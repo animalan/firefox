@@ -255,7 +255,7 @@ class nsGlobalWindowOuter final : public mozilla::dom::EventTarget,
   mozilla::EventListenerManager* GetOrCreateListenerManager() override;
   bool ComputeDefaultWantsUntrusted(mozilla::ErrorResult& aRv) final;
 
-  nsIGlobalObject* GetOwnerGlobal() const override;
+  nsIGlobalObject* GetRelevantGlobal() const override;
 
   EventTarget* GetTargetForEventTargetChain() override;
 

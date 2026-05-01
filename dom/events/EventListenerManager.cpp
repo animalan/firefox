@@ -1368,7 +1368,7 @@ already_AddRefed<nsPIDOMWindowInner> EventListenerManager::WindowFromListener(
         // listener->mListener.GetXPCOMCallback().
         // In most cases, it would be the same as for
         // the target, so let's do that.
-        if (nsIGlobalObject* global = mTarget->GetOwnerGlobal()) {
+        if (nsIGlobalObject* global = mTarget->GetRelevantGlobal()) {
           innerWindow = global->GetAsInnerWindow();
         }
       }

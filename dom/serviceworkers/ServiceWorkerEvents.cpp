@@ -1185,7 +1185,8 @@ already_AddRefed<PushEvent> PushEvent::Constructor(
       aRv.Throw(rv);
       return nullptr;
     }
-    e->mData = new PushMessageData(aOwner->GetOwnerGlobal(), std::move(bytes));
+    e->mData =
+        new PushMessageData(aOwner->GetRelevantGlobal(), std::move(bytes));
   }
   return e.forget();
 }

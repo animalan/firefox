@@ -120,7 +120,7 @@ nsGlobalWindowInner* nsWindowRoot::GetInnerWindow() {
   return nsGlobalWindowInner::Cast(mWindow->GetCurrentInnerWindow());
 }
 
-nsIGlobalObject* nsWindowRoot::GetOwnerGlobal() const {
+nsIGlobalObject* nsWindowRoot::GetRelevantGlobal() const {
   nsCOMPtr<nsIGlobalObject> global =
       do_QueryInterface(mWindow->GetCurrentInnerWindow());
   // We're still holding a ref to it, so returning the raw pointer is ok...

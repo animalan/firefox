@@ -60,7 +60,7 @@ NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(SerialPort)
 NS_INTERFACE_MAP_END_INHERITING(DOMEventTargetHelper)
 
 SerialPort::SerialPort(const IPCSerialPortInfo& aInfo, Serial* aSerial)
-    : DOMEventTargetHelper(aSerial->GetOwnerGlobal()),
+    : DOMEventTargetHelper(aSerial->GetRelevantGlobal()),
       mSerial(aSerial),
       mInfo(aInfo) {
   nsPIDOMWindowInner* window = aSerial->GetOwnerWindow();
@@ -169,7 +169,7 @@ void SerialPort::GetEventTargetParent(EventChainPreVisitor& aVisitor) {
 
 already_AddRefed<Promise> SerialPort::Open(const SerialOptions& aOptions,
                                            ErrorResult& aRv) {
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
@@ -313,7 +313,7 @@ already_AddRefed<Promise> SerialPort::Open(const SerialOptions& aOptions,
 
 already_AddRefed<Promise> SerialPort::SetSignals(
     const SerialOutputSignals& aSignals, ErrorResult& aRv) {
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
@@ -391,7 +391,7 @@ already_AddRefed<Promise> SerialPort::SetSignals(
 }
 
 already_AddRefed<Promise> SerialPort::GetSignals(ErrorResult& aRv) {
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
@@ -459,7 +459,7 @@ already_AddRefed<Promise> SerialPort::GetSignals(ErrorResult& aRv) {
 
 // https://wicg.github.io/serial/#dom-serialport-close
 already_AddRefed<Promise> SerialPort::Close(ErrorResult& aRv) {
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
@@ -535,7 +535,7 @@ already_AddRefed<Promise> SerialPort::Close(ErrorResult& aRv) {
 }
 
 already_AddRefed<Promise> SerialPort::Forget(ErrorResult& aRv) {
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
@@ -773,7 +773,7 @@ ReadableStream* SerialPort::CreateReadableStream() {
   }
 
   AutoJSAPI jsapi;
-  if (!jsapi.Init(GetOwnerGlobal())) {
+  if (!jsapi.Init(GetRelevantGlobal())) {
     return nullptr;
   }
 
@@ -781,7 +781,8 @@ ReadableStream* SerialPort::CreateReadableStream() {
   ErrorResult erv;
 
   nsCOMPtr<nsIAsyncInputStream> readInput = receiver.get();
-  auto readableStream = MakeRefPtr<SerialByteReadableStream>(GetOwnerGlobal());
+  auto readableStream =
+      MakeRefPtr<SerialByteReadableStream>(GetRelevantGlobal());
   RefPtr readAlgorithms =
       MakeRefPtr<SerialPortReadAlgorithms>(cx, readInput, readableStream, this);
   // Use a zero high water mark: the DataPipe itself provides buffering
@@ -827,7 +828,7 @@ WritableStream* SerialPort::CreateWritableStream() {
   }
 
   AutoJSAPI jsapi;
-  if (!jsapi.Init(GetOwnerGlobal())) {
+  if (!jsapi.Init(GetRelevantGlobal())) {
     return nullptr;
   }
 
@@ -836,9 +837,9 @@ WritableStream* SerialPort::CreateWritableStream() {
 
   nsCOMPtr<nsIAsyncOutputStream> writeOutput = sender.get();
   RefPtr writeAlgorithms = MakeRefPtr<SerialPortWriteAlgorithms>(
-      GetOwnerGlobal(), writeOutput, this);
+      GetRelevantGlobal(), writeOutput, this);
   mWritable = WritableStream::CreateNative(
-      cx, *GetOwnerGlobal(), *writeAlgorithms,
+      cx, *GetRelevantGlobal(), *writeAlgorithms,
       Some(static_cast<double>(mBufferSize)), nullptr, erv);
   if (erv.Failed()) {
     return nullptr;
@@ -905,7 +906,7 @@ void SerialPort::SettleClosePromise(nsresult aResult) {
 }
 
 already_AddRefed<Promise> SerialPort::CloseStreams() {
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     return nullptr;
   }

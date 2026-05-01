@@ -204,7 +204,7 @@ class EventTarget : public nsISupports, public nsWrapperCache {
   MOZ_CAN_RUN_SCRIPT_BOUNDARY void DispatchEvent(Event& aEvent,
                                                  ErrorResult& aRv);
 
-  nsIGlobalObject* GetParentObject() const { return GetOwnerGlobal(); }
+  nsIGlobalObject* GetParentObject() const { return GetRelevantGlobal(); }
 
   // Note, this takes the type in onfoo form!
   EventHandlerNonNull* GetEventHandler(const nsAString& aType) {
@@ -225,7 +225,8 @@ class EventTarget : public nsISupports, public nsWrapperCache {
   // The global object this event target is associated with, if any.
   // This may be an inner window or some other global object.  This
   // will never be an outer window.
-  virtual nsIGlobalObject* GetOwnerGlobal() const = 0;
+  // https://html.spec.whatwg.org/#relevant
+  virtual nsIGlobalObject* GetRelevantGlobal() const = 0;
 
   /**
    * Get the event listener manager, creating it if it does not already exist.

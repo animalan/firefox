@@ -69,8 +69,8 @@ class DOMEventTargetHelper : public dom::EventTarget,
 
   NS_INLINE_DECL_STATIC_IID(NS_DOMEVENTTARGETHELPER_IID)
 
-  nsIGlobalObject* GetOwnerGlobal() const override {
-    return GlobalTeardownObserver::GetOwnerGlobal();
+  nsIGlobalObject* GetRelevantGlobal() const override {
+    return GlobalTeardownObserver::GetRelevantGlobal();
   }
 
   static DOMEventTargetHelper* FromSupports(nsISupports* aSupports) {

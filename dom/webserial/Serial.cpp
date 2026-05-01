@@ -349,7 +349,7 @@ already_AddRefed<Promise> Serial::RequestPort(
 }
 
 already_AddRefed<Promise> Serial::GetPorts(ErrorResult& aRv) {
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.ThrowInvalidStateError("No global object available");
     return nullptr;
@@ -708,7 +708,7 @@ already_AddRefed<Promise> Serial::SimulateDeviceConnection(
     return nullptr;
   }
 
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
@@ -740,7 +740,7 @@ already_AddRefed<Promise> Serial::SimulateDeviceDisconnection(
     return nullptr;
   }
 
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
@@ -769,7 +769,7 @@ already_AddRefed<Promise> Serial::RemoveAllMockDevices(ErrorResult& aRv) {
     return nullptr;
   }
 
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;
@@ -796,7 +796,7 @@ already_AddRefed<Promise> Serial::ResetToDefaultMockDevices(ErrorResult& aRv) {
     return nullptr;
   }
 
-  nsIGlobalObject* global = GetOwnerGlobal();
+  nsIGlobalObject* global = GetRelevantGlobal();
   if (!global) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;

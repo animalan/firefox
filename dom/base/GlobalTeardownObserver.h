@@ -21,7 +21,7 @@ class GlobalTeardownObserver
                                   bool aHasOrHasHadOwnerWindow = false);
 
   nsGlobalWindowInner* GetOwnerWindow() const;
-  nsIGlobalObject* GetOwnerGlobal() const { return mParentObject; }
+  nsIGlobalObject* GetRelevantGlobal() const { return mParentObject; }
   bool HasOrHasHadOwnerWindow() const { return mHasOrHasHadOwnerWindow; }
 
   void GetParentObject(nsIScriptGlobalObject** aParentObject) {

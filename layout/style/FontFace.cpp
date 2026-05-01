@@ -301,11 +301,11 @@ void FontFace::MaybeReject(FontFaceLoadedRejectReason aReason,
 }
 
 void FontFace::EnsurePromise() {
-  if (mLoaded || !mImpl || !GetOwnerGlobal()) {
+  if (mLoaded || !mImpl || !GetRelevantGlobal()) {
     return;
   }
 
-  mLoaded = Promise::CreateInfallible(GetOwnerGlobal());
+  mLoaded = Promise::CreateInfallible(GetRelevantGlobal());
 
   if (mImpl->Status() == FontFaceLoadStatus::Loaded) {
     mLoaded->MaybeResolve(this);

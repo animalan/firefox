@@ -1288,7 +1288,7 @@ class nsINode : public mozilla::dom::EventTarget {
 
   bool IsApzAware() const override;
 
-  nsIGlobalObject* GetOwnerGlobal() const override;
+  nsIGlobalObject* GetRelevantGlobal() const override;
   // The global of our owner document, as opposed to our global, which might be
   // different in the case of adoption.
   nsIGlobalObject* GetDocumentGlobal() const;

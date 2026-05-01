@@ -355,7 +355,7 @@ ipc::IPCResult WebGPUChild::RecvUncapturedError(RawId aDeviceId,
 
   // We don't want to spam the errors to the console indefinitely
   if (device->CheckNewWarning(aMessage)) {
-    JsWarning(device->GetOwnerGlobal(), aMessage);
+    JsWarning(device->GetRelevantGlobal(), aMessage);
 
     dom::GPUUncapturedErrorEventInit init;
     switch (aType) {

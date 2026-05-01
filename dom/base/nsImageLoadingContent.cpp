@@ -109,7 +109,7 @@ class ImageLoadTask : public MicroTaskRunnable {
   }
 
   bool Suppressed() override {
-    nsIGlobalObject* global = mElement->AsContent()->GetOwnerGlobal();
+    nsIGlobalObject* global = mElement->AsContent()->GetRelevantGlobal();
     return global && global->IsInSyncOperation();
   }
 
@@ -443,7 +443,7 @@ already_AddRefed<Promise> nsImageLoadingContent::QueueDecodeAsync(
     }
 
     bool Suppressed() override {
-      // XXX Probably should use mOwner->GetOwnerGlobal()
+      // XXX Probably should use mOwner->GetRelevantGlobal()
       nsIGlobalObject* global = mOwner->GetOurOwnerDoc()->GetScopeObject();
       return global && global->IsInSyncOperation();
     }
@@ -1282,7 +1282,7 @@ already_AddRefed<Promise> nsImageLoadingContent::RecognizeCurrentImageText(
     return nullptr;
   }
 
-  // XXX Probably should use this->GetOwnerGlobal()
+  // XXX Probably should use this->GetRelevantGlobal()
   RefPtr<Promise> domPromise =
       Promise::Create(GetOurOwnerDoc()->GetScopeObject(), aRv);
   if (aRv.Failed()) {
@@ -1362,8 +1362,8 @@ already_AddRefed<Promise> nsImageLoadingContent::RecognizeCurrentImageText(
 
             nsTArray<ImageText> imageTexts(
                 textRecognitionResult.quads().Length());
-            // XXX shouldn't this be GetOwnerGlobal? But it's privileged code so
-            // seems probably fine.
+            // XXX shouldn't this be GetRelevantGlobal? But it's privileged code
+            // so seems probably fine.
             nsIGlobalObject* global = el->GetDocumentGlobal();
 
             for (const auto& quad : textRecognitionResult.quads()) {

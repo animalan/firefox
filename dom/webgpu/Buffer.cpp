@@ -151,7 +151,7 @@ void Buffer::Cleanup() {
     // The array buffers could live longer than us and our shmem, so make sure
     // we clear the external buffer bindings.
     dom::AutoJSAPI jsapi;
-    if (jsapi.Init(mParent->GetOwnerGlobal())) {
+    if (jsapi.Init(mParent->GetRelevantGlobal())) {
       IgnoredErrorResult rv;
       UnmapArrayBuffers(jsapi.cx(), rv);
     }

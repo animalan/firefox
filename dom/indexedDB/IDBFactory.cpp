@@ -401,7 +401,7 @@ void IDBFactory::UpdateActiveDatabaseCount(int32_t aDelta) {
                         (mActiveDatabaseCount + aDelta) < mActiveDatabaseCount);
   mActiveDatabaseCount += aDelta;
 
-  if (nsIGlobalObject* global = GetOwnerGlobal()) {
+  if (nsIGlobalObject* global = GetRelevantGlobal()) {
     global->UpdateActiveIndexedDBDatabaseCount(aDelta);
   }
 }
@@ -448,12 +448,12 @@ RefPtr<IDBOpenDBRequest> IDBFactory::DeleteDatabase(JSContext* aCx,
 
 already_AddRefed<Promise> IDBFactory::Databases(JSContext* const aCx,
                                                 ErrorResult& aRv) {
-  if (NS_WARN_IF(!GetOwnerGlobal())) {
+  if (NS_WARN_IF(!GetRelevantGlobal())) {
     aRv.Throw(NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR);
     return nullptr;
   }
 
-  RefPtr<Promise> promise = Promise::CreateInfallible(GetOwnerGlobal());
+  RefPtr<Promise> promise = Promise::CreateInfallible(GetRelevantGlobal());
   if (!mAllowed) {
     promise->MaybeRejectWithSecurityError(kAccessError);
     return promise.forget();
@@ -670,7 +670,7 @@ RefPtr<IDBOpenDBRequest> IDBFactory::OpenInternal(
     ErrorResult& aRv) {
   MOZ_ASSERT(mAllowed);
 
-  if (NS_WARN_IF(!GetOwnerGlobal())) {
+  if (NS_WARN_IF(!GetRelevantGlobal())) {
     aRv.Throw(NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR);
     return nullptr;
   }
@@ -709,11 +709,11 @@ RefPtr<IDBOpenDBRequest> IDBFactory::OpenInternal(
       return nullptr;
     }
   } else {
-    if (GetOwnerGlobal()->GetStorageAccess() ==
+    if (GetRelevantGlobal()->GetStorageAccess() ==
         StorageAccess::ePrivateBrowsing) {
       if (NS_IsMainThread()) {
         SetUseCounter(
-            GetOwnerGlobal()->GetGlobalJSObject(),
+            GetRelevantGlobal()->GetGlobalJSObject(),
             aDeleting
                 ? eUseCounter_custom_PrivateBrowsingIDBFactoryOpen
                 : eUseCounter_custom_PrivateBrowsingIDBFactoryDeleteDatabase);
@@ -767,7 +767,7 @@ RefPtr<IDBOpenDBRequest> IDBFactory::OpenInternal(
   }
 
   RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::Create(
-      aCx, SafeRefPtr{this, AcquireStrongRefFromRawPtr{}}, GetOwnerGlobal());
+      aCx, SafeRefPtr{this, AcquireStrongRefFromRawPtr{}}, GetRelevantGlobal());
   if (!request) {
     MOZ_ASSERT(!NS_IsMainThread());
     aRv.ThrowUncatchableException();
