@@ -10,6 +10,7 @@
 #include <CoreLocation/CLLocationManagerDelegate.h>
 
 #include "nsAString.h"
+#include "MainThreadUtils.h"
 #include "mozilla/Services.h"
 #include "nsIObserverService.h"
 
