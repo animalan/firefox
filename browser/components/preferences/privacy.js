@@ -9,20 +9,22 @@
 /* import-globals-from extensionControlled.js */
 /* import-globals-from preferences.js */
 
+// import the new Permissions & Data settings pane code.
+const { PRIVACY_SEGMENTATION_PREF } = ChromeUtils.importESModule(
+  "chrome://browser/content/preferences/config/permissions-data.mjs",
+  { global: "current" }
+);
+
 const { PrivacySettingHelpers } = ChromeUtils.importESModule(
   "chrome://browser/content/preferences/config/privacy.mjs",
   { global: "current" }
 );
-
-const PREF_UPLOAD_ENABLED = "datareporting.healthreport.uploadEnabled";
 
 const TRACKING_PROTECTION_KEY = "websites.trackingProtectionMode";
 const TRACKING_PROTECTION_PREFS = [
   "privacy.trackingprotection.enabled",
   "privacy.trackingprotection.pbmode.enabled",
 ];
-const PRIVACY_SEGMENTATION_PREF =
-  "browser.privacySegmentation.preferences.show";
 const CONTENT_BLOCKING_PREFS = [
   "privacy.trackingprotection.enabled",
   "privacy.trackingprotection.pbmode.enabled",
@@ -37,11 +39,6 @@ const CONTENT_BLOCKING_PREFS = [
   "privacy.trackingprotection.allow_list.baseline.enabled",
   "privacy.trackingprotection.allow_list.convenience.enabled",
 ];
-
-const PREF_OPT_OUT_STUDIES_ENABLED = "app.shield.optoutstudies.enabled";
-const PREF_NORMANDY_ENABLED = "app.normandy.enabled";
-
-const PREF_ADDON_RECOMMENDATIONS_ENABLED = "browser.discovery.enabled";
 
 const PREF_PASSWORD_GENERATION_AVAILABLE = "signon.generation.available";
 const { BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN } = Ci.nsICookieService;
