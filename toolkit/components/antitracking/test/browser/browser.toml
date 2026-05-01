@@ -319,9 +319,6 @@ support-files = [
 ["browser_subResources.js"]
 support-files = ["subResources.sjs"]
 
-["browser_subResourcesPartitioned.js"]
-support-files = ["subResources.sjs"]
-
 ["browser_thirdPartyChecks_sandboxed_context.js"]
 support-files = [
   "sandboxedWithImg.html",
