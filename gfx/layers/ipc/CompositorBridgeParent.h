@@ -168,11 +168,9 @@ class CompositorBridgeParentBase : public PCompositorBridgeParent,
       const MaybeExternalImageId& aExternalImageId) = 0;
   virtual bool DeallocPTextureParent(PTextureParent* aActor) = 0;
 
-  virtual PWebRenderBridgeParent* AllocPWebRenderBridgeParent(
+  virtual already_AddRefed<PWebRenderBridgeParent> AllocPWebRenderBridgeParent(
       const PipelineId& pipelineId, const LayoutDeviceIntSize& aSize,
       const WindowKind& aWindowKind) = 0;
-  virtual bool DeallocPWebRenderBridgeParent(
-      PWebRenderBridgeParent* aActor) = 0;
 
   virtual already_AddRefed<PCompositorWidgetParent>
   AllocPCompositorWidgetParent(const CompositorWidgetInitData& aInitData) = 0;
@@ -376,6 +374,8 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase {
   static void ScheduleForcedComposition(const LayersId& aLayersId,
                                         wr::RenderReasons aReasons);
 
+  static void DisconnectWrBridge(WebRenderBridgeParent* aWrBridge);
+
   /**
    * Returns the unique layer tree identifier that corresponds to the root
    * tree of this compositor.
@@ -505,10 +505,9 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase {
     return mVsyncRate;
   }
 
-  PWebRenderBridgeParent* AllocPWebRenderBridgeParent(
+  already_AddRefed<PWebRenderBridgeParent> AllocPWebRenderBridgeParent(
       const wr::PipelineId& aPipelineId, const LayoutDeviceIntSize& aSize,
       const WindowKind& aWindowKind) override;
-  bool DeallocPWebRenderBridgeParent(PWebRenderBridgeParent* aActor) override;
   void EnsureWebRenderBridgeParentInitialized() override;
   RefPtr<WebRenderBridgeParent> GetWebRenderBridgeParent() const;
   Maybe<TimeStamp> GetTestingTimeStamp() const;

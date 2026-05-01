@@ -131,7 +131,7 @@ bool ContentCompositorBridgeParent::DeallocPAPZParent(PAPZParent* aActor) {
   return true;
 }
 
-PWebRenderBridgeParent*
+already_AddRefed<PWebRenderBridgeParent>
 ContentCompositorBridgeParent::AllocPWebRenderBridgeParent(
     const wr::PipelineId& aPipelineId, const LayoutDeviceIntSize& aSize,
     const WindowKind& aWindowKind) {
@@ -175,18 +175,15 @@ ContentCompositorBridgeParent::AllocPWebRenderBridgeParent(
                         root.get())
             .get());
     nsCString error("NO_PARENT");
-    WebRenderBridgeParent* parent =
-        WebRenderBridgeParent::CreateDestroyed(aPipelineId, std::move(error));
-    parent->AddRef();  // IPDL reference
-    return parent;
+    return WebRenderBridgeParent::CreateDestroyed(aPipelineId,
+                                                  std::move(error));
   }
 
   api = api->Clone();
   RefPtr<AsyncImagePipelineManager> holder = root->AsyncImageManager();
-  WebRenderBridgeParent* parent = new WebRenderBridgeParent(
+  auto parent = MakeRefPtr<WebRenderBridgeParent>(
       this, aPipelineId, root->CompositorScheduler(), std::move(api),
       std::move(holder), cbp->GetVsyncInterval());
-  parent->AddRef();  // IPDL reference
 
   {  // scope lock
     StaticMonitorAutoLock lock(CompositorBridgeParent::sIndirectLayerTreesLock);
@@ -195,15 +192,7 @@ ContentCompositorBridgeParent::AllocPWebRenderBridgeParent(
     CompositorBridgeParent::sIndirectLayerTrees[layersId].mWrBridge = parent;
   }
 
-  return parent;
-}
-
-bool ContentCompositorBridgeParent::DeallocPWebRenderBridgeParent(
-    PWebRenderBridgeParent* aActor) {
-  WebRenderBridgeParent* parent = static_cast<WebRenderBridgeParent*>(aActor);
-  EraseLayerState(wr::AsLayersId(parent->PipelineId()));
-  parent->Release();  // IPDL reference
-  return true;
+  return parent.forget();
 }
 
 mozilla::ipc::IPCResult ContentCompositorBridgeParent::RecvNotifyChildCreated(

@@ -80,7 +80,9 @@ class WebRenderBridgeParent final : public PWebRenderBridgeParent,
                         RefPtr<AsyncImagePipelineManager>&& aImageMgr,
                         TimeDuration aVsyncRate);
 
-  static WebRenderBridgeParent* CreateDestroyed(
+  WebRenderBridgeParent(const wr::PipelineId& aPipelineId, nsCString&& aError);
+
+  static already_AddRefed<WebRenderBridgeParent> CreateDestroyed(
       const wr::PipelineId& aPipelineId, nsCString&& aError);
 
   // Ensures the WebRenderBridgeParent has completed initialization, returning
@@ -336,7 +338,6 @@ class WebRenderBridgeParent final : public PWebRenderBridgeParent,
  private:
   class ScheduleSharedSurfaceRelease;
 
-  WebRenderBridgeParent(const wr::PipelineId& aPipelineId, nsCString&& aError);
   virtual ~WebRenderBridgeParent();
 
   bool ProcessEmptyTransactionUpdates(TransactionData& aData,

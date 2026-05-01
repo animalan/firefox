@@ -589,21 +589,6 @@ bool CompositorBridgeChild::DeallocPAPZCTreeManagerChild(
 
 // -
 
-PWebRenderBridgeChild* CompositorBridgeChild::AllocPWebRenderBridgeChild(
-    const wr::PipelineId& aPipelineId, const LayoutDeviceIntSize&,
-    const WindowKind&) {
-  WebRenderBridgeChild* child = new WebRenderBridgeChild(aPipelineId);
-  child->AddIPDLReference();
-  return child;
-}
-
-bool CompositorBridgeChild::DeallocPWebRenderBridgeChild(
-    PWebRenderBridgeChild* aActor) {
-  WebRenderBridgeChild* child = static_cast<WebRenderBridgeChild*>(aActor);
-  child->ReleaseIPDLReference();
-  return true;
-}
-
 uint64_t CompositorBridgeChild::GetNextResourceId() {
   ++mResourceId;
   MOZ_RELEASE_ASSERT(mResourceId != UINT32_MAX);

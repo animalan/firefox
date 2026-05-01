@@ -151,10 +151,9 @@ class ContentCompositorBridgeParent final : public CompositorBridgeParentBase {
   PAPZParent* AllocPAPZParent(const LayersId& aLayersId) override;
   bool DeallocPAPZParent(PAPZParent* aActor) override;
 
-  PWebRenderBridgeParent* AllocPWebRenderBridgeParent(
+  already_AddRefed<PWebRenderBridgeParent> AllocPWebRenderBridgeParent(
       const wr::PipelineId& aPipelineId, const LayoutDeviceIntSize& aSize,
       const WindowKind& aWindowKind) override;
-  bool DeallocPWebRenderBridgeParent(PWebRenderBridgeParent* aActor) override;
   // Nothing to do as content WebRenderBridgeParents are fully initialized at
   // construction time.
   void EnsureWebRenderBridgeParentInitialized() override {}

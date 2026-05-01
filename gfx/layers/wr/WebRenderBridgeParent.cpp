@@ -400,9 +400,9 @@ WebRenderBridgeParent::~WebRenderBridgeParent() {
 }
 
 /* static */
-WebRenderBridgeParent* WebRenderBridgeParent::CreateDestroyed(
+already_AddRefed<WebRenderBridgeParent> WebRenderBridgeParent::CreateDestroyed(
     const wr::PipelineId& aPipelineId, nsCString&& aError) {
-  return new WebRenderBridgeParent(aPipelineId, std::move(aError));
+  return MakeAndAddRef<WebRenderBridgeParent>(aPipelineId, std::move(aError));
 }
 
 bool WebRenderBridgeParent::EnsureInitialized() {
@@ -2454,7 +2454,10 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvEndWheelTransaction(
   return IPC_OK();
 }
 
-void WebRenderBridgeParent::ActorDestroy(ActorDestroyReason aWhy) { Destroy(); }
+void WebRenderBridgeParent::ActorDestroy(ActorDestroyReason aWhy) {
+  Destroy();
+  CompositorBridgeParent::DisconnectWrBridge(this);
+}
 
 void WebRenderBridgeParent::ResetPreviousSampleTime() {
   if (RefPtr<OMTASampler> sampler = GetOMTASampler()) {

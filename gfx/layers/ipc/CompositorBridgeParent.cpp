@@ -102,6 +102,8 @@ MOZ_RUNINIT CompositorBridgeParent::LayerTreeMap
     CompositorBridgeParent::sIndirectLayerTrees MOZ_GUARDED_BY(
         CompositorBridgeParent::sIndirectLayerTreesLock);
 
+void EraseLayerState(LayersId aId);
+
 CompositorBridgeParentBase::CompositorBridgeParentBase(
     CompositorManagerParent* aManager)
     : mCanSend(true), mCompositorManager(aManager) {}
@@ -888,6 +890,24 @@ void CompositorBridgeParent::ScheduleForcedComposition(
   }
 }
 
+/* static */ void CompositorBridgeParent::DisconnectWrBridge(
+    WebRenderBridgeParent* aWrBridge) {
+  auto layersId = wr::AsLayersId(aWrBridge->PipelineId());
+
+  if (!aWrBridge->IsRootWebRenderBridgeParent()) {
+    EraseLayerState(layersId);
+    return;
+  }
+
+  StaticMonitorAutoLock lock(sIndirectLayerTreesLock);
+  auto it = sIndirectLayerTrees.find(layersId);
+  if (it != sIndirectLayerTrees.end()) {
+    MOZ_ASSERT_IF(it->second.mWrBridge, it->second.mWrBridge == aWrBridge);
+    it->second.mWrBridge = nullptr;
+    it->second.mWebRenderAPI = nullptr;
+  }
+}
+
 mozilla::ipc::IPCResult CompositorBridgeParent::RecvNotifyChildCreated(
     const LayersId& child, CompositorOptions* aOptions) {
   StaticMonitorAutoLock lock(sIndirectLayerTreesLock);
@@ -1053,7 +1073,8 @@ mozilla::ipc::IPCResult CompositorBridgeParent::RecvAdoptChild(
   return IPC_OK();
 }
 
-PWebRenderBridgeParent* CompositorBridgeParent::AllocPWebRenderBridgeParent(
+already_AddRefed<PWebRenderBridgeParent>
+CompositorBridgeParent::AllocPWebRenderBridgeParent(
     const wr::PipelineId& aPipelineId, const LayoutDeviceIntSize& aSize,
     const WindowKind& aWindowKind) {
   MOZ_ASSERT(wr::AsLayersId(aPipelineId) == mRootLayerTreeID);
@@ -1118,29 +1139,14 @@ PWebRenderBridgeParent* CompositorBridgeParent::AllocPWebRenderBridgeParent(
         self->EnsureWebRenderBridgeParentInitialized();
       });
 
-  mWrBridge = new WebRenderBridgeParent(this, aPipelineId, mWidget, mVsyncRate);
-  mWrBridge.get()->AddRef();  // IPDL reference
-  {                           // scope lock
+  mWrBridge =
+      MakeRefPtr<WebRenderBridgeParent>(this, aPipelineId, mWidget, mVsyncRate);
+  {  // scope lock
     StaticMonitorAutoLock lock(sIndirectLayerTreesLock);
     MOZ_ASSERT(sIndirectLayerTrees[mRootLayerTreeID].mWrBridge == nullptr);
     sIndirectLayerTrees[mRootLayerTreeID].mWrBridge = mWrBridge;
   }
-  return mWrBridge;
-}
-
-bool CompositorBridgeParent::DeallocPWebRenderBridgeParent(
-    PWebRenderBridgeParent* aActor) {
-  WebRenderBridgeParent* parent = static_cast<WebRenderBridgeParent*>(aActor);
-  {
-    StaticMonitorAutoLock lock(sIndirectLayerTreesLock);
-    auto it = sIndirectLayerTrees.find(wr::AsLayersId(parent->PipelineId()));
-    if (it != sIndirectLayerTrees.end()) {
-      it->second.mWrBridge = nullptr;
-      it->second.mWebRenderAPI = nullptr;
-    }
-  }
-  parent->Release();  // IPDL reference
-  return true;
+  return do_AddRef(mWrBridge);
 }
 
 void CompositorBridgeParent::EnsureWebRenderBridgeParentInitialized() {

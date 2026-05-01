@@ -184,11 +184,6 @@ class CompositorBridgeChild final : public PCompositorBridgeChild,
   PAPZChild* AllocPAPZChild(const LayersId& aLayersId);
   bool DeallocPAPZChild(PAPZChild* aActor);
 
-  PWebRenderBridgeChild* AllocPWebRenderBridgeChild(
-      const wr::PipelineId& aPipelineId, const LayoutDeviceIntSize&,
-      const WindowKind&);
-  bool DeallocPWebRenderBridgeChild(PWebRenderBridgeChild* aActor);
-
   wr::MaybeExternalImageId GetNextExternalImageId() override;
 
   wr::PipelineId GetNextPipelineId();
