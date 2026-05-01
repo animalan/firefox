@@ -99,9 +99,9 @@ class WebSocketImplProxy final : public nsIWebSocketImpl,
     mOwner = nullptr;
   }
 
-  void BindToOwner(nsIGlobalObject* aOwner) {
-    GlobalTeardownObserver::BindToOwner(aOwner);
-    GlobalFreezeObserver::BindToOwner(aOwner);
+  void BindToGlobal(nsIGlobalObject* aOwner) {
+    GlobalTeardownObserver::BindToGlobal(aOwner);
+    GlobalFreezeObserver::BindToGlobal(aOwner);
   }
 
   void DisconnectFromOwner() override;
@@ -1645,7 +1645,7 @@ nsresult WebSocketImpl::Init(nsIGlobalObject* aWindowGlobal, JSContext* aCx,
   RefPtr<WebSocketImplProxy> proxy;
   if (mIsMainThread) {
     proxy = new WebSocketImplProxy(this);
-    proxy->BindToOwner(aWindowGlobal);
+    proxy->BindToGlobal(aWindowGlobal);
   }
 
   if (!mIsMainThread) {
