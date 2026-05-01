@@ -2033,11 +2033,6 @@ tracking-manage-exceptions =
 
 ## Privacy Section - Permissions
 
-permissions-data-section =
-    .heading = Permissions and data
-
-pane-permissions-data-title = Permissions and data
-
 permissions-header3 =
     .label = Permissions
     .description = Manage what websites can access, control, or trigger.

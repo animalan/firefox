@@ -62,7 +62,6 @@ For the purposes of this telemetry a set of areas are defined:
   * ``preferences-paneAccessibility``
   * ``preferences-paneLanguages``
   * ``preferences-paneAbout``
-  * ``preferences-panePermissionsData``
 
 Widget Identifiers
 ------------------
