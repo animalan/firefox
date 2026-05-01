@@ -1798,9 +1798,9 @@
 /* search bar popup */
 
 #PopupSearchAutoComplete {
-  --panel-background-color: var(--toolbar-field-focus-background-color);
+  --panel-color: var(--toolbar-field-focus-color);
+  --panel-background: var(--toolbar-field-focus-background-color);
   --panel-border-color: inherit;
-  --panel-text-color: var(--toolbar-field-focus-color);
 }
 
 #PopupSearchAutoComplete::part(content) {

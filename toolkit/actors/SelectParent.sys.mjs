@@ -176,7 +176,7 @@ export var SelectParentHelper = {
           property = "--content-select-scrollbar-width";
         }
         if (property == "color") {
-          property = "--panel-text-color";
+          property = "--panel-color";
         }
         menupopup.style.setProperty(property, value);
       }
@@ -197,7 +197,7 @@ export var SelectParentHelper = {
         menupopup.style.backgroundColor = "";
         // If the background is set, we also make sure we set the color, to
         // prevent contrast issues.
-        menupopup.style.setProperty("--panel-text-color", selectStyle.color);
+        menupopup.style.setProperty("--panel-color", selectStyle.color);
 
         sheet.insertRule(
           `#ContentSelectDropdown > menupopup > :is(menuitem, menucaption):not([_moz-menuactive="true"]) {

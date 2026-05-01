@@ -145,9 +145,10 @@ let propNameAllowlist = [
   // styles, which confuses the test.
   { propName: "--panel-border-radius", isFromDevTools: true },
   { propName: "--panel-padding", isFromDevTools: true },
-  { propName: "--panel-background-color", isFromDevTools: true },
+  { propName: "--panel-background", isFromDevTools: true },
   { propName: "--panel-border-color", isFromDevTools: true },
-  { propName: "--panel-box-shadow", isFromDevTools: true },
+  { propName: "--panel-shadow", isFromDevTools: true },
+  { propName: "--panel-shadow-margin", isFromDevTools: true },
 
   // These variables are set in host CSS but consumed in shadow DOM CSS
   // (content-search-handoff-ui component), which confuses the test.

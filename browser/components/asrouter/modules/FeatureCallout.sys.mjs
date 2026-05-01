@@ -2527,8 +2527,8 @@ export class FeatureCallout {
         // show through the callout background. Put the Menu color behind the
         // panel-background.
         background:
-          "Menu linear-gradient(var(--panel-background-color), var(--panel-background-color))",
-        color: "var(--panel-text-color)",
+          "Menu linear-gradient(var(--panel-background), var(--panel-background))",
+        color: "var(--panel-color)",
         border: "var(--panel-border-color)",
         "accent-color": "var(--fc-primary-button-color)",
         // Button Background
@@ -2575,15 +2575,15 @@ export class FeatureCallout {
         "icon-success-color": "var(--color-accent-attention)",
         // Dismiss Button
         "dismiss-button-background":
-          "Menu linear-gradient(var(--panel-background-color), var(--panel-background-color))",
+          "Menu linear-gradient(var(--panel-background), var(--panel-background))",
         "dismiss-button-background-hover":
-          "Menu linear-gradient(color-mix(in srgb, currentColor 14%, var(--panel-background-color)))",
+          "Menu linear-gradient(color-mix(in srgb, currentColor 14%, var(--panel-background)))",
         "dismiss-button-background-active":
-          "Menu linear-gradient(color-mix(in srgb, currentColor 21%, var(--panel-background-color)))",
+          "Menu linear-gradient(color-mix(in srgb, currentColor 21%, var(--panel-background)))",
       },
       hcm: {
-        background: "var(--panel-background-color)",
-        "dismiss-button-background": "var(--panel-background-color)",
+        background: "var(--panel-background)",
+        "dismiss-button-background": "var(--panel-background)",
         "dismiss-button-background-hover":
           "color-mix(in srgb, currentColor 14%, SelectedItem)",
         "dismiss-button-background-active":
