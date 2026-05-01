@@ -157,6 +157,9 @@ data class GameState(
         return copy(direction = newDirection)
     }
 
+    /**
+     * Food can spawn anywhere except right next to the walls, because that's quite annoying
+     */
     private fun randomGridPoint(): GridPoint = GridPoint(
         Random.nextInt(from = 1, until = numCells - 1),
         Random.nextInt(from = 1, until = numCells - 1),

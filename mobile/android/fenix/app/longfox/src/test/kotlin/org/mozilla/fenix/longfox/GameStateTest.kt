@@ -316,10 +316,13 @@ class GameStateTest {
 
     @Test
     fun `food moves to new position after being eaten`() {
-        val food = GridPoint(5, 6)
+        // Placing the food at a position it would never naturally spawn at.
+        // Food is not allowed to spawn right next to a wall because it's a bit annoying if it does.
+        // This ensures that when it is eaten, there is no chance it will respawn in the same place.
+        val food = GridPoint(0, 0)
         val state = state(
-            direction = Direction.DOWN,
-            fox = listOf(GridPoint(5, 5), GridPoint(5, 4)),
+            direction = Direction.UP,
+            fox = listOf(GridPoint(0, 1), GridPoint(0, 2)),
             food = food,
         ).moveFox()
         assertNotEquals(food, state.food)
