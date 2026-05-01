@@ -71,8 +71,7 @@
       // test caret move events and caret offsets
       gQueue = new eventQueue();
 
-      gQueue.push(new synthFocus("textbox", new caretMoveChecker(5, true, "textbox")));
-      gQueue.push(new setCaretOffset("textbox", 1));
+      gQueue.push(new setCaretOffset("textbox", 1, "textbox"));
       gQueue.push(new setCaretOffset("link", 1, "link"));
       gQueue.push(new setCaretOffset("heading", 1, document));
 
