@@ -656,13 +656,6 @@ nsFocusManager::MoveCaretToFocus(mozIDOMWindowProxy* aWindow) {
       nsCOMPtr<nsIDocShell> docShell = do_QueryInterface(dsti);
       NS_ENSURE_TRUE(docShell, NS_ERROR_FAILURE);
 
-      // don't move the caret for editable documents
-      bool isEditable;
-      docShell->GetEditable(&isEditable);
-      if (isEditable) {
-        return NS_OK;
-      }
-
       RefPtr<PresShell> presShell = docShell->GetPresShell();
       NS_ENSURE_TRUE(presShell, NS_ERROR_FAILURE);
 
@@ -1059,6 +1052,26 @@ nsresult nsFocusManager::ContentRemoved(Document* aDocument,
 
   RefPtr previousFocusedElement = previousFocusedElementPtr;
   RefPtr window = windowPtr;
+
+  // XXX: This is a temporary fix to avoid regressions with sequential
+  //      focus navigation. (But maybe this should still happen when caret
+  //      browsing is enabled?) See bug 2034851.
+  // detachingShadow check is needed because e.g. the UA shadow root is detached
+  // and reattached when an <input> is moved with moveBefore. So this function
+  // will be called on the shadow root while the <input> is in an intermediate
+  // state, which would cause issues if we move the selection there.
+  if (!detachingShadow &&
+      !previousFocusedElement->IsInNativeAnonymousSubtree()) {
+    if (RefPtr selection = window->GetSelection()) {
+      // Move selection here so that focus navigation continues normally.
+      selection->SetAncestorLimiter(nullptr);
+      DebugOnly<nsresult> rv =
+          selection->CollapseInLimiter(previousFocusedElement, 0);
+      NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                           "Selection::CollapseInLimiter failed.");
+    }
+  }
+
   RefPtr<Element> newFocusedElement =
       detachingShadow && focusWithinElement->IsHTMLElement(nsGkAtoms::input)
           ? focusWithinElement
@@ -3248,7 +3261,7 @@ void nsFocusManager::UpdateCaret(bool aMoveCaretToFocus, bool aUpdateVisibility,
     }
   }
 
-  if (!isEditable && aMoveCaretToFocus) {
+  if (aMoveCaretToFocus) {
     MoveCaretToFocus(presShell, aContent);
   }
 
@@ -3277,6 +3290,19 @@ void nsFocusManager::UpdateCaret(bool aMoveCaretToFocus, bool aUpdateVisibility,
 
 void nsFocusManager::MoveCaretToFocus(PresShell* aPresShell,
                                       nsIContent* aContent) {
+  if (aContent && aContent->IsEditable()) {
+    // Caret will be handled by HTMLEditor::OnFocus
+    return;
+  }
+  const auto* textControl = TextControlElement::FromNodeOrNull(aContent);
+  const bool isTextControl =
+      textControl && textControl->IsSingleLineTextControlOrTextArea();
+  // Only change selection on focus if caret browsing is enabled,
+  // or the element is a single-line text control or textarea.
+  // Otherwise we don't move it to be consistent with other browsers.
+  if (!StaticPrefs::accessibility_browsewithcaret() && !isTextControl) {
+    return;
+  }
   nsCOMPtr<Document> doc = aPresShell->GetDocument();
   if (doc) {
     RefPtr<nsFrameSelection> frameSelection = aPresShell->FrameSelection();
