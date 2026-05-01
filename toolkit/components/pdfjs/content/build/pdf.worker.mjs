@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.7.313
- * pdfjsBuild = 34c3ee16f
+ * pdfjsVersion = 5.7.334
+ * pdfjsBuild = 7ebf3a4d7
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -55703,11 +55703,7 @@ class Intersector {
       const h = Math.floor((iMax - iMin) / STEPS);
       for (let i = iMin; i <= iMin + h * STEPS; i += STEPS) {
         for (let j = 0; j <= w; j++) {
-          let existing = this.#grid[i + j];
-          if (!existing) {
-            this.#grid[i + j] = existing = [];
-          }
-          existing.push(intersector);
+          (this.#grid[i + j] ??= []).push(intersector);
         }
       }
     }
@@ -56114,28 +56110,21 @@ function calculateSHA256(data, offset, length) {
 
 const chunkSize = 512;
 class DecryptStream extends DecodeStream {
+  #nextChunk = null;
   constructor(str, maybeLength, decrypt) {
     super(maybeLength);
     this.stream = str;
     this.dict = str.dict;
     this.decrypt = decrypt;
-    this.nextChunk = null;
-    this.initialized = false;
   }
   readBlock() {
-    let chunk;
-    if (this.initialized) {
-      chunk = this.nextChunk;
-    } else {
-      chunk = this.stream.getBytes(chunkSize);
-      this.initialized = true;
-    }
+    let chunk = this.#nextChunk ?? this.stream.getBytes(chunkSize);
     if (!chunk?.length) {
       this.eof = true;
       return;
     }
-    this.nextChunk = this.stream.getBytes(chunkSize);
-    const hasMoreData = this.nextChunk?.length > 0;
+    this.#nextChunk = this.stream.getBytes(chunkSize);
+    const hasMoreData = this.#nextChunk?.length > 0;
     const decrypt = this.decrypt;
     chunk = decrypt(chunk, !hasMoreData);
     const bufferLength = this.bufferLength,
@@ -62399,7 +62388,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "5.7.313";
+    const workerVersion = "5.7.334";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }
