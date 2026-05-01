@@ -46,8 +46,8 @@ static constexpr nsLiteralString kActionSuffix = u"-moz"_ns;
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
   mMacOSNC->OnActivate([[notification userInfo] valueForKey:@"name"],
-                     notification.activationType,
-                     notification.additionalActivationAction);
+                       notification.activationType,
+                       notification.additionalActivationAction);
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter*)center
@@ -83,8 +83,9 @@ class MacOSNotificationInfo final : public nsISupports {
 
  public:
   NS_DECL_ISUPPORTS
-  MacOSNotificationInfo(NSString* name, nsIAlertNotification* aAlertNotification,
-                      nsIObserver* observer, const nsAString& alertCookie);
+  MacOSNotificationInfo(NSString* name,
+                        nsIAlertNotification* aAlertNotification,
+                        nsIObserver* observer, const nsAString& alertCookie);
 
   NSString* mName;
   nsCOMPtr<nsIAlertNotification> mAlertNotification;
@@ -158,7 +159,7 @@ nsresult MacOSNotificationCenter::Init() {
 
 NS_IMETHODIMP
 MacOSNotificationCenter::ShowAlert(nsIAlertNotification* aAlert,
-                                 nsIObserver* aAlertListener) {
+                                   nsIObserver* aAlertListener) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
   NS_ENSURE_ARG(aAlert);
@@ -314,7 +315,7 @@ MacOSNotificationCenter::ShowAlert(nsIAlertNotification* aAlert,
 
 NS_IMETHODIMP
 MacOSNotificationCenter::CloseAlert(const nsAString& aAlertName,
-                                  bool aContextClosed) {
+                                    bool aContextClosed) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
   NSString* alertName = nsCocoaUtils::ToNSString(aAlertName);
@@ -354,7 +355,7 @@ void MacOSNotificationCenter::CloseAlertCocoaString(NSString* aAlertName) {
     if ([aAlertName isEqualToString:macosni->mName]) {
       if (macosni->mObserver) {
         macosni->mObserver->Observe(nullptr, "alertfinished",
-                                  macosni->mCookie.get());
+                                    macosni->mCookie.get());
       }
       mActiveAlerts.RemoveElementAt(i);
       break;
@@ -386,12 +387,12 @@ void MacOSNotificationCenter::OnActivate(
 
             if (actionName == kAlertActionDisable) {
               macosni->mObserver->Observe(nullptr, "alertdisablecallback",
-                                        macosni->mCookie.get());
+                                          macosni->mCookie.get());
               break;
             }
             if (actionName == kAlertActionSettings) {
               macosni->mObserver->Observe(nullptr, "alertsettingscallback",
-                                        macosni->mCookie.get());
+                                          macosni->mCookie.get());
               break;
             }
 
@@ -400,15 +401,15 @@ void MacOSNotificationCenter::OnActivate(
 
             nsCOMPtr<nsIAlertAction> action;
             macosni->mAlertNotification->GetAction(actionName,
-                                                 getter_AddRefs(action));
+                                                   getter_AddRefs(action));
             macosni->mObserver->Observe(action, "alertclickcallback",
-                                      macosni->mCookie.get());
+                                        macosni->mCookie.get());
             break;
           }
           case NSUserNotificationActivationTypeActionButtonClicked:
           default:
             macosni->mObserver->Observe(nullptr, "alertclickcallback",
-                                      macosni->mCookie.get());
+                                        macosni->mCookie.get());
             break;
         }
       }
