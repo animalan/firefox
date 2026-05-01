@@ -91,6 +91,10 @@ class BigInt final : public js::gc::CellWithLengthAndFlags {
   bool hasInlineDigits() const { return digitLength() <= InlineDigitsLength; }
   bool hasHeapDigits() const { return !hasInlineDigits(); }
 
+  // Note: When accessing digits it is strongly preferred to hold on to a
+  // long lived span vs creating on demand, as the hasInlineDigits
+  // call can't be optimized well by C++ compilers. See Bug 2035305
+  // for analysis.
   using Digits = mozilla::Span<Digit>;
   MOZ_ALWAYS_INLINE Digits digits() {
     return Digits(hasInlineDigits() ? inlineDigits_ : heapDigits_,
@@ -101,9 +105,19 @@ class BigInt final : public js::gc::CellWithLengthAndFlags {
     return ConstDigits(hasInlineDigits() ? inlineDigits_ : heapDigits_,
                        digitLength());
   }
-  MOZ_ALWAYS_INLINE Digit digit(size_t idx) const { return digits()[idx]; }
-  MOZ_ALWAYS_INLINE void setDigit(size_t idx, Digit digit) {
-    digits()[idx] = digit;
+
+  // Read a single digit by index. Prefer `digits()` when reading multiple
+  // digits
+  MOZ_ALWAYS_INLINE Digit individualDigit(size_t index) const {
+    MOZ_ASSERT(index < digitLength());
+    return (hasInlineDigits() ? inlineDigits_ : heapDigits_)[index];
+  }
+
+  // Set a single digit by index. Prefer `digits()` when writing multiple
+  // digits
+  MOZ_ALWAYS_INLINE void setIndividualDigit(size_t index, Digit value) {
+    MOZ_ASSERT(index < digitLength());
+    (hasInlineDigits() ? inlineDigits_ : heapDigits_)[index] = value;
   }
 
   bool isZero() const { return digitLength() == 0; }
@@ -436,9 +450,9 @@ class BigInt final : public js::gc::CellWithLengthAndFlags {
   uint64_t uint64FromAbsNonZero() const {
     MOZ_ASSERT(!isZero());
 
-    uint64_t val = digit(0);
+    uint64_t val = individualDigit(0);
     if (DigitBits == 32 && digitLength() > 1) {
-      val |= static_cast<uint64_t>(digit(1)) << 32;
+      val |= static_cast<uint64_t>(individualDigit(1)) << 32;
     }
     return val;
   }
