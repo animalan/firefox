@@ -315,6 +315,13 @@ const CONFIG_PANES = Object.freeze({
     l10nId: "preferences-profiles-group-header",
     groupIds: ["profilePane"],
   },
+  permissionsData: {
+    l10nId: "permissions-data-section",
+    iconSrc: "chrome://browser/skin/permissions.svg",
+    groupIds: ["permissions", "dataCollection"],
+    module: "chrome://browser/content/preferences/config/permissions-data.mjs",
+    visible: () => srdSectionEnabled("permissionsData"),
+  },
   personalizeSmartWindow: {
     parent: "ai",
     l10nId: "ai-window-personalize-header",
@@ -322,18 +329,6 @@ const CONFIG_PANES = Object.freeze({
     badge: "beta",
     groupIds: ["assistantDefaultGroup", "assistantModelGroup", "memoriesGroup"],
     module: "chrome://browser/content/preferences/config/aiFeatures.mjs",
-  },
-  search: {
-    l10nId: "search-section",
-    groupIds: [
-      "defaultEngine",
-      "searchShortcuts",
-      "searchSuggestions",
-      "firefoxSuggest",
-    ],
-    iconSrc: "chrome://browser/skin/preferences/category-search.svg",
-    module: "chrome://browser/content/preferences/config/search.mjs",
-    replaces: "search",
   },
   privacy: {
     l10nId: "pane-privacy-section",
@@ -351,16 +346,24 @@ const CONFIG_PANES = Object.freeze({
       // Bug 1968111: move this elsewhere
       "payments",
       "history2",
-      // Bug 1968118: move these elsewhere
-      "permissions",
-      // Bug 1968118: move these elsewhere
-      "dataCollection",
       "nonTechnicalPrivacy2",
       "dnsOverHttps",
       "connectionLink",
     ],
     module: "chrome://browser/content/preferences/config/privacy.mjs",
     replaces: "privacy",
+  },
+  search: {
+    l10nId: "search-section",
+    groupIds: [
+      "defaultEngine",
+      "searchShortcuts",
+      "searchSuggestions",
+      "firefoxSuggest",
+    ],
+    iconSrc: "chrome://browser/skin/preferences/category-search.svg",
+    module: "chrome://browser/content/preferences/config/search.mjs",
+    replaces: "search",
   },
   sync: {
     l10nId: "account-sync-section",
