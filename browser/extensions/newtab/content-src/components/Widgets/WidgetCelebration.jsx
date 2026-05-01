@@ -4,18 +4,10 @@
 
 import React from "react";
 
-const DEFAULT_GRADIENT_STOPS = [
-  { offset: "0%", color: "var(--color-orange-20)" },
-  { offset: "28%", color: "var(--color-orange-30)" },
-  { offset: "64%", color: "var(--color-pink-30)" },
-  { offset: "100%", color: "var(--color-pink-40)" },
-];
-
 export const WidgetCelebration = ({
   classNamePrefix = "widget-celebration",
   celebrationFrame,
   celebrationId,
-  gradientStops = DEFAULT_GRADIENT_STOPS,
   headlineL10nId,
   illustrationSrc,
   onComplete,
@@ -23,7 +15,7 @@ export const WidgetCelebration = ({
 }) => {
   const className = suffix =>
     suffix ? `${classNamePrefix}-${suffix}` : classNamePrefix;
-  const resolvedIllustrationSrc = illustrationSrc?.endsWith(".svg")
+  const resolvedIllustrationSrc = illustrationSrc.endsWith(".svg")
     ? `${illustrationSrc}?run=${celebrationId}`
     : illustrationSrc;
   const strokeSize = celebrationFrame.strokeInset * 2;
@@ -58,9 +50,10 @@ export const WidgetCelebration = ({
               x2="100%"
               y2="100%"
             >
-              {gradientStops.map(({ offset, color }) => (
-                <stop key={offset} offset={offset} stopColor={color} />
-              ))}
+              <stop offset="0%" stopColor="var(--color-orange-20)" />
+              <stop offset="28%" stopColor="var(--color-orange-30)" />
+              <stop offset="64%" stopColor="var(--color-pink-30)" />
+              <stop offset="100%" stopColor="var(--color-pink-40)" />
             </linearGradient>
           </defs>
           <rect
@@ -100,14 +93,12 @@ export const WidgetCelebration = ({
         <span className={className("headline")} data-l10n-id={headlineL10nId} />
         <span className={className("subhead")} data-l10n-id={subheadL10nId} />
       </div>
-      {resolvedIllustrationSrc && (
-        <img
-          alt=""
-          aria-hidden="true"
-          className={className("illustration")}
-          src={resolvedIllustrationSrc}
-        />
-      )}
+      <img
+        alt=""
+        aria-hidden="true"
+        className={className("illustration")}
+        src={resolvedIllustrationSrc}
+      />
     </div>
   );
 };

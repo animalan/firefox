@@ -21,43 +21,39 @@
   --lists-button-background-hover: var(--color-accent-primary-hover);
   --lists-button-background-active: var(--color-accent-primary-active);
   --lists-button-text-color: var(--button-text-color-primary);
-  --widget-celebration-accent-color: var(--color-accent-primary);
-  --widget-celebration-copy-color: var(--lists-text-color);
-  --widget-celebration-surface-color: var(--lists-surface-color);
-  --widget-celebration-headline-gradient-angle: 90deg;
-  --widget-celebration-headline-gradient-start: var(--color-orange-20);
-  --widget-celebration-headline-gradient-mid-start: var(--color-orange-30);
-  --widget-celebration-headline-gradient-mid-end: var(--color-pink-30);
-  --widget-celebration-headline-gradient-end: var(--color-pink-40);
-  --widget-celebration-tint-color: color-mix(
+  --lists-celebration-accent-color: var(--color-accent-primary);
+  --lists-celebration-headline-gradient-start: var(--color-orange-20);
+  --lists-celebration-headline-gradient-mid-start: var(--color-orange-30);
+  --lists-celebration-headline-gradient-mid-end: var(--color-pink-30);
+  --lists-celebration-headline-gradient-end: var(--color-pink-40);
+  --lists-celebration-tint-color: color-mix(
     in srgb,
     var(--lists-surface-color) 92%,
     transparent
   );
-  --widget-celebration-glow-color: color-mix(
+  --lists-celebration-glow-color: color-mix(
     in srgb,
-    var(--widget-celebration-accent-color) 35%,
+    var(--lists-celebration-accent-color) 35%,
     transparent
   );
-  --widget-celebration-orbit-color: color-mix(
+  --lists-celebration-orbit-color: color-mix(
     in srgb,
     var(--color-violet-40) 70%,
     transparent
   );
-  --widget-celebration-border-draw-duration: 1900ms;
-  --widget-celebration-orbit-duration: 1900ms;
-  --widget-celebration-track-color: color-mix(
+  --lists-celebration-orbit-duration: 1900ms;
+  --lists-celebration-track-color: color-mix(
     in srgb,
-    var(--widget-celebration-accent-color) 45%,
+    var(--lists-celebration-accent-color) 45%,
     transparent
   );
-  --widget-celebration-hold-duration: 3400ms;
-  --widget-celebration-exit-duration: 1200ms;
-  --widget-celebration-enter-ease: cubic-bezier(0.2, 0.9, 0.2, 1);
-  --widget-celebration-headline-delay: 80ms;
-  --widget-celebration-panel-delay: var(--widget-celebration-headline-delay);
-  --widget-celebration-illustration-delay: 180ms;
-  --widget-celebration-subhead-delay: 280ms;
+  --lists-celebration-hold-duration: 3400ms;
+  --lists-celebration-exit-duration: 1200ms;
+  --lists-celebration-enter-ease: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --lists-celebration-headline-delay: 80ms;
+  --lists-celebration-panel-delay: var(--lists-celebration-headline-delay);
+  --lists-celebration-illustration-delay: 180ms;
+  --lists-celebration-subhead-delay: 280ms;
   --lists-size-transition-duration: 180ms;
   --lists-size-transition-easing: ease;
 
@@ -132,7 +128,171 @@
     grid-row: span 4;
   }
 
-  @include widget-celebration-styles('lists-celebration');
+  .lists-celebration {
+    animation:
+      widget-celebration-lifecycle
+      calc(
+        var(--lists-celebration-hold-duration) + var(--lists-celebration-exit-duration)
+      )
+      linear
+      forwards;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--lists-celebration-tint-color);
+      opacity: 0;
+      animation:
+        lists-celebration-tint-in 260ms var(--lists-celebration-enter-ease) forwards,
+        lists-celebration-tint-out var(--lists-celebration-exit-duration) ease forwards;
+      animation-delay: 0ms, var(--lists-celebration-hold-duration);
+    }
+  }
+
+  .lists-celebration-effects {
+    inset: 0;
+    position: absolute;
+
+    svg {
+      display: block;
+      filter: drop-shadow(0 0 10px var(--lists-celebration-glow-color));
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  .lists-celebration-stroke-track,
+  .lists-celebration-stroke,
+  .lists-celebration-stroke-orbit {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 3;
+  }
+
+  .lists-celebration-stroke-track {
+    opacity: 0.22;
+    stroke: var(--lists-celebration-track-color);
+  }
+
+  .lists-celebration-stroke {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation:
+      lists-celebration-border-draw 1900ms var(--lists-celebration-enter-ease) forwards,
+      lists-celebration-border-fade var(--lists-celebration-exit-duration) ease forwards;
+    animation-delay: 0ms, var(--lists-celebration-hold-duration);
+  }
+
+  .lists-celebration-stroke-orbit {
+    opacity: 0;
+    stroke: var(--lists-celebration-orbit-color);
+    stroke-dasharray: 14 86;
+    stroke-dashoffset: 100;
+    stroke-width: 3;
+    animation:
+      lists-celebration-border-orbit-in 240ms var(--lists-celebration-enter-ease) 160ms forwards,
+      lists-celebration-border-orbit-loop var(--lists-celebration-orbit-duration) linear 260ms infinite,
+      lists-celebration-border-orbit-out var(--lists-celebration-exit-duration) ease var(--lists-celebration-hold-duration) forwards;
+  }
+
+  .lists-celebration-copy {
+    align-items: center;
+    color: var(--lists-text-color);
+    display: flex;
+    flex-direction: column;
+    inset-block-start: 52%;
+    inset-inline: var(--space-large);
+    padding-block: var(--space-small);
+    padding-inline: var(--space-medium);
+    position: absolute;
+    text-align: center;
+    transform: translateY(-50%);
+    z-index: 1;
+
+    &::before {
+      display: none;
+      background: color-mix(
+        in srgb,
+        var(--lists-surface-color) 88%,
+        transparent
+      );
+      border-radius: var(--border-radius-large);
+      content: '';
+      inset: 0;
+      opacity: 0;
+      position: absolute;
+      animation:
+        lists-celebration-copy-panel-in 320ms var(--lists-celebration-enter-ease) forwards,
+        lists-celebration-copy-panel-out var(--lists-celebration-exit-duration) ease forwards;
+      animation-delay: var(--lists-celebration-panel-delay), var(--lists-celebration-hold-duration);
+    }
+  }
+
+  .lists-celebration-headline,
+  .lists-celebration-subhead {
+    opacity: 0;
+    position: relative;
+    transform: translateY(8px);
+    z-index: 1;
+  }
+
+  .lists-celebration-headline {
+    display: inline-block;
+    background-image: linear-gradient(
+      90deg,
+      var(--lists-celebration-headline-gradient-start),
+      var(--lists-celebration-headline-gradient-mid-start) 28%,
+      var(--lists-celebration-headline-gradient-mid-end) 64%,
+      var(--lists-celebration-headline-gradient-end)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    font-size: var(--font-size-xlarge);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.2;
+    animation:
+      lists-celebration-copy-in 320ms var(--lists-celebration-enter-ease) forwards,
+      lists-celebration-copy-out var(--lists-celebration-exit-duration) ease forwards;
+    animation-delay: var(--lists-celebration-headline-delay), var(--lists-celebration-hold-duration);
+  }
+
+  .lists-celebration-subhead {
+    color: var(--lists-text-color);
+    font-size: var(--font-size-large);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.2;
+    margin-block-start: var(--space-xxsmall);
+    animation:
+      lists-celebration-copy-in 320ms var(--lists-celebration-enter-ease) forwards,
+      lists-celebration-copy-out var(--lists-celebration-exit-duration) ease forwards;
+    animation-delay: var(--lists-celebration-subhead-delay), var(--lists-celebration-hold-duration);
+  }
+
+  .lists-celebration-illustration {
+    block-size: 132px;
+    inset-block-end: var(--space-xxsmall);
+    inline-size: auto;
+    max-inline-size: 209px;
+    inset-inline-end: var(--space-small);
+    opacity: 0;
+    position: absolute;
+    transform: translateY(12px) scale(0.96);
+    transform-origin: bottom right;
+    animation:
+      lists-celebration-illustration-in 360ms var(--lists-celebration-enter-ease) forwards,
+      lists-celebration-illustration-out var(--lists-celebration-exit-duration) ease forwards;
+    animation-delay: var(--lists-celebration-illustration-delay), var(--lists-celebration-hold-duration);
+  }
 
   .lists-header {
     display: flex;
@@ -717,3 +877,152 @@
   }
 }
 
+@keyframes lists-celebration-border-draw {
+  from {
+    opacity: 0.4;
+    stroke-dashoffset: 100;
+  }
+
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes widget-celebration-lifecycle {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lists-celebration-border-fade {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes lists-celebration-border-orbit-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 0.6;
+  }
+}
+
+@keyframes lists-celebration-border-orbit-loop {
+  from {
+    stroke-dashoffset: 100;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes lists-celebration-border-orbit-out {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes lists-celebration-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lists-celebration-copy-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes lists-celebration-copy-panel-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lists-celebration-copy-panel-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes lists-celebration-illustration-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes lists-celebration-illustration-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes lists-celebration-tint-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lists-celebration-tint-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
