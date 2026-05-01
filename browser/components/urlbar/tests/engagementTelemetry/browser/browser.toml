@@ -74,6 +74,8 @@ skip-if = [
   "verify", # Bug 1852375 - MerinoTestUtils.initWeather() doesn't play well with pushPrefEnv()
 ]
 
+["browser_glean_telemetry_engagement_selected_result_action.js"]
+
 ["browser_glean_telemetry_engagement_tips.js"]
 
 ["browser_glean_telemetry_engagement_type.js"]

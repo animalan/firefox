@@ -1756,6 +1756,9 @@ class TelemetryEvent {
     if (element.dataset.command == "dismiss") {
       return "block";
     }
+    if (element.classList?.contains("urlbarView-action-btn")) {
+      return "action";
+    }
     // Now handle the result.
     return lazy.UrlbarUtils.telemetryTypeFromResult(result);
   }

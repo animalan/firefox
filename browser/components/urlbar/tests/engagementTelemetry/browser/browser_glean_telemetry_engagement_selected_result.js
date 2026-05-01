@@ -1326,7 +1326,7 @@ add_task(async function selected_result_action() {
 
     assertEngagementTelemetry([
       {
-        selected_result: "action",
+        selected_result: "action_settings",
         selected_position: 2,
         provider: "UrlbarProviderGlobalActions",
         results: "search_engine,action",
