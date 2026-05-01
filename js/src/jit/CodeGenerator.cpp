@@ -10570,6 +10570,10 @@ void CodeGenerator::visitWasmSuspend(LWasmSuspend* lir) {
                     scratch3, lir->mir()->callSiteDesc(), &suspendedCodeOffset,
                     &suspendedFramePushed);
 
+  if (masm.oom()) {
+    return;
+  }
+
   markSafepointAt(suspendedCodeOffset.offset(), lir);
   lir->safepoint()->setFramePushedAtStackMapBase(suspendedFramePushed);
   lir->safepoint()->setWasmSafepointKind(WasmSafepointKind::StackSwitch);
@@ -10619,6 +10623,10 @@ void CodeGenerator::visitWasmResume(LWasmResume* lir) {
   wasm::EmitResume(masm, instance, cont, handlersParamsArea, scratch1, scratch2,
                    scratch3, ool->entry(), mir->handlers(), handlerLabels,
                    mir->callSiteDesc(), &resumeCodeOffset, &resumeFramePushed);
+
+  if (masm.oom()) {
+    return;
+  }
 
   markSafepointAt(resumeCodeOffset.offset(), lir);
   lir->safepoint()->setFramePushedAtStackMapBase(resumeFramePushed);
