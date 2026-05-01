@@ -134,7 +134,6 @@ export class SidebarPage extends MozLitElement {
   handleCommandEvent(e) {
     switch (e.target.id) {
       case "sidebar-history-context-open-in-tab":
-      case "sidebar-synced-tabs-context-open-in-tab":
         this.topWindow.openTrustedLinkIn(this.triggerNode.url, "tab");
         break;
       case "sidebar-history-context-forget-site":

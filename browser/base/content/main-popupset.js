@@ -448,16 +448,6 @@ document.addEventListener(
       PlacesUIUtils.createContainerTabMenu(event)
     );
 
-    const containerSyncedTabsPopup = document.getElementById(
-      "sidebar-synced-tabs-context-menu-container-popup"
-    );
-    containerSyncedTabsPopup.addEventListener("command", event =>
-      PlacesUIUtils.openInContainerTab(event)
-    );
-    containerSyncedTabsPopup.addEventListener("popupshowing", event =>
-      PlacesUIUtils.createContainerTabMenu(event)
-    );
-
     document
       .getElementById("sidebar-bookmarks-context-container-tab-popup")
       .addEventListener("popupshowing", event =>
