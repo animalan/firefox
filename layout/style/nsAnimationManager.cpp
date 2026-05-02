@@ -131,13 +131,57 @@ class MOZ_STACK_CLASS ServoCSSAnimationBuilder final {
   const ComputedStyle* mComputedStyle;
 };
 
+struct AnimationMatches {
+  bool operator()(const RefPtr<CSSAnimation>& aAnimation) {
+    return aAnimation.get() == mAnimation;
+  }
+
+  const CSSAnimation* mAnimation;
+};
+
+static void RemoveCorrespondingAnimation(
+    const nsAtom* aName, const CSSAnimation* aAnimation,
+    nsAnimationManager::TimelineNamesToAnimationMap&
+        aTimelineNamesToAnimationMap) {
+  auto result = aTimelineNamesToAnimationMap.Lookup(aName);
+  if (result) {
+    auto& l = result.Data();
+    auto foundIt =
+        std::find_if(l.cbegin(), l.cend(), AnimationMatches{aAnimation});
+    if (foundIt != l.cend()) {
+      l.RemoveElementAt(foundIt);
+    }
+    result.Remove();
+  }
+#ifdef DEBUG
+  // One animation refers to one timeline, so if there is a duplication,
+  // something went wrong.
+  for (auto mapItr = aTimelineNamesToAnimationMap.Iter(); !mapItr.Done();
+       mapItr.Next()) {
+    auto& l = mapItr.Data();
+    auto foundIt =
+        std::find_if(l.cbegin(), l.cend(), AnimationMatches{aAnimation});
+    MOZ_ASSERT(foundIt == l.cend(), "Duplication animation entry");
+  }
+#endif
+}
+
 static void UpdateOldAnimationPropertiesWithNew(
     CSSAnimation& aOld, TimingParams&& aNewTiming,
     nsTArray<Keyframe>&& aNewKeyframes, bool aNewIsStylePaused,
     CSSAnimationProperties aOverriddenProperties,
     ServoCSSAnimationBuilder& aBuilder, dom::AnimationTimeline* aTimeline,
     const nsAtom* aTimelineName, dom::CompositeOperation aNewComposite,
-    dom::AnimationRange&& aTimelineRange) {
+    dom::AnimationRange&& aTimelineRange,
+    nsAnimationManager::TimelineNamesToAnimationMap&
+        aTimelineNamesToAnimationMap) {
+  const auto* oldTimelineName = aOld.GetTimelineName();
+  const bool timelineReferenceChanged =
+      aOld.GetTimeline() != aTimeline || oldTimelineName != aTimelineName;
+  if (timelineReferenceChanged && oldTimelineName) {
+    RemoveCorrespondingAnimation(oldTimelineName, &aOld,
+                                 aTimelineNamesToAnimationMap);
+  }
   bool animationChanged = false;
 
   // Update the old from the new so we can keep the original object
@@ -210,6 +254,12 @@ static void UpdateOldAnimationPropertiesWithNew(
   // the animation is still relevant.
   if (animationChanged && aOld.IsRelevant()) {
     MutationObservers::NotifyAnimationChanged(&aOld);
+  }
+
+  if (timelineReferenceChanged && aTimelineName) {
+    auto& entries = aTimelineNamesToAnimationMap.LookupOrInsert(
+        aTimelineName, nsTArray<RefPtr<CSSAnimation>>{});
+    entries.AppendElement(&aOld);
   }
 }
 
@@ -289,41 +339,6 @@ static already_AddRefed<dom::AnimationTimeline> GetTimeline(
   return nullptr;
 }
 
-struct AnimationMatches {
-  bool operator()(const RefPtr<CSSAnimation>& aAnimation) {
-    return aAnimation.get() == mAnimation;
-  }
-
-  const CSSAnimation* mAnimation;
-};
-
-static void RemoveCorrespondingAnimation(
-    const nsAtom* aName, const RefPtr<CSSAnimation>& aAnimation,
-    nsAnimationManager::TimelineNamesToAnimationMap&
-        aTimelineNamesToAnimationMap) {
-  auto result = aTimelineNamesToAnimationMap.Lookup(aName);
-  if (result) {
-    auto& l = result.Data();
-    auto foundIt =
-        std::find_if(l.cbegin(), l.cend(), AnimationMatches{aAnimation.get()});
-    if (foundIt != l.cend()) {
-      l.RemoveElementAt(foundIt);
-    }
-    result.Remove();
-  }
-#ifdef DEBUG
-  // One animation refers to one timeline, so if there is a duplication,
-  // something went wrong.
-  for (auto mapItr = aTimelineNamesToAnimationMap.Iter(); !mapItr.Done();
-       mapItr.Next()) {
-    auto& l = mapItr.Data();
-    auto foundIt =
-        std::find_if(l.cbegin(), l.cend(), AnimationMatches{aAnimation.get()});
-    MOZ_ASSERT(foundIt == l.cend(), "Duplication animation entry");
-  }
-#endif
-}
-
 static bool RefersToNamedTimeline(const CSSAnimation* aAnimation) {
   return aAnimation->GetTimelineName();
 }
@@ -368,6 +383,7 @@ static already_AddRefed<CSSAnimation> BuildAnimation(
     }
     const auto* atom = styleTimeline.AsTimeline().value.AsAtom();
     if (atom == nsGkAtoms::_empty) {
+      // This is actually `animation-timeline: none`.
       return nullptr;
     }
     return atom;
@@ -391,22 +407,13 @@ static already_AddRefed<CSSAnimation> BuildAnimation(
     // them.  See
     // http://lists.w3.org/Archives/Public/www-style/2011Apr/0079.html
     // In order to honor what the spec said, we'd copy more data over.
-    if (RefersToNamedTimeline(oldAnim)) {
-      RemoveCorrespondingAnimation(oldAnim->GetTimelineName(), oldAnim,
-                                   aTimelineNamesToAnimationMap);
-    }
     UpdateOldAnimationPropertiesWithNew(
         *oldAnim, std::move(timing), std::move(keyframes), isStylePaused,
         oldAnim->GetOverriddenProperties(), aBuilder, timeline, timelineName,
-        composition, std::move(range));
+        composition, std::move(range), aTimelineNamesToAnimationMap);
     // For now, only name-referenced timeline, or `none`, which is represented
     // as IsTimeline with the empty atom, can result in no timeline.
     MOZ_ASSERT_IF(timelineName && !timeline, styleTimeline.IsTimeline());
-    if (timelineName) {
-      auto& entries = aTimelineNamesToAnimationMap.LookupOrInsert(
-          timelineName, nsTArray<RefPtr<CSSAnimation>>{});
-      entries.AppendElement(oldAnim);
-    }
     return oldAnim.forget();
   }
 
@@ -435,7 +442,7 @@ static already_AddRefed<CSSAnimation> BuildAnimation(
 
   aBuilder.NotifyNewOrRemovedAnimation(*animation);
 
-  // For now, only name-referenced timeline can result in no timeline.
+  // For now, only `none` or name-referenced timeline can result in no timeline.
   MOZ_ASSERT_IF(!timeline, styleTimeline.IsTimeline());
   if (RefersToNamedTimeline(animation)) {
     const auto* name = styleTimeline.AsTimeline().value.AsAtom();

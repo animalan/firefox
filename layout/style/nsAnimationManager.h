@@ -103,7 +103,12 @@ class nsAnimationManager final
   // contain names which are currently referenced, so that it is usable for
   // style invalidation.
   nsTHashSet<RefPtr<nsAtom>> mMaybeReferencedAnimations;
-  // Animations that refer to a timeline by name.
+  // Animations that refer to a timeline by name. This is necessary for
+  // invalidating such animations, because the timeline referred to by
+  // that name for the animation target may change.
+  // Note that only scroll and view timelines can be named.
+  // Also note that we represent `animation-timeline: none` as a named
+  // timeline with an empty name, which is not tracked in this hashmap.
   TimelineNamesToAnimationMap mAnimationsWithNamedTimeline;
 
   void DoUpdateAnimations(const mozilla::NonOwningAnimationTarget& aTarget,
