@@ -19,7 +19,7 @@
 
 namespace mozilla::dom {
 
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(LockManager, mOwner)
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(LockManager, mGlobal)
 NS_IMPL_CYCLE_COLLECTING_ADDREF(LockManager)
 NS_IMPL_CYCLE_COLLECTING_RELEASE(LockManager)
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(LockManager)
@@ -32,7 +32,7 @@ JSObject* LockManager::WrapObject(JSContext* aCx,
   return LockManager_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-LockManager::LockManager(nsIGlobalObject* aGlobal) : mOwner(aGlobal) {
+LockManager::LockManager(nsIGlobalObject* aGlobal) : mGlobal(aGlobal) {
   Maybe<nsID> clientID;
   nsCOMPtr<nsIPrincipal> principal;
 
@@ -150,9 +150,9 @@ already_AddRefed<Promise> LockManager::Request(const nsAString& aName,
                                                const LockOptions& aOptions,
                                                LockGrantedCallback& aCallback,
                                                ErrorResult& aRv) {
-  if (!mOwner->PrincipalOrNull() ||
-      !mOwner->PrincipalOrNull()->IsSystemPrincipal()) {
-    if (!mOwner->GetClientInfo()) {
+  if (!mGlobal->PrincipalOrNull() ||
+      !mGlobal->PrincipalOrNull()->IsSystemPrincipal()) {
+    if (!mGlobal->GetClientInfo()) {
       // We do have nsPIDOMWindowInner::IsFullyActive for this kind of check,
       // but this should be sufficient here as unloaded iframe is the only
       // non-fully-active case that Web Locks should worry about (since it does
@@ -163,7 +163,7 @@ already_AddRefed<Promise> LockManager::Request(const nsAString& aName,
     }
   }
 
-  const StorageAccess access = mOwner->GetStorageAccess();
+  const StorageAccess access = mGlobal->GetStorageAccess();
   bool allowed =
       access > StorageAccess::eDeny || ShouldPartitionStorage(access);
   if (!allowed) {
@@ -190,7 +190,7 @@ already_AddRefed<Promise> LockManager::Request(const nsAString& aName,
     return nullptr;
   }
 
-  RefPtr<Promise> promise = Promise::Create(mOwner, aRv);
+  RefPtr<Promise> promise = Promise::Create(mGlobal, aRv);
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -200,16 +200,16 @@ already_AddRefed<Promise> LockManager::Request(const nsAString& aName,
 };
 
 already_AddRefed<Promise> LockManager::Query(ErrorResult& aRv) {
-  if (!mOwner->PrincipalOrNull() ||
-      !mOwner->PrincipalOrNull()->IsSystemPrincipal()) {
-    if (!mOwner->GetClientInfo()) {
+  if (!mGlobal->PrincipalOrNull() ||
+      !mGlobal->PrincipalOrNull()->IsSystemPrincipal()) {
+    if (!mGlobal->GetClientInfo()) {
       aRv.ThrowInvalidStateError(
           "The document of the lock manager is not fully active");
       return nullptr;
     }
   }
 
-  if (mOwner->GetStorageAccess() <= StorageAccess::eDeny) {
+  if (mGlobal->GetStorageAccess() <= StorageAccess::eDeny) {
     aRv.ThrowSecurityError("query() is not allowed in this context");
     return nullptr;
   }
@@ -225,7 +225,7 @@ already_AddRefed<Promise> LockManager::Query(ErrorResult& aRv) {
     return nullptr;
   }
 
-  RefPtr<Promise> promise = Promise::Create(mOwner, aRv);
+  RefPtr<Promise> promise = Promise::Create(mGlobal, aRv);
   if (aRv.Failed()) {
     return nullptr;
   }
