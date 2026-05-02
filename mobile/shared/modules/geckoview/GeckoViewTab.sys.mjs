@@ -31,7 +31,7 @@ class Tab {
   }
 
   get userContextId() {
-    return this.browser.documentGlobal.moduleManager.settings
+    return this.browser.ownerGlobal.moduleManager.settings
       .unsafeSessionContextId;
   }
 }

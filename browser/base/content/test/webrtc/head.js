@@ -232,7 +232,7 @@ async function assertWebRTCIndicatorStatus(expected) {
 }
 
 function promiseNotificationShown(notification) {
-  let win = notification.browser.documentGlobal;
+  let win = notification.browser.ownerGlobal;
   if (win.PopupNotifications.panel.state == "open") {
     return Promise.resolve();
   }

@@ -40,7 +40,7 @@ add_task(async function test_autocomplete_new_password_popup_item_visible() {
       url: TEST_ORIGIN + FORM_PAGE_PATH,
     },
     async function (browser) {
-      await SimpleTest.promiseFocus(browser.documentGlobal);
+      await SimpleTest.promiseFocus(browser.ownerGlobal);
       await SpecialPowers.spawn(
         browser,
         [passwordInputSelector],

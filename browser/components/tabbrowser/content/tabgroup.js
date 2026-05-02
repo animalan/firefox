@@ -80,7 +80,7 @@
 
       // Similar to above, always set up TabSelect listener, as this gets
       // removed in disconnectedCallback
-      this.documentGlobal.addEventListener("TabSelect", this);
+      this.ownerGlobal.addEventListener("TabSelect", this);
       this.addEventListener("SplitViewTabChange", this);
 
       if (this._initialized) {
@@ -98,7 +98,7 @@
         this.resetDefaultGroupName,
         "intl:app-locales-changed"
       );
-      this.documentGlobal.addEventListener("unload", this.#removeObserver);
+      this.ownerGlobal.addEventListener("unload", this.#removeObserver);
 
       this.addEventListener("click", this);
 
@@ -160,8 +160,8 @@
     };
 
     disconnectedCallback() {
-      this.documentGlobal.removeEventListener("TabSelect", this);
-      this.documentGlobal.removeEventListener("unload", this.#removeObserver);
+      this.ownerGlobal.removeEventListener("TabSelect", this);
+      this.ownerGlobal.removeEventListener("unload", this.#removeObserver);
       this.removeEventListener("SplitViewTabChange", this);
       this.#tabChangeObserver?.disconnect();
       this.#removeObserver();
@@ -580,7 +580,7 @@
       for (let tabOrSplitView of tabsOrSplitViews) {
         if (gBrowser.isSplitViewWrapper(tabOrSplitView)) {
           let splitViewToMove =
-            this.documentGlobal === tabOrSplitView.documentGlobal
+            this.ownerGlobal === tabOrSplitView.ownerGlobal
               ? tabOrSplitView
               : gBrowser.adoptSplitView(tabOrSplitView, {
                   tabIndex: gBrowser.tabs.at(-1)._tPos + 1,
@@ -592,10 +592,10 @@
           );
         } else {
           if (tabOrSplitView.pinned) {
-            tabOrSplitView.documentGlobal.gBrowser.unpinTab(tabOrSplitView);
+            tabOrSplitView.ownerGlobal.gBrowser.unpinTab(tabOrSplitView);
           }
           let tabToMove =
-            this.documentGlobal === tabOrSplitView.documentGlobal
+            this.ownerGlobal === tabOrSplitView.ownerGlobal
               ? tabOrSplitView
               : gBrowser.adoptTab(tabOrSplitView, {
                   tabIndex: gBrowser.tabs.at(-1)._tPos + 1,

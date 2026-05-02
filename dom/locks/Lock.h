@@ -37,7 +37,7 @@ class Lock final : public PromiseNativeHandler, public nsWrapperCache {
   ~Lock() = default;
 
  public:
-  nsIGlobalObject* GetParentObject() const { return mGlobal; };
+  nsIGlobalObject* GetParentObject() const { return mOwner; };
 
   JSObject* WrapObject(JSContext* aCx,
                        JS::Handle<JSObject*> aGivenProto) override;
@@ -55,7 +55,7 @@ class Lock final : public PromiseNativeHandler, public nsWrapperCache {
                                 ErrorResult& aRv) override;
 
  private:
-  nsCOMPtr<nsIGlobalObject> mGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwner;
   WeakPtr<locks::LockRequestChild> mLockRequestChild;
 
   nsString mName;

@@ -9,7 +9,7 @@ SpecialPowers.addTaskImport(
 
 function openPermissionPopup() {
   let promise = BrowserTestUtils.waitForEvent(
-    gBrowser.documentGlobal,
+    gBrowser.ownerGlobal,
     "popupshown",
     true,
     event => event.target == gPermissionPanel._permissionPopup

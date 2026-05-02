@@ -33,7 +33,7 @@ const mockController = {
   hide: sinon.stub(),
   launcherSplitter: { toggleAttribute: sinon.stub() },
   showInitially: sinon.stub(),
-  sidebarContainer: { documentGlobal: mockGlobal },
+  sidebarContainer: { ownerGlobal: mockGlobal },
   sidebarMain: mockLitElement,
   sidebarRevampEnabled: true,
   sidebarRevampVisibility: "always-show",

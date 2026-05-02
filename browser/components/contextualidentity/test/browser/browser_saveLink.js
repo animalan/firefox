@@ -37,7 +37,7 @@ add_task(async function test() {
 
   // select tab and make sure its browser is focused
   win.gBrowser.selectedTab = tab;
-  tab.documentGlobal.focus();
+  tab.ownerGlobal.focus();
 
   info("Waiting to load content");
   let browser = gBrowser.getBrowserForTab(tab);

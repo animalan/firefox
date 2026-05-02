@@ -58,7 +58,7 @@ export class EscapablePageParent extends JSWindowActorParent {
 
       // Ideally we use the homepage...
       if (AppConstants.MOZ_BUILD_APP == "browser") {
-        safePage = lazy.HomePage.getForErrorPage(browser.documentGlobal);
+        safePage = lazy.HomePage.getForErrorPage(browser.ownerGlobal);
       }
       browser.fixupAndLoadURIString(safePage, {
         triggeringPrincipal:
@@ -203,7 +203,7 @@ export class NetErrorParent extends EscapablePageParent {
         this.browser.reload();
         break;
       case "Browser:OpenCaptivePortalPage":
-        this.browser.documentGlobal.CaptivePortalWatcher.ensureCaptivePortalTab();
+        this.browser.ownerGlobal.CaptivePortalWatcher.ensureCaptivePortalTab();
         break;
       case "Browser:PrimeMitm":
         this.primeMitm(this.browser);
@@ -245,7 +245,7 @@ export class NetErrorParent extends EscapablePageParent {
             certsStringURL = certsStringURL.join("&");
             let url = `about:certificate?${certsStringURL}`;
 
-            let window = this.browser.documentGlobal;
+            let window = this.browser.ownerGlobal;
             if (AppConstants.MOZ_BUILD_APP === "browser") {
               window.switchToTabHavingURI(url, true, {});
             } else {
@@ -276,7 +276,7 @@ export class NetErrorParent extends EscapablePageParent {
           break;
         }
 
-        let win = browser.documentGlobal;
+        let win = browser.ownerGlobal;
         win.openPreferences("privacy-doh");
         break;
       }

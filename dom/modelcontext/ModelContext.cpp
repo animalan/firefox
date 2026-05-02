@@ -267,7 +267,7 @@ already_AddRefed<Promise> ModelContext::InvokeTool(
     AbortSignal& signal = aOptions.mSignal.Value();
     if (signal.Aborted()) {
       AutoJSAPI jsapi;
-      if (NS_WARN_IF(!jsapi.Init(signal.GetRelevantGlobal()))) {
+      if (NS_WARN_IF(!jsapi.Init(signal.GetOwnerGlobal()))) {
         outPromise->MaybeRejectWithAbortError("The operation was aborted"_ns);
       } else {
         JSContext* cx = jsapi.cx();

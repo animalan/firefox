@@ -461,7 +461,7 @@ already_AddRefed<Promise> CookieStore::Set(const nsAString& aName,
 
 already_AddRefed<Promise> CookieStore::Set(const CookieInit& aOptions,
                                            ErrorResult& aRv) {
-  RefPtr<Promise> promise = Promise::Create(GetRelevantGlobal(), aRv);
+  RefPtr<Promise> promise = Promise::Create(GetOwnerGlobal(), aRv);
   if (NS_WARN_IF(!promise)) {
     return nullptr;
   }
@@ -604,7 +604,7 @@ already_AddRefed<Promise> CookieStore::Delete(const nsAString& aName,
 
 already_AddRefed<Promise> CookieStore::Delete(
     const CookieStoreDeleteOptions& aOptions, ErrorResult& aRv) {
-  RefPtr<Promise> promise = Promise::Create(GetRelevantGlobal(), aRv);
+  RefPtr<Promise> promise = Promise::Create(GetOwnerGlobal(), aRv);
   if (NS_WARN_IF(!promise)) {
     return nullptr;
   }
@@ -742,7 +742,7 @@ bool CookieStore::MaybeCreateActor() {
 already_AddRefed<Promise> CookieStore::GetInternal(
     const CookieStoreGetOptions& aOptions, bool aOnlyTheFirstMatch,
     ErrorResult& aRv) {
-  RefPtr<Promise> promise = Promise::Create(GetRelevantGlobal(), aRv);
+  RefPtr<Promise> promise = Promise::Create(GetOwnerGlobal(), aRv);
   if (NS_WARN_IF(!promise)) {
     return nullptr;
   }

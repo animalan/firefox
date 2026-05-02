@@ -435,7 +435,7 @@ void FragmentDirective::RemoveAllTextDirectives(ErrorResult& aRv) {
 already_AddRefed<Promise> FragmentDirective::CreateTextDirectiveForRanges(
     const Sequence<OwningNonNull<nsRange>>& aRanges) {
   RefPtr<Promise> resultPromise =
-      Promise::Create(mDocument->GetRelevantGlobal(), IgnoreErrors());
+      Promise::Create(mDocument->GetOwnerGlobal(), IgnoreErrors());
   if (!resultPromise) {
     return nullptr;
   }

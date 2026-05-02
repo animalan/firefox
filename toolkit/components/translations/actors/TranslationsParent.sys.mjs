@@ -627,7 +627,7 @@ export class TranslationsParent extends JSWindowActorParent {
     // at a time, so treat Android as always having the selected tab.
     const isSelectedTab =
       AppConstants.platform === "android" ||
-      browser === browser.documentGlobal?.gBrowser?.selectedBrowser;
+      browser === browser.ownerGlobal?.gBrowser?.selectedBrowser;
 
     if (tabState.needsReloadBeforeTranslation && isSelectedTab) {
       tabState.needsReloadBeforeTranslation = false;
@@ -1173,7 +1173,7 @@ export class TranslationsParent extends JSWindowActorParent {
 
       /* eslint-disable-next-line no-shadow */
       // @ts-ignore
-      const { CustomEvent } = browser.documentGlobal;
+      const { CustomEvent } = browser.ownerGlobal;
       browser.dispatchEvent(
         new CustomEvent("TranslationsParent:OfferTranslation", {
           bubbles: true,
@@ -4817,7 +4817,7 @@ class TranslationsLanguageState {
       }
 
       /* eslint-disable-next-line no-shadow */
-      const { CustomEvent } = browser.documentGlobal;
+      const { CustomEvent } = browser.ownerGlobal;
       browser.dispatchEvent(
         new CustomEvent("TranslationsParent:LanguageState", {
           bubbles: true,

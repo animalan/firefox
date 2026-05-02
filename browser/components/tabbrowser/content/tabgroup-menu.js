@@ -525,7 +525,7 @@
         Services.locale.appLocaleAsBCP47.startsWith("en") &&
         this.smartTabGroupsUserEnabled &&
         this.smartTabGroupsFeatureConfigEnabled &&
-        !PrivateBrowsingUtils.isWindowPrivate(this.documentGlobal) &&
+        !PrivateBrowsingUtils.isWindowPrivate(this.ownerGlobal) &&
         this.mlEnabled
       );
     }
@@ -937,7 +937,7 @@
       const saveAndCloseGroup = document.getElementById(
         "tabGroupEditor_saveAndCloseGroup"
       );
-      if (PrivateBrowsingUtils.isWindowPrivate(this.documentGlobal)) {
+      if (PrivateBrowsingUtils.isWindowPrivate(this.ownerGlobal)) {
         saveAndCloseGroup.hidden = true;
         return;
       }

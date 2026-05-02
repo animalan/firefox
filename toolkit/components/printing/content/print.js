@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { PrintUtils, Services, AppConstants } =
-  window.docShell.chromeEventHandler.documentGlobal;
+  window.docShell.chromeEventHandler.ownerGlobal;
 
 ChromeUtils.defineESModuleGetters(this, {
   DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
@@ -2796,7 +2796,7 @@ async function pickFileName(contentTitle, currentURI) {
   filename = DownloadPaths.sanitize(filename);
 
   picker.init(
-    window.docShell.chromeEventHandler.documentGlobal.browsingContext,
+    window.docShell.chromeEventHandler.ownerGlobal.browsingContext,
     title,
     Ci.nsIFilePicker.modeSave
   );

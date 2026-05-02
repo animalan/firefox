@@ -20,8 +20,8 @@ class CallbackDebuggerNotification : public DebuggerNotification {
   CallbackDebuggerNotification(nsIGlobalObject* aDebuggeeGlobal,
                                DebuggerNotificationType aType,
                                CallbackDebuggerNotificationPhase aPhase,
-                               nsIGlobalObject* aRelevantGlobal = nullptr)
-      : DebuggerNotification(aDebuggeeGlobal, aType, aRelevantGlobal),
+                               nsIGlobalObject* aOwnerGlobal = nullptr)
+      : DebuggerNotification(aDebuggeeGlobal, aType, aOwnerGlobal),
         mPhase(aPhase) {}
 
   // nsWrapperCache

@@ -14,10 +14,10 @@ namespace mozilla {
 class GlobalFreezeObserver : public nsISupports,
                              public LinkedListElement<GlobalFreezeObserver> {
  public:
-  virtual void FrozenCallback(nsIGlobalObject* aGlobal) = 0;
-  virtual void ThawedCallback(nsIGlobalObject* aGlobal) {};
+  virtual void FrozenCallback(nsIGlobalObject* aOwner) = 0;
+  virtual void ThawedCallback(nsIGlobalObject* aOwner) {};
 
-  bool Observing() { return !!mGlobal; }
+  bool Observing() { return !!mOwner; }
 
   /**
    * This method is non-virtual because it's expected that any object
@@ -26,31 +26,31 @@ class GlobalFreezeObserver : public nsISupports,
    * relevant action by overriding GlobalTeardownObserver::DisconnectFromOwner.
    */
   void DisconnectFreezeObserver() {
-    if (mGlobal) {
-      mGlobal->RemoveGlobalFreezeObserver(this);
-      mGlobal = nullptr;
+    if (mOwner) {
+      mOwner->RemoveGlobalFreezeObserver(this);
+      mOwner = nullptr;
     }
   }
 
  protected:
   virtual ~GlobalFreezeObserver() { DisconnectFreezeObserver(); }
 
-  void BindToGlobal(nsIGlobalObject* aGlobal) {
-    MOZ_ASSERT(!mGlobal);
+  void BindToOwner(nsIGlobalObject* aOwner) {
+    MOZ_ASSERT(!mOwner);
 
-    if (aGlobal) {
+    if (aOwner) {
       MOZ_ASSERT(
           NS_IsMainThread(),
           "GlobalFreezeObserver is currently only supported in window object");
-      mGlobal = aGlobal;
-      aGlobal->AddGlobalFreezeObserver(this);
+      mOwner = aOwner;
+      aOwner->AddGlobalFreezeObserver(this);
     }
   }
 
  private:
   // The parent global object. The global will clear this when
   // it is destroyed by calling DisconnectFreezeObserver().
-  nsIGlobalObject* MOZ_NON_OWNING_REF mGlobal = nullptr;
+  nsIGlobalObject* MOZ_NON_OWNING_REF mOwner = nullptr;
 };
 
 }  // namespace mozilla

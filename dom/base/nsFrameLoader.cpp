@@ -3170,7 +3170,7 @@ already_AddRefed<Promise> nsFrameLoader::RequestTabStateFlush(
     return nullptr;
   }
 
-  RefPtr<Promise> promise = Promise::Create(ownerDoc->GetRelevantGlobal(), aRv);
+  RefPtr<Promise> promise = Promise::Create(ownerDoc->GetOwnerGlobal(), aRv);
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -3252,7 +3252,7 @@ already_AddRefed<Promise> nsFrameLoader::PrintPreview(
     aRv.ThrowNotSupportedError("No owner document");
     return nullptr;
   }
-  RefPtr<Promise> promise = Promise::Create(ownerDoc->GetRelevantGlobal(), aRv);
+  RefPtr<Promise> promise = Promise::Create(ownerDoc->GetOwnerGlobal(), aRv);
   if (!promise) {
     return nullptr;
   }

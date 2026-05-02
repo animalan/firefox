@@ -27,7 +27,7 @@ async function clickEnableToggle(card) {
   let isDisabled = card.addon.userDisabled;
   let addonEvent = isDisabled ? "onEnabled" : "onDisabled";
   let addonStateChanged = AddonTestUtils.promiseAddonEvent(addonEvent);
-  let win = card.documentGlobal;
+  let win = card.ownerGlobal;
   let button = card.querySelector(".extension-enable-button");
 
   // Centre the button since "start" could be behind the sticky header.
@@ -40,7 +40,7 @@ async function clickEnableToggle(card) {
 }
 
 function mouseOver(el) {
-  let win = el.documentGlobal;
+  let win = el.ownerGlobal;
   el.scrollIntoView({ block: "center" });
   EventUtils.synthesizeMouseAtCenter(el, { type: "mousemove" }, win);
   return waitForAnimationFrame(win);

@@ -20,16 +20,16 @@ class DebuggerNotification : public nsISupports, public nsWrapperCache {
 
   DebuggerNotification(nsIGlobalObject* aDebuggeeGlobal,
                        DebuggerNotificationType aType,
-                       nsIGlobalObject* aRelevantGlobal = nullptr)
+                       nsIGlobalObject* aOwnerGlobal = nullptr)
       : mType(aType),
         mDebuggeeGlobal(aDebuggeeGlobal),
-        mRelevantGlobal(aRelevantGlobal) {}
+        mOwnerGlobal(aOwnerGlobal) {}
 
   nsIGlobalObject* GetParentObject() const {
-    MOZ_ASSERT(mRelevantGlobal,
+    MOZ_ASSERT(mOwnerGlobal,
                "Notification must be cloned into an observer global before "
                "being wrapped");
-    return mRelevantGlobal;
+    return mOwnerGlobal;
   }
 
   DebuggerNotificationType Type() const { return mType; }
@@ -52,7 +52,7 @@ class DebuggerNotification : public nsISupports, public nsWrapperCache {
   nsCOMPtr<nsIGlobalObject> mDebuggeeGlobal;
 
  private:
-  nsCOMPtr<nsIGlobalObject> mRelevantGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwnerGlobal;
 };
 
 MOZ_CAN_RUN_SCRIPT inline void DebuggerNotificationDispatch(

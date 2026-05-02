@@ -92,7 +92,7 @@ function getBrowser(panel) {
   browser.addEventListener(
     "DoZoomEnlarge",
     () => {
-      let { ZoomManager } = browser.documentGlobal;
+      let { ZoomManager } = browser.ownerGlobal;
       let zoom = browser.fullZoom;
       zoom += 0.1;
       if (zoom > ZoomManager.MAX) {
@@ -105,7 +105,7 @@ function getBrowser(panel) {
   browser.addEventListener(
     "DoZoomReduce",
     () => {
-      let { ZoomManager } = browser.documentGlobal;
+      let { ZoomManager } = browser.ownerGlobal;
       let zoom = browser.fullZoom;
       zoom -= 0.1;
       if (zoom < ZoomManager.MIN) {

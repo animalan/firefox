@@ -9,7 +9,7 @@ export var LayoutUtils = {
    */
   getElementBoundingScreenRect(aElement) {
     let rect = aElement.getBoundingClientRect();
-    let win = aElement.documentGlobal;
+    let win = aElement.ownerGlobal;
 
     return win.windowUtils.toScreenRectInCSSUnits(
       rect.left,

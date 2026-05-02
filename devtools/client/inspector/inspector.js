@@ -768,7 +768,7 @@ class Inspector extends EventEmitter {
   };
 
   #isFromInspectorWindow = event => {
-    const win = event.originalTarget.documentGlobal;
+    const win = event.originalTarget.ownerGlobal;
     return win === this.panelWin || win.parent === this.panelWin;
   };
 

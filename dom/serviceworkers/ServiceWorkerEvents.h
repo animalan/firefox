@@ -200,7 +200,7 @@ class PushMessageData final : public nsISupports, public nsWrapperCache {
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;
 
-  nsIGlobalObject* GetParentObject() const { return mGlobal; }
+  nsIGlobalObject* GetParentObject() const { return mOwner; }
 
   void Json(JSContext* cx, JS::MutableHandle<JS::Value> aRetval,
             ErrorResult& aRv);
@@ -211,10 +211,10 @@ class PushMessageData final : public nsISupports, public nsWrapperCache {
   void Bytes(JSContext* cx, JS::MutableHandle<JSObject*> aRetval,
              ErrorResult& aRv);
 
-  PushMessageData(nsIGlobalObject* aGlobal, nsTArray<uint8_t>&& aBytes);
+  PushMessageData(nsIGlobalObject* aOwner, nsTArray<uint8_t>&& aBytes);
 
  private:
-  nsCOMPtr<nsIGlobalObject> mGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwner;
   nsTArray<uint8_t> mBytes;
   nsString mDecodedText;
   ~PushMessageData();

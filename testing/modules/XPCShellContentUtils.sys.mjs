@@ -160,7 +160,7 @@ export class ContentPage {
 
     let chromeDoc = await promiseDocumentLoaded(chromeShell.document);
 
-    let { SpecialPowers } = chromeDoc.documentGlobal;
+    let { SpecialPowers } = chromeDoc.ownerGlobal;
     SpecialPowers.xpcshellScope = XPCShellContentUtils.currentScope;
     SpecialPowers.setAsDefaultAssertHandler();
 
@@ -219,7 +219,7 @@ export class ContentPage {
   }
 
   get SpecialPowers() {
-    return this.browser.documentGlobal.SpecialPowers;
+    return this.browser.ownerGlobal.SpecialPowers;
   }
 
   loadFrameScript(func) {

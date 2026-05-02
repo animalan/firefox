@@ -272,7 +272,7 @@ async function dndToolTab(toolbox, dragTarget, dropTarget, passedTargets = []) {
   EventUtils.synthesizeMouseAtCenter(
     dragTargetEl,
     { type: "mousedown" },
-    dragTargetEl.documentGlobal
+    dragTargetEl.ownerGlobal
   );
   await onReady;
 
@@ -285,7 +285,7 @@ async function dndToolTab(toolbox, dragTarget, dropTarget, passedTargets = []) {
     EventUtils.synthesizeMouseAtCenter(
       passedTargetEl,
       { type: "mousemove" },
-      passedTargetEl.documentGlobal
+      passedTargetEl.ownerGlobal
     );
   }
 
@@ -297,12 +297,12 @@ async function dndToolTab(toolbox, dragTarget, dropTarget, passedTargets = []) {
     EventUtils.synthesizeMouseAtCenter(
       dropTargetEl,
       { type: "mousemove" },
-      dropTargetEl.documentGlobal
+      dropTargetEl.ownerGlobal
     );
     EventUtils.synthesizeMouseAtCenter(
       dropTargetEl,
       { type: "mouseup" },
-      dropTargetEl.documentGlobal
+      dropTargetEl.ownerGlobal
     );
   } else {
     const containerEl = toolbox.doc.getElementById("toolbox-container");
@@ -311,7 +311,7 @@ async function dndToolTab(toolbox, dragTarget, dropTarget, passedTargets = []) {
       0,
       0,
       { type: "mouseout" },
-      containerEl.documentGlobal
+      containerEl.ownerGlobal
     );
   }
 
@@ -436,7 +436,7 @@ async function openAboutToolbox(params) {
  *        Path to the FTL file.
  */
 function loadFTL(toolbox, path) {
-  const win = toolbox.doc.documentGlobal;
+  const win = toolbox.doc.ownerGlobal;
 
   if (win.MozXULElement) {
     win.MozXULElement.insertFTLIfNeeded(path);

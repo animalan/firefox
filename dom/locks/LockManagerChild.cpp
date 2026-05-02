@@ -14,8 +14,7 @@
 
 namespace mozilla::dom::locks {
 
-LockManagerChild::LockManagerChild(nsIGlobalObject* aGlobal)
-    : mGlobal(aGlobal) {
+LockManagerChild::LockManagerChild(nsIGlobalObject* aOwner) : mOwner(aOwner) {
   if (!NS_IsMainThread()) {
     mWorkerRef = IPCWorkerRef::Create(GetCurrentThreadWorkerPrivate(),
                                       "LockManagerChild");

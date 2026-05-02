@@ -10,14 +10,14 @@ namespace mozilla::dom {
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(TextFormat)
 NS_IMPL_CYCLE_COLLECTING_RELEASE(TextFormat)
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(TextFormat, mGlobal)
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(TextFormat, mOwner)
 
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(TextFormat)
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
   NS_INTERFACE_MAP_ENTRY(nsISupports)
 NS_INTERFACE_MAP_END
 
-TextFormat::TextFormat(nsIGlobalObject* aGlobal) : mGlobal(aGlobal) {}
+TextFormat::TextFormat(nsIGlobalObject* aOwner) : mOwner(aOwner) {}
 
 JSObject* TextFormat::WrapObject(JSContext* aCx,
                                  JS::Handle<JSObject*> aGivenProto) {

@@ -7,7 +7,7 @@ export class PrintingParent extends JSWindowActorParent {
     let browser = this.browsingContext.top.embedderElement;
 
     if (message.name == "Printing:Error") {
-      browser.documentGlobal.PrintUtils._displayPrintingError(
+      browser.ownerGlobal.PrintUtils._displayPrintingError(
         message.data.nsresult,
         message.data.isPrinting,
         browser

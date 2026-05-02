@@ -173,7 +173,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(Event)
     }
   }
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mExplicitOriginalTarget);
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mGlobal);
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mOwner);
   NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 
@@ -221,7 +221,7 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(Event)
     }
   }
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mExplicitOriginalTarget)
-  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mGlobal)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mOwner)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 NS_IMPL_CYCLE_COLLECTION_CAN_SKIP_BEGIN(Event)
@@ -291,7 +291,7 @@ already_AddRefed<Document> Event::GetDocument() const {
     return nullptr;
   }
 
-  nsIGlobalObject* global = eventTarget->GetRelevantGlobal();
+  nsIGlobalObject* global = eventTarget->GetOwnerGlobal();
   if (!global) {
     return nullptr;
   }
@@ -383,7 +383,7 @@ bool Event::ShouldIgnoreChromeEventTargetListener() const {
   if (NS_WARN_IF(!et)) {
     return false;
   }
-  nsIGlobalObject* global = et->GetRelevantGlobal();
+  nsIGlobalObject* global = et->GetOwnerGlobal();
   if (NS_WARN_IF(!global)) {
     return false;
   }
@@ -481,8 +481,8 @@ void Event::PreventDefault(JSContext* aCx, CallerType aCallerType) {
 void Event::PreventDefaultInternal(bool aCalledByDefaultHandler,
                                    nsIPrincipal* aPrincipal) {
   if (mEvent->mFlags.mInPassiveListener) {
-    if (mGlobal) {
-      if (nsPIDOMWindowInner* win = mGlobal->GetAsInnerWindow()) {
+    if (mOwner) {
+      if (nsPIDOMWindowInner* win = mOwner->GetAsInnerWindow()) {
         if (Document* doc = win->GetExtantDoc()) {
           if (!doc->HasWarnedAbout(
                   Document::ePreventDefaultFromPassiveListener)) {
@@ -837,11 +837,11 @@ double Event::TimeStamp() {
   }
 
   if (mIsMainThreadEvent) {
-    if (NS_WARN_IF(!mGlobal)) {
+    if (NS_WARN_IF(!mOwner)) {
       return 0.0;
     }
 
-    nsPIDOMWindowInner* win = mGlobal->GetAsInnerWindow();
+    nsPIDOMWindowInner* win = mOwner->GetAsInnerWindow();
     if (NS_WARN_IF(!win)) {
       return 0.0;
     }
@@ -853,7 +853,7 @@ double Event::TimeStamp() {
 
     double ret =
         perf->GetDOMTiming()->TimeStampToDOMHighRes(mEvent->mTimeStamp);
-    MOZ_ASSERT(mGlobal->PrincipalOrNull());
+    MOZ_ASSERT(mOwner->PrincipalOrNull());
 
     return nsRFPService::ReduceTimePrecisionAsMSecs(
         ret, perf->GetRandomTimelineSeed(), perf->GetRTPCallerType());
@@ -911,25 +911,25 @@ bool Event::Deserialize(IPC::MessageReader* aReader) {
 }
 
 void Event::SetOwner(EventTarget* aOwner) {
-  mGlobal = nullptr;
+  mOwner = nullptr;
 
   if (!aOwner) {
     return;
   }
 
   if (nsINode* n = aOwner->GetAsNode()) {
-    mGlobal = n->OwnerDoc()->GetScopeObject();
+    mOwner = n->OwnerDoc()->GetScopeObject();
     return;
   }
 
   if (nsPIDOMWindowInner* w = aOwner->GetAsInnerWindow()) {
-    mGlobal = w->AsGlobal();
+    mOwner = w->AsGlobal();
     return;
   }
 
   nsCOMPtr<DOMEventTargetHelper> eth = do_QueryInterface(aOwner);
   if (eth) {
-    mGlobal = eth->GetParentObject();
+    mOwner = eth->GetParentObject();
     return;
   }
 

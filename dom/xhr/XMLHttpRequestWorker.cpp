@@ -2296,7 +2296,7 @@ void XMLHttpRequestWorker::GetResponse(JSContext* aCx,
 
       if (!mResponseBlob) {
         mResponseBlob =
-            Blob::Create(GetRelevantGlobal(), mResponseData->mResponseBlobImpl);
+            Blob::Create(GetOwnerGlobal(), mResponseData->mResponseBlobImpl);
       }
 
       if (!mResponseBlob ||

@@ -223,7 +223,7 @@ export class FindContent {
             let editableNode = this.highlighter._getEditableNode(node);
             let controller = editableNode
               ? editableNode.editor.selectionController
-              : this.finder._getSelectionController(node.documentGlobal);
+              : this.finder._getSelectionController(node.ownerGlobal);
 
             controller.scrollSelectionIntoView(
               controller.SELECTION_FIND,

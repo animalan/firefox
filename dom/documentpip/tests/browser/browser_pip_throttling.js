@@ -96,19 +96,19 @@ add_task(async function test_pip_throttling_window_hidden() {
   const [tab, chromePiP] = await newTabWithPiP();
 
   // Hide app window
-  await setMinimized(tab.documentGlobal);
+  await setMinimized(tab.ownerGlobal);
   ok(tab.linkedBrowser.browsingContext.isActive, "Hidden opener is active");
   ok(!(await isThrottled(tab)), "Hidden opener not throttled");
   is(await getVisibility(tab), "visible", "Hidden opener is visible");
 
   // Restore visibility
-  await setMinimized(tab.documentGlobal, false);
+  await setMinimized(tab.ownerGlobal, false);
   ok(tab.linkedBrowser.browsingContext.isActive, "Visible opener is active");
   ok(!(await isThrottled(tab)), "Visible opener not throttled");
   is(await getVisibility(tab), "visible", "Visible opener is visible");
 
   // Hide and close PiP
-  await setMinimized(tab.documentGlobal);
+  await setMinimized(tab.ownerGlobal);
   ok(tab.linkedBrowser.browsingContext.isActive, "Hidden opener is active");
   await BrowserTestUtils.closeWindow(chromePiP);
   await ensureActivity(tab, false);
@@ -117,7 +117,7 @@ add_task(async function test_pip_throttling_window_hidden() {
   is(await getVisibility(tab), "hidden", "Hidden tab is hidden");
 
   // Restore visibility
-  await setMinimized(tab.documentGlobal, false);
+  await setMinimized(tab.ownerGlobal, false);
   // Tab isn't immediately unthrottled after window is restored
   await TestUtils.waitForCondition(
     async () => !(await isThrottled(tab)),
@@ -147,7 +147,7 @@ add_task(async function test_pip_throttling_opener_tab_adoption() {
   const adoptedTab = win2.gBrowser.adoptTab(originalTab, 0, true);
 
   // Minimize old window to ensure it's being throttled as the PiP was adopted away
-  await setMinimized(tab2win1.documentGlobal);
+  await setMinimized(tab2win1.ownerGlobal);
   ok(
     !tab2win1.linkedBrowser.browsingContext.isActive,
     "Hidden tab is inactive"
@@ -159,7 +159,7 @@ add_task(async function test_pip_throttling_opener_tab_adoption() {
   // So we cannot test that the new window isn't throttled.
 
   // Cleanup
-  await setMinimized(tab2win1.documentGlobal, false);
+  await setMinimized(tab2win1.ownerGlobal, false);
   if (chromePiP && !chromePiP.closed) {
     // See bug 2009192
     await BrowserTestUtils.closeWindow(chromePiP);

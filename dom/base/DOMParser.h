@@ -70,7 +70,7 @@ class DOMParser final : public nsISupports, public nsWrapperCache {
 
   void ForceEnableDTD() { mForceEnableDTD = true; }
 
-  nsIGlobalObject* GetParentObject() const { return mGlobal; }
+  nsIGlobalObject* GetParentObject() const { return mOwner; }
 
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override {
@@ -81,13 +81,13 @@ class DOMParser final : public nsISupports, public nsWrapperCache {
   static already_AddRefed<DOMParser> CreateWithoutGlobal(ErrorResult& aRv);
 
  private:
-  DOMParser(nsIGlobalObject* aGlobal, nsIPrincipal* aDocPrincipal,
+  DOMParser(nsIGlobalObject* aOwner, nsIPrincipal* aDocPrincipal,
             nsIURI* aDocumentURI);
 
   already_AddRefed<Document> SetUpDocument(DocumentFlavor aFlavor,
                                            ErrorResult& aRv);
 
-  nsCOMPtr<nsIGlobalObject> mGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwner;
   nsCOMPtr<nsIPrincipal> mPrincipal;
   nsCOMPtr<nsIURI> mDocumentURI;
 

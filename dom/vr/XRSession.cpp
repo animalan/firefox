@@ -297,7 +297,7 @@ void XRSession::WillRefresh(mozilla::TimeStamp aTime) {
   // Inline sessions are driven by nsRefreshDriver directly,
   // unlike immersive sessions, which are driven VRDisplayClient.
   if (!IsImmersive() && !mXRSystem->HasActiveImmersiveSession()) {
-    if (nsIGlobalObject* global = GetRelevantGlobal()) {
+    if (nsIGlobalObject* global = GetOwnerGlobal()) {
       if (JSObject* obj = global->GetGlobalJSObject()) {
         js::NotifyAnimationActivity(obj);
       }

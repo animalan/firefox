@@ -86,7 +86,7 @@ async function checkTooltipVisibility(
     1,
     1,
     {},
-    elementForHiding.documentGlobal
+    elementForHiding.ownerGlobal
   );
   await tooltip.once("hidden");
   is(

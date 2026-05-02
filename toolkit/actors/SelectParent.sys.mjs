@@ -325,7 +325,7 @@ export var SelectParentHelper = {
     let menupopup = menulist.menupopup;
     menupopup.classList.toggle("isOpenedViaTouch", isOpenedViaTouch);
 
-    let win = menulist.documentGlobal;
+    let win = menulist.ownerGlobal;
     if (browser) {
       browser.constrainPopup(menupopup);
       browser.style.pointerEvents = "none";
@@ -469,14 +469,10 @@ export var SelectParentHelper = {
     popup.addEventListener("popuphidden", this);
     popup.addEventListener("mouseover", this);
     popup.addEventListener("mouseout", this);
-    popup.documentGlobal.addEventListener("mouseup", this, true);
-    popup.documentGlobal.addEventListener("keydown", this, true);
-    popup.documentGlobal.addEventListener("fullscreen", this, true);
-    popup.documentGlobal.addEventListener(
-      "FullscreenWarningOnScreen",
-      this,
-      true
-    );
+    popup.ownerGlobal.addEventListener("mouseup", this, true);
+    popup.ownerGlobal.addEventListener("keydown", this, true);
+    popup.ownerGlobal.addEventListener("fullscreen", this, true);
+    popup.ownerGlobal.addEventListener("FullscreenWarningOnScreen", this, true);
   },
 
   _unregisterListeners(popup) {
@@ -484,10 +480,10 @@ export var SelectParentHelper = {
     popup.removeEventListener("popuphidden", this);
     popup.removeEventListener("mouseover", this);
     popup.removeEventListener("mouseout", this);
-    popup.documentGlobal.removeEventListener("mouseup", this, true);
-    popup.documentGlobal.removeEventListener("keydown", this, true);
-    popup.documentGlobal.removeEventListener("fullscreen", this, true);
-    popup.documentGlobal.removeEventListener(
+    popup.ownerGlobal.removeEventListener("mouseup", this, true);
+    popup.ownerGlobal.removeEventListener("keydown", this, true);
+    popup.ownerGlobal.removeEventListener("fullscreen", this, true);
+    popup.ownerGlobal.removeEventListener(
       "FullscreenWarningOnScreen",
       this,
       true

@@ -348,7 +348,7 @@ class BoxModelHighlighter extends AutoRefreshHighlighter {
    */
   _trackMutations() {
     if (isNodeValid(this.currentNode)) {
-      const win = this.currentNode.documentGlobal;
+      const win = this.currentNode.ownerGlobal;
       this.currentNodeObserver = new win.MutationObserver(this.update);
       this.currentNodeObserver.observe(this.currentNode, { attributes: true });
     }

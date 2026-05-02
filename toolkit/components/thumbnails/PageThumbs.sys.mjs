@@ -190,7 +190,7 @@ export var PageThumbs = {
     }
 
     return new Promise(resolve => {
-      let canvas = this.createCanvas(aBrowser.documentGlobal);
+      let canvas = this.createCanvas(aBrowser.ownerGlobal);
       this.captureToCanvas(aBrowser, canvas, aArgs)
         .then(() => {
           canvas.toBlob(blob => {
@@ -363,7 +363,7 @@ export var PageThumbs = {
       thumbnail.width = contentWidth;
       thumbnail.height = contentHeight;
 
-      let imageData = new aBrowser.documentGlobal.ImageData(
+      let imageData = new aBrowser.ownerGlobal.ImageData(
         contentInfo.imageData,
         contentWidth,
         contentHeight

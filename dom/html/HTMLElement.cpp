@@ -161,7 +161,7 @@ void HTMLElement::RestoreFormAssociatedCustomElementState() {
   }
 
   auto& ce = content.get_CustomElementTuple();
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   internals->RestoreFormValue(
       nsContentUtils::ExtractFormAssociatedCustomElementValue(global,
                                                               ce.value()),

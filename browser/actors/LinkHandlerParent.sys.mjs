@@ -91,7 +91,7 @@ export class LinkHandlerParent extends JSWindowActorParent {
       return;
     }
 
-    let win = browser.documentGlobal;
+    let win = browser.ownerGlobal;
 
     let gBrowser = win.gBrowser;
 

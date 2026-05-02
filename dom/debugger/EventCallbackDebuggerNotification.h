@@ -22,9 +22,9 @@ class EventCallbackDebuggerNotification : public CallbackDebuggerNotification {
       nsIGlobalObject* aDebuggeeGlobal, DebuggerNotificationType aType,
       Event* aEvent, EventCallbackDebuggerNotificationType aTargetType,
       CallbackDebuggerNotificationPhase aPhase,
-      nsIGlobalObject* aRelevantGlobal = nullptr)
+      nsIGlobalObject* aOwnerGlobal = nullptr)
       : CallbackDebuggerNotification(aDebuggeeGlobal, aType, aPhase,
-                                     aRelevantGlobal),
+                                     aOwnerGlobal),
         mEvent(aEvent),
         mTargetType(aTargetType) {}
 
@@ -51,7 +51,7 @@ class MOZ_RAII EventCallbackDebuggerNotificationGuard final {
  public:
   MOZ_CAN_RUN_SCRIPT_BOUNDARY explicit EventCallbackDebuggerNotificationGuard(
       mozilla::dom::EventTarget* aEventTarget, mozilla::dom::Event* aEvent)
-      : mDebuggeeGlobal(aEventTarget ? aEventTarget->GetRelevantGlobal()
+      : mDebuggeeGlobal(aEventTarget ? aEventTarget->GetOwnerGlobal()
                                      : nullptr),
         mEventTarget(aEventTarget),
         mEvent(aEvent) {

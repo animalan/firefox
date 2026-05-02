@@ -75,7 +75,7 @@ class TestCanonicalUrlRestore(SessionStoreTestCase):
                 let {{ TabStateFlusher }} = ChromeUtils.importESModule(
                     "resource:///modules/sessionstore/TabStateFlusher.sys.mjs"
                 );
-                await TabStateFlusher.flushWindow(gBrowser.documentGlobal);
+                await TabStateFlusher.flushWindow(gBrowser.ownerGlobal);
             }})().then(resolve);
             """
         )
@@ -153,7 +153,7 @@ class TestCanonicalUrlRestore(SessionStoreTestCase):
                 let {{ TabStateFlusher }} = ChromeUtils.importESModule(
                     "resource:///modules/sessionstore/TabStateFlusher.sys.mjs"
                 );
-                await TabStateFlusher.flushWindow(gBrowser.documentGlobal);
+                await TabStateFlusher.flushWindow(gBrowser.ownerGlobal);
             }})().then(resolve);
             """
         )

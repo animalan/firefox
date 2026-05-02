@@ -28,7 +28,7 @@ const tabListener = {
 
   onLocationChange(browser, webProgress, request) {
     if (webProgress.isTopLevel) {
-      const { tab } = browser.documentGlobal;
+      const { tab } = browser.ownerGlobal;
 
       // Ignore initial about:blank
       if (!request && this.initializingTabs.has(tab)) {
@@ -170,7 +170,7 @@ this.tabs = class extends ExtensionAPIPersistent {
         let nativeTab;
         switch (event.type) {
           case "pagetitlechanged": {
-            const window = getBrowserWindow(event.target.documentGlobal);
+            const window = getBrowserWindow(event.target.ownerGlobal);
             nativeTab = window.tab;
 
             needed.push("title");
@@ -192,7 +192,7 @@ this.tabs = class extends ExtensionAPIPersistent {
       };
 
       const statusListener = ({ browser, status, url }) => {
-        const { tab } = browser.documentGlobal;
+        const { tab } = browser.ownerGlobal;
         if (tab) {
           const changed = { status };
           if (url) {
@@ -423,7 +423,7 @@ this.tabs = class extends ExtensionAPIPersistent {
           loadURIInTab(nativeTab, url);
 
           if (active) {
-            const newWindow = nativeTab.browser.documentGlobal;
+            const newWindow = nativeTab.browser.ownerGlobal;
             mobileWindowTracker.setTabActive(newWindow, true);
           }
 
@@ -455,7 +455,7 @@ this.tabs = class extends ExtensionAPIPersistent {
           { active, autoDiscardable, highlighted, muted, pinned, url } = {}
         ) {
           const nativeTab = getTabOrActive(tabId);
-          const window = nativeTab.browser.documentGlobal;
+          const window = nativeTab.browser.ownerGlobal;
 
           if (url !== null) {
             url = context.uri.resolve(url);

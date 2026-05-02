@@ -140,7 +140,7 @@ export class ViewPage extends ViewPageContent {
   }
 
   onTabSelect({ target }) {
-    const win = target.documentGlobal;
+    const win = target.ownerGlobal;
 
     let selfBrowser = window.docShell?.chromeEventHandler;
     const { gBrowser } = this.getWindow();

@@ -481,7 +481,7 @@ function createTabGroupSubpanel(
   panelview.appendChild(reopenTabGroupItem);
 
   element.addEventListener("command", () => {
-    aDocument.documentGlobal.PanelUI.showSubView(panelview.id, element);
+    aDocument.ownerGlobal.PanelUI.showSubView(panelview.id, element);
   });
 
   aFragment.appendChild(panelview);

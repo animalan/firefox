@@ -64,7 +64,7 @@ add_task(async function test_prompts() {
           capabilities.get("unhandledPromptBehavior")
         );
         const onClosePrompt = new EventPromise(
-          gBrowser.selectedBrowser.documentGlobal,
+          gBrowser.selectedBrowser.ownerGlobal,
           "DOMModalDialogClosed"
         );
 
@@ -121,7 +121,7 @@ add_task(async function test_beforeunload() {
         BEFOREUNLOAD_URL,
         async function (browser) {
           const onClosePrompt = new EventPromise(
-            browser.documentGlobal,
+            browser.ownerGlobal,
             "DOMModalDialogClosed"
           );
 

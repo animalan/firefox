@@ -32,12 +32,9 @@ function loadExtensionForSplitViewTest({ background }) {
   extension.onMessage("createSplit", tabIds => {
     const tab1 = getRealTabByExtensionTabId(tabIds[0]);
     const tab2 = getRealTabByExtensionTabId(tabIds[1]);
-    const splitview = tab1.documentGlobal.gBrowser.addTabSplitView(
-      [tab1, tab2],
-      {
-        insertBefore: tab1,
-      }
-    );
+    const splitview = tab1.ownerGlobal.gBrowser.addTabSplitView([tab1, tab2], {
+      insertBefore: tab1,
+    });
     extension.sendMessage("createSplit:done", splitview.splitViewId);
   });
   return extension;

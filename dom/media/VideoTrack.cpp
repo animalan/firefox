@@ -11,11 +11,11 @@
 
 namespace mozilla::dom {
 
-VideoTrack::VideoTrack(nsIGlobalObject* aRelevantGlobal, const nsAString& aId,
+VideoTrack::VideoTrack(nsIGlobalObject* aOwnerGlobal, const nsAString& aId,
                        const nsAString& aKind, const nsAString& aLabel,
                        const nsAString& aLanguage,
                        VideoStreamTrack* aStreamTrack)
-    : MediaTrack(aRelevantGlobal, aId, aKind, aLabel, aLanguage),
+    : MediaTrack(aOwnerGlobal, aId, aKind, aLabel, aLanguage),
       mSelected(false),
       mVideoStreamTrack(aStreamTrack) {}
 

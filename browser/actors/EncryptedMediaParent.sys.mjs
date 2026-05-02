@@ -195,7 +195,7 @@ export class EncryptedMediaParent extends JSWindowActorParent {
 
     // Don't bother creating it if it's already there:
     if (
-      aBrowser.documentGlobal.PopupNotifications.getNotification(
+      aBrowser.ownerGlobal.PopupNotifications.getNotification(
         "drmContentPlaying",
         aBrowser
       )
@@ -242,7 +242,7 @@ export class EncryptedMediaParent extends JSWindowActorParent {
       label: manageLabel,
       accessKey: manageAccessKey,
       callback() {
-        aBrowser.documentGlobal.openPreferences("general-drm");
+        aBrowser.ownerGlobal.openPreferences("general-drm");
       },
       dismiss: true,
     };
@@ -264,7 +264,7 @@ export class EncryptedMediaParent extends JSWindowActorParent {
         "drm-content",
       hideClose: true,
     };
-    aBrowser.documentGlobal.PopupNotifications.show(
+    aBrowser.ownerGlobal.PopupNotifications.show(
       aBrowser,
       "drmContentPlaying",
       message,

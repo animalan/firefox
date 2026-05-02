@@ -1763,7 +1763,7 @@ void CustomElementReactionsStack::InvokeReactions(ElementQueue* aElementQueue,
     MOZ_ASSERT(element);
 
     CustomElementData* elementData = element->GetCustomElementData();
-    if (!elementData || !element->GetRelevantGlobal()) {
+    if (!elementData || !element->GetOwnerGlobal()) {
       // This happens when the document is destroyed and the element is already
       // unlinked, no need to fire the callbacks in this case.
       continue;
@@ -1776,7 +1776,7 @@ void CustomElementReactionsStack::InvokeReactions(ElementQueue* aElementQueue,
       auto reaction(std::move(reactions.ElementAt(j)));
       if (reaction) {
         if (!aGlobal && reaction->IsUpgradeReaction()) {
-          nsIGlobalObject* global = element->GetRelevantGlobal();
+          nsIGlobalObject* global = element->GetOwnerGlobal();
           MOZ_ASSERT(!aes);
           aes.emplace(global, "custom elements reaction invocation");
         }

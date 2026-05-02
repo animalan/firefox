@@ -116,11 +116,15 @@ nsresult nsWindowRoot::PostHandleEvent(EventChainPostVisitor& aVisitor) {
   return NS_OK;
 }
 
+nsPIDOMWindowOuter* nsWindowRoot::GetOwnerGlobalForBindingsInternal() {
+  return mWindow;
+}
+
 nsGlobalWindowInner* nsWindowRoot::GetInnerWindow() {
   return nsGlobalWindowInner::Cast(mWindow->GetCurrentInnerWindow());
 }
 
-nsIGlobalObject* nsWindowRoot::GetRelevantGlobal() const {
+nsIGlobalObject* nsWindowRoot::GetOwnerGlobal() const {
   nsCOMPtr<nsIGlobalObject> global =
       do_QueryInterface(mWindow->GetCurrentInnerWindow());
   // We're still holding a ref to it, so returning the raw pointer is ok...

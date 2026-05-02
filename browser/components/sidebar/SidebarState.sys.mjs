@@ -196,7 +196,7 @@ export class SidebarState {
    * Get window object from the controller.
    */
   get #controllerGlobal() {
-    return this.#launcherContainerEl.documentGlobal;
+    return this.#launcherContainerEl.ownerGlobal;
   }
 
   /**

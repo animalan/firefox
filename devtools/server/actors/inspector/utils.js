@@ -256,7 +256,7 @@ function nodeHasSize(node) {
  * fails to load or the load takes too long, the promise is rejected.
  */
 function ensureImageLoaded(image, timeout) {
-  const { HTMLImageElement } = image.documentGlobal;
+  const { HTMLImageElement } = image.ownerGlobal;
   if (!(image instanceof HTMLImageElement)) {
     return Promise.reject("image must be an HTMLImageELement");
   }
@@ -311,7 +311,7 @@ function ensureImageLoaded(image, timeout) {
  * If something goes wrong, the promise is rejected.
  */
 const imageToImageData = async function (node, maxDim) {
-  const { HTMLCanvasElement, HTMLImageElement } = node.documentGlobal;
+  const { HTMLCanvasElement, HTMLImageElement } = node.ownerGlobal;
 
   const isImg = node instanceof HTMLImageElement;
   const isCanvas = node instanceof HTMLCanvasElement;
@@ -432,7 +432,7 @@ function getClosestBackgroundImage(node) {
 function findGridParentContainerForNode(node) {
   try {
     while ((node = node.parentNode)) {
-      const display = node.documentGlobal.getComputedStyle(node).display;
+      const display = node.ownerGlobal.getComputedStyle(node).display;
 
       if (display.includes("grid")) {
         return node;
@@ -488,11 +488,7 @@ async function getBackgroundColor({ rawNode: node, walker }) {
     };
   }
 
-  const quads = getAdjustedQuads(
-    node.documentGlobal,
-    node.firstChild,
-    "content"
-  );
+  const quads = getAdjustedQuads(node.ownerGlobal, node.firstChild, "content");
 
   // Fall back to calculating contrast against closest bg if there are no bounds for text node.
   // Avoid creating doc walker by returning early.
@@ -521,7 +517,7 @@ async function getBackgroundColor({ rawNode: node, walker }) {
   }
 
   // Try calculating complex backgrounds for node
-  const win = node.documentGlobal;
+  const win = node.ownerGlobal;
   loadSheetForBackgroundCalculation(win);
   const computedStyle = CssLogic.getComputedStyle(node);
   const props = computedStyle ? getTextProperties(computedStyle) : null;

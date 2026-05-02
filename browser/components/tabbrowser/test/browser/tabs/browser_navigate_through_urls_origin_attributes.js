@@ -25,7 +25,7 @@ function handleEventLocal(aEvent) {
     return;
   }
   // Ignore <browser> element in about:preferences and any other special pages
-  if ("gBrowser" in aEvent.target.documentGlobal) {
+  if ("gBrowser" in aEvent.target.ownerGlobal) {
     xulFrameLoaderCreatedCounter.numCalledSoFar++;
   }
 }
@@ -135,7 +135,7 @@ async function loadURIAndCheckRemoteType(
 ) {
   let expectedCurr = remoteTypes.shift();
   initXulFrameLoaderCreatedCounter(xulFrameLoaderCreatedCounter);
-  aBrowser.documentGlobal.gBrowser.addEventListener(
+  aBrowser.ownerGlobal.gBrowser.addEventListener(
     "XULFrameLoaderCreated",
     handleEventLocal
   );
@@ -168,7 +168,7 @@ async function loadURIAndCheckRemoteType(
     `XULFrameLoaderCreated fired correct number of times for ${aURI} ${aText} 
     prev=${aPrevRemoteType} curr =${aBrowser.remoteType}`
   );
-  aBrowser.documentGlobal.gBrowser.removeEventListener(
+  aBrowser.ownerGlobal.gBrowser.removeEventListener(
     "XULFrameLoaderCreated",
     handleEventLocal
   );

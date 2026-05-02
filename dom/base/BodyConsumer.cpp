@@ -310,8 +310,8 @@ NS_IMPL_ISUPPORTS(ConsumeBodyDoneObserver, nsIStreamLoaderObserver)
 
     workerRef = new ThreadSafeWorkerRef(strongWorkerRef);
   } else {
-    consumer->GlobalTeardownObserver::BindToGlobal(aGlobal);
-    consumer->GlobalFreezeObserver::BindToGlobal(aGlobal);
+    consumer->GlobalTeardownObserver::BindToOwner(aGlobal);
+    consumer->GlobalFreezeObserver::BindToOwner(aGlobal);
   }
 
   nsCOMPtr<nsIRunnable> r = new BeginConsumeBodyRunnable(consumer, workerRef);

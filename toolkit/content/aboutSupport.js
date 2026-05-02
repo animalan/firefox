@@ -2115,7 +2115,7 @@ function setupEventListeners() {
         Services.prompt.BUTTON_POS_1 * Services.prompt.BUTTON_TITLE_CANCEL +
         Services.prompt.BUTTON_POS_0_DEFAULT;
       const result = Services.prompt.confirmEx(
-        window.docShell.chromeEventHandler.documentGlobal,
+        window.docShell.chromeEventHandler.ownerGlobal,
         promptTitle,
         promptBody,
         buttonFlags,
@@ -2143,7 +2143,7 @@ function setupEventListeners() {
           .hasMoreElements()
       ) {
         Services.obs.notifyObservers(
-          window.docShell.chromeEventHandler.documentGlobal,
+          window.docShell.chromeEventHandler.ownerGlobal,
           "restart-in-safe-mode"
         );
       } else {

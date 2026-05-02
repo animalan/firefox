@@ -93,7 +93,7 @@ SessionStoreChangeListener::HandleEvent(dom::Event* aEvent) {
     return NS_OK;
   }
 
-  nsIGlobalObject* global = target->GetRelevantGlobal();
+  nsIGlobalObject* global = target->GetOwnerGlobal();
   if (!global) {
     return NS_OK;
   }

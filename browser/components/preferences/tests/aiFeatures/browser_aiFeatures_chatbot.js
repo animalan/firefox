@@ -25,7 +25,7 @@ describe("settings ai features", () => {
     });
     await openPreferencesViaOpenPreferencesAPI("general", { leaveOpen: true });
     doc = gBrowser.selectedBrowser.contentDocument;
-    win = doc.documentGlobal;
+    win = doc.ownerGlobal;
   });
 
   afterEach(() => {
@@ -73,7 +73,7 @@ describe("settings ai features", () => {
     const settingChanged = waitForSettingChange(providerControl.setting);
     providerControl.focus();
     const pickerOpened = BrowserTestUtils.waitForSelectPopupShown(
-      win.docShell.chromeEventHandler.documentGlobal
+      win.docShell.chromeEventHandler.ownerGlobal
     );
     EventUtils.sendKey("space");
     const selectPopup = await pickerOpened;
@@ -102,7 +102,7 @@ describe("settings ai features", () => {
       "Chatbot page is enabled"
     );
 
-    await gBrowser.documentGlobal.SidebarController.hide();
+    await gBrowser.ownerGlobal.SidebarController.hide();
   });
 
   it("can change the chatbot provider from blocked", async () => {
@@ -141,7 +141,7 @@ describe("settings ai features", () => {
     let settingChanged = waitForSettingChange(providerControl.setting);
     providerControl.focus();
     let pickerOpened = BrowserTestUtils.waitForSelectPopupShown(
-      win.docShell.chromeEventHandler.documentGlobal
+      win.docShell.chromeEventHandler.ownerGlobal
     );
     EventUtils.sendKey("space");
     let selectPopup = await pickerOpened;
@@ -187,7 +187,7 @@ describe("settings ai features", () => {
     settingChanged = waitForSettingChange(providerControl.setting);
     providerControl.focus();
     pickerOpened = BrowserTestUtils.waitForSelectPopupShown(
-      win.docShell.chromeEventHandler.documentGlobal
+      win.docShell.chromeEventHandler.ownerGlobal
     );
     EventUtils.sendKey("space");
     selectPopup = await pickerOpened;
@@ -218,7 +218,7 @@ describe("settings ai features", () => {
     // Calling openPreferencesViaOpenPreferencesAPI again opened a blank tab
     BrowserTestUtils.removeTab(gBrowser.selectedTab);
 
-    await gBrowser.documentGlobal.SidebarController.hide();
+    await gBrowser.ownerGlobal.SidebarController.hide();
     await SpecialPowers.popPrefEnv();
   });
 
@@ -286,7 +286,7 @@ describe("settings ai features", () => {
       "Select is back to available"
     );
 
-    await gBrowser.documentGlobal.SidebarController.hide();
+    await gBrowser.ownerGlobal.SidebarController.hide();
     await SpecialPowers.popPrefEnv();
   });
 });

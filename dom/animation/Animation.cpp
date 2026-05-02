@@ -738,7 +738,7 @@ AnimationPlayState Animation::PlayState() const {
 }
 
 Promise* Animation::GetReady(ErrorResult& aRv) {
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   if (!mReady && global) {
     mReady = Promise::Create(global, aRv);  // Lazily create on demand
   }
@@ -767,7 +767,7 @@ void Animation::MaybeResolvePromiseWithThis(Promise* aPromise) {
 }
 
 Promise* Animation::GetFinished(ErrorResult& aRv) {
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   if (!mFinished && global) {
     mFinished = Promise::Create(global, aRv);  // Lazily create on demand
   }
@@ -2054,7 +2054,7 @@ class AsyncFinishNotification : public MicroTaskRunnable {
   }
 
   virtual bool Suppressed() override {
-    nsIGlobalObject* global = mAnimation->GetRelevantGlobal();
+    nsIGlobalObject* global = mAnimation->GetOwnerGlobal();
     return global && global->IsInSyncOperation();
   }
 

@@ -150,7 +150,7 @@ export class WebRTCParent extends JSWindowActorParent {
     state.browsingContext = browsingContext;
     state.windowId = aData.windowId;
 
-    let tabbrowser = browser.documentGlobal.gBrowser;
+    let tabbrowser = browser.ownerGlobal.gBrowser;
     if (tabbrowser) {
       tabbrowser.updateBrowserSharing(browser, {
         webRTC: state,

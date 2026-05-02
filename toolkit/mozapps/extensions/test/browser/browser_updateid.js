@@ -17,11 +17,7 @@ async function getUpdateButton(item) {
   let panel = button.closest("panel-list");
   let shown = BrowserTestUtils.waitForEvent(panel, "shown");
   let moreOptionsButton = item.querySelector('[action="more-options"]');
-  EventUtils.synthesizeMouseAtCenter(
-    moreOptionsButton,
-    {},
-    item.documentGlobal
-  );
+  EventUtils.synthesizeMouseAtCenter(moreOptionsButton, {}, item.ownerGlobal);
   await shown;
   return button;
 }

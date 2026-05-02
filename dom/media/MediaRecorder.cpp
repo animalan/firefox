@@ -1938,12 +1938,12 @@ bool MediaRecorder::IsTypeSupported(const nsAString& aMIMEType) {
 nsresult MediaRecorder::CreateAndDispatchBlobEvent(BlobImpl* aBlobImpl) {
   MOZ_ASSERT(NS_IsMainThread(), "Not running on main thread");
 
-  if (!GetRelevantGlobal()) {
+  if (!GetOwnerGlobal()) {
     // This MediaRecorder has been disconnected in the meantime.
     return NS_ERROR_FAILURE;
   }
 
-  RefPtr<Blob> blob = Blob::Create(GetRelevantGlobal(), aBlobImpl);
+  RefPtr<Blob> blob = Blob::Create(GetOwnerGlobal(), aBlobImpl);
   if (NS_WARN_IF(!blob)) {
     return NS_ERROR_FAILURE;
   }

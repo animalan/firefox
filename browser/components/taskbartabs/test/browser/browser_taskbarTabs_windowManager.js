@@ -117,7 +117,7 @@ add_task(async function test_user_context_id() {
     );
     await wm.ejectWindow(win);
     let tab = (await tabOpenPromise).target;
-    win = tab.documentGlobal;
+    win = tab.ownerGlobal;
     checkUserContextId(win, taskbarTab);
 
     windowPromise = BrowserTestUtils.waitForNewWindow();

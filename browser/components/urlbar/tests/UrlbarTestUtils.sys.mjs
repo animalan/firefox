@@ -1672,11 +1672,7 @@ class UrlbarInputTestUtils {
     let target = menupopup.querySelector(targetSelector);
     let selected;
     for (let i = 0; i < menupopup.children.length; i++) {
-      this.EventUtils.synthesizeKey(
-        "KEY_ArrowDown",
-        {},
-        menupopup.documentGlobal
-      );
+      this.EventUtils.synthesizeKey("KEY_ArrowDown", {}, menupopup.ownerGlobal);
       await lazy.BrowserTestUtils.waitForCondition(() => {
         let current = menupopup.querySelector("[_moz-menuactive]");
         if (selected != current) {
@@ -1726,28 +1722,28 @@ class UrlbarInputTestUtils {
       fromX,
       rect.height / 2,
       { type: "mousemove" },
-      target.documentGlobal
+      target.ownerGlobal
     );
     this.EventUtils.synthesizeMouse(
       target,
       fromX,
       rect.height / 2,
       { type: "mousedown" },
-      target.documentGlobal
+      target.ownerGlobal
     );
     this.EventUtils.synthesizeMouse(
       target,
       toX,
       rect.height / 2,
       { type: "mousemove" },
-      target.documentGlobal
+      target.ownerGlobal
     );
     this.EventUtils.synthesizeMouse(
       target,
       toX,
       rect.height / 2,
       { type: "mouseup" },
-      target.documentGlobal
+      target.ownerGlobal
     );
     return promise;
   }

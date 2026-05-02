@@ -61,7 +61,7 @@ class SHistoryListener {
 
     if (writeToCache) {
       const win =
-        browsingContext.embedderElement?.documentGlobal ||
+        browsingContext.embedderElement?.ownerGlobal ||
         browsingContext.currentWindowGlobal?.browsingContext?.window;
 
       GeckoViewSessionStore.onTabStateUpdate(permanentKey, win, {
@@ -235,7 +235,7 @@ export var GeckoViewSessionStore = {
     }
 
     const win =
-      browsingContext.embedderElement?.documentGlobal ||
+      browsingContext.embedderElement?.ownerGlobal ||
       browsingContext.currentWindowGlobal?.browsingContext?.window;
 
     this.onTabStateUpdate(permanentKey, win, update);

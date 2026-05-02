@@ -14,7 +14,7 @@ describe("settings ai features", () => {
     });
     await openPreferencesViaOpenPreferencesAPI("general", { leaveOpen: true });
     doc = gBrowser.selectedBrowser.contentDocument;
-    win = doc.documentGlobal;
+    win = doc.ownerGlobal;
   });
 
   afterEach(() => {
@@ -150,7 +150,7 @@ describe("settings ai features", () => {
       const stgControl = doc.getElementById("aiControlSmartTabGroupsSelect");
       stgControl.focus();
       let pickerOpened = BrowserTestUtils.waitForSelectPopupShown(
-        win.docShell.chromeEventHandler.documentGlobal
+        win.docShell.chromeEventHandler.ownerGlobal
       );
       EventUtils.sendKey("space");
       const selectPopup = await pickerOpened;

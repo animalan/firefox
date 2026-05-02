@@ -362,7 +362,7 @@ export let URICountListener = {
 
     // Don't include URI and domain counts when in private mode.
     let shouldCountURI =
-      !lazy.PrivateBrowsingUtils.isWindowPrivate(browser.documentGlobal) ||
+      !lazy.PrivateBrowsingUtils.isWindowPrivate(browser.ownerGlobal) ||
       Services.prefs.getBoolPref(
         "browser.engagement.total_uri_count.pbm",
         false
@@ -383,7 +383,7 @@ export let URICountListener = {
 
     // Don't count about:blank and similar pages, as they would artificially
     // inflate the counts.
-    if (browser.documentGlobal.gInitialPages.includes(uriSpec)) {
+    if (browser.ownerGlobal.gInitialPages.includes(uriSpec)) {
       return;
     }
 
@@ -1073,7 +1073,7 @@ export let BrowserUsageTelemetry = {
     if (item && source) {
       this.recordInteractionEvent(item, source);
       if (isAboutPreferences) {
-        node.documentGlobal.recordSettingChangeTelemetry?.(item);
+        node.ownerGlobal.recordSettingChangeTelemetry?.(item);
       }
       let name = source
         .replace(/-/g, "_")

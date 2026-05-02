@@ -129,7 +129,7 @@ void TCPServerSocket::FireEvent(const nsAString& aType, TCPSocket* aSocket) {
 NS_IMETHODIMP
 TCPServerSocket::OnSocketAccepted(nsIServerSocket* aServer,
                                   nsISocketTransport* aTransport) {
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   RefPtr<TCPSocket> socket =
       TCPSocket::CreateAcceptedSocket(global, aTransport, mUseArrayBuffers);
   FireEvent(u"connect"_ns, socket);
@@ -152,7 +152,7 @@ TCPServerSocket::OnStopListening(nsIServerSocket* aServer, nsresult aStatus) {
 }
 
 nsresult TCPServerSocket::AcceptChildSocket(TCPSocketChild* aSocketChild) {
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   NS_ENSURE_TRUE(global, NS_ERROR_FAILURE);
   RefPtr<TCPSocket> socket =
       TCPSocket::CreateAcceptedSocket(global, aSocketChild, mUseArrayBuffers);

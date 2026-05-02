@@ -142,7 +142,7 @@ const clickOnDetailCloseButton = function (panel) {
   const bounds = buttonEl.getBoundingClientRect();
   const x = bounds.width / 2;
   const y = bounds.height / 2;
-  EventUtils.synthesizeMouse(buttonEl, x, y, {}, buttonEl.documentGlobal);
+  EventUtils.synthesizeMouse(buttonEl, x, y, {}, buttonEl.ownerGlobal);
 };
 
 /**
@@ -158,7 +158,7 @@ const clickOnPauseResumeButton = function (animationInspector, panel) {
   const bounds = buttonEl.getBoundingClientRect();
   const x = bounds.width / 2;
   const y = bounds.height / 2;
-  EventUtils.synthesizeMouse(buttonEl, x, y, {}, buttonEl.documentGlobal);
+  EventUtils.synthesizeMouse(buttonEl, x, y, {}, buttonEl.ownerGlobal);
 };
 
 /**
@@ -174,7 +174,7 @@ const clickOnRewindButton = function (animationInspector, panel) {
   const bounds = buttonEl.getBoundingClientRect();
   const x = bounds.width / 2;
   const y = bounds.height / 2;
-  EventUtils.synthesizeMouse(buttonEl, x, y, {}, buttonEl.documentGlobal);
+  EventUtils.synthesizeMouse(buttonEl, x, y, {}, buttonEl.ownerGlobal);
 };
 
 /**
@@ -203,7 +203,7 @@ const clickOnCurrentTimeScrubberController = function (
     mousedonwX,
     0,
     {},
-    controllerEl.documentGlobal
+    controllerEl.ownerGlobal
   );
 };
 
@@ -256,7 +256,7 @@ const changePlaybackRateMultiplierSelector = async function (
 
   selectEl.focus();
 
-  const win = selectEl.documentGlobal;
+  const win = selectEl.ownerGlobal;
   while (selectEl.selectedIndex != optionIndex) {
     const onUpdated = animationInspector.once(
       "playbackrate-multiplier-updated"
@@ -288,7 +288,7 @@ const clickOnSummaryGraph = function (
   EventUtils.synthesizeMouseAtCenter(
     summaryGraphEl,
     {},
-    summaryGraphEl.documentGlobal
+    summaryGraphEl.ownerGlobal
   );
   // Restore the scrubber style.
   scrubberEl.style.pointerEvents = "unset";
@@ -315,7 +315,7 @@ const clickOnTargetNode = async function (animationInspector, panel, index) {
   const onHighlight = waitForHighlighterTypeShown(
     inspector.highlighters.TYPES.BOXMODEL
   );
-  EventUtils.synthesizeMouseAtCenter(targetEl, {}, targetEl.documentGlobal);
+  EventUtils.synthesizeMouseAtCenter(targetEl, {}, targetEl.ownerGlobal);
   await onHighlight;
 };
 
@@ -350,7 +350,7 @@ const clickOnTargetNodeByTargetText = async function (
   const onHighlight = waitForHighlighterTypeShown(
     inspector.highlighters.TYPES.BOXMODEL
   );
-  EventUtils.synthesizeMouseAtCenter(targetEl, {}, targetEl.documentGlobal);
+  EventUtils.synthesizeMouseAtCenter(targetEl, {}, targetEl.ownerGlobal);
   await onHighlight;
 };
 
@@ -377,7 +377,7 @@ const dragOnCurrentTimeScrubber = async function (
     0,
     mouseYPixel,
     { type: "mousedown" },
-    controllerEl.documentGlobal
+    controllerEl.ownerGlobal
   );
   await waitUntilAnimationsPlayState(animationInspector, "paused");
 
@@ -388,7 +388,7 @@ const dragOnCurrentTimeScrubber = async function (
     mouseMovePixel,
     mouseYPixel,
     { type: "mousemove" },
-    controllerEl.documentGlobal
+    controllerEl.ownerGlobal
   );
   await waitUntil(() => animation.state.currentTime !== currentTime);
 
@@ -398,7 +398,7 @@ const dragOnCurrentTimeScrubber = async function (
     mouseMovePixel,
     mouseYPixel,
     { type: "mouseup" },
-    controllerEl.documentGlobal
+    controllerEl.ownerGlobal
   );
   await waitUntil(() => animation.state.currentTime !== currentTime);
 };
@@ -434,7 +434,7 @@ const dragOnCurrentTimeScrubberController = async function (
     mousedonwX,
     0,
     { type: "mousedown" },
-    controllerEl.documentGlobal
+    controllerEl.ownerGlobal
   );
   await waitUntilAnimationsPlayState(animationInspector, "paused");
 
@@ -445,7 +445,7 @@ const dragOnCurrentTimeScrubberController = async function (
     mousemoveX,
     0,
     { type: "mousemove" },
-    controllerEl.documentGlobal
+    controllerEl.ownerGlobal
   );
   await waitUntil(() => animation.state.currentTime !== currentTime);
 
@@ -455,7 +455,7 @@ const dragOnCurrentTimeScrubberController = async function (
     mousemoveX,
     0,
     { type: "mouseup" },
-    controllerEl.documentGlobal
+    controllerEl.ownerGlobal
   );
   await waitUntil(() => animation.state.currentTime !== currentTime);
 };
@@ -496,13 +496,7 @@ const mouseOverOnTargetNode = function (animationInspector, panel, index) {
   info(`Mouse over on a target node in animation target component[${index}]`);
   const el = panel.querySelectorAll(".animation-target .objectBox")[index];
   el.scrollIntoView(false);
-  EventUtils.synthesizeMouse(
-    el,
-    10,
-    5,
-    { type: "mouseover" },
-    el.documentGlobal
-  );
+  EventUtils.synthesizeMouse(el, 10, 5, { type: "mouseover" }, el.ownerGlobal);
 };
 
 /**
@@ -518,13 +512,7 @@ const mouseOutOnTargetNode = function (animationInspector, panel, index) {
   info(`Mouse out on a target node in animation target component[${index}]`);
   const el = panel.querySelectorAll(".animation-target .objectBox")[index];
   el.scrollIntoView(false);
-  EventUtils.synthesizeMouse(
-    el,
-    -1,
-    -1,
-    { type: "mouseout" },
-    el.documentGlobal
-  );
+  EventUtils.synthesizeMouse(el, -1, -1, { type: "mouseout" }, el.ownerGlobal);
 };
 
 /**
@@ -547,7 +535,7 @@ const selectAnimationInspector = async function (inspector) {
  */
 const sendSpaceKeyEvent = function (animationInspector, element) {
   element.focus();
-  EventUtils.sendKey("SPACE", element.documentGlobal);
+  EventUtils.sendKey("SPACE", element.ownerGlobal);
 };
 
 /**

@@ -397,7 +397,7 @@ registerCleanupFunction(() => {
 async function navigateToViewAndWait(document, view) {
   info(`navigateToViewAndWait, for ${view}`);
   const navigation = document.querySelector("moz-page-nav");
-  const win = document.documentGlobal;
+  const win = document.ownerGlobal;
   SimpleTest.promiseFocus(win);
   let navButton = Array.from(navigation.pageNavButtons).find(pageNavButton => {
     return pageNavButton.view === view;
@@ -489,7 +489,7 @@ function setSortOption(component, value) {
   const el = component.optionsContainer.querySelector(
     `input[value='${value}']`
   );
-  EventUtils.synthesizeMouseAtCenter(el, {}, el.documentGlobal);
+  EventUtils.synthesizeMouseAtCenter(el, {}, el.ownerGlobal);
 }
 
 /**
@@ -542,7 +542,7 @@ async function click_recently_closed_tab_item(itemElem, itemProperty = "") {
   const closedObjectsChangePromise = TestUtils.topicObserved(
     "sessionstore-closed-objects-changed"
   );
-  EventUtils.synthesizeMouseAtCenter(clickTarget, {}, itemElem.documentGlobal);
+  EventUtils.synthesizeMouseAtCenter(clickTarget, {}, itemElem.ownerGlobal);
   await closedObjectsChangePromise;
 }
 

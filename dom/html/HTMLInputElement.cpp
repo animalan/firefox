@@ -227,7 +227,7 @@ class DispatchChangeEventCallback final : public GetFilesCallback {
 
   void Callback(nsresult aStatus,
                 const FallibleTArray<RefPtr<BlobImpl>>& aBlobImpls) override {
-    nsCOMPtr<nsIGlobalObject> global = mInputElement->GetRelevantGlobal();
+    nsCOMPtr<nsIGlobalObject> global = mInputElement->GetOwnerGlobal();
     if (!global) {
       return;
     }
@@ -236,7 +236,7 @@ class DispatchChangeEventCallback final : public GetFilesCallback {
     for (uint32_t i = 0; i < aBlobImpls.Length(); ++i) {
       OwningFileOrDirectory* element = array.AppendElement();
       RefPtr<File> file =
-          File::Create(mInputElement->GetRelevantGlobal(), aBlobImpls[i]);
+          File::Create(mInputElement->GetOwnerGlobal(), aBlobImpls[i]);
       if (NS_WARN_IF(!file)) {
         return;
       }
@@ -565,7 +565,7 @@ HTMLInputElement::nsFilePickerShownCallback::Done(
 
   // mInput(HTMLInputElement) has no scriptGlobalObject, don't create
   // DispatchChangeEventCallback
-  if (!mInput->GetRelevantGlobal()) {
+  if (!mInput->GetOwnerGlobal()) {
     return NS_OK;
   }
   RefPtr<DispatchChangeEventCallback> dispatchChangeEventCallback =
@@ -962,7 +962,7 @@ nsresult HTMLInputElement::InitFilePicker(FilePickerType aType) {
     mode = nsIFilePicker::modeOpen;
   }
 
-  nsresult rv = filePicker->Init(bc, title, mode, GetRelevantGlobal());
+  nsresult rv = filePicker->Init(bc, title, mode, GetOwnerGlobal());
   NS_ENSURE_SUCCESS(rv, rv);
 
   if (!okButtonLabel.IsEmpty()) {
@@ -2354,7 +2354,7 @@ void HTMLInputElement::MozSetFileArray(
     return;
   }
 
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   MOZ_ASSERT(global);
   if (!global) {
     return;
@@ -2406,7 +2406,7 @@ void HTMLInputElement::MozSetFileNameArray(const Sequence<nsString>& aFileNames,
       continue;  // Not much we can do if the file doesn't exist
     }
 
-    nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+    nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
     if (NS_WARN_IF(!global)) {
       continue;
     }
@@ -2435,7 +2435,7 @@ void HTMLInputElement::MozSetDirectory(const nsAString& aDirectoryPath,
     return;
   }
 
-  nsIGlobalObject* global = GetRelevantGlobal();
+  nsIGlobalObject* global = GetOwnerGlobal();
   if (NS_WARN_IF(!global)) {
     aRv.Throw(NS_ERROR_FAILURE);
     return;
@@ -3533,7 +3533,7 @@ void HTMLInputElement::MaybeDispatchWillBlur(EventChainVisitor& aVisitor) {
     return;
   }
   AutoJSAPI jsapi;
-  if (NS_WARN_IF(!jsapi.Init(GetRelevantGlobal()))) {
+  if (NS_WARN_IF(!jsapi.Init(GetOwnerGlobal()))) {
     return;
   }
   if (!aVisitor.mDOMEvent) {
@@ -5730,7 +5730,7 @@ already_AddRefed<Promise> HTMLInputElement::GetFilesAndDirectories(
     return nullptr;
   }
 
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   MOZ_ASSERT(global);
   if (!global) {
     return nullptr;
@@ -6196,10 +6196,10 @@ HTMLInputElement::SubmitNamesValues(FormData* aFormData) {
         GetFilesOrDirectoriesInternal();
 
     if (files.IsEmpty()) {
-      NS_ENSURE_STATE(GetRelevantGlobal());
+      NS_ENSURE_STATE(GetOwnerGlobal());
       ErrorResult rv;
       RefPtr<Blob> blob = Blob::CreateStringBlob(
-          GetRelevantGlobal(), ""_ns, u"application/octet-stream"_ns);
+          GetOwnerGlobal(), ""_ns, u"application/octet-stream"_ns);
       RefPtr<File> file = blob->ToFile(u""_ns, rv);
 
       if (!rv.Failed()) {
@@ -7567,7 +7567,7 @@ void HTMLInputElement::UpdateEntries(
     const nsTArray<OwningFileOrDirectory>& aFilesOrDirectories) {
   MOZ_ASSERT(mFileData && mFileData->mEntries.IsEmpty());
 
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   MOZ_ASSERT(global);
 
   RefPtr<FileSystem> fs = FileSystem::Create(global);

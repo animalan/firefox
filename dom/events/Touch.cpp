@@ -224,7 +224,7 @@ nsIGlobalObject* Touch::GetParentObject() const {
   if (!mOriginalTarget) {
     return nullptr;
   }
-  return mOriginalTarget->GetRelevantGlobal();
+  return mOriginalTarget->GetOwnerGlobal();
 }
 
 }  // namespace mozilla::dom

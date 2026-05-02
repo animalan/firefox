@@ -89,7 +89,7 @@ export class PromptListener {
       if (ChromeUtils.getClassName(event.target) === "Window") {
         return event.target.opener || event.target;
       }
-      return event.target.documentGlobal;
+      return event.target.ownerGlobal;
     })();
     const curBrowser = this.#curBrowserFn && this.#curBrowserFn();
 

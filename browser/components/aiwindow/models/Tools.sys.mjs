@@ -401,7 +401,7 @@ export class RunSearch {
 
   static #ensureTabSelected(tab) {
     if (!tab.selected) {
-      tab.documentGlobal.gBrowser.selectedTab = tab;
+      tab.ownerGlobal.gBrowser.selectedTab = tab;
     }
   }
 

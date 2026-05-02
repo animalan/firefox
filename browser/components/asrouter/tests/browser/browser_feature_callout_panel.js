@@ -55,7 +55,7 @@ async function showFeatureCallout(browser, message) {
     resolveClosed = resolve;
   });
   const config = {
-    win: browser.documentGlobal,
+    win: browser.ownerGlobal,
     location: "chrome",
     context: "chrome",
     browser,

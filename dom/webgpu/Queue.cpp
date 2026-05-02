@@ -445,7 +445,7 @@ void Queue::CopyExternalImageToTexture(
   }
 
   if (!sfeResult.mCORSUsed) {
-    nsIGlobalObject* global = mParent->GetRelevantGlobal();
+    nsIGlobalObject* global = mParent->GetOwnerGlobal();
     nsIPrincipal* dstPrincipal = global ? global->PrincipalOrNull() : nullptr;
     if (!sfeResult.mPrincipal || !dstPrincipal ||
         !dstPrincipal->Subsumes(sfeResult.mPrincipal)) {

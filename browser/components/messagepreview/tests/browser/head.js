@@ -29,7 +29,7 @@ async function waitForClick(selector, win) {
 
 async function dialogClosed(browser) {
   await TestUtils.waitForCondition(
-    () => !browser?.documentGlobal.gDialogBox.isOpen
+    () => !browser?.ownerGlobal.gDialogBox.isOpen
   );
 }
 

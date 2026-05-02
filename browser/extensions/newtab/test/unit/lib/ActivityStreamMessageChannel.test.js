@@ -21,7 +21,7 @@ function getTabDetails(portID, url = "about:newtab", extraArgs = {}) {
   };
   let browser = {
     getAttribute: () => (extraArgs.preloaded ? "preloaded" : ""),
-    documentGlobal: {
+    ownerGlobal: {
       addEventListener: () => {},
       removeEventListener: () => {},
     },
@@ -167,7 +167,7 @@ describe("ActivityStreamMessageChannel", () => {
           preloaded: true,
           loaded: true,
         });
-        msg4.data.browser.documentGlobal = {
+        msg4.data.browser.ownerGlobal = {
           STATE_MAXIMIZED: 1,
           STATE_MINIMIZED: 2,
           STATE_NORMAL: 3,

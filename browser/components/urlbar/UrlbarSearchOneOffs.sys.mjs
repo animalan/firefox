@@ -245,7 +245,7 @@ export class UrlbarSearchOneOffs extends SearchOneOffs {
         }
         if (!params?.inBackground) {
           this.input.window.gBrowser.selectedTab = newTab;
-          newTab.documentGlobal.gURLBar.startQuery(startQueryParams);
+          newTab.ownerGlobal.gURLBar.startQuery(startQueryParams);
         }
         break;
       }

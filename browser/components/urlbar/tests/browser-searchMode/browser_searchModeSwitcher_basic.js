@@ -153,7 +153,7 @@ add_task(async function privileged_chicklet() {
 
   Assert.ok(
     BrowserTestUtils.isVisible(
-      tab.documentGlobal.document.querySelector("#identity-box")
+      tab.ownerGlobal.document.querySelector("#identity-box")
     ),
     "Chicklet is visible on privileged pages."
   );

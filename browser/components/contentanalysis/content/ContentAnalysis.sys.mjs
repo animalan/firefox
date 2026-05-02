@@ -414,13 +414,13 @@ export const ContentAnalysis = {
         // If we're showing a dialog in the sidebar, the dialog is managed
         // by the embedderElement.
         let isSidebar =
-          browser?.documentGlobal?.browsingContext?.embedderElement?.id ==
+          browser?.ownerGlobal?.browsingContext?.embedderElement?.id ==
           "sidebar";
         if (isSidebar) {
-          browser = browser.documentGlobal.browsingContext.embedderElement;
+          browser = browser.ownerGlobal.browsingContext.embedderElement;
         }
         // browser will be null if the tab was closed
-        let win = browser?.documentGlobal;
+        let win = browser?.ownerGlobal;
         if (win) {
           let dialogBox = win.gBrowser.getTabDialogBox(browser);
           // Just close the dialog associated with this CA request.
@@ -988,7 +988,7 @@ export const ContentAnalysis = {
           // So instead, try to find the browser that this print preview dialog is on top of
           // and show the dialog there.
           let printPreviewBrowser = aBrowsingContext.embedderElement;
-          let win = printPreviewBrowser.documentGlobal;
+          let win = printPreviewBrowser.ownerGlobal;
           for (let browser of win.gBrowser.browsers) {
             if (
               win.PrintUtils.getPreviewBrowser(browser)?.browserId ===

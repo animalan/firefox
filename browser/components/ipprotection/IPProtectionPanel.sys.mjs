@@ -244,7 +244,7 @@ export class IPProtectionPanel {
         ? Services.focus.MOVEFOCUS_FORWARD
         : Services.focus.MOVEFOCUS_BACKWARD;
     Services.focus.moveFocus(
-      e.target.documentGlobal,
+      e.target.ownerGlobal,
       null,
       direction,
       Services.focus.FLAG_BYKEY
@@ -474,7 +474,7 @@ export class IPProtectionPanel {
    * @param {Event} e
    */
   static showHelpPage(e) {
-    let win = e.target?.documentGlobal;
+    let win = e.target?.ownerGlobal;
     if (win) {
       win.openWebLinkIn(
         Services.urlFormatter.formatURLPref("app.support.baseURL") +
@@ -1085,13 +1085,13 @@ export class IPProtectionPanel {
         locationsList: lazy.IPProtectionServerlist.countries,
       });
     } else if (event.type == "IPProtection:UserEnableVPNForSite") {
-      const win = event.target.documentGlobal;
+      const win = event.target.ownerGlobal;
       const principal = win?.gBrowser.contentPrincipal;
 
       lazy.IPPExceptionsManager.setExclusion(principal, false);
       Glean.ipprotection.exclusionToggled.record({ excluded: false });
     } else if (event.type == "IPProtection:UserDisableVPNForSite") {
-      const win = event.target.documentGlobal;
+      const win = event.target.ownerGlobal;
       const principal = win?.gBrowser.contentPrincipal;
 
       lazy.IPPExceptionsManager.setExclusion(principal, true);

@@ -877,7 +877,7 @@ export var PlacesUIUtils = {
    *          user's preferred destination window or tab.
    */
   openNodeWithEvent: function PUIU_openNodeWithEvent(aNode, aEvent) {
-    let window = aEvent.target.documentGlobal;
+    let window = aEvent.target.ownerGlobal;
 
     let where = lazy.BrowserUtils.whereToOpenLink(aEvent, false, true);
     if (this.loadBookmarksInTabs && lazy.PlacesUtils.nodeIsBookmark(aNode)) {
@@ -1178,7 +1178,7 @@ export var PlacesUIUtils = {
     // respectively.)  Therefore, we make sure to exclude the blank area
     // before the tree item icon (that is, to the left or right of it in
     // LTR and RTL modes, respectively) from the click target area.
-    let win = tree.documentGlobal;
+    let win = tree.ownerGlobal;
     let rect = tree.getCoordsForCellItem(cell.row, cell.col, "image");
     let isRTL = win.getComputedStyle(tree).direction == "rtl";
     let mouseInGutter = isRTL ? event.clientX > rect.x : event.clientX < rect.x;
@@ -1245,11 +1245,11 @@ export var PlacesUIUtils = {
     if (cell.row != -1) {
       let node = tree.view.nodeForTreeIndex(cell.row);
       if (lazy.PlacesUtils.nodeIsURI(node)) {
-        this.setMouseoverURL(node.uri, tree.documentGlobal);
+        this.setMouseoverURL(node.uri, tree.ownerGlobal);
         return;
       }
     }
-    this.setMouseoverURL("", tree.documentGlobal);
+    this.setMouseoverURL("", tree.ownerGlobal);
   },
 
   setMouseoverURL(url, win) {
@@ -1330,7 +1330,7 @@ export var PlacesUIUtils = {
 
     if (
       item.hasAttribute("hide-if-private-browsing") &&
-      lazy.PrivateBrowsingUtils.isWindowPrivate(item.documentGlobal)
+      lazy.PrivateBrowsingUtils.isWindowPrivate(item.ownerGlobal)
     ) {
       return true;
     }
@@ -1355,7 +1355,7 @@ export var PlacesUIUtils = {
   async managedPlacesContextShowing(event) {
     let menupopup = event.target;
     let document = menupopup.ownerDocument;
-    let window = menupopup.documentGlobal;
+    let window = menupopup.ownerGlobal;
     // We need to populate the submenus in order to have information
     // to show the context menu.
     if (
@@ -1401,7 +1401,7 @@ export var PlacesUIUtils = {
       }
     }
 
-    event.target.documentGlobal.updateCommands("places");
+    event.target.ownerGlobal.updateCommands("places");
   },
 
   placesContextShowing(event) {
@@ -1479,7 +1479,7 @@ export var PlacesUIUtils = {
   },
 
   createContainerTabMenu(event) {
-    let window = event.target.documentGlobal;
+    let window = event.target.ownerGlobal;
     return window.createUserContextMenu(event, { isContextMenu: true });
   },
 
@@ -1491,7 +1491,7 @@ export var PlacesUIUtils = {
     let triggerNode = this.lastContextMenuTriggerNode;
     let isManaged = !!triggerNode?.closest("#managed-bookmarks");
     if (isManaged) {
-      let window = triggerNode.documentGlobal;
+      let window = triggerNode.ownerGlobal;
       window.openTrustedLinkIn(triggerNode.link, "tab", { userContextId });
       return;
     }
@@ -1499,7 +1499,7 @@ export var PlacesUIUtils = {
     this._openNodeIn(
       view?.selectedNode || triggerNode,
       "tab",
-      view?.ownerWindow || triggerNode.documentGlobal.top,
+      view?.ownerWindow || triggerNode.ownerGlobal.top,
       {
         userContextId,
       }
@@ -1524,7 +1524,7 @@ export var PlacesUIUtils = {
     triggerNode: null,
 
     openSelectionInTabs(event) {
-      let window = event.target.documentGlobal;
+      let window = event.target.ownerGlobal;
       let menuitems = event.target.parentNode.triggerNode.menupopup.children;
       let items = [];
       for (let i = 0; i < menuitems.length; i++) {
@@ -1551,7 +1551,7 @@ export var PlacesUIUtils = {
     },
 
     doCommand(command) {
-      let window = this.triggerNode.documentGlobal;
+      let window = this.triggerNode.ownerGlobal;
       switch (command) {
         case "placesCmd_copy": {
           lazy.BrowserUtils.copyLink(
@@ -1682,7 +1682,7 @@ export var PlacesUIUtils = {
     ) {
       PlacesUIUtils.setupSpeculativeConnection(
         event.target._placesNode.uri,
-        event.target.documentGlobal
+        event.target.ownerGlobal
       );
     }
   },

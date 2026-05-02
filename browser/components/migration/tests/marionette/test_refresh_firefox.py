@@ -256,7 +256,7 @@ class TestFirefoxRefresh(MarionetteTestCase):
             });
             savePromises.push(Promise.allSettled([groupSaved, groupRemoved]));
           }
-          TabStateFlusher.flushWindow(gBrowser.documentGlobal).then(() => {
+          TabStateFlusher.flushWindow(gBrowser.ownerGlobal).then(() => {
             groups.forEach(group => {
               group.saveAndClose();
             })

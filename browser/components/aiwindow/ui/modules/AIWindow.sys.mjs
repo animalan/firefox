@@ -741,13 +741,13 @@ export const AIWindow = {
       }
 
       if (!openNewWindow) {
-        return this._authorizeAndToggleWindow(browser.documentGlobal, trigger);
+        return this._authorizeAndToggleWindow(browser.ownerGlobal, trigger);
       }
 
       const isAuthorized = await lazy.AIWindowAccountAuth.canAccessAIWindow();
       const windowPromise = lazy.BrowserWindowTracker.promiseOpenWindow({
         aiWindow: isAuthorized,
-        openerWindow: browser?.documentGlobal,
+        openerWindow: browser?.ownerGlobal,
       });
 
       const newWin = await windowPromise;

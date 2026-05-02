@@ -834,7 +834,7 @@ export class MigrationWizardParent extends JSWindowActorParent {
    *   Where the URL will be opened. Defaults to current tab.
    */
   #openURL(browser, url, where) {
-    let window = browser.documentGlobal;
+    let window = browser.ownerGlobal;
     window.openLinkIn(
       Services.urlFormatter.formatURL(url),
       where || "current",

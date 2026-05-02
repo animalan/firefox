@@ -199,7 +199,7 @@ void nsTypeAheadFind::ReleaseFoundResultsAndDisconnect() {
 }
 
 void nsTypeAheadFind::SetCurrentWindow(nsPIDOMWindowInner* aWindow) {
-  BindToGlobal(aWindow->AsGlobal());
+  BindToOwner(aWindow->AsGlobal());
 }
 
 NS_IMETHODIMP

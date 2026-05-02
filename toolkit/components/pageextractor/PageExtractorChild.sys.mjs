@@ -80,7 +80,7 @@ export class PageExtractorChild extends JSWindowActorChild {
   async waitForPageReady() {
     return new Promise(resolve => {
       const waitForIdle = () => {
-        this.document.documentGlobal.requestIdleCallback(() => resolve(), {
+        this.document.ownerGlobal.requestIdleCallback(() => resolve(), {
           timeout: MAX_REQUEST_IDLE_CALLBACK_DELAY_MS,
         });
       };

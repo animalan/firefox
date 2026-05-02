@@ -58,7 +58,7 @@ class ProviderTabGroups extends ActionsProvider {
       sortByLastSeenActive: true,
     })) {
       if (
-        group.documentGlobal == window &&
+        group.ownerGlobal == window &&
         window.gBrowser.selectedTab.group == group
       ) {
         // This group is already the active group, so don't offer switching to it.
@@ -119,7 +119,7 @@ class ProviderTabGroups extends ActionsProvider {
 
     if (group) {
       group.select();
-      group.documentGlobal.focus();
+      group.ownerGlobal.focus();
     }
   }
 

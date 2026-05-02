@@ -29,7 +29,7 @@ class nsScreen : public mozilla::DOMEventTargetHelper {
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(nsScreen,
                                            mozilla::DOMEventTargetHelper)
 
-  nsIGlobalObject* GetParentObject() const { return GetRelevantGlobal(); }
+  nsIGlobalObject* GetParentObject() const { return GetOwnerGlobal(); }
 
   nsPIDOMWindowOuter* GetOuter() const;
 

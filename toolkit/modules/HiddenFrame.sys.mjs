@@ -68,7 +68,7 @@ export class HiddenFrame {
    */
   getWindow() {
     this.get();
-    return this.#browser.document.documentGlobal;
+    return this.#browser.document.ownerGlobal;
   }
 
   /**
@@ -119,7 +119,7 @@ export class HiddenFrame {
         this.#listener = null;
         this.#webProgress = null;
         // Get the window reference via the document.
-        this.#frame = this.#browser.document.documentGlobal;
+        this.#frame = this.#browser.document.ownerGlobal;
         this.#deferred.resolve(this.#frame);
       }
     };

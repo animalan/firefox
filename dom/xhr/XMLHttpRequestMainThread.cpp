@@ -346,7 +346,7 @@ void XMLHttpRequestMainThread::InitParameters(bool aAnon, bool aSystem) {
   // Chrome is always allowed access, so do the permission check only
   // for non-chrome pages.
   if (!IsSystemXHR() && aSystem) {
-    nsIGlobalObject* global = GetRelevantGlobal();
+    nsIGlobalObject* global = GetOwnerGlobal();
     if (NS_WARN_IF(!global)) {
       SetParameters(aAnon, false);
       return;
@@ -781,7 +781,7 @@ void XMLHttpRequestMainThread::GetResponse(
       }
 
       if (!mResponseBlob) {
-        mResponseBlob = Blob::Create(GetRelevantGlobal(), mResponseBlobImpl);
+        mResponseBlob = Blob::Create(GetOwnerGlobal(), mResponseBlobImpl);
       }
 
       if (!GetOrCreateDOMReflector(aCx, mResponseBlob, aResponse)) {
@@ -2320,7 +2320,7 @@ XMLHttpRequestMainThread::OnStopRequest(nsIRequest* request, nsresult status) {
       ChromeFilePropertyBag bag;
       CopyUTF8toUTF16(contentType, bag.mType);
 
-      nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+      nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
 
       ErrorResult error;
       RefPtr<Promise> promise =
@@ -2677,7 +2677,7 @@ void XMLHttpRequestMainThread::MaybeLowerChannelPriority() {
   }
 
   AutoJSAPI jsapi;
-  if (!jsapi.Init(GetRelevantGlobal())) {
+  if (!jsapi.Init(GetOwnerGlobal())) {
     return;
   }
 
@@ -3403,7 +3403,7 @@ void XMLHttpRequestMainThread::SetTimeout(uint32_t aTimeout, ErrorResult& aRv) {
 }
 
 nsIEventTarget* XMLHttpRequestMainThread::GetTimerEventTarget() {
-  if (nsIGlobalObject* global = GetRelevantGlobal()) {
+  if (nsIGlobalObject* global = GetOwnerGlobal()) {
     return global->SerialEventTarget();
   }
   return nullptr;
@@ -3412,7 +3412,7 @@ nsIEventTarget* XMLHttpRequestMainThread::GetTimerEventTarget() {
 nsresult XMLHttpRequestMainThread::DispatchToMainThread(
     already_AddRefed<nsIRunnable> aRunnable) {
   DEBUG_WORKERREFS;
-  if (nsIGlobalObject* global = GetRelevantGlobal()) {
+  if (nsIGlobalObject* global = GetOwnerGlobal()) {
     return global->Dispatch(std::move(aRunnable));
   }
   return NS_DispatchToMainThread(std::move(aRunnable));
@@ -3974,7 +3974,7 @@ void XMLHttpRequestMainThread::MaybeCreateBlobStorage() {
           : MutableBlobStorage::eOnlyInMemory;
 
   nsCOMPtr<nsIEventTarget> eventTarget;
-  if (nsIGlobalObject* global = GetRelevantGlobal()) {
+  if (nsIGlobalObject* global = GetOwnerGlobal()) {
     eventTarget = global->SerialEventTarget();
   }
 

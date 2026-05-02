@@ -240,7 +240,7 @@ export var UITour = {
 
   onPageEvent(aEvent, aBrowser) {
     let browser = aBrowser;
-    let window = browser.documentGlobal;
+    let window = browser.ownerGlobal;
 
     // Does the window have tabs? We need to make sure since windowless browsers do
     // not have tabs.
@@ -621,7 +621,7 @@ export var UITour = {
         // was generated originally. If the browser where the UI tour is loaded
         // is windowless, just ignore the request to close the tab. The request
         // is also ignored if this is the only tab in the window.
-        let tabBrowser = browser.documentGlobal.gBrowser;
+        let tabBrowser = browser.ownerGlobal.gBrowser;
         if (tabBrowser && tabBrowser.browsers.length > 1) {
           tabBrowser.removeTab(tabBrowser.getTabForBrowser(browser));
         }
@@ -668,7 +668,7 @@ export var UITour = {
     lazy.log.debug("handleEvent: type =", aEvent.type, "event =", aEvent);
     switch (aEvent.type) {
       case "TabSelect": {
-        let window = aEvent.target.documentGlobal;
+        let window = aEvent.target.ownerGlobal;
 
         // Teardown the browser of the tab we just switched away from.
         if (aEvent.detail && aEvent.detail.previousTab) {
@@ -906,7 +906,7 @@ export var UITour = {
   },
 
   isElementVisible(aElement) {
-    let targetStyle = aElement.documentGlobal.getComputedStyle(aElement);
+    let targetStyle = aElement.ownerGlobal.getComputedStyle(aElement);
     return (
       !aElement.ownerDocument.hidden &&
       targetStyle.display != "none" &&
@@ -967,7 +967,7 @@ export var UITour = {
     let targetElement = aTarget.node;
     // Use the widget for filtering if it exists since the target may be the icon inside.
     if (aTarget.widgetName) {
-      let doc = aTarget.node.documentGlobal.document;
+      let doc = aTarget.node.ownerGlobal.document;
       targetElement =
         doc.getElementById(aTarget.widgetName) ||
         lazy.PanelMultiView.getViewNode(doc, aTarget.widgetName);
@@ -1503,7 +1503,7 @@ export var UITour = {
   },
 
   _hideAnnotationsForPanel(aEvent, aShouldClosePanel, aTargetPositionCallback) {
-    let win = aEvent.target.documentGlobal;
+    let win = aEvent.target.ownerGlobal;
     let hideHighlightMethod = null;
     let hideInfoMethod = null;
     if (aShouldClosePanel) {
@@ -1946,7 +1946,7 @@ export var UITour = {
       if (observer) {
         return;
       }
-      let win = aPanelEl.documentGlobal;
+      let win = aPanelEl.ownerGlobal;
       observer = new win.MutationObserver(this._annotationMutationCallback);
       this._annotationPanelMutationObservers.set(aPanelEl, observer);
       let observerOptions = {

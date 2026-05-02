@@ -533,7 +533,7 @@ add_task(async function test_observers_removed_when_view_is_hidden() {
       "The list does not update when Firefox View is hidden."
     );
 
-    await switchToFxViewTab(browser.documentGlobal);
+    await switchToFxViewTab(browser.ownerGlobal);
     info("The list should update when Firefox View is visible.");
     await BrowserTestUtils.waitForMutationCondition(
       listElem,

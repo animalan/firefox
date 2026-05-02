@@ -29,7 +29,7 @@ class AudioTrack;
  */
 class MediaTrack : public DOMEventTargetHelper {
  public:
-  MediaTrack(nsIGlobalObject* aRelevantGlobal, const nsAString& aId,
+  MediaTrack(nsIGlobalObject* aOwnerGlobal, const nsAString& aId,
              const nsAString& aKind, const nsAString& aLabel,
              const nsAString& aLanguage);
 

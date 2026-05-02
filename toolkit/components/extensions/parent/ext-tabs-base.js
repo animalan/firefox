@@ -88,7 +88,7 @@ class TabBase {
    * @returns {Promise<string>}
    */
   async capture(context, zoom, options) {
-    let win = this.browser.documentGlobal;
+    let win = this.browser.ownerGlobal;
     let scale = options?.scale || win.devicePixelRatio;
     let rect = options?.rect && win.DOMRect.fromRect(options.rect);
 

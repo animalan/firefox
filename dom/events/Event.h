@@ -90,7 +90,7 @@ class Event : public nsISupports, public nsWrapperCache {
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_SKIPPABLE_WRAPPERCACHE_CLASS(Event)
 
-  nsIGlobalObject* GetParentObject() const { return mGlobal; }
+  nsIGlobalObject* GetParentObject() const { return mOwner; }
 
   JSObject* WrapObject(JSContext* aCx, JS::Handle<JSObject*> aGivenProto) final;
 
@@ -435,7 +435,7 @@ class Event : public nsISupports, public nsWrapperCache {
   // mPresContext until destroyed.
   WeakPtr<nsPresContext> mPresContext;
   nsCOMPtr<EventTarget> mExplicitOriginalTarget;
-  nsCOMPtr<nsIGlobalObject> mGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwner;
   bool mEventIsInternal;
   bool mPrivateDataDuplicated;
   bool mIsMainThreadEvent;

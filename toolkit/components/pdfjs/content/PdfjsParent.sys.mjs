@@ -519,7 +519,7 @@ export class PdfjsParent extends JSWindowActorParent {
 
   _saveURL(aMsg) {
     const { blobUrl, originalUrl, filename } = aMsg.data;
-    this.browser.documentGlobal.saveURL(
+    this.browser.ownerGlobal.saveURL(
       blobUrl /* aURL */,
       originalUrl /* aOriginalURL */,
       filename /* aFileName */,

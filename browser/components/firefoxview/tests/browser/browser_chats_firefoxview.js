@@ -424,19 +424,19 @@ add_task(async function test_chat_with_url_opens_sidebar() {
 
     // Wait for sidebar to open with longer timeout
     await TestUtils.waitForCondition(
-      () => AIWindowUI.isSidebarOpen(newTab.documentGlobal),
+      () => AIWindowUI.isSidebarOpen(newTab.ownerGlobal),
       "Waiting for sidebar to open",
       5000,
       100
     );
 
     Assert.ok(
-      AIWindowUI.isSidebarOpen(newTab.documentGlobal),
+      AIWindowUI.isSidebarOpen(newTab.ownerGlobal),
       "Sidebar should be open in the new tab"
     );
 
     // Clean up
-    AIWindowUI.closeSidebar(newTab.documentGlobal);
+    AIWindowUI.closeSidebar(newTab.ownerGlobal);
     BrowserTestUtils.removeTab(newTab);
   });
 

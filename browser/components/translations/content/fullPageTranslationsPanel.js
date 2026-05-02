@@ -960,8 +960,7 @@ var FullPageTranslationsPanel = new (class {
     TranslationsParent.telemetry().fullPagePanel().onAboutTranslations();
     PanelMultiView.hidePopup(this.elements.panel);
     const window =
-      gBrowser.selectedBrowser.browsingContext.top.embedderElement
-        .documentGlobal;
+      gBrowser.selectedBrowser.browsingContext.top.embedderElement.ownerGlobal;
     window.openTrustedLinkIn(
       "https://support.mozilla.org/kb/website-translation",
       "tab",
@@ -1328,8 +1327,7 @@ var FullPageTranslationsPanel = new (class {
   openManageLanguages() {
     TranslationsParent.telemetry().fullPagePanel().onManageLanguages();
     const window =
-      gBrowser.selectedBrowser.browsingContext.top.embedderElement
-        .documentGlobal;
+      gBrowser.selectedBrowser.browsingContext.top.embedderElement.ownerGlobal;
     window.openTrustedLinkIn("about:preferences#general-translations", "tab");
   }
 

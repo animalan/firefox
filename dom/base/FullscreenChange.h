@@ -80,8 +80,7 @@ class FullscreenRequest : public FullscreenChange {
       dom::Element* aElement,
       dom::FullscreenKeyboardLock aFullscreenKeyboardLock,
       dom::CallerType aCallerType, ErrorResult& aRv) {
-    RefPtr<Promise> promise =
-        Promise::Create(aElement->GetRelevantGlobal(), aRv);
+    RefPtr<Promise> promise = Promise::Create(aElement->GetOwnerGlobal(), aRv);
     return WrapUnique(new FullscreenRequest(aElement, promise.forget(),
                                             aCallerType, true,
                                             aFullscreenKeyboardLock));
@@ -147,7 +146,7 @@ class FullscreenExit : public FullscreenChange {
 
   static UniquePtr<FullscreenExit> Create(dom::Document* aDoc,
                                           ErrorResult& aRv) {
-    RefPtr<Promise> promise = Promise::Create(aDoc->GetRelevantGlobal(), aRv);
+    RefPtr<Promise> promise = Promise::Create(aDoc->GetOwnerGlobal(), aRv);
     return WrapUnique(new FullscreenExit(aDoc, promise.forget()));
   }
 

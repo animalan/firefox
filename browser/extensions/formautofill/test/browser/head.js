@@ -1084,7 +1084,7 @@ async function verifyConfirmationHint(
   forceClose,
   anchorID = "identity-icon-box"
 ) {
-  let hintElem = browser.documentGlobal.ConfirmationHint._panel;
+  let hintElem = browser.ownerGlobal.ConfirmationHint._panel;
   let popupshown = BrowserTestUtils.waitForPopupEvent(hintElem, "shown");
   let popuphidden;
 

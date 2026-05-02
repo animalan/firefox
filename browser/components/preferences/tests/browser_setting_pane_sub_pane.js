@@ -9,7 +9,7 @@ describe("setting-pane", () => {
   beforeEach(async function setup() {
     await openPreferencesViaOpenPreferencesAPI("general", { leaveOpen: true });
     doc = gBrowser.selectedBrowser.contentDocument;
-    win = doc.documentGlobal;
+    win = doc.ownerGlobal;
     win.Preferences.addSetting({
       id: "testLoadSubPane",
       onUserClick: () => win.gotoPref("paneTestSubPane"),

@@ -52,7 +52,7 @@ function openDetailsView(win, id) {
   EventUtils.synthesizeMouseAtCenter(
     item.querySelector(".addon-name-link"),
     {},
-    item.documentGlobal
+    item.ownerGlobal
   );
   return loaded;
 }

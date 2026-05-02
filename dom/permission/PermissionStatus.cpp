@@ -113,7 +113,7 @@ already_AddRefed<PermissionStatusSink> PermissionStatus::CreateSink() {
 }
 
 PermissionState PermissionStatus::ComputeStateFromAction(uint32_t aAction) {
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   if (NS_WARN_IF(!global)) {
     return PermissionState::Denied;
   }

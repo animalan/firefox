@@ -156,7 +156,7 @@ NS_IMETHODIMP JSWindowActorProtocol::HandleEvent(Event* aEvent) {
   }
 
   nsCOMPtr<nsPIDOMWindowInner> inner =
-      do_QueryInterface(target->GetRelevantGlobal());
+      do_QueryInterface(target->GetOwnerGlobal());
   if (!inner) {
     return NS_ERROR_FAILURE;
   }

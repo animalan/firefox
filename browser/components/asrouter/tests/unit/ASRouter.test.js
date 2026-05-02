@@ -195,7 +195,7 @@ describe("ASRouter", () => {
     gBrowser = {
       selectedBrowser: {
         constructor: { name: "MozBrowser" },
-        get documentGlobal() {
+        get ownerGlobal() {
           return { gBrowser };
         },
       },

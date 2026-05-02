@@ -717,7 +717,7 @@ export class SidebarBookmarkList extends SidebarTabList {
       if (
         XULElement.isInstance(data) &&
         data.localName === "tab" &&
-        data.documentGlobal.isChromeWindow
+        data.ownerGlobal.isChromeWindow
       ) {
         const uri = data.linkedBrowser.currentURI;
         nodes.push({
@@ -728,7 +728,7 @@ export class SidebarBookmarkList extends SidebarTabList {
       } else if (
         XULElement.isInstance(data) &&
         data.localName === "tab-split-view-wrapper" &&
-        data.documentGlobal.isChromeWindow
+        data.ownerGlobal.isChromeWindow
       ) {
         for (const tab of data.tabs) {
           nodes.push({

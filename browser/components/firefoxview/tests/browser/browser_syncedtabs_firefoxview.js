@@ -69,9 +69,7 @@ add_task(async function test_unconfigured_initial_state() {
       { category: "firefoxview_next" },
       { clear: true, process: "parent" }
     );
-    await BrowserTestUtils.removeTab(
-      browser.documentGlobal.gBrowser.selectedTab
-    );
+    await BrowserTestUtils.removeTab(browser.ownerGlobal.gBrowser.selectedTab);
   });
   await tearDown(sandbox);
 });

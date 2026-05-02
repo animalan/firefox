@@ -424,7 +424,7 @@ TalosPowersService.prototype = {
     this.ParentExecServices[command.name](
       command.data,
       sendResult,
-      msg.target.documentGlobal
+      msg.target.ownerGlobal
     );
   },
 };

@@ -149,7 +149,7 @@ function waveOverImageMap(aImageMapID) {
     10,
     10,
     { type: "mousemove" },
-    imageMapNode.documentGlobal
+    imageMapNode.ownerGlobal
   );
 }
 
@@ -1795,7 +1795,7 @@ function moveCaretToDOMPoint(
       this.focusNode.focus();
     }
 
-    var selection = this.DOMPointNode.documentGlobal.getSelection();
+    var selection = this.DOMPointNode.ownerGlobal.getSelection();
     var selRange = selection.getRangeAt(0);
     selRange.setStart(this.DOMPointNode, aDOMPointOffset);
     selRange.collapse(true);

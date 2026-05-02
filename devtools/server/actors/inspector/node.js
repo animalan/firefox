@@ -488,11 +488,11 @@ class NodeActor extends Actor {
     // Get a reference to the custom element definition function.
     const name = this.rawNode.localName;
 
-    if (!this.rawNode.documentGlobal) {
+    if (!this.rawNode.ownerGlobal) {
       return undefined;
     }
 
-    const customElementsRegistry = this.rawNode.documentGlobal.customElements;
+    const customElementsRegistry = this.rawNode.ownerGlobal.customElements;
     const customElement =
       customElementsRegistry && customElementsRegistry.get(name);
     if (!customElement) {
@@ -760,7 +760,7 @@ class NodeActor extends Actor {
    * @return {object}
    */
   getOwnerGlobalDimensions() {
-    const win = this.rawNode.documentGlobal;
+    const win = this.rawNode.ownerGlobal;
     return {
       innerWidth: win.innerWidth,
       innerHeight: win.innerHeight,
@@ -793,7 +793,7 @@ class NodeActor extends Actor {
       // transient document. In such case, we want to wait until the "final" document
       // is inserted.
 
-      const { chromeEventHandler } = this.rawNode.documentGlobal.docShell;
+      const { chromeEventHandler } = this.rawNode.ownerGlobal.docShell;
       const browsingContextID = this.rawNode.browsingContext.id;
       await new Promise((resolve, reject) => {
         this._waitForFrameLoadAbortController = new AbortController();

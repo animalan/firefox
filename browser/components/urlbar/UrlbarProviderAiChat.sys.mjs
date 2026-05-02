@@ -178,7 +178,8 @@ export class UrlbarProviderAiChat extends UrlbarProvider {
   }
 
   async onEngagement(queryContext, controller, details) {
-    let win = controller.input.inputField.documentGlobal;
+    let win = controller.input.inputField.ownerGlobal;
+
     /** @type {AISmartBarParent} */
     let actor;
     if (queryContext.sapName == "urlbar") {

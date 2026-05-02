@@ -228,7 +228,7 @@ function testSortByDir(aOrganizerWin, aPlaceContentTree, aUnsortFirst) {
 add_task(async function test() {
   await withLibraryWindow("BookmarksToolbar", async ({ right: tree }) => {
     isnot(tree, null, "sanity check: placeContent tree should exist");
-    let win = tree.documentGlobal;
+    let win = tree.ownerGlobal;
     // Run the tests.
     testSortByColAndDir(win, tree, true);
     testSortByColAndDir(win, tree, false);

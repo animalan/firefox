@@ -9584,7 +9584,7 @@ declare var EventSource: {
 };
 
 interface EventTarget {
-    readonly documentGlobal: WindowProxy | null;
+    readonly ownerGlobal: WindowProxy | null;
     addEventListener(type: string, listener: EventListener | null, options?: AddEventListenerOptions | boolean, wantsUntrusted?: boolean | null): void;
     dispatchEvent(event: Event): boolean;
     getEventHandler(type: string): EventHandler;
@@ -27294,7 +27294,7 @@ declare function synthesizeMouseEvent(type: string, offsetX: number, offsetY: nu
 declare function synthesizeTouchEvent(type: string, touches: SynthesizeTouchEventData[], modifiers?: number, options?: SynthesizeTouchEventOptions, callback?: VoidFunction): boolean;
 declare function updateCommands(action: string): void;
 declare function toString(): string;
-declare var documentGlobal: WindowProxy | null;
+declare var ownerGlobal: WindowProxy | null;
 declare function dispatchEvent(event: Event): boolean;
 declare function getEventHandler(type: string): EventHandler;
 declare function setEventHandler(type: string, handler: EventHandler): void;

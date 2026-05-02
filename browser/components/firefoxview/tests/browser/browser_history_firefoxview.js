@@ -218,7 +218,7 @@ add_task(async function test_list_ordering() {
     await EventUtils.synthesizeMouseAtCenter(firstHistoryLink, {}, content);
     await historyTelemetry();
     await promiseHidden;
-    await openFirefoxViewTab(browser.documentGlobal);
+    await openFirefoxViewTab(browser.ownerGlobal);
 
     // Test number of cards when sorted by site/domain
     await clearAllParentTelemetryEvents();
@@ -424,7 +424,7 @@ add_task(async function test_observers_removed_when_view_is_hidden() {
     );
 
     info("The list should update when Firefox View is visible.");
-    await openFirefoxViewTab(browser.documentGlobal);
+    await openFirefoxViewTab(browser.ownerGlobal);
     visitList = await TestUtils.waitForCondition(
       () => historyComponent.cards?.[0]?.querySelector("fxview-tab-list"),
       "the first history card to have a tab list"

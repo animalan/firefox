@@ -208,7 +208,7 @@ async function getExpectedWebCompatInfo(tab, snapshot, fullAppData = false) {
     browserInfo.security.firewall = securityStringToArray(registeredFirewall);
   }
 
-  const tabInfo = await tab.linkedBrowser.documentGlobal.SpecialPowers.spawn(
+  const tabInfo = await tab.linkedBrowser.ownerGlobal.SpecialPowers.spawn(
     tab.linkedBrowser,
     [],
     async function () {

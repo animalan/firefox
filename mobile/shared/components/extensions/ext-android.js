@@ -88,7 +88,7 @@ class BrowserProgressListener {
   }
 
   onLocationChange(webProgress, request, locationURI, flags) {
-    const window = this.browser.documentGlobal;
+    const window = this.browser.ownerGlobal;
     // GeckoView windows can become popups at any moment, so we need to check
     // here
     if (!windowTracker.isBrowserWindow(window)) {
@@ -258,7 +258,7 @@ class TabTracker extends TabTrackerBase {
   }
 
   getBrowserData(browser) {
-    const window = browser.documentGlobal;
+    const window = browser.ownerGlobal;
     const tab = window?.tab;
     if (!tab) {
       return {
@@ -402,7 +402,7 @@ class Tab extends TabBase {
   }
 
   get window() {
-    return this.browser.documentGlobal;
+    return this.browser.ownerGlobal;
   }
 
   get windowId() {
@@ -460,7 +460,7 @@ class TabContext extends EventEmitter {
       // location changes related to the top level frame (See Bug 1493470 for a rationale).
       return;
     }
-    const { tab } = browser.documentGlobal;
+    const { tab } = browser.ownerGlobal;
     // fromBrowse will be false in case of e.g. a hash change or history.pushState
     const fromBrowse = !(
       flags & Ci.nsIWebProgressListener.LOCATION_CHANGE_SAME_DOCUMENT
@@ -630,7 +630,7 @@ extensions.on("startup", (type, extension) => {
 /* eslint-disable mozilla/balanced-listeners */
 extensions.on("page-shutdown", (type, context) => {
   if (context.viewType == "tab") {
-    const window = context.xulBrowser.documentGlobal;
+    const window = context.xulBrowser.ownerGlobal;
     if (!windowTracker.isBrowserWindow(window)) {
       // Content in non-browser window, e.g. ContentPage in xpcshell uses
       // chrome://extensions/content/dummy.xhtml as the window.
@@ -666,7 +666,7 @@ global.openOptionsPage = async extension => {
       triggeringPrincipal: extension.principal,
     });
 
-    const newWindow = browser.documentGlobal;
+    const newWindow = browser.ownerGlobal;
     mobileWindowTracker.setTabActive(newWindow, true);
     return;
   }

@@ -4898,12 +4898,12 @@ already_AddRefed<Animation> Element::Animate(
     JSContext* aContext, JS::Handle<JSObject*> aKeyframes,
     const UnrestrictedDoubleOrKeyframeAnimationOptions& aOptions,
     ErrorResult& aError) {
-  nsCOMPtr<nsIGlobalObject> relevantGlobal = GetRelevantGlobal();
-  if (!relevantGlobal) {
+  nsCOMPtr<nsIGlobalObject> ownerGlobal = GetOwnerGlobal();
+  if (!ownerGlobal) {
     aError.Throw(NS_ERROR_FAILURE);
     return nullptr;
   }
-  GlobalObject global(aContext, relevantGlobal->GetGlobalJSObject());
+  GlobalObject global(aContext, ownerGlobal->GetGlobalJSObject());
   MOZ_ASSERT(!global.Failed());
 
   // KeyframeEffect constructor doesn't follow the standard Xray calling

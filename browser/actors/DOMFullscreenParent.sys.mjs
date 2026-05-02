@@ -73,13 +73,13 @@ export class DOMFullscreenParent extends JSWindowActorParent {
         this.waitingForChildEnterFullscreen = false;
         // We were destroyed while waiting for our DOMFullscreenChild to exit
         // or enter fullscreen, run cleanup steps anyway.
-        this._cleanupFullscreenStateAndResumeChromeUI(browser.documentGlobal);
+        this._cleanupFullscreenStateAndResumeChromeUI(browser.ownerGlobal);
       }
 
       if (this != this.requestOrigin) {
         // The current fullscreen requester should handle the fullsceen event
         // if any.
-        this.removeListeners(browser.documentGlobal);
+        this.removeListeners(browser.ownerGlobal);
       }
       return;
     }
@@ -128,7 +128,7 @@ export class DOMFullscreenParent extends JSWindowActorParent {
       return;
     }
 
-    let window = browser.documentGlobal;
+    let window = browser.ownerGlobal;
     switch (aMessage.name) {
       case "DOMFullscreen:Request": {
         const keyboardLockEnabled = Services.prefs.getBoolPref(
@@ -236,10 +236,10 @@ export class DOMFullscreenParent extends JSWindowActorParent {
         // request was initiated from an in-process browser, we need
         // to get its corresponding browser here.
         let browser;
-        if (aEvent.target.documentGlobal == window) {
+        if (aEvent.target.ownerGlobal == window) {
           browser = aEvent.target;
         } else {
-          browser = aEvent.target.documentGlobal.docShell.chromeEventHandler;
+          browser = aEvent.target.ownerGlobal.docShell.chromeEventHandler;
         }
 
         // Addon installation should be cancelled when entering fullscreen for security and usability reasons.
@@ -256,7 +256,7 @@ export class DOMFullscreenParent extends JSWindowActorParent {
         if (!this.hasBeenDestroyed() && this.requestOrigin) {
           window.PointerlockFsWarning.showFullScreen(
             this.requestOrigin.browsingContext,
-            browser.documentGlobal.document.fullscreenKeyboardLock == "browser"
+            browser.ownerGlobal.document.fullscreenKeyboardLock == "browser"
           );
         }
         break;

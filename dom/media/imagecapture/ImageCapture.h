@@ -58,7 +58,7 @@ class ImageCapture final : public DOMEventTargetHelper {
   }
 
   // ImageCapture class members
-  nsIGlobalObject* GetParentObject() const { return GetRelevantGlobal(); }
+  nsIGlobalObject* GetParentObject() const { return GetOwnerGlobal(); }
 
   static already_AddRefed<ImageCapture> Constructor(const GlobalObject& aGlobal,
                                                     MediaStreamTrack& aTrack,

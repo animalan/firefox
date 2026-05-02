@@ -312,7 +312,7 @@ export var DownloadsTaskbar = {
       // On Windows, the private and public windows are separated. Plus, the native code
       // supports multiple taskbar progresses at a time. Therefore, have a separate
       // instance for each.
-      return lazy.PrivateBrowsingUtils.isWindowPrivate(aWindow)
+      return lazy.PrivateBrowsingUtils.isBrowserPrivate(aWindow)
         ? lazy.Downloads.PRIVATE
         : lazy.Downloads.PUBLIC;
     }

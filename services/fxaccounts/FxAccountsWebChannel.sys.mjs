@@ -368,7 +368,7 @@ FxAccountsWebChannel.prototype = {
         break;
       case COMMAND_PAIR_PREFERENCES:
         if (lazy.pairingEnabled) {
-          let win = browser.documentGlobal;
+          let win = browser.ownerGlobal;
           this._channel.send(
             { command, messageId: message.messageId, data: { ok: true } },
             sendingContext
@@ -991,7 +991,7 @@ FxAccountsWebChannelHelpers.prototype = {
    * @param {object} browser the browser in whose window we'll open Firefox View
    */
   openFirefoxView(browser) {
-    browser.documentGlobal.FirefoxViewHandler.openTab("syncedtabs");
+    browser.ownerGlobal.FirefoxViewHandler.openTab("syncedtabs");
   },
 
   /**

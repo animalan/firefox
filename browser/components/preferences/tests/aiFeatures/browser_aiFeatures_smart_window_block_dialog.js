@@ -40,7 +40,7 @@ describe("settings AI Controls - Smart Window block modal", () => {
     });
     await openPreferencesViaOpenPreferencesAPI("general", { leaveOpen: true });
     doc = gBrowser.selectedBrowser.contentDocument;
-    win = doc.documentGlobal;
+    win = doc.ownerGlobal;
     await openAiFeaturePanel(doc, win);
   });
 

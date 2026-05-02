@@ -948,8 +948,8 @@ export class MozBrowser extends MozElements.MozElementMixin(XULFrameElement) {
   }
 
   getTabBrowser() {
-    if (this?.documentGlobal?.gBrowser?.getTabForBrowser(this)) {
-      return this.documentGlobal.gBrowser;
+    if (this?.ownerGlobal?.gBrowser?.getTabForBrowser(this)) {
+      return this.ownerGlobal.gBrowser;
     }
     return null;
   }

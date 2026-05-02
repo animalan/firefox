@@ -231,7 +231,7 @@ async function openTabMenuFor(tab) {
   EventUtils.synthesizeMouseAtCenter(
     tab,
     { type: "contextmenu" },
-    tab.documentGlobal
+    tab.ownerGlobal
   );
   await tabMenuShown;
 

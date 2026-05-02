@@ -1021,18 +1021,18 @@ nsresult ExtractBytesFromData(
 }
 }  // namespace
 
-PushMessageData::PushMessageData(nsIGlobalObject* aGlobal,
+PushMessageData::PushMessageData(nsIGlobalObject* aOwner,
                                  nsTArray<uint8_t>&& aBytes)
-    : mGlobal(aGlobal), mBytes(std::move(aBytes)) {
+    : mOwner(aOwner), mBytes(std::move(aBytes)) {
   AutoJSAPI jsapi;
-  if (jsapi.Init(mGlobal)) {
+  if (jsapi.Init(mOwner)) {
     SetUseCounterIfDeclarative(jsapi.cx());
   }
 }
 
 PushMessageData::~PushMessageData() = default;
 
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(PushMessageData, mGlobal)
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(PushMessageData, mOwner)
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(PushMessageData)
 NS_IMPL_CYCLE_COLLECTING_RELEASE(PushMessageData)
@@ -1077,7 +1077,7 @@ already_AddRefed<mozilla::dom::Blob> PushMessageData::Blob(ErrorResult& aRv) {
   uint8_t* data = GetContentsCopy();
   if (data) {
     RefPtr<mozilla::dom::Blob> blob =
-        BodyUtil::ConsumeBlob(mGlobal, u""_ns, mBytes.Length(), data, aRv);
+        BodyUtil::ConsumeBlob(mOwner, u""_ns, mBytes.Length(), data, aRv);
     if (blob) {
       return blob.forget();
     }
@@ -1185,8 +1185,7 @@ already_AddRefed<PushEvent> PushEvent::Constructor(
       aRv.Throw(rv);
       return nullptr;
     }
-    e->mData =
-        new PushMessageData(aOwner->GetRelevantGlobal(), std::move(bytes));
+    e->mData = new PushMessageData(aOwner->GetOwnerGlobal(), std::move(bytes));
   }
   return e.forget();
 }

@@ -100,7 +100,7 @@ void nsICanvasRenderingContextInternal::RecordCanvasUsage(
     auto usage =
         mozilla::CanvasUsage::CreateUsage(true, contextType, aAPI, size, this);
     if (NS_IsMainThread()) {
-      nsIGlobalObject* global = mOffscreenCanvas->GetRelevantGlobal();
+      nsIGlobalObject* global = mOffscreenCanvas->GetOwnerGlobal();
       if (global) {
         if (nsPIDOMWindowInner* inner = global->GetAsInnerWindow()) {
           if (mozilla::dom::Document* doc = inner->GetExtantDoc()) {
@@ -150,7 +150,7 @@ nsICookieJarSettings* nsICanvasRenderingContextInternal::GetCookieJarSettings()
   // and return the cookieJarSettings for the window's document, if available.
   if (mOffscreenCanvas) {
     nsCOMPtr<nsPIDOMWindowInner> win =
-        do_QueryInterface(mOffscreenCanvas->GetRelevantGlobal());
+        do_QueryInterface(mOffscreenCanvas->GetOwnerGlobal());
 
     if (win) {
       return win->GetExtantDoc()->CookieJarSettings();

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const browser = window.docShell.chromeEventHandler;
-const { document: gDoc, XPCOMUtils } = browser.documentGlobal;
+const { document: gDoc, XPCOMUtils } = browser.ownerGlobal;
 
 ChromeUtils.defineESModuleGetters(this, {
   AboutWelcomeParent: "resource:///actors/AboutWelcomeParent.sys.mjs",
@@ -110,13 +110,13 @@ function renderMultistage(ready) {
         event.stopPropagation();
       }
     };
-    browser.documentGlobal.addEventListener("keydown", preventEscape, {
+    browser.ownerGlobal.addEventListener("keydown", preventEscape, {
       capture: true,
       mozSystemGroup: true,
     });
 
     addEventListener("pagehide", () => {
-      browser.documentGlobal.removeEventListener("keydown", preventEscape, {
+      browser.ownerGlobal.removeEventListener("keydown", preventEscape, {
         capture: true,
         mozSystemGroup: true,
       });

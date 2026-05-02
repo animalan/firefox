@@ -12,7 +12,7 @@ async function openPrefsWithSettings({ allEnabled, sectionEnabled }) {
   });
   await openPreferencesViaOpenPreferencesAPI("privacy", { leaveOpen: true });
   let doc = gBrowser.selectedBrowser.contentDocument;
-  let win = doc.documentGlobal;
+  let win = doc.ownerGlobal;
   win.Preferences.addSetting({
     id: "testSetting",
     get: () => true,

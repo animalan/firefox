@@ -289,7 +289,7 @@ OffscreenCanvas::CreateContext(CanvasContextType aContextType) {
 
 Maybe<uint64_t> OffscreenCanvas::GetWindowID() const {
   if (NS_IsMainThread()) {
-    if (nsIGlobalObject* global = GetRelevantGlobal()) {
+    if (nsIGlobalObject* global = GetOwnerGlobal()) {
       if (auto* window = global->GetAsInnerWindow()) {
         return Some(window->WindowID());
       }
@@ -401,7 +401,7 @@ already_AddRefed<ImageBitmap> OffscreenCanvas::TransferToImageBitmap(
   }
 
   RefPtr<ImageBitmap> result =
-      ImageBitmap::CreateFromOffscreenCanvas(GetRelevantGlobal(), *this, aRv);
+      ImageBitmap::CreateFromOffscreenCanvas(GetOwnerGlobal(), *this, aRv);
   if (!result) {
     return nullptr;
   }
@@ -491,7 +491,7 @@ already_AddRefed<Promise> OffscreenCanvas::ConvertToBlob(
     return nullptr;
   }
 
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
 
   RefPtr<Promise> promise = Promise::Create(global, aRv);
   if (aRv.Failed()) {
@@ -556,7 +556,7 @@ already_AddRefed<Promise> OffscreenCanvas::ToBlob(JSContext* aCx,
     return nullptr;
   }
 
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
 
   RefPtr<Promise> promise = Promise::Create(global, aRv);
   if (aRv.Failed()) {
@@ -619,8 +619,7 @@ bool OffscreenCanvas::CallerCanRead(nsIPrincipal& aPrincipal) const {
 }
 
 bool OffscreenCanvas::ShouldResistFingerprinting(RFPTarget aTarget) const {
-  return nsContentUtils::ShouldResistFingerprinting(GetRelevantGlobal(),
-                                                    aTarget);
+  return nsContentUtils::ShouldResistFingerprinting(GetOwnerGlobal(), aTarget);
 }
 
 /* static */
@@ -656,7 +655,7 @@ void OffscreenCanvas::ReportBlockedFontFamily(const nsCString& aMsg) const {
 
 bool OffscreenCanvas::IsChrome() const {
   if (NS_IsMainThread()) {
-    nsCOMPtr<nsPIDOMWindowInner> win = do_QueryInterface(GetRelevantGlobal());
+    nsCOMPtr<nsPIDOMWindowInner> win = do_QueryInterface(GetOwnerGlobal());
     NS_ENSURE_TRUE(win, false);
 
     nsCOMPtr<Document> doc = win->GetExtantDoc();
@@ -673,7 +672,7 @@ bool OffscreenCanvas::IsChrome() const {
 
 bool OffscreenCanvas::IsPrivateBrowsing() const {
   if (NS_IsMainThread()) {
-    nsCOMPtr<nsPIDOMWindowInner> win = do_QueryInterface(GetRelevantGlobal());
+    nsCOMPtr<nsPIDOMWindowInner> win = do_QueryInterface(GetOwnerGlobal());
     NS_ENSURE_TRUE(win, false);
 
     nsCOMPtr<Document> doc = win->GetExtantDoc();
@@ -689,8 +688,7 @@ bool OffscreenCanvas::IsPrivateBrowsing() const {
 }
 
 nsICookieJarSettings* OffscreenCanvas::GetCookieJarSettings() const {
-  if (nsCOMPtr<nsPIDOMWindowInner> win =
-          do_QueryInterface(GetRelevantGlobal())) {
+  if (nsCOMPtr<nsPIDOMWindowInner> win = do_QueryInterface(GetOwnerGlobal())) {
     if (nsCOMPtr<Document> doc = win->GetExtantDoc()) {
       return doc->CookieJarSettings();
     }
@@ -705,7 +703,7 @@ nsICookieJarSettings* OffscreenCanvas::GetCookieJarSettings() const {
 
 Maybe<FontVisibility> OffscreenCanvas::MaybeInheritFontVisibility() const {
   if (NS_IsMainThread()) {
-    nsCOMPtr<nsPIDOMWindowInner> win = do_QueryInterface(GetRelevantGlobal());
+    nsCOMPtr<nsPIDOMWindowInner> win = do_QueryInterface(GetOwnerGlobal());
     NS_ENSURE_TRUE(win, Nothing());
 
     nsCOMPtr<Document> doc = win->GetExtantDoc();

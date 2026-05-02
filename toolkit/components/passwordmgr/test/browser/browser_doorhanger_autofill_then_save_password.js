@@ -78,7 +78,7 @@ async function test_save_change({
         "passwordmgr/test/browser/form_basic.html",
     },
     async function (browser) {
-      await SimpleTest.promiseFocus(browser.documentGlobal);
+      await SimpleTest.promiseFocus(browser.ownerGlobal);
 
       await SpecialPowers.spawn(
         browser,

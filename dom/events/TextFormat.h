@@ -17,7 +17,7 @@ class TextFormat final : public nsISupports, public nsWrapperCache {
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(TextFormat)
 
-  nsIGlobalObject* GetParentObject() const { return mGlobal; }
+  nsIGlobalObject* GetParentObject() const { return mOwner; }
 
   JSObject* WrapObject(JSContext* aCx,
                        JS::Handle<JSObject*> aGivenProto) override;
@@ -36,10 +36,10 @@ class TextFormat final : public nsISupports, public nsWrapperCache {
   }
 
  private:
-  explicit TextFormat(nsIGlobalObject* aGlobal);
+  explicit TextFormat(nsIGlobalObject* aOwner);
   ~TextFormat() = default;
 
-  nsCOMPtr<nsIGlobalObject> mGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwner;
 };
 
 }  // namespace mozilla::dom

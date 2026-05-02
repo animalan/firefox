@@ -11,11 +11,11 @@
 
 namespace mozilla::dom {
 
-AudioTrack::AudioTrack(nsIGlobalObject* aRelevantGlobal, const nsAString& aId,
+AudioTrack::AudioTrack(nsIGlobalObject* aOwnerGlobal, const nsAString& aId,
                        const nsAString& aKind, const nsAString& aLabel,
                        const nsAString& aLanguage, bool aEnabled,
                        AudioStreamTrack* aStreamTrack)
-    : MediaTrack(aRelevantGlobal, aId, aKind, aLabel, aLanguage),
+    : MediaTrack(aOwnerGlobal, aId, aKind, aLabel, aLanguage),
       mEnabled(aEnabled),
       mAudioStreamTrack(aStreamTrack) {}
 

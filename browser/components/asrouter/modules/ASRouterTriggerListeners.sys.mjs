@@ -383,11 +383,11 @@ export const ASRouterTriggerListeners = new Map([
       },
 
       onTabSwitch(event) {
-        if (!event.target.documentGlobal.gBrowser) {
+        if (!event.target.ownerGlobal.gBrowser) {
           return;
         }
 
-        const { gBrowser } = event.target.documentGlobal;
+        const { gBrowser } = event.target.ownerGlobal;
         const match = checkURLMatch(gBrowser.currentURI, {
           hosts: this._hosts,
           matchPatternSet: this._matchPatternSet,
@@ -944,10 +944,10 @@ export const ASRouterTriggerListeners = new Map([
       },
       handleEvent(event) {
         if (this._initialized) {
-          if (!event.target.documentGlobal.gBrowser) {
+          if (!event.target.ownerGlobal.gBrowser) {
             return;
           }
-          const { gBrowser } = event.target.documentGlobal;
+          const { gBrowser } = event.target.ownerGlobal;
           this._closedTabs++;
           this._triggerHandler(gBrowser.selectedBrowser, {
             id: this.id,
@@ -994,10 +994,10 @@ export const ASRouterTriggerListeners = new Map([
       },
       handleEvent(event) {
         if (this._initialized) {
-          if (!event.target.documentGlobal.gBrowser) {
+          if (!event.target.ownerGlobal.gBrowser) {
             return;
           }
-          const { gBrowser } = event.target.documentGlobal;
+          const { gBrowser } = event.target.ownerGlobal;
           this._openTabs++;
           this._triggerHandler(gBrowser.selectedBrowser, {
             id: this.id,
@@ -1044,10 +1044,10 @@ export const ASRouterTriggerListeners = new Map([
       },
       handleEvent(event) {
         if (this._initialized) {
-          if (!event.target.documentGlobal.gBrowser) {
+          if (!event.target.ownerGlobal.gBrowser) {
             return;
           }
-          const { gBrowser } = event.target.documentGlobal;
+          const { gBrowser } = event.target.ownerGlobal;
           this._tabGroupsCreated++;
           this._triggerHandler(gBrowser.selectedBrowser, {
             id: this.id,
@@ -1093,10 +1093,10 @@ export const ASRouterTriggerListeners = new Map([
       },
       handleEvent(event) {
         if (this._initialized) {
-          if (!event.target.documentGlobal.gBrowser) {
+          if (!event.target.ownerGlobal.gBrowser) {
             return;
           }
-          const { gBrowser } = event.target.documentGlobal;
+          const { gBrowser } = event.target.ownerGlobal;
           this._tabGroupsSaved++;
           this._triggerHandler(gBrowser.selectedBrowser, {
             id: this.id,
@@ -1142,10 +1142,10 @@ export const ASRouterTriggerListeners = new Map([
       },
       handleEvent(event) {
         if (this._initialized) {
-          if (!event.target.documentGlobal.gBrowser) {
+          if (!event.target.ownerGlobal.gBrowser) {
             return;
           }
-          const { gBrowser } = event.target.documentGlobal;
+          const { gBrowser } = event.target.ownerGlobal;
           this._tabGroupsCollapsed++;
           this._triggerHandler(gBrowser.selectedBrowser, {
             id: this.id,
@@ -1464,7 +1464,7 @@ export const ASRouterTriggerListeners = new Map([
         if (this._initialized) {
           const browser =
             event.detail.windowContext.rootFrameLoader?.ownerElement;
-          const win = browser?.documentGlobal;
+          const win = browser?.ownerGlobal;
           // We only want to show messages in the active browser window.
           if (
             win === Services.wm.getMostRecentBrowserWindow() &&
@@ -1570,7 +1570,7 @@ export const ASRouterTriggerListeners = new Map([
         if (browser !== tabbrowser.selectedBrowser) {
           return;
         }
-        const win = tabbrowser.documentGlobal;
+        const win = tabbrowser.ownerGlobal;
         const tab = tabbrowser.selectedTab;
         const existingCallout = this._callouts.get(win);
         const isPDFJS =
@@ -1591,7 +1591,7 @@ export const ASRouterTriggerListeners = new Map([
 
       handleEvent(event) {
         const tab = event.target;
-        const win = tab.documentGlobal;
+        const win = tab.ownerGlobal;
         const { gBrowser } = win;
         if (!gBrowser) {
           return;
@@ -1727,7 +1727,7 @@ export const ASRouterTriggerListeners = new Map([
         if (browser !== tabbrowser.selectedBrowser) {
           return;
         }
-        const win = tabbrowser.documentGlobal;
+        const win = tabbrowser.ownerGlobal;
         const tab = tabbrowser.selectedTab;
         const existingCallout = this._callouts.get(win);
         const isNewtabOrHome =
@@ -1750,7 +1750,7 @@ export const ASRouterTriggerListeners = new Map([
 
       handleEvent(event) {
         const tab = event.target;
-        const win = tab.documentGlobal;
+        const win = tab.ownerGlobal;
         const { gBrowser } = win;
         if (!gBrowser) {
           return;
@@ -1847,7 +1847,7 @@ export const ASRouterTriggerListeners = new Map([
         }
 
         const clickedElement = event.target;
-        const win = event.target.documentGlobal;
+        const win = event.target.ownerGlobal;
 
         // only fire if the element ID is in the params of the trigger in one of our messages
         if (

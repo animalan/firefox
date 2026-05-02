@@ -101,7 +101,7 @@ const lazy = XPCOMUtils.declareLazy({
 const UNLIMITED_MAX_RESULTS = 99;
 
 let getBoundsWithoutFlushing = element =>
-  element.documentGlobal.windowUtils.getBoundsWithoutFlushing(element);
+  element.ownerGlobal.windowUtils.getBoundsWithoutFlushing(element);
 let px = number => number.toFixed(2) + "px";
 
 /**
@@ -257,7 +257,7 @@ ${
   constructor() {
     super();
 
-    this.window = this.documentGlobal;
+    this.window = this.ownerGlobal;
     this.document = this.window.document;
     this.isPrivate = lazy.PrivateBrowsingUtils.isWindowPrivate(this.window);
 

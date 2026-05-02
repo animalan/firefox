@@ -124,20 +124,12 @@ export var BrowserTestUtils = {
       };
     }
     let tab = await BrowserTestUtils.openNewForegroundTab(options);
-    /**
-     * @backward-compat { version 152 }
-     * Get rid of the documentGlobal fallback once 152 makes it to release.
-     */
-    let originalWindow = tab.documentGlobal || tab.ownerGlobal;
+    let originalWindow = tab.ownerGlobal;
     let result;
     try {
       result = await taskFn(tab.linkedBrowser);
     } finally {
-      /**
-       * @backward-compat { version 152 }
-       * Get rid of the documentGlobal fallback once 152 makes it to release.
-       */
-      let finalWindow = tab.documentGlobal || tab.ownerGlobal;
+      let finalWindow = tab.ownerGlobal;
       if (originalWindow == finalWindow && !tab.closing && tab.linkedBrowser) {
         // taskFn may resolve within a tick after opening a new tab.
         // We shouldn't remove the newly opened tab in the same tick.
@@ -182,12 +174,10 @@ export var BrowserTestUtils = {
   openNewForegroundTab(tabbrowser, ...args) {
     let startTime = ChromeUtils.now();
     let options;
-    /**
-     * @backward-compat { version 152 }
-     * Get rid of the documentGlobal fallback once 152 makes it to release.
-     */
-    let win = tabbrowser.documentGlobal || tabbrowser.ownerGlobal;
-    if (win && tabbrowser === win.gBrowser) {
+    if (
+      tabbrowser.ownerGlobal &&
+      tabbrowser === tabbrowser.ownerGlobal.gBrowser
+    ) {
       // tabbrowser is a tabbrowser, read the rest of the arguments from args.
       let [
         opening = "about:blank",
@@ -211,11 +201,6 @@ export var BrowserTestUtils = {
 
       tabbrowser = tabbrowser.gBrowser;
       options = { opening, waitForLoad, waitForStateStop, forceNewProcess };
-      /**
-       * @backward-compat { version 152 }
-       * Get rid of the documentGlobal fallback once 152 makes it to release.
-       */
-      win = tabbrowser.documentGlobal || tabbrowser.ownerGlobal;
     }
 
     let {
@@ -265,7 +250,7 @@ export var BrowserTestUtils = {
       }
     }
     return Promise.all(promises).then(() => {
-      let { innerWindowId } = win.windowGlobalChild;
+      let { innerWindowId } = tabbrowser.ownerGlobal.windowGlobalChild;
       ChromeUtils.addProfilerMarker(
         "BrowserTestUtils",
         { startTime, category: "Test", innerWindowId },
@@ -302,7 +287,7 @@ export var BrowserTestUtils = {
       return BrowserTestUtils.isHidden(element.getRootNode().host);
     }
 
-    let win = element.documentGlobal;
+    let win = element.ownerGlobal;
     let style = win.getComputedStyle(element);
     if (style.display == "none") {
       return true;
@@ -338,7 +323,7 @@ export var BrowserTestUtils = {
       return BrowserTestUtils.isVisible(element.getRootNode().host);
     }
 
-    let win = element.documentGlobal;
+    let win = element.ownerGlobal;
     let style = win.getComputedStyle(element);
     if (style.display == "none") {
       return false;
@@ -383,12 +368,7 @@ export var BrowserTestUtils = {
    */
   switchTab(tabbrowser, tab) {
     let startTime = ChromeUtils.now();
-    /**
-     * @backward-compat { version 152 }
-     * Get rid of the documentGlobal fallback once 152 makes it to release.
-     */
-    let win = tabbrowser.documentGlobal || tabbrowser.ownerGlobal;
-    let { innerWindowId } = win.windowGlobalChild;
+    let { innerWindowId } = tabbrowser.ownerGlobal.windowGlobalChild;
 
     // Some tests depend on the delay and TabSwitched only fires if the browser is visible.
     // Bug 1977993 tracks always dispatching TabSwitched.
@@ -471,12 +451,7 @@ export var BrowserTestUtils = {
       maybeErrorPage = false,
     } = options;
     let startTime = ChromeUtils.now();
-    /**
-     * @backward-compat { version 152 }
-     * Get rid of the documentGlobal fallback once 152 makes it to release.
-     */
-    let win = browser.documentGlobal || browser.ownerGlobal;
-    let { innerWindowId } = win.windowGlobalChild;
+    let { innerWindowId } = browser.ownerGlobal.windowGlobalChild;
 
     // Passing a url as second argument is a common mistake we should prevent.
     if (includeSubFrames && typeof includeSubFrames != "boolean") {
@@ -492,7 +467,7 @@ export var BrowserTestUtils = {
 
     // If browser belongs to tabbrowser-tab, ensure it has been
     // inserted into the document.
-    let tabbrowser = win.gBrowser;
+    let tabbrowser = browser.ownerGlobal.gBrowser;
     if (tabbrowser && tabbrowser.getTabForBrowser) {
       let tab = tabbrowser.getTabForBrowser(browser);
       if (tab) {
@@ -577,11 +552,11 @@ export var BrowserTestUtils = {
         }
 
         browser.removeEventListener(eventName, listener, true);
-        win.removeEventListener("unload", listener);
+        browser.ownerGlobal.removeEventListener("unload", listener);
       }
 
       browser.addEventListener(eventName, listener, true);
-      win.addEventListener("unload", listener);
+      browser.ownerGlobal.addEventListener("unload", listener);
     });
   },
 
@@ -1016,11 +991,7 @@ export var BrowserTestUtils = {
    *        The tabbrowser in which to preload a browser.
    */
   async maybeCreatePreloadedBrowser(gBrowser) {
-    /**
-     * @backward-compat { version 152 }
-     * Get rid of the documentGlobal fallback once 152 makes it to release.
-     */
-    let win = gBrowser.documentGlobal || gBrowser.ownerGlobal;
+    let win = gBrowser.ownerGlobal;
     win.NewTabPagePreloading.maybeCreatePreloadedBrowser(win);
 
     // We cannot use the regular BrowserTestUtils helper for waiting here, since that
@@ -1348,12 +1319,7 @@ export var BrowserTestUtils = {
         return subject.windowGlobalChild.innerWindowId;
       }
       if ("ownerDocument" in subject) {
-        /**
-         * @backward-compat { version 152 }
-         * Get rid of the documentGlobal fallback once 152 makes it to release.
-         */
-        let win = subject.documentGlobal || subject.ownerGlobal;
-        return win.windowGlobalChild.innerWindowId;
+        return subject.ownerGlobal.windowGlobalChild.innerWindowId;
       }
       return null;
     })();
@@ -1724,12 +1690,7 @@ export var BrowserTestUtils = {
       return Promise.resolve();
     }
     return new Promise(resolve => {
-      /**
-       * @backward-compat { version 152 }
-       * Get rid of the documentGlobal fallback once 152 makes it to release.
-       */
-      let win = target.documentGlobal || target.ownerGlobal;
-      let obs = new win.MutationObserver(function () {
+      let obs = new target.ownerGlobal.MutationObserver(function () {
         if (checkFn()) {
           obs.disconnect();
           resolve();
@@ -1994,12 +1955,7 @@ export var BrowserTestUtils = {
    *        Extra options to pass to tabbrowser's removeTab method.
    */
   removeTab(tab, options = {}) {
-    /**
-     * @backward-compat { version 152 }
-     * Get rid of the documentGlobal fallback once 152 makes it to release.
-     */
-    let win = tab.documentGlobal || tab.ownerGlobal;
-    win.gBrowser.removeTab(tab, options);
+    tab.ownerGlobal.gBrowser.removeTab(tab, options);
   },
 
   /**
@@ -2039,12 +1995,7 @@ export var BrowserTestUtils = {
         Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE
       );
     } else {
-      /**
-       * @backward-compat { version 152 }
-       * Get rid of the documentGlobal fallback once 152 makes it to release.
-       */
-      let win = tab.documentGlobal || tab.ownerGlobal;
-      win.gBrowser.reloadTab(tab);
+      tab.ownerGlobal.gBrowser.reloadTab(tab);
     }
     return finished;
   },
@@ -2285,7 +2236,7 @@ export var BrowserTestUtils = {
     await Promise.all(expectedPromises);
 
     if (shouldShowTabCrashPage) {
-      let gBrowser = browser.documentGlobal.gBrowser;
+      let gBrowser = browser.ownerGlobal.gBrowser;
       let tab = gBrowser.getTabForBrowser(browser);
       if (tab.getAttribute("crashed") != "true") {
         throw new Error("Tab should be marked as crashed");
@@ -2329,7 +2280,7 @@ export var BrowserTestUtils = {
       ? "oop-browser-buildid-mismatch"
       : "oop-browser-crashed";
 
-    let event = new browser.documentGlobal.CustomEvent(eventType, {
+    let event = new browser.ownerGlobal.CustomEvent(eventType, {
       bubbles: true,
     });
     event.isTopFrame = true;
@@ -2358,12 +2309,7 @@ export var BrowserTestUtils = {
    * @returns {Promise}
    */
   waitForAttribute(attr, element, value) {
-    /**
-     * @backward-compat { version 152 }
-     * Get rid of the documentGlobal fallback once 152 makes it to release.
-     */
-    let win = element.documentGlobal || element.ownerGlobal;
-    let MutationObserver = win.MutationObserver;
+    let MutationObserver = element.ownerGlobal.MutationObserver;
     return new Promise(resolve => {
       let mut = new MutationObserver(() => {
         if (
@@ -2394,12 +2340,7 @@ export var BrowserTestUtils = {
       return Promise.resolve();
     }
 
-    /**
-     * @backward-compat { version 152 }
-     * Get rid of the documentGlobal fallback once 152 makes it to release.
-     */
-    let win = element.documentGlobal || element.ownerGlobal;
-    let MutationObserver = win.MutationObserver;
+    let MutationObserver = element.ownerGlobal.MutationObserver;
     return new Promise(resolve => {
       dump("Waiting for removal\n");
       let mut = new MutationObserver(() => {
@@ -2583,7 +2524,7 @@ export var BrowserTestUtils = {
         element.removeEventListener("transitionend", listener);
       };
 
-      let timer = element.documentGlobal.setTimeout(() => {
+      let timer = element.ownerGlobal.setTimeout(() => {
         cleanup();
         reject();
       }, timeout);
@@ -2597,7 +2538,7 @@ export var BrowserTestUtils = {
           transitionCount--;
           if (transitionCount == 0) {
             cleanup();
-            element.documentGlobal.clearTimeout(timer);
+            element.ownerGlobal.clearTimeout(timer);
             resolve();
           }
         }
@@ -2811,12 +2752,8 @@ export var BrowserTestUtils = {
         Services.scriptSecurityManager.getSystemPrincipal();
     }
     if (beforeLoadFunc) {
-      /**
-       * @backward-compat { version 152 }
-       * Get rid of the documentGlobal fallback once 152 makes it to release.
-       */
-      let win = tabbrowser.documentGlobal || tabbrowser.ownerGlobal;
-      win.addEventListener(
+      let window = tabbrowser.ownerGlobal;
+      window.addEventListener(
         "TabOpen",
         function (e) {
           beforeLoadFunc(e.target);

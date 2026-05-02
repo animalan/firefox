@@ -2408,7 +2408,7 @@ class CssRuleView extends EventEmitter {
     }
 
     // Ensure that smooth scrolling is disabled when the user prefers reduced motion.
-    const win = elementToScrollTo.documentGlobal;
+    const win = elementToScrollTo.ownerGlobal;
     const reducedMotion = win.matchMedia("(prefers-reduced-motion)").matches;
     scrollBehavior = reducedMotion ? "instant" : scrollBehavior;
     elementToScrollTo.scrollIntoView({

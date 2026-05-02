@@ -126,17 +126,14 @@ class ChatsInView extends ViewPage {
       return;
     }
 
-    const win = event.target.documentGlobal;
+    const win = event.target.ownerGlobal;
     const mostRecentPage = conversation.getMostRecentPageVisited();
 
     if (mostRecentPage?.href) {
       // Chat has a page URL - open the page and sidebar
       lazy.URILoadingHelper.openTrustedLinkIn(win, mostRecentPage.href, "tab", {
         resolveOnContentBrowserCreated: async targetBrowser => {
-          lazy.AIWindowUI.openSidebar(
-            targetBrowser.documentGlobal,
-            conversation
-          );
+          lazy.AIWindowUI.openSidebar(targetBrowser.ownerGlobal, conversation);
         },
       });
     } else {

@@ -117,7 +117,7 @@ class _OpenSearchManager {
     if (shouldBeHidden) {
       this.#hiddenEngines.set(browser, engines);
     } else {
-      let win = browser.documentGlobal;
+      let win = browser.ownerGlobal;
       this.#offeredEngines.set(browser, engines);
       if (browser == win.gBrowser.selectedBrowser) {
         this.updateOpenSearchBadge(win);

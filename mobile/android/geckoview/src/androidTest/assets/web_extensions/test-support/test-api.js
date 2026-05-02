@@ -239,7 +239,7 @@ this.test = class extends ExtensionAPI {
 
         async triggerTranslationsOffer(tabId) {
           const browser = context.extension.tabManager.get(tabId).browser;
-          const { CustomEvent } = browser.documentGlobal;
+          const { CustomEvent } = browser.ownerGlobal;
           return browser.dispatchEvent(
             new CustomEvent("TranslationsParent:OfferTranslation", {
               bubbles: true,
@@ -249,7 +249,7 @@ this.test = class extends ExtensionAPI {
 
         async triggerLanguageStateChange(tabId, languageState) {
           const browser = context.extension.tabManager.get(tabId).browser;
-          const { CustomEvent } = browser.documentGlobal;
+          const { CustomEvent } = browser.ownerGlobal;
           return browser.dispatchEvent(
             new CustomEvent("TranslationsParent:LanguageState", {
               bubbles: true,

@@ -34,7 +34,7 @@ class ServiceWorker final : public DOMEventTargetHelper {
   IMPL_EVENT_HANDLER(error)
 
   static already_AddRefed<ServiceWorker> Create(
-      nsIGlobalObject* aGlobal, const ServiceWorkerDescriptor& aDescriptor);
+      nsIGlobalObject* aOwner, const ServiceWorkerDescriptor& aDescriptor);
 
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;

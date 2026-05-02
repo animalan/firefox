@@ -21,9 +21,9 @@ class LockManagerChild final : public PLockManagerChild {
   static void NotifyBFCacheOnMainThread(nsPIDOMWindowInner* aInner,
                                         bool aCreated);
 
-  explicit LockManagerChild(nsIGlobalObject* aGlobal);
+  explicit LockManagerChild(nsIGlobalObject* aOwner);
 
-  nsIGlobalObject* GetParentObject() const { return mGlobal; };
+  nsIGlobalObject* GetParentObject() const { return mOwner; };
 
   void RequestLock(const LockRequest& aRequest, const LockOptions& aOptions);
 
@@ -34,7 +34,7 @@ class LockManagerChild final : public PLockManagerChild {
  private:
   ~LockManagerChild() = default;
 
-  nsCOMPtr<nsIGlobalObject> mGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwner;
 
   // This WorkerRef is deleted by destructor.
   //

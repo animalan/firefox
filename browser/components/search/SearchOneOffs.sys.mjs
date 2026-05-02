@@ -43,7 +43,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
 export class SearchOneOffs {
   constructor(container) {
     this.container = container;
-    this.window = container.documentGlobal;
+    this.window = container.ownerGlobal;
     this.document = container.ownerDocument;
 
     this.container.appendChild(

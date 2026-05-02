@@ -200,7 +200,7 @@ already_AddRefed<Promise> PaymentResponse::Complete(PaymentComplete result,
     return nullptr;
   }
 
-  RefPtr<Promise> promise = Promise::Create(GetRelevantGlobal(), aRv);
+  RefPtr<Promise> promise = Promise::Create(GetOwnerGlobal(), aRv);
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -226,7 +226,7 @@ already_AddRefed<Promise> PaymentResponse::Retry(
     return nullptr;
   }
 
-  RefPtr<Promise> promise = Promise::Create(GetRelevantGlobal(), aRv);
+  RefPtr<Promise> promise = Promise::Create(GetOwnerGlobal(), aRv);
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -292,7 +292,7 @@ void PaymentResponse::RespondRetry(const nsAString& aMethodName,
   mPayerEmail = aPayerEmail;
   mPayerPhone = aPayerPhone;
 
-  if (NS_WARN_IF(!GetRelevantGlobal())) {
+  if (NS_WARN_IF(!GetOwnerGlobal())) {
     return;
   }
 

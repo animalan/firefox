@@ -411,7 +411,7 @@ async function testInteractionFeature(interaction, win) {
 async function clickHandoff(browser) {
   let sandbox = sinon.createSandbox();
   let spy = sandbox.spy(
-    browser.documentGlobal.gURLBar.inputField,
+    browser.ownerGlobal.gURLBar.inputField,
     "addEventListener"
   );
   info("Click on search-handoff-button in newtab page");

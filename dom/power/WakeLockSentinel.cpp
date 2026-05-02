@@ -71,7 +71,7 @@ already_AddRefed<Promise> WakeLockSentinel::ReleaseLock(ErrorResult& aRv) {
   RefPtr<WakeLockSentinel> kungFuDeathGrip(this);
 
   if (!mReleased) {
-    nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+    nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
     if (!global) {
       aRv.Throw(NS_ERROR_NULL_POINTER);
       return nullptr;
@@ -90,7 +90,7 @@ already_AddRefed<Promise> WakeLockSentinel::ReleaseLock(ErrorResult& aRv) {
   }
 
   if (RefPtr<Promise> p =
-          Promise::CreateResolvedWithUndefined(GetRelevantGlobal(), aRv)) {
+          Promise::CreateResolvedWithUndefined(GetOwnerGlobal(), aRv)) {
     return p.forget();
   }
   return nullptr;

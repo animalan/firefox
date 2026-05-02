@@ -34,7 +34,7 @@ registerCleanupFunction(() => {
 function simulateItemDrag(aToDrag, aTarget, aEvent = {}, aOffset = 2) {
   let ev = aEvent;
   if (ev == "end" || ev == "start") {
-    let win = aTarget.documentGlobal;
+    let win = aTarget.ownerGlobal;
     const dwu = win.windowUtils;
     let bounds = dwu.getBoundsWithoutFlushing(aTarget);
     if (ev == "end") {
@@ -52,15 +52,15 @@ function simulateItemDrag(aToDrag, aTarget, aEvent = {}, aOffset = 2) {
     aTarget,
     null,
     null,
-    aToDrag.documentGlobal,
-    aTarget.documentGlobal,
+    aToDrag.ownerGlobal,
+    aTarget.ownerGlobal,
     ev
   );
   // Ensure dnd suppression is cleared.
   EventUtils.synthesizeMouseAtCenter(
     aTarget,
     { type: "mouseup" },
-    aTarget.documentGlobal
+    aTarget.ownerGlobal
   );
 }
 

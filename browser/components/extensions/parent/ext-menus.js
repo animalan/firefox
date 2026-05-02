@@ -116,7 +116,7 @@ var gMenuBuilder = {
       ) {
         return false;
       } else if (
-        PrivateBrowsingUtils.isWindowPrivate(contextData.menu.documentGlobal)
+        PrivateBrowsingUtils.isWindowPrivate(contextData.menu.ownerGlobal)
       ) {
         return false;
       }
@@ -436,7 +436,7 @@ var gMenuBuilder = {
           _execute_sidebar_action: global.sidebarActionFor,
         }[item.command];
         if (actionFor) {
-          let win = event.target.documentGlobal;
+          let win = event.target.ownerGlobal;
           actionFor(item.extension).triggerAction(win);
           return;
         }
@@ -460,7 +460,7 @@ var gMenuBuilder = {
   },
 
   setMenuItemIcon(element, extension, contextData, icons) {
-    let parentWindow = contextData.menu.documentGlobal;
+    let parentWindow = contextData.menu.ownerGlobal;
 
     let { icon } = IconDetails.getPreferredIcon(
       icons,
@@ -1088,7 +1088,7 @@ const menuTracker = {
   onSidebarShown(event) {
     // The event target is an element in a browser window, so |window| will be
     // the browser window that contains the sidebar.
-    const window = event.currentTarget.documentGlobal;
+    const window = event.currentTarget.ownerGlobal;
     if (window.SidebarController.currentID === "viewBookmarksSidebar") {
       let sidebarBrowser = window.SidebarController.browser;
       if (sidebarBrowser.contentDocument.readyState !== "complete") {
@@ -1140,7 +1140,7 @@ const menuTracker = {
       gMenuBuilder.build({ menu, tab, pageUrl, inToolsMenu: true });
     }
     if (menu.id === "tabContextMenu") {
-      const tab = menu.documentGlobal.TabContextMenu.contextTab;
+      const tab = menu.ownerGlobal.TabContextMenu.contextTab;
       const pageUrl = tab.linkedBrowser.currentURI.spec;
       gMenuBuilder.build({ menu, tab, pageUrl, onTab: true });
     }
@@ -1308,9 +1308,7 @@ this.menusInternal = class extends ExtensionAPIPersistent {
           await fire.wakeup();
           // If while waiting the tab disappeared we bail out.
           if (
-            !linkedBrowser.documentGlobal.gBrowser.getTabForBrowser(
-              linkedBrowser
-            )
+            !linkedBrowser.ownerGlobal.gBrowser.getTabForBrowser(linkedBrowser)
           ) {
             Cu.reportError(
               `menus.onClicked: target tab closed during background startup.`

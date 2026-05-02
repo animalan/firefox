@@ -220,7 +220,7 @@ async function setDefaultEngine(
   EventUtils.synthesizeMouseAtCenter(
     defaultEngineSelector,
     {},
-    defaultEngineSelector.documentGlobal
+    defaultEngineSelector.ownerGlobal
   );
   await popupShown;
 
@@ -236,11 +236,7 @@ async function setDefaultEngine(
   // Waiting for popupHiding here seemed to cause a race condition, however
   // as we're really just interested in the notification, we'll just use
   // that here.
-  EventUtils.synthesizeMouseAtCenter(
-    engine2Item,
-    {},
-    engine2Item.documentGlobal
-  );
+  EventUtils.synthesizeMouseAtCenter(engine2Item, {}, engine2Item.ownerGlobal);
   await defaultChanged;
 
   const newDefault = testPrivate

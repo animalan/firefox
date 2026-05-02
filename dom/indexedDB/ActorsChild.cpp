@@ -347,7 +347,7 @@ auto DeserializeStructuredCloneFiles(
             MOZ_ASSERT(blobImpl);
 
             RefPtr<Blob> blob =
-                Blob::Create(database.GetRelevantGlobal(), blobImpl);
+                Blob::Create(database.GetOwnerGlobal(), blobImpl);
             MOZ_ASSERT(blob);
 
             return {StructuredCloneFileBase::eBlob, std::move(blob)};
@@ -364,7 +364,7 @@ auto DeserializeStructuredCloneFiles(
               MOZ_ASSERT(blobImpl);
 
               RefPtr<Blob> blob =
-                  Blob::Create(database.GetRelevantGlobal(), blobImpl);
+                  Blob::Create(database.GetOwnerGlobal(), blobImpl);
               MOZ_ASSERT(blob);
 
               return {StructuredCloneFileBase::eStructuredClone,
@@ -1077,7 +1077,7 @@ bool BackgroundDatabaseChild::EnsureDOMObject() {
   auto& factory =
       static_cast<BackgroundFactoryChild*>(Manager())->GetDOMObject();
 
-  if (!factory.GetRelevantGlobal()) {
+  if (!factory.GetOwnerGlobal()) {
     // Already disconnected from global.
 
     // We need to clear mOpenRequestActor here, since that would otherwise be
@@ -1694,7 +1694,7 @@ nsCOMPtr<nsIRunnable> BackgroundRequestChild::HandleResponse(
           return;
         }
 
-        if (!database->GetRelevantGlobal()) {
+        if (!database->GetOwnerGlobal()) {
           return;
         }
 
@@ -1718,7 +1718,7 @@ nsCOMPtr<nsIRunnable> BackgroundRequestChild::MakeDeferredResultRunnable(
           return;
         }
 
-        if (!database->GetRelevantGlobal()) {
+        if (!database->GetOwnerGlobal()) {
           // Ignore the response, since we have already been disconnected
           // from the global.
           return;
@@ -1753,7 +1753,7 @@ nsCOMPtr<nsIRunnable> BackgroundRequestChild::HandleResponse(
     SerializedStructuredCloneReadInfo&& aResponse) {
   AssertIsOnOwningThread();
 
-  if (!mTransaction->Database()->GetRelevantGlobal()) {
+  if (!mTransaction->Database()->GetOwnerGlobal()) {
     // Ignore the response, since we have already been disconnected from the
     // global.
     return nullptr;
@@ -1775,7 +1775,7 @@ nsCOMPtr<nsIRunnable> BackgroundRequestChild::HandleResponse(
     nsTArray<SerializedStructuredCloneReadInfo>&& aResponse) {
   AssertIsOnOwningThread();
 
-  if (!mTransaction->Database()->GetRelevantGlobal()) {
+  if (!mTransaction->Database()->GetOwnerGlobal()) {
     // Ignore the response, since we have already been disconnected from the
     // global.
     return nullptr;
@@ -2721,7 +2721,7 @@ void BackgroundCursorChild<CursorType>::HandleResponse(
                 CursorType == IDBCursorType::Index) {
     MOZ_ASSERT(mTransaction);
 
-    if (!mTransaction->Database()->GetRelevantGlobal()) {
+    if (!mTransaction->Database()->GetOwnerGlobal()) {
       // Ignore the response, since we have already been disconnected from the
       // global.
       return;

@@ -170,23 +170,23 @@ export class UserCharacteristicsPageService {
       [this.initWindowInfoActor, []],
       [
         this.populateWebGlInfo,
-        [browser.documentGlobal, browser.ownerDocument, 1, false],
+        [browser.ownerGlobal, browser.ownerDocument, 1, false],
       ],
       [
         this.populateWebGlInfo,
-        [browser.documentGlobal, browser.ownerDocument, 1, true],
+        [browser.ownerGlobal, browser.ownerDocument, 1, true],
       ],
       [
         this.populateWebGlInfo,
-        [browser.documentGlobal, browser.ownerDocument, 2, false],
+        [browser.ownerGlobal, browser.ownerDocument, 2, false],
       ],
       [
         this.populateWebGlInfo,
-        [browser.documentGlobal, browser.ownerDocument, 2, true],
+        [browser.ownerGlobal, browser.ownerDocument, 2, true],
       ],
       [this.populateCanvasData, []],
-      [this.populateWebGPUProperties, [browser.documentGlobal]],
-      [this.populateUserAgent, [browser.documentGlobal]],
+      [this.populateWebGPUProperties, [browser.ownerGlobal]],
+      [this.populateUserAgent, [browser.ownerGlobal]],
     ];
     // Bind them to the class and run them in parallel.
     // Timeout if any of them takes too long (5 minutes).

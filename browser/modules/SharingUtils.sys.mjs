@@ -242,7 +242,7 @@ class SharingUtilsCls {
     if (browser) {
       let maybeToShare = BrowserUtils.getShareableURL(browser.currentURI);
       if (maybeToShare) {
-        let { gURLBar } = node.documentGlobal;
+        let { gURLBar } = node.ownerGlobal;
         urlToShare = gURLBar.makeURIReadable(maybeToShare).displaySpec;
         titleToShare = browser.contentTitle;
       }
@@ -265,7 +265,7 @@ class SharingUtilsCls {
       }
       let maybeToShare = BrowserUtils.getShareableURL(browser.currentURI);
       if (maybeToShare) {
-        let { gURLBar } = node.documentGlobal;
+        let { gURLBar } = node.ownerGlobal;
         links.push({
           url: gURLBar.makeURIReadable(maybeToShare).displaySpec,
           title: browser.contentTitle,
@@ -318,7 +318,7 @@ class SharingUtilsCls {
           let browser = node.contextBrowserToShare?.get();
           if (url && browser) {
             Glean.qrcode.opened.add(1);
-            this.#showQRCodePanel(node.documentGlobal, browser, url);
+            this.#showQRCodePanel(node.ownerGlobal, browser, url);
           }
         } else if (event.target.classList.contains("share-more-button")) {
           this.openMacSharePreferences();

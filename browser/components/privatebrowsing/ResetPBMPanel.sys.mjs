@@ -62,7 +62,7 @@ export const ResetPBMPanel = {
    */
   async onViewShowing(event) {
     let panelview = event.target;
-    let triggeringWindow = panelview.documentGlobal;
+    let triggeringWindow = panelview.ownerGlobal;
 
     // We may skip the confirmation panel if disabled via pref.
     if (!this._shouldConfirmClear) {
@@ -135,7 +135,7 @@ export const ResetPBMPanel = {
     if (!this._enabled) {
       throw new Error("Not initialized.");
     }
-    let triggeringWindow = button.documentGlobal;
+    let triggeringWindow = button.ownerGlobal;
 
     // Write the checkbox state to pref. Only do this when the user
     // confirms.

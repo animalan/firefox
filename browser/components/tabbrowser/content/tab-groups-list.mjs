@@ -35,7 +35,7 @@ class TabGroupsList extends MozLitElement {
   }
 
   get #win() {
-    return this.documentGlobal;
+    return this.ownerGlobal;
   }
 
   connectedCallback() {
@@ -65,7 +65,7 @@ class TabGroupsList extends MozLitElement {
     this.closest("panel")?.hidePopup();
     if (isOpen) {
       group.select();
-      group.documentGlobal.focus();
+      group.ownerGlobal.focus();
     } else {
       this.#win.SessionStore.openSavedTabGroup(group.id, this.#win, {
         source: lazy.TabMetrics.METRIC_SOURCE.TAB_OVERFLOW_MENU,

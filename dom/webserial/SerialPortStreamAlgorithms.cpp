@@ -66,8 +66,7 @@ already_AddRefed<Promise> SerialPortWriteAlgorithms::CloseOrAbortImpl(
     CloseOutputWithStatus(NS_ERROR_ABORT);
   }
 
-  RefPtr<Promise> promise =
-      Promise::CreateInfallible(mPort->GetRelevantGlobal());
+  RefPtr<Promise> promise = Promise::CreateInfallible(mPort->GetOwnerGlobal());
 
   nsCOMPtr<nsISerialEventTarget> owningThread = GetCurrentSerialEventTarget();
   nsISerialEventTarget* actorTarget = child->GetActorEventTarget();
@@ -180,8 +179,7 @@ already_AddRefed<Promise> SerialPortReadAlgorithms::CancelCallbackImpl(
     mInputStream->CloseWithStatus(NS_ERROR_ABORT);
   }
 
-  RefPtr<Promise> promise =
-      Promise::CreateInfallible(mPort->GetRelevantGlobal());
+  RefPtr<Promise> promise = Promise::CreateInfallible(mPort->GetOwnerGlobal());
 
   nsCOMPtr<nsISerialEventTarget> owningThread = GetCurrentSerialEventTarget();
   nsISerialEventTarget* actorTarget = child->GetActorEventTarget();

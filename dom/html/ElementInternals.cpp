@@ -310,7 +310,7 @@ bool ElementInternals::ReportValidity(ErrorResult& aRv) {
   invalidElements.AppendElement(mTarget);
 
   AutoJSAPI jsapi;
-  if (!jsapi.Init(mTarget->GetRelevantGlobal())) {
+  if (!jsapi.Init(mTarget->GetOwnerGlobal())) {
     return false;
   }
   JS::Rooted<JS::Value> detail(jsapi.cx());

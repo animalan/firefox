@@ -82,7 +82,7 @@ var AssociatedToNode = class {
    * @returns {DOMWindow}
    */
   get window() {
-    return this.node.documentGlobal;
+    return this.node.ownerGlobal;
   }
 
   /**
@@ -1939,16 +1939,13 @@ export var PanelView = class extends AssociatedToNode {
           target = button.buttonEl;
           details.composed = true;
         }
-        let dispEvent = new event.target.documentGlobal.MouseEvent(
+        let dispEvent = new event.target.ownerGlobal.MouseEvent(
           "mousedown",
           details
         );
         target.dispatchEvent(dispEvent);
         // This event will trigger a command event too.
-        dispEvent = new event.target.documentGlobal.PointerEvent(
-          "click",
-          details
-        );
+        dispEvent = new event.target.ownerGlobal.PointerEvent("click", details);
         target.dispatchEvent(dispEvent);
         this._doingKeyboardActivation = false;
         break;

@@ -119,11 +119,11 @@ class EventSourceImpl final : public nsIChannelEventSink,
     Close();
     GlobalTeardownObserver::DisconnectFromOwner();
   }
-  void FrozenCallback(nsIGlobalObject* aGlobal) override {
+  void FrozenCallback(nsIGlobalObject* aOwner) override {
     DebugOnly<nsresult> rv = Freeze();
     MOZ_ASSERT(NS_SUCCEEDED(rv), "Freeze() failed");
   }
-  void ThawedCallback(nsIGlobalObject* aGlobal) override {
+  void ThawedCallback(nsIGlobalObject* aOwner) override {
     DebugOnly<nsresult> rv = Thaw();
     MOZ_ASSERT(NS_SUCCEEDED(rv), "Thaw() failed");
   }
@@ -570,8 +570,8 @@ nsresult EventSourceImpl::AddGlobalObservers(nsIGlobalObject* aGlobal) {
   MOZ_ASSERT(mIsMainThread);
   MOZ_ASSERT(!mIsShutDown);
 
-  GlobalTeardownObserver::BindToGlobal(aGlobal);
-  GlobalFreezeObserver::BindToGlobal(aGlobal);
+  GlobalTeardownObserver::BindToOwner(aGlobal);
+  GlobalFreezeObserver::BindToOwner(aGlobal);
 
   return NS_OK;
 }
@@ -1467,7 +1467,7 @@ void EventSourceImpl::DispatchAllMessageEvents() {
       return;
     }
 
-    if (NS_WARN_IF(!jsapi.Init(lock->mEventSource->GetRelevantGlobal()))) {
+    if (NS_WARN_IF(!jsapi.Init(lock->mEventSource->GetOwnerGlobal()))) {
       return;
     }
   }

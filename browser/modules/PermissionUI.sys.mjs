@@ -530,7 +530,7 @@ class PermissionPrompt {
       return;
     }
 
-    let chromeWin = this.browser.documentGlobal;
+    let chromeWin = this.browser.ownerGlobal;
     if (!chromeWin.PopupNotifications) {
       this.cancel();
       return;
@@ -606,7 +606,7 @@ class PermissionPrompt {
   postPrompt() {
     let browser = this.browser;
     let principal = this.principal;
-    let chromeWin = browser.documentGlobal;
+    let chromeWin = browser.ownerGlobal;
     if (!chromeWin.PopupNotifications) {
       return;
     }
@@ -666,7 +666,7 @@ class PermissionPrompt {
   }
 
   #showNotification(actions, postPrompt = false) {
-    let chromeWin = this.browser.documentGlobal;
+    let chromeWin = this.browser.ownerGlobal;
     let mainAction = actions.length ? actions[0] : null;
     let secondaryActions = actions.splice(1);
 
@@ -881,7 +881,7 @@ class GeolocationPermissionPrompt extends PermissionPromptForRequest {
     // Don't offer "always remember" action in PB mode
     options.checkbox = {
       show: !lazy.PrivateBrowsingUtils.isWindowPrivate(
-        this.browser.documentGlobal
+        this.browser.ownerGlobal
       ),
     };
 
@@ -968,7 +968,7 @@ class GeolocationPermissionPrompt extends PermissionPromptForRequest {
   }
 
   #updateGeoSharing(state) {
-    let gBrowser = this.browser.documentGlobal.gBrowser;
+    let gBrowser = this.browser.ownerGlobal.gBrowser;
     if (gBrowser == null) {
       return;
     }
@@ -1039,7 +1039,7 @@ class XRPermissionPrompt extends PermissionPromptForRequest {
     // Don't offer "always remember" action in PB mode
     options.checkbox = {
       show: !lazy.PrivateBrowsingUtils.isWindowPrivate(
-        this.browser.documentGlobal
+        this.browser.ownerGlobal
       ),
     };
 
@@ -1085,7 +1085,7 @@ class XRPermissionPrompt extends PermissionPromptForRequest {
   }
 
   #updateXRSharing(state) {
-    let gBrowser = this.browser.documentGlobal.gBrowser;
+    let gBrowser = this.browser.ownerGlobal.gBrowser;
     if (gBrowser == null) {
       return;
     }
@@ -1181,7 +1181,7 @@ class LNAPermissionPromptBase extends PermissionPromptForRequest {
   }
 
   #removePrompt() {
-    let chromeWin = this.browser?.documentGlobal;
+    let chromeWin = this.browser?.ownerGlobal;
     let notification = chromeWin?.PopupNotifications.getNotification(
       this.notificationID,
       this.browser
@@ -1227,7 +1227,7 @@ class LoopbackNetworkPermissionPrompt extends LNAPermissionPromptBase {
     // Don't offer "always remember" action in PB mode
     options.checkbox = {
       show: !lazy.PrivateBrowsingUtils.isWindowPrivate(
-        this.browser.documentGlobal
+        this.browser.ownerGlobal
       ),
     };
 
@@ -1542,7 +1542,7 @@ class LocalNetworkPermissionPrompt extends LNAPermissionPromptBase {
     // Don't offer "always remember" action in PB mode
     options.checkbox = {
       show: !lazy.PrivateBrowsingUtils.isWindowPrivate(
-        this.browser.documentGlobal
+        this.browser.ownerGlobal
       ),
     };
 
@@ -1622,7 +1622,7 @@ class PersistentStoragePermissionPrompt extends PermissionPromptForRequest {
 
     options.checkbox = {
       show: !lazy.PrivateBrowsingUtils.isWindowPrivate(
-        this.browser.documentGlobal
+        this.browser.ownerGlobal
       ),
     };
 
@@ -1713,7 +1713,7 @@ class MIDIPermissionPrompt extends SitePermsAddonInstallRequest {
     // Don't offer "always remember" action in PB mode
     options.checkbox = {
       show: !lazy.PrivateBrowsingUtils.isWindowPrivate(
-        this.browser.documentGlobal
+        this.browser.ownerGlobal
       ),
     };
 
@@ -2004,7 +2004,7 @@ class SerialPermissionPrompt extends SitePermsAddonInstallRequest {
         },
       };
 
-      let chromeWin = this.browser.documentGlobal;
+      let chromeWin = this.browser.ownerGlobal;
       notification = chromeWin.PopupNotifications.show(
         this.browser,
         this.notificationID,

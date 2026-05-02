@@ -204,7 +204,7 @@ export class ScreenshotsOverlay {
 
   constructor(contentDocument) {
     this.document = contentDocument;
-    this.window = contentDocument.documentGlobal;
+    this.window = contentDocument.ownerGlobal;
 
     this.windowDimensions = new WindowDimensions();
     this.selectionRegion = new Region(this.windowDimensions);

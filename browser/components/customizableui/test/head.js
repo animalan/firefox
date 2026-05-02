@@ -215,7 +215,7 @@ function getAreaWidgetIds(areaId) {
 function simulateItemDrag(aToDrag, aTarget, aEvent = {}, aOffset = 2) {
   let ev = aEvent;
   if (ev == "end" || ev == "start") {
-    let win = aTarget.documentGlobal;
+    let win = aTarget.ownerGlobal;
     const dwu = win.windowUtils;
     let bounds = dwu.getBoundsWithoutFlushing(aTarget);
     if (ev == "end") {
@@ -233,12 +233,12 @@ function simulateItemDrag(aToDrag, aTarget, aEvent = {}, aOffset = 2) {
     aTarget,
     null,
     null,
-    aToDrag.documentGlobal,
-    aTarget.documentGlobal,
+    aToDrag.ownerGlobal,
+    aTarget.ownerGlobal,
     ev
   );
   // Ensure dnd suppression is cleared.
-  synthesizeMouseAtCenter(aTarget, { type: "mouseup" }, aTarget.documentGlobal);
+  synthesizeMouseAtCenter(aTarget, { type: "mouseup" }, aTarget.ownerGlobal);
 }
 
 function endCustomizing(aWindow = window) {
@@ -369,7 +369,7 @@ function isOverflowOpen() {
 
 function subviewShown(aSubview) {
   return new Promise((resolve, reject) => {
-    let win = aSubview.documentGlobal;
+    let win = aSubview.ownerGlobal;
     let timeoutId = win.setTimeout(() => {
       reject("Subview (" + aSubview.id + ") did not show within 20 seconds.");
     }, 20000);
@@ -384,7 +384,7 @@ function subviewShown(aSubview) {
 
 function subviewHidden(aSubview) {
   return new Promise((resolve, reject) => {
-    let win = aSubview.documentGlobal;
+    let win = aSubview.ownerGlobal;
     let timeoutId = win.setTimeout(() => {
       reject("Subview (" + aSubview.id + ") did not hide within 20 seconds.");
     }, 20000);

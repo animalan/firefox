@@ -13,7 +13,7 @@ const {
 
 const activateTab = tab =>
   new Promise(resolve => {
-    const { gBrowser } = tab.documentGlobal;
+    const { gBrowser } = tab.ownerGlobal;
     const { tabContainer } = gBrowser;
 
     tabContainer.addEventListener("TabSelect", function listener({ type }) {

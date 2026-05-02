@@ -100,7 +100,7 @@ const UNLIMITED_MAX_RESULTS = 99;
 const MAX_INPUT_LENGTH = 32000;
 
 let getBoundsWithoutFlushing = element =>
-  element.documentGlobal.windowUtils.getBoundsWithoutFlushing(element);
+  element.ownerGlobal.windowUtils.getBoundsWithoutFlushing(element);
 let px = number => number.toFixed(2) + "px";
 
 /**
@@ -317,7 +317,7 @@ ${
 
     // If the current window context does not have gBrowser,
     // get the main browser window.
-    this.window = this.documentGlobal;
+    this.window = this.ownerGlobal;
     if (!this.window.gBrowser) {
       lazy.logger.debug(`gBrowser not available, get the browser window.`);
       this.window = window.browsingContext.topChromeWindow;
@@ -463,7 +463,7 @@ ${
     this._setPlaceholder(null);
 
     // Defer until after layout so listeners can safely interact with the element.
-    this.documentGlobal.requestAnimationFrame(() => {
+    this.ownerGlobal.requestAnimationFrame(() => {
       this.dispatchEvent(
         new CustomEvent("smartbar-initialized", { bubbles: true })
       );

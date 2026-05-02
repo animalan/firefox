@@ -23,7 +23,7 @@ function createDummyBrowser(spec) {
       {}
     ),
     dispatchEvent: () => {},
-    documentGlobal: {
+    ownerGlobal: {
       CustomEvent: class CustomEvent {},
     },
     browserId,

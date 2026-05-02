@@ -96,7 +96,7 @@ export class PromptParent extends JSWindowActorParent {
   // itself.
   isEmbeddedInSidebar(browser) {
     if (
-      browser?.documentGlobal?.browsingContext.embedderElement?.id != "sidebar"
+      browser?.ownerGlobal?.browsingContext.embedderElement?.id != "sidebar"
     ) {
       return false;
     }
@@ -143,7 +143,7 @@ export class PromptParent extends JSWindowActorParent {
 
     let isEmbeddedInSidebar = this.isEmbeddedInSidebar(browser);
     if (isEmbeddedInSidebar || this.isAboutAddonsOptionsPage(browsingContext)) {
-      browser = browser.documentGlobal.browsingContext.embedderElement;
+      browser = browser.ownerGlobal.browsingContext.embedderElement;
     }
 
     let promptRequiresBrowser =
@@ -169,7 +169,7 @@ export class PromptParent extends JSWindowActorParent {
     if (!browsingContext.isContent && browsingContext.window) {
       win = browsingContext.window;
     } else {
-      win = browser?.documentGlobal;
+      win = browser?.ownerGlobal;
     }
 
     // There's a requirement for prompts to be blocked if a window is

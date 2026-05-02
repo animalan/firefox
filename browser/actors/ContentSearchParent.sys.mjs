@@ -216,7 +216,7 @@ export let ContentSearch = {
     ]);
     let engine = lazy.SearchService.getEngineByName(data.engineName);
     let submission = engine.getSubmission(data.searchString, "");
-    let win = browser.documentGlobal;
+    let win = browser.ownerGlobal;
     if (!win) {
       // The browser may have been closed between the time its content sent the
       // message and the time we handle it.
@@ -458,7 +458,7 @@ export let ContentSearch = {
   },
 
   _onMessageManageEngines({ browser }) {
-    browser.documentGlobal.openPreferences("paneSearch");
+    browser.ownerGlobal.openPreferences("paneSearch");
   },
 
   async _onMessageGetSuggestions({ actor, browser, data }) {
@@ -500,7 +500,7 @@ export let ContentSearch = {
   },
 
   _onMessageSearchHandoff({ browser, data, actor }) {
-    let win = browser.documentGlobal;
+    let win = browser.ownerGlobal;
     let text = data.text;
     let urlBar = win.gURLBar;
     let inPrivateBrowsing = lazy.PrivateBrowsingUtils.isBrowserPrivate(browser);

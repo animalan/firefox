@@ -67,7 +67,7 @@ add_task(async function test() {
   }
 
   promise = promiseEvent(searchPopup, "popuphidden");
-  EventUtils.synthesizeKey("KEY_Escape", {}, searchPopup.documentGlobal);
+  EventUtils.synthesizeKey("KEY_Escape", {}, searchPopup.ownerGlobal);
   await promise;
 
   gBrowser.removeCurrentTab();

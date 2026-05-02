@@ -149,10 +149,10 @@ function MockFilePickerInstance() {
 }
 MockFilePickerInstance.prototype = {
   QueryInterface: ChromeUtils.generateQI(["nsIFilePicker"]),
-  init(aBrowsingContext, aTitle, aMode, aRelevantGlobal) {
+  init(aBrowsingContext, aTitle, aMode, aOwnerGlobal) {
     this.mode = aMode;
     this.filterIndex = MockFilePicker.filterIndex;
-    this.window = aRelevantGlobal || aBrowsingContext?.window || globalThis;
+    this.window = aOwnerGlobal || aBrowsingContext?.window || globalThis;
   },
   appendFilter(aTitle, aFilter) {
     if (typeof MockFilePicker.appendFilterCallback == "function") {

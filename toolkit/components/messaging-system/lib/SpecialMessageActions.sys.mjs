@@ -372,7 +372,7 @@ export const SpecialMessageActions = {
       data?.extraParams || {}
     );
 
-    let window = browser.documentGlobal;
+    let window = browser.ownerGlobal;
 
     let fxaBrowser = await new Promise(resolve => {
       window.openLinkIn(url, data?.where || "tab", {
@@ -455,7 +455,7 @@ export const SpecialMessageActions = {
         { once: true, signal }
       );
 
-      fxaTab.documentGlobal.addEventListener("unload", () => {
+      fxaTab.ownerGlobal.addEventListener("unload", () => {
         // If the hosting window unload event was fired before the event handler
         // was removed, this means that the window was closed and sign-in was
         // not completed, which means we should resolve didSignIn to false.
@@ -658,7 +658,7 @@ export const SpecialMessageActions = {
    */
   /* eslint-disable-next-line complexity */
   async handleAction(action, browser) {
-    const window = browser.documentGlobal;
+    const window = browser.ownerGlobal;
     switch (action.type) {
       case "SHOW_MIGRATION_WIZARD":
         lazy.MigrationUtils.showMigrationWizard(window, {

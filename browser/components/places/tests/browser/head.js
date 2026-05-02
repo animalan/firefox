@@ -125,7 +125,7 @@ function synthesizeClickOnSelectedTreeCell(aTree, aOptions) {
     x,
     y,
     aOptions || {},
-    aTree.documentGlobal
+    aTree.ownerGlobal
   );
   AccessibilityUtils.resetEnv();
 }
@@ -543,7 +543,7 @@ function setSearch(searchBox, query) {
     });
     searchBox.select();
     if (query) {
-      EventUtils.sendString(query, searchBox.documentGlobal);
+      EventUtils.sendString(query, searchBox.ownerGlobal);
     } else {
       searchBox.clear();
     }

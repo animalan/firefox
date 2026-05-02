@@ -776,7 +776,7 @@ already_AddRefed<Promise> Clipboard::Write(
 already_AddRefed<Promise> Clipboard::WriteText(const nsAString& aData,
                                                nsIPrincipal& aSubjectPrincipal,
                                                ErrorResult& aRv) {
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   if (!global) {
     aRv.ThrowInvalidStateError("Unable to get global.");
     return nullptr;

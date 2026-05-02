@@ -112,12 +112,12 @@ export class SyncedTabsController {
         }
         case `${ErrorType.SIGNED_OUT}`:
         case "sign-in": {
-          TabsSetupFlowManager.openFxASignup(event.target.documentGlobal);
+          TabsSetupFlowManager.openFxASignup(event.target.ownerGlobal);
           this.signupCallback?.();
           break;
         }
         case "add-device": {
-          TabsSetupFlowManager.openFxAPairDevice(event.target.documentGlobal);
+          TabsSetupFlowManager.openFxAPairDevice(event.target.ownerGlobal);
           this.pairDeviceCallback?.();
           break;
         }
@@ -126,9 +126,9 @@ export class SyncedTabsController {
           break;
         }
         case `${ErrorType.SYNC_DISCONNECTED}`: {
-          const win = event.target.documentGlobal;
+          const win = event.target.ownerGlobal;
           const { switchToTabHavingURI } =
-            win.docShell.chromeEventHandler.documentGlobal;
+            win.docShell.chromeEventHandler.ownerGlobal;
           switchToTabHavingURI("about:preferences#sync", true, {});
           break;
         }

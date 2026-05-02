@@ -431,12 +431,12 @@ export var ScreenshotsUtils = {
 
     // Clear and move focus to browser so the child actor can capture events
     this.clearContentFocus(browser);
-    Services.focus.clearFocus(browser.documentGlobal);
+    Services.focus.clearFocus(browser.ownerGlobal);
     Services.focus.setFocus(browser, 0);
 
     let x = {};
     let y = {};
-    let win = browser.documentGlobal;
+    let win = browser.ownerGlobal;
     win.windowUtils.getLastOverWindowPointerLocationInCSSPixels(x, y);
 
     this.moveCursor(
@@ -457,7 +457,7 @@ export var ScreenshotsUtils = {
    */
   moveCursor(position, browser) {
     let { left, top } = position;
-    let win = browser.documentGlobal;
+    let win = browser.ownerGlobal;
 
     const windowLeft = win.mozInnerScreenX * win.devicePixelRatio;
     const windowTop = win.mozInnerScreenY * win.devicePixelRatio;
@@ -516,7 +516,7 @@ export var ScreenshotsUtils = {
    */
   notify(window, type) {
     Services.obs.notifyObservers(
-      window.event.currentTarget.documentGlobal,
+      window.event.currentTarget.ownerGlobal,
       "menuitem-screenshot",
       type
     );
@@ -676,7 +676,7 @@ export var ScreenshotsUtils = {
    */
   attemptToRestoreFocus(browser) {
     const document = browser.ownerDocument;
-    const window = browser.documentGlobal;
+    const window = browser.ownerGlobal;
 
     const doFocus = () => {
       // Move focus it back to where it was previously.
@@ -781,7 +781,7 @@ export var ScreenshotsUtils = {
    * @param browser The current browser
    */
   async openPreviewDialog(browser) {
-    let dialogBox = browser.documentGlobal.gBrowser.getTabDialogBox(browser);
+    let dialogBox = browser.ownerGlobal.gBrowser.getTabDialogBox(browser);
     let { dialog, closedPromise } = await dialogBox.open(
       `chrome://browser/content/screenshots/screenshots-preview.html?browsingContextId=${browser.browsingContext.id}`,
       {
@@ -859,7 +859,7 @@ export var ScreenshotsUtils = {
     if (buttonsPanel && !buttonsPanel.hidden) {
       return null;
     }
-    const { gBrowser } = browser.documentGlobal;
+    const { gBrowser } = browser.ownerGlobal;
     const browserWrapper = gBrowser.getPanel(browser);
     // The element may exist but be associated with a different browser
     if (!buttonsPanel) {
@@ -878,7 +878,7 @@ export var ScreenshotsUtils = {
     buttonsPanel.hidden = false;
 
     return new Promise(resolve => {
-      browser.documentGlobal.requestAnimationFrame(() => {
+      browser.ownerGlobal.requestAnimationFrame(() => {
         buttonsPanel
           .querySelector("screenshots-buttons")
           .focusButton(lazy.SCREENSHOTS_LAST_SCREENSHOT_METHOD);
@@ -1004,7 +1004,7 @@ export var ScreenshotsUtils = {
    * @returns The anchor element for the ConfirmationHint
    */
   getWidgetAnchor(browser) {
-    let window = browser.documentGlobal;
+    let window = browser.ownerGlobal;
     let widgetGroup = window.CustomizableUI.getWidget("screenshot-button");
     let widget = widgetGroup?.forWindow(window);
     let anchor = widget?.anchor;
@@ -1029,7 +1029,7 @@ export var ScreenshotsUtils = {
   showCopiedConfirmationHint(browser) {
     let anchor = this.getWidgetAnchor(browser);
 
-    browser.documentGlobal.ConfirmationHint.show(
+    browser.ownerGlobal.ConfirmationHint.show(
       anchor,
       "confirmation-hint-screenshot-copied"
     );
@@ -1404,7 +1404,7 @@ export const ScreenshotsCustomizableWidget = {
       l10nId: "screenshot-toolbar-button",
       onCommand(aEvent) {
         Services.obs.notifyObservers(
-          aEvent.currentTarget.documentGlobal,
+          aEvent.currentTarget.ownerGlobal,
           "menuitem-screenshot",
           "ToolbarButton"
         );

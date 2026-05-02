@@ -118,7 +118,7 @@ export class FormAutofillPreferences {
    * @param  {HTMLDocument} document
    */
   createPreferenceGroup(document) {
-    const win = document.documentGlobal;
+    const win = document.ownerGlobal;
     win.Preferences.addAll([
       // Credit cards and addresses
       { id: ENABLED_AUTOFILL_ADDRESSES_PREF, type: "bool" },
@@ -141,9 +141,9 @@ export class FormAutofillPreferences {
       onUserClick: e => {
         e.preventDefault();
         if (Services.prefs.getBoolPref("browser.settings-redesign.enabled")) {
-          e.target.documentGlobal.gotoPref("paneManageAddresses");
+          e.target.ownerGlobal.gotoPref("paneManageAddresses");
         } else {
-          e.target.documentGlobal.gSubDialog.open(MANAGE_ADDRESSES_URL);
+          e.target.ownerGlobal.gSubDialog.open(MANAGE_ADDRESSES_URL);
         }
       },
     });
@@ -161,9 +161,9 @@ export class FormAutofillPreferences {
         e.preventDefault();
 
         if (Services.prefs.getBoolPref("browser.settings-redesign.enabled")) {
-          e.target.documentGlobal.gotoPref("paneManagePayments");
+          e.target.ownerGlobal.gotoPref("paneManagePayments");
         } else {
-          e.target.documentGlobal.gSubDialog.open(MANAGE_CREDITCARDS_URL);
+          e.target.ownerGlobal.gSubDialog.open(MANAGE_CREDITCARDS_URL);
         }
       },
     });

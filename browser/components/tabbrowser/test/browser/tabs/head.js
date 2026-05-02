@@ -595,7 +595,7 @@ async function removeTabGroup(group) {
  * @returns {Promise<XULMenuElement|XULPopupElement>}
  */
 async function getContextMenu(triggerNode, contextMenuId) {
-  let win = triggerNode.documentGlobal;
+  let win = triggerNode.ownerGlobal;
   triggerNode.scrollIntoView({ behavior: "instant" });
   const contextMenu = win.document.getElementById(contextMenuId);
   const contextMenuShown = BrowserTestUtils.waitForPopupEvent(

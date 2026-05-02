@@ -52,12 +52,12 @@ class Instance final : public nsWrapperCache {
   GPU_DECL_CYCLE_COLLECTION(Instance)
   GPU_DECL_JS_WRAP(Instance)
 
-  nsIGlobalObject* GetParentObject() const { return mGlobal; }
+  nsIGlobalObject* GetParentObject() const { return mOwner; }
 
   static bool PrefEnabled(JSContext* aCx, JSObject* aObj);
   static bool ExternalTexturePrefEnabled(JSContext* aCx, JSObject* aObj);
 
-  static already_AddRefed<Instance> Create(nsIGlobalObject* aGlobal);
+  static already_AddRefed<Instance> Create(nsIGlobalObject* aOwner);
 
   already_AddRefed<dom::Promise> RequestAdapter(
       const dom::GPURequestAdapterOptions& aOptions, ErrorResult& aRv);
@@ -73,10 +73,10 @@ class Instance final : public nsWrapperCache {
   };
 
  private:
-  explicit Instance(nsIGlobalObject* aGlobal);
+  explicit Instance(nsIGlobalObject* aOwner);
   virtual ~Instance() = default;
 
-  nsCOMPtr<nsIGlobalObject> mGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwner;
   RefPtr<WGSLLanguageFeatures> mWgslLanguageFeatures;
 
  public:

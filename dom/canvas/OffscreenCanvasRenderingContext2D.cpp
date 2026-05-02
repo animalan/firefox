@@ -57,7 +57,7 @@ JSObject* OffscreenCanvasRenderingContext2D::WrapObject(
 }
 
 nsIGlobalObject* OffscreenCanvasRenderingContext2D::GetParentObject() const {
-  return mOffscreenCanvas->GetRelevantGlobal();
+  return mOffscreenCanvas->GetOwnerGlobal();
 }
 
 NS_IMETHODIMP OffscreenCanvasRenderingContext2D::InitializeWithDrawTarget(

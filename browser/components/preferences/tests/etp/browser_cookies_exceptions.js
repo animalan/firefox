@@ -542,7 +542,7 @@ async function runTest(test, getObservances) {
   await EventUtils.synthesizeMouseAtCenter(
     cookieExceptionsButton,
     {},
-    doc.documentGlobal
+    doc.ownerGlobal
   );
 
   let win = await promiseSubDialogLoaded;

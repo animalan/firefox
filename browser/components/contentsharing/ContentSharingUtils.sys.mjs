@@ -114,7 +114,7 @@ class ContentSharingUtilsClass {
       })),
     };
     const share = this.buildShare(shareObject);
-    await this.#createLinkAndOpenModal(share, tabs[0].documentGlobal, "tabs");
+    await this.#createLinkAndOpenModal(share, tabs[0].ownerGlobal, "tabs");
   }
 
   /**
@@ -143,7 +143,7 @@ class ContentSharingUtilsClass {
     const share = this.buildShare(shareObject);
     await this.#createLinkAndOpenModal(
       share,
-      tabGroup.documentGlobal,
+      tabGroup.ownerGlobal,
       "tab group"
     );
   }

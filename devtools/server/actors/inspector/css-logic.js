@@ -130,7 +130,7 @@ class CssLogic {
       !node ||
       Cu.isDeadWrapper(node) ||
       node.nodeType !== nodeConstants.ELEMENT_NODE ||
-      !node.documentGlobal
+      !node.ownerGlobal
     ) {
       return null;
     }
@@ -147,7 +147,7 @@ class CssLogic {
       return null;
     }
 
-    return node.documentGlobal.getComputedStyle(bindingElement, pseudo);
+    return node.ownerGlobal.getComputedStyle(bindingElement, pseudo);
   }
 
   /**

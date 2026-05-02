@@ -28,19 +28,19 @@ export class ViewState {
 
   constructor(doc) {
     this.#doc = doc;
-    this.#mainView = doc.documentGlobal.PanelMultiView.getViewNode(
+    this.#mainView = doc.ownerGlobal.PanelMultiView.getViewNode(
       this.#doc,
       "report-broken-site-popup-mainView"
     );
-    this.#previewView = doc.documentGlobal.PanelMultiView.getViewNode(
+    this.#previewView = doc.ownerGlobal.PanelMultiView.getViewNode(
       this.#doc,
       "report-broken-site-popup-previewView"
     );
-    this.#reportSentView = doc.documentGlobal.PanelMultiView.getViewNode(
+    this.#reportSentView = doc.ownerGlobal.PanelMultiView.getViewNode(
       this.#doc,
       "report-broken-site-popup-reportSentView"
     );
-    this.#formElement = doc.documentGlobal.PanelMultiView.getViewNode(
+    this.#formElement = doc.ownerGlobal.PanelMultiView.getViewNode(
       this.#doc,
       "report-broken-site-panel-form"
     );
@@ -82,7 +82,7 @@ export class ViewState {
   }
 
   resetURLToCurrentTab() {
-    const { currentURI } = this.#doc.documentGlobal.gBrowser.selectedBrowser;
+    const { currentURI } = this.#doc.ownerGlobal.gBrowser.selectedBrowser;
     this.currentTabURI = currentURI;
     this.urlInput.value = currentURI.spec;
   }
@@ -223,9 +223,7 @@ export class ViewState {
   }
 
   #focusMainViewElement(toFocus) {
-    const panelview = this.#doc.documentGlobal.PanelView.forNode(
-      this.#mainView
-    );
+    const panelview = this.#doc.ownerGlobal.PanelView.forNode(this.#mainView);
     panelview.selectedElement = toFocus;
     panelview.focusSelectedElement();
   }
@@ -422,7 +420,7 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     // We need to make sure that the Report Broken Site menu item
     // is disabled if the tab's location changes to a non-reportable
     // one while the menu is open.
-    const tabbrowser = event.target.documentGlobal.gBrowser;
+    const tabbrowser = event.target.ownerGlobal.gBrowser;
     this.enableOrDisableMenuitems(tabbrowser.selectedBrowser);
 
     tabbrowser.addTabsProgressListener(this);
@@ -453,7 +451,7 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     }
 
     state.mainPanelview.addEventListener("ViewShowing", ({ target }) => {
-      const { selectedBrowser } = target.documentGlobal.gBrowser;
+      const { selectedBrowser } = target.ownerGlobal.gBrowser;
       let source = "helpMenu";
       switch (target.closest("panelmultiview")?.id) {
         case "appMenu-multiView":
@@ -489,7 +487,7 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
         if (this.enabled) {
           this.open(e);
         } else {
-          const tabbrowser = e.target.documentGlobal.gBrowser;
+          const tabbrowser = e.target.ownerGlobal.gBrowser;
           state.resetURLToCurrentTab();
           this.promiseWebCompatInfo(state, tabbrowser.selectedBrowser);
           this.#openWebCompatTab(tabbrowser)
@@ -509,14 +507,14 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
 
     const canReportUrl = this.canReportURI(selectedbrowser.currentURI);
 
-    const { document } = selectedbrowser.documentGlobal;
+    const { document } = selectedbrowser.ownerGlobal;
 
     // Altering the disabled attribute on the command does not propagate
     // the change to the related menuitems (see bug 805653), so we change them all.
     const cmd = document.getElementById("cmd_reportBrokenSite");
     const allowedByPolicy = Services.policies.isAllowed("feedbackCommands");
     cmd.toggleAttribute("hidden", !allowedByPolicy);
-    const app = document.documentGlobal.PanelMultiView.getViewNode(
+    const app = document.ownerGlobal.PanelMultiView.getViewNode(
       document,
       "appMenu-report-broken-site-button"
     );
@@ -586,25 +584,23 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     });
 
     state.cancelButton.addEventListener("command", ({ target }) => {
-      target.documentGlobal.CustomizableUI.hidePanelForNode(target);
+      target.ownerGlobal.CustomizableUI.hidePanelForNode(target);
       state.reset();
     });
 
     state.sendMoreInfoLink.addEventListener("click", async event => {
       event.preventDefault();
-      const tabbrowser = event.target.documentGlobal.gBrowser;
+      const tabbrowser = event.target.ownerGlobal.gBrowser;
       this.#recordGleanEvent("sendMoreInfo");
-      event.target.documentGlobal.CustomizableUI.hidePanelForNode(event.target);
+      event.target.ownerGlobal.CustomizableUI.hidePanelForNode(event.target);
       await this.#openWebCompatTab(tabbrowser);
       state.reset();
     });
 
     state.learnMoreLink.addEventListener("click", async event => {
       this.#recordGleanEvent("learnMore");
-      event.target.documentGlobal.requestAnimationFrame(() => {
-        event.target.documentGlobal.CustomizableUI.hidePanelForNode(
-          event.target
-        );
+      event.target.ownerGlobal.requestAnimationFrame(() => {
+        event.target.ownerGlobal.CustomizableUI.hidePanelForNode(event.target);
       });
     });
 
@@ -647,7 +643,7 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
       // we don't leak any event listeners and world with them).
       if (!state.form.checkValidity()) {
         const view = event.target.closest("panelview").panelMultiView;
-        const { document } = event.target.documentGlobal;
+        const { document } = event.target.ownerGlobal;
         const listener = event => {
           document.removeEventListener("popuphiding", listener);
           view.removeEventListener("ViewShown", listener);
@@ -664,19 +660,19 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     });
 
     state.previewCancelButton.addEventListener("command", ({ target }) => {
-      target.documentGlobal.CustomizableUI.hidePanelForNode(target);
+      target.ownerGlobal.CustomizableUI.hidePanelForNode(target);
       state.reset();
     });
   }
 
   #initReportSentView(state) {
     state.okayButton.addEventListener("command", ({ target }) => {
-      target.documentGlobal.CustomizableUI.hidePanelForNode(target);
+      target.ownerGlobal.CustomizableUI.hidePanelForNode(target);
     });
   }
 
   async #onMainViewShown(source, selectedBrowser) {
-    const { document } = selectedBrowser.documentGlobal;
+    const { document } = selectedBrowser.ownerGlobal;
 
     let didReset = false;
     const state = ViewState.get(document);
@@ -825,7 +821,7 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     const endpointUrl = this.sendMoreInfoEndpoint;
     const principal = Services.scriptSecurityManager.createNullPrincipal({});
     const tab = await this.#loadTab(tabbrowser, endpointUrl, principal);
-    const { document } = tabbrowser.selectedBrowser.documentGlobal;
+    const { document } = tabbrowser.selectedBrowser.ownerGlobal;
     const { description, reason, url, currentTabWebcompatDetailsPromise } =
       ViewState.get(document);
 
@@ -905,13 +901,13 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
 
   open(event) {
     const { target } = event.sourceEvent;
-    const { selectedBrowser } = target.documentGlobal.gBrowser;
-    const { documentGlobal } = selectedBrowser;
-    const { document } = documentGlobal;
+    const { selectedBrowser } = target.ownerGlobal.gBrowser;
+    const { ownerGlobal } = selectedBrowser;
+    const { document } = ownerGlobal;
 
     switch (target.id) {
       case "appMenu-report-broken-site-button":
-        documentGlobal.PanelUI.showSubView(
+        ownerGlobal.PanelUI.showSubView(
           ReportBrokenSite.MAIN_PANELVIEW_ID,
           target
         );
@@ -926,9 +922,9 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
         const appMenuPopup = document.getElementById("appMenu-popup");
         appMenuPopup?.hidePopup();
 
-        documentGlobal.PanelUI.showSubView(
+        ownerGlobal.PanelUI.showSubView(
           ReportBrokenSite.MAIN_PANELVIEW_ID,
-          documentGlobal.PanelUI.menuButton
+          ownerGlobal.PanelUI.menuButton
         );
         break;
       }

@@ -65,7 +65,7 @@ this.ippActivator = class extends ExtensionAPI {
               ? lazy.tabTracker.getTab(tabId)
               : lazy.tabTracker.activeTab;
             const browser = tab?.linkedBrowser;
-            const win = browser?.documentGlobal;
+            const win = browser?.ownerGlobal;
             if (!browser || !win || !win.gBrowser) {
               return;
             }
@@ -192,7 +192,7 @@ this.ippActivator = class extends ExtensionAPI {
               ? lazy.tabTracker.getTab(tabId)
               : lazy.tabTracker.activeTab;
             const browser = tab?.linkedBrowser;
-            const win = browser?.documentGlobal;
+            const win = browser?.ownerGlobal;
             if (!browser || !win || !win.gBrowser) {
               return Promise.resolve(false);
             }

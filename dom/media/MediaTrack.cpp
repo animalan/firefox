@@ -10,10 +10,10 @@
 
 namespace mozilla::dom {
 
-MediaTrack::MediaTrack(nsIGlobalObject* aRelevantGlobal, const nsAString& aId,
+MediaTrack::MediaTrack(nsIGlobalObject* aOwnerGlobal, const nsAString& aId,
                        const nsAString& aKind, const nsAString& aLabel,
                        const nsAString& aLanguage)
-    : DOMEventTargetHelper(aRelevantGlobal),
+    : DOMEventTargetHelper(aOwnerGlobal),
       mId(aId),
       mKind(aKind),
       mLabel(aLabel),

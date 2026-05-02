@@ -15578,7 +15578,7 @@ static void DispatchFullscreenUpdateKeyboardLockEvent(Document* aDoc) {
   aDoc->Dispatch(NS_NewRunnableFunction(
       "DispatchFullscreenUpdateKeyboardLockEvent", [doc = RefPtr{aDoc}]() {
         AutoJSAPI jsapi;
-        if (!jsapi.Init(doc->GetRelevantGlobal())) {
+        if (!jsapi.Init(doc->GetOwnerGlobal())) {
           return;
         }
         JSContext* cx = jsapi.cx();
@@ -16684,7 +16684,7 @@ void Document::RequestFullscreenInContentProcess(
         }
 
         AutoJSAPI jsapi;
-        if (!jsapi.Init(self->GetRelevantGlobal())) {
+        if (!jsapi.Init(self->GetOwnerGlobal())) {
           return;
         }
         JSContext* cx = jsapi.cx();

@@ -165,7 +165,7 @@ async function getReusableMasksAsync(browser, _origin) {
  * @param {object} messageArgs
  */
 async function showErrorAsync(browser, messageId, messageArgs) {
-  const { PopupNotifications } = browser.documentGlobal.wrappedJSObject;
+  const { PopupNotifications } = browser.ownerGlobal.wrappedJSObject;
   const [message] = await lazy.strings.formatValues([
     { id: messageId, args: messageArgs },
   ]);
@@ -289,7 +289,7 @@ async function showReusableMasksAsync(browser, origin, error) {
       Glean.relayIntegration.getUnlimitedMasksReusePanel.record({
         value: gFlowId,
       });
-      browser.documentGlobal.openWebLinkIn(gConfig.manageURL, "tab");
+      browser.ownerGlobal.openWebLinkIn(gConfig.manageURL, "tab");
     },
   };
   const dismiss = {
@@ -350,7 +350,7 @@ async function showReusableMasksAsync(browser, origin, error) {
         link.textContent = part;
         link.addEventListener("click", event => {
           event.preventDefault();
-          browser.documentGlobal.openWebLinkIn(gConfig.manageURL, "tab");
+          browser.ownerGlobal.openWebLinkIn(gConfig.manageURL, "tab");
         });
         bodyP.appendChild(link);
       }
@@ -458,7 +458,7 @@ async function showReusableMasksAsync(browser, origin, error) {
     }
   }
 
-  const { PopupNotifications } = browser.documentGlobal.wrappedJSObject;
+  const { PopupNotifications } = browser.ownerGlobal.wrappedJSObject;
   notification = PopupNotifications.show(
     browser,
     "relay-integration-reuse-masks",
@@ -766,7 +766,7 @@ class RelayOffered {
   }
 
   async offerRelayIntegrationToSignedOutUser(feature, browser, origin) {
-    const { PopupNotifications } = browser.documentGlobal.wrappedJSObject;
+    const { PopupNotifications } = browser.ownerGlobal.wrappedJSObject;
     let fillUsername;
     const fillUsernamePromise = new Promise(
       resolve => (fillUsername = resolve)
@@ -792,8 +792,7 @@ class RelayOffered {
 
         // Capture the selected tab panel ID so we can come back to it after the
         // user finishes FXA sign-in
-        const tabPanelId =
-          browser.documentGlobal.gBrowser.selectedTab.linkedPanel;
+        const tabPanelId = browser.ownerGlobal.gBrowser.selectedTab.linkedPanel;
 
         // TODO: add some visual treatment to the tab and/or the form field to
         // indicate to the user that they need to complete sign-in to receive a
@@ -825,9 +824,9 @@ class RelayOffered {
           }
 
           // Go back to the tab with the form that started the FXA sign-in flow
-          const tabToFocus = Array.from(
-            browser.documentGlobal.gBrowser.tabs
-          ).find(tab => tab.linkedPanel === tabPanelId);
+          const tabToFocus = Array.from(browser.ownerGlobal.gBrowser.tabs).find(
+            tab => tab.linkedPanel === tabPanelId
+          );
           if (!tabToFocus) {
             // If the tab has been closed, return
             // TODO: figure out the real UX here?
@@ -837,7 +836,7 @@ class RelayOffered {
           // TODO: Update the visual treatment to the form field to indicate to
           // the user that we are hiding their email address.
 
-          browser.documentGlobal.gBrowser.selectedTab = tabToFocus;
+          browser.ownerGlobal.gBrowser.selectedTab = tabToFocus;
 
           // Create the relay user, mark feature enabled, fill in the username
           // field with a mask
@@ -866,7 +865,7 @@ class RelayOffered {
               utm_medium: "firefox-desktop",
             }
           );
-        browser.documentGlobal.openWebLinkIn(fxaUrl, "tab");
+        browser.ownerGlobal.openWebLinkIn(fxaUrl, "tab");
       },
     };
     const postpone = getPostpone(postponeStrings, feature);
@@ -921,7 +920,7 @@ class RelayOffered {
   }
 
   async offerRelayIntegrationToFxAUser(feature, browser, origin, fxaUser) {
-    const { PopupNotifications } = browser.documentGlobal.wrappedJSObject;
+    const { PopupNotifications } = browser.ownerGlobal.wrappedJSObject;
     let fillUsername;
     const fillUsernamePromise = new Promise(
       resolve => (fillUsername = resolve)

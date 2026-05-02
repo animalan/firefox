@@ -438,7 +438,7 @@ WebProtocolHandlerRegistrar.prototype = {
       browser = rootDocShell.QueryInterface(Ci.nsIDocShell).chromeEventHandler;
     }
 
-    let browserWindow = browser.documentGlobal;
+    let browserWindow = browser.ownerGlobal;
     try {
       browserWindow.navigator.checkProtocolHandlerAllowed(
         aProtocol,
@@ -536,7 +536,7 @@ WebProtocolHandlerRegistrar.prototype = {
     let notificationId = "OS Protocol Registration: " + aProtocol;
 
     // guard: we do not want to reconfigure settings in private browsing mode
-    if (lazy.PrivateBrowsingUtils.isWindowPrivate(browser.documentGlobal)) {
+    if (lazy.PrivateBrowsingUtils.isWindowPrivate(browser.ownerGlobal)) {
       lazy.log.debug("prompt not shown, because this is a private window.");
       return;
     }
@@ -582,7 +582,7 @@ WebProtocolHandlerRegistrar.prototype = {
       .getNotificationBox(browser);
 
     if (!osDefaultNotificationBox.getNotificationWithValue(notificationId)) {
-      let win = browser.documentGlobal;
+      let win = browser.ownerGlobal;
       win.MozXULElement.insertFTLIfNeeded("browser/webProtocolHandler.ftl");
 
       let notification = await osDefaultNotificationBox.appendNotification(

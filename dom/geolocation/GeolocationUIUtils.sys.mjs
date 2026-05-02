@@ -11,7 +11,7 @@ export class GeolocationUIUtils {
   dismissPrompts(aBrowsingContext) {
     // browser will be null if the tab was closed
     let embedder = aBrowsingContext?.top.embedderElement;
-    let owner = embedder?.documentGlobal;
+    let owner = embedder?.ownerGlobal;
     if (owner) {
       let dialogBox = owner.gBrowser.getTabDialogBox(embedder);
       // Don't close any content-modal dialogs, because we could be doing

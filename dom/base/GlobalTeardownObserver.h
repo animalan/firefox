@@ -21,7 +21,7 @@ class GlobalTeardownObserver
                                   bool aHasOrHasHadOwnerWindow = false);
 
   nsGlobalWindowInner* GetOwnerWindow() const;
-  nsIGlobalObject* GetRelevantGlobal() const { return mParentObject; }
+  nsIGlobalObject* GetOwnerGlobal() const { return mParentObject; }
   bool HasOrHasHadOwnerWindow() const { return mHasOrHasHadOwnerWindow; }
 
   void GetParentObject(nsIScriptGlobalObject** aParentObject) {
@@ -49,14 +49,14 @@ class GlobalTeardownObserver
  protected:
   virtual ~GlobalTeardownObserver();
 
-  void BindToGlobal(nsIGlobalObject* aGlobal);
+  void BindToOwner(nsIGlobalObject* aOwner);
 
  private:
   // The parent global object.  The global will clear this when
   // it is destroyed by calling DisconnectFromOwner().
   nsIGlobalObject* MOZ_NON_OWNING_REF mParentObject = nullptr;
   // If mParentObject is or has been an inner window, then this is true. It is
-  // obtained in BindToGlobal.
+  // obtained in BindToOwner.
   bool mHasOrHasHadOwnerWindow = false;
 };
 

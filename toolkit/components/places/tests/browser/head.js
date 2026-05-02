@@ -27,9 +27,7 @@ async function clearHistoryAndHistoryCache() {
 }
 
 async function synthesizeVisitByUser(browser, url) {
-  let onNewTab = BrowserTestUtils.waitForNewTab(
-    browser.documentGlobal.gBrowser
-  );
+  let onNewTab = BrowserTestUtils.waitForNewTab(browser.ownerGlobal.gBrowser);
   // We intentionally turn off this a11y check, because the following click is
   // purposefully sent on an arbitrary web content that is not expected to be
   // tested by itself with the browser mochitests, therefore this rule check
@@ -48,9 +46,7 @@ async function synthesizeVisitByUser(browser, url) {
 }
 
 async function synthesizeVisitByScript(browser, url) {
-  let onNewTab = BrowserTestUtils.waitForNewTab(
-    browser.documentGlobal.gBrowser
-  );
+  let onNewTab = BrowserTestUtils.waitForNewTab(browser.ownerGlobal.gBrowser);
   AccessibilityUtils.setEnv({ mustHaveAccessibleRule: false });
   await SpecialPowers.spawn(browser, [url], async href => {
     let a = content.document.querySelector(`a[href='${href}'`);

@@ -757,7 +757,7 @@ double AudioContext::CurrentTime() {
 }
 
 nsISerialEventTarget* AudioContext::GetMainThread() const {
-  if (nsIGlobalObject* global = GetRelevantGlobal()) {
+  if (nsIGlobalObject* global = GetOwnerGlobal()) {
     return global->SerialEventTarget();
   }
   return GetCurrentSerialEventTarget();

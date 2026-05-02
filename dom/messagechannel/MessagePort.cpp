@@ -311,7 +311,7 @@ void MessagePort::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
   }
 
   Maybe<nsID> agentClusterId;
-  nsCOMPtr<nsIGlobalObject> global = GetRelevantGlobal();
+  nsCOMPtr<nsIGlobalObject> global = GetOwnerGlobal();
   if (global) {
     agentClusterId = global->GetAgentClusterId();
   }

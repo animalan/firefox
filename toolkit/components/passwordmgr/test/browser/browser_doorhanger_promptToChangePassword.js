@@ -128,7 +128,7 @@ async function promptToChangePasswordTest(testData) {
       TEST_ORIGIN,
     },
     async function (browser) {
-      await SimpleTest.promiseFocus(browser.documentGlobal);
+      await SimpleTest.promiseFocus(browser.ownerGlobal);
       let notif = await showChangePasswordDoorhanger(
         browser,
         oldLogin,

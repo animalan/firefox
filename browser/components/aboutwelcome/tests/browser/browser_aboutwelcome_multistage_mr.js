@@ -376,7 +376,7 @@ add_task(async function test_aboutwelcome_embedded_migration() {
         await ContentTaskUtils.waitForEvent(selector, "focus");
       }
 
-      EventUtils.synthesizeMouseAtCenter(selector, {}, wizard.documentGlobal);
+      EventUtils.synthesizeMouseAtCenter(selector, {}, wizard.ownerGlobal);
       await shown;
 
       let panelRect = panelList.getBoundingClientRect();

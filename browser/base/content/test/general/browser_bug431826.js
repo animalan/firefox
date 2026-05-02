@@ -39,7 +39,7 @@ add_task(async function () {
         // Confirm that the expert section is collapsed
         Assert.ok(div, "Advanced content div should exist");
         Assert.equal(
-          div.documentGlobal.getComputedStyle(div).display,
+          div.ownerGlobal.getComputedStyle(div).display,
           "none",
           "Advanced content should not be visible by default"
         );
@@ -69,7 +69,7 @@ add_task(async function () {
         let div = content.document.getElementById("badCertAdvancedPanel");
         Assert.ok(div, "Advanced content div should exist");
         Assert.equal(
-          div.documentGlobal.getComputedStyle(div).display,
+          div.ownerGlobal.getComputedStyle(div).display,
           "block",
           "Advanced content should be visible by default"
         );

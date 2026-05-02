@@ -161,14 +161,14 @@ export class AboutLoginsParent extends JSWindowActorParent {
     }
   }
 
-  get #documentGlobal() {
-    return this.browsingContext.embedderElement?.documentGlobal;
+  get #ownerGlobal() {
+    return this.browsingContext.embedderElement?.ownerGlobal;
   }
 
   async #createLogin(newLogin) {
     if (!Services.policies.isAllowed("removeMasterPassword")) {
       if (!lazy.LoginHelper.isPrimaryPasswordSet()) {
-        this.#documentGlobal.openDialog(
+        this.#ownerGlobal.openDialog(
           "chrome://mozapps/content/preferences/changemp.xhtml",
           "",
           "centerscreen,chrome,modal,titlebar"
@@ -202,12 +202,9 @@ export class AboutLoginsParent extends JSWindowActorParent {
 
   get preselectedLogin() {
     const preselectedLogin =
-      this.#documentGlobal?.gBrowser.selectedTab.getAttribute(
-        "preselect-login"
-      ) || this.browsingContext.currentURI?.ref;
-    this.#documentGlobal?.gBrowser.selectedTab.removeAttribute(
-      "preselect-login"
-    );
+      this.#ownerGlobal?.gBrowser.selectedTab.getAttribute("preselect-login") ||
+      this.browsingContext.currentURI?.ref;
+    this.#ownerGlobal?.gBrowser.selectedTab.removeAttribute("preselect-login");
     return preselectedLogin || null;
   }
 
@@ -221,12 +218,12 @@ export class AboutLoginsParent extends JSWindowActorParent {
   }
 
   #syncEnable() {
-    this.#documentGlobal.gSync.openFxAEmailFirstPage("password-manager");
+    this.#ownerGlobal.gSync.openFxAEmailFirstPage("password-manager");
   }
 
   #importFromBrowser() {
     try {
-      lazy.MigrationUtils.showMigrationWizard(this.#documentGlobal, {
+      lazy.MigrationUtils.showMigrationWizard(this.#ownerGlobal, {
         entrypoint: lazy.MigrationUtils.MIGRATION_ENTRYPOINTS.PASSWORDS,
       });
     } catch (ex) {
@@ -243,13 +240,13 @@ export class AboutLoginsParent extends JSWindowActorParent {
     const SUPPORT_URL =
       Services.urlFormatter.formatURLPref("app.support.baseURL") +
       "password-manager-remember-delete-edit-logins";
-    this.#documentGlobal.openWebLinkIn(SUPPORT_URL, "tab", {
+    this.#ownerGlobal.openWebLinkIn(SUPPORT_URL, "tab", {
       relatedToCurrent: true,
     });
   }
 
   #openPreferences() {
-    this.#documentGlobal.openPreferences("privacy-logins");
+    this.#ownerGlobal.openPreferences("privacy-logins");
   }
 
   async #primaryPasswordRequest(messageId, reason) {
@@ -705,14 +702,14 @@ class AboutLoginsInternal {
   } = {}) {
     for (let subscriber of this.#subscriberIterator()) {
       let browser = subscriber.embedderElement;
-      let MozXULElement = browser.documentGlobal.MozXULElement;
+      let MozXULElement = browser.ownerGlobal.MozXULElement;
       MozXULElement.insertFTLIfNeeded("browser/aboutLogins.ftl");
       for (let ftl of extraFtl) {
         MozXULElement.insertFTLIfNeeded(ftl);
       }
 
       // If there's already an existing notification bar, don't do anything.
-      let { gBrowser } = browser.documentGlobal;
+      let { gBrowser } = browser.ownerGlobal;
       let notificationBox = gBrowser.getNotificationBox(browser);
       let notification = notificationBox.getNotificationWithValue(id);
       if (notification) {
@@ -745,7 +742,7 @@ class AboutLoginsInternal {
   #removeNotifications(notificationId) {
     for (let subscriber of this.#subscriberIterator()) {
       let browser = subscriber.embedderElement;
-      let { gBrowser } = browser.documentGlobal;
+      let { gBrowser } = browser.ownerGlobal;
       let notificationBox = gBrowser.getNotificationBox(browser);
       let notification =
         notificationBox.getNotificationWithValue(notificationId);

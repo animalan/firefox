@@ -113,7 +113,7 @@ class Response final : public FetchBody<Response>, public nsWrapperCache {
       const Nullable<fetch::ResponseBodyInit>& aBody, const ResponseInit& aInit,
       ErrorResult& rv);
 
-  nsIGlobalObject* GetParentObject() const { return mGlobal; }
+  nsIGlobalObject* GetParentObject() const { return mOwner; }
 
   already_AddRefed<Response> Clone(JSContext* aCx, ErrorResult& aRv);
 

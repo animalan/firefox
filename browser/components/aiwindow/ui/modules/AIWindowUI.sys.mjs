@@ -109,7 +109,7 @@ export const AIWindowUI = {
    * @param {ChatConversation} conversation The conversation to open
    */
   openInFullWindow(browser, conversation) {
-    this.closeSidebar(browser.documentGlobal);
+    this.closeSidebar(browser.ownerGlobal);
 
     browser.setAttribute("data-conversation-id", conversation.id);
 

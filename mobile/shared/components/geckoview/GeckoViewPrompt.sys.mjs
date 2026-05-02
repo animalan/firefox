@@ -81,7 +81,7 @@ export class PromptFactory {
   }
 
   _generateSelectItems(aElement) {
-    const win = aElement.documentGlobal;
+    const win = aElement.ownerGlobal;
     let id = 0;
     const map = {};
 
@@ -118,7 +118,7 @@ export class PromptFactory {
   }
 
   _handleSelect(aElement, aIsDropDown) {
-    const win = aElement.documentGlobal;
+    const win = aElement.ownerGlobal;
     const [items] = this._generateSelectItems(aElement);
 
     if (aIsDropDown) {
@@ -153,8 +153,7 @@ export class PromptFactory {
         prompt.dismiss();
       }
     };
-    const chromeEventHandler =
-      aElement.documentGlobal.docShell.chromeEventHandler;
+    const chromeEventHandler = aElement.ownerGlobal.docShell.chromeEventHandler;
     chromeEventHandler.addEventListener("mozhidedropdown", hidedropdown, {
       mozSystemGroup: true,
     });
@@ -228,11 +227,10 @@ export class PromptFactory {
   }
 
   _handleDateTime(aElement) {
-    const win = aElement.documentGlobal;
+    const win = aElement.ownerGlobal;
     const prompt = new lazy.GeckoViewPrompter(win);
 
-    const chromeEventHandler =
-      aElement.documentGlobal.docShell.chromeEventHandler;
+    const chromeEventHandler = aElement.ownerGlobal.docShell.chromeEventHandler;
     const dismissPrompt = () => prompt.dismiss();
     // Some controls don't have UA widget (bug 888320)
     {
@@ -298,13 +296,10 @@ export class PromptFactory {
     // Fire both "input" and "change" events for <select> and <input> for
     // date/time.
     aElement.dispatchEvent(
-      new aElement.documentGlobal.Event("input", {
-        bubbles: true,
-        composed: true,
-      })
+      new aElement.ownerGlobal.Event("input", { bubbles: true, composed: true })
     );
     aElement.dispatchEvent(
-      new aElement.documentGlobal.Event("change", { bubbles: true })
+      new aElement.ownerGlobal.Event("change", { bubbles: true })
     );
   }
 

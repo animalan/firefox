@@ -21,9 +21,9 @@ Services.obs.addObserver(
       }
       let bc = BrowsingContext.getCurrentTopByBrowserId(browserId);
       let browser = bc?.embedderElement;
-      if (browser?.documentGlobal) {
+      if (browser?.ownerGlobal) {
         browser.dispatchEvent(
-          new browser.documentGlobal.CustomEvent("PermissionStateChange")
+          new browser.ownerGlobal.CustomEvent("PermissionStateChange")
         );
       }
     },
@@ -556,7 +556,7 @@ export var SitePermissions = {
     if (scope == this.SCOPE_GLOBAL && state == this.BLOCK) {
       if (GloballyBlockedPermissions.set(browser, permissionID)) {
         browser.dispatchEvent(
-          new browser.documentGlobal.CustomEvent("PermissionStateChange")
+          new browser.ownerGlobal.CustomEvent("PermissionStateChange")
         );
       }
       return;

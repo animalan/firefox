@@ -73,7 +73,7 @@ add_task(async function test_accessibility_pane_click_sidebar() {
   });
   await openPreferencesViaOpenPreferencesAPI("general", { leaveOpen: true });
   let doc = gBrowser.selectedBrowser.contentDocument;
-  let win = doc.documentGlobal;
+  let win = doc.ownerGlobal;
 
   let paneLoaded = waitForPaneChange("accessibility");
   let categoryBtn = doc.getElementById("category-accessibility");

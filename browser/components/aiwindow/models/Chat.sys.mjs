@@ -413,7 +413,7 @@ Object.assign(Chat, {
             `Security commit ${conversation.securityProperties.getLogText()}`
           );
 
-          const win = originalEmbedderElement?.documentGlobal;
+          const win = originalEmbedderElement?.ownerGlobal;
           if (!win || win.closed) {
             console.error(
               "run_search: Associated window not available or closed, aborting search handoff"

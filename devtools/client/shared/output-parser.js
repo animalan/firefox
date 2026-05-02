@@ -2148,9 +2148,7 @@ class OutputParser {
     swatch.nextElementSibling.textContent = val;
     swatch.parentNode.dataset.color = val;
 
-    const unitChangeEvent = new swatch.documentGlobal.CustomEvent(
-      "unit-change"
-    );
+    const unitChangeEvent = new swatch.ownerGlobal.CustomEvent("unit-change");
     swatch.dispatchEvent(unitChangeEvent);
   };
 
@@ -2167,9 +2165,7 @@ class OutputParser {
 
     swatch.nextElementSibling.textContent = val;
 
-    const unitChangeEvent = new swatch.documentGlobal.CustomEvent(
-      "unit-change"
-    );
+    const unitChangeEvent = new swatch.ownerGlobal.CustomEvent("unit-change");
     swatch.dispatchEvent(unitChangeEvent);
   };
 

@@ -141,7 +141,7 @@ describe("AI Controls telemetry", () => {
       EventUtils.synthesizeMouseAtCenter(
         dialogEl.confirmButton,
         {},
-        dialogEl.documentGlobal
+        dialogEl.ownerGlobal
       )
     );
 

@@ -1501,7 +1501,7 @@
       if (this._tabbrowserTabs.expandOnHover) {
         // Query the expanded width from sidebar launcher to ensure tabs aren't
         // cut off (Bug 1974037).
-        const { SidebarController } = tab.documentGlobal;
+        const { SidebarController } = tab.ownerGlobal;
         SidebarController.expandOnHoverComplete.then(async () => {
           const width = await window.promiseDocumentFlushed(
             () => SidebarController.sidebarMain.clientWidth
@@ -2576,7 +2576,7 @@
         "pinned-drop-indicator"
       );
       let draggedTabContainer =
-        draggedTabDocument.documentGlobal.gBrowser.tabContainer;
+        draggedTabDocument.ownerGlobal.gBrowser.tabContainer;
       pinnedDropIndicator.removeAttribute("visible");
       pinnedDropIndicator.removeAttribute("interactive");
       draggedTabContainer.style.maxWidth = "";
@@ -2675,7 +2675,7 @@
           (isTab(sourceNode) ||
             isTabGroupLabel(sourceNode) ||
             isSplitViewWrapper(sourceNode)) &&
-          sourceNode.documentGlobal.isChromeWindow &&
+          sourceNode.ownerGlobal.isChromeWindow &&
           sourceNode.ownerDocument.documentElement.getAttribute("windowtype") ==
             "navigator:browser"
         ) {
@@ -2683,20 +2683,20 @@
           // and vice versa.
           if (
             PrivateBrowsingUtils.isWindowPrivate(window) !=
-            PrivateBrowsingUtils.isWindowPrivate(sourceNode.documentGlobal)
+            PrivateBrowsingUtils.isWindowPrivate(sourceNode.ownerGlobal)
           ) {
             return "none";
           }
 
           if (
             window.gMultiProcessBrowser !=
-            sourceNode.documentGlobal.gMultiProcessBrowser
+            sourceNode.ownerGlobal.gMultiProcessBrowser
           ) {
             return "none";
           }
 
           if (
-            window.gFissionBrowser != sourceNode.documentGlobal.gFissionBrowser
+            window.gFissionBrowser != sourceNode.ownerGlobal.gFissionBrowser
           ) {
             return "none";
           }

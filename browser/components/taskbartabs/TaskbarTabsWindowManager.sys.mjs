@@ -46,7 +46,7 @@ export class TaskbarTabsWindowManager {
    * @returns {Promise<DOMWindow>} The newly created Taskbar Tab window.
    */
   async replaceTabWithWindow(aTaskbarTab, aTab, aIcon) {
-    let originWindow = aTab.documentGlobal;
+    let originWindow = aTab.ownerGlobal;
 
     Glean.webApp.moveToTaskbar.record({});
 

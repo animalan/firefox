@@ -35,7 +35,7 @@ class XMLHttpRequestEventTarget : public DOMEventTargetHelper {
   IMPL_EVENT_HANDLER(timeout)
   IMPL_EVENT_HANDLER(loadend)
 
-  nsISupports* GetParentObject() const { return GetRelevantGlobal(); }
+  nsISupports* GetParentObject() const { return GetOwnerGlobal(); }
   void DisconnectFromOwner() override;
 };
 

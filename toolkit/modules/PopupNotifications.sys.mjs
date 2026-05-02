@@ -107,7 +107,7 @@ function Notification(
   this.wasDismissed = false;
   this.recordedTelemetryStats = new Set();
   this.isPrivate = PrivateBrowsingUtils.isWindowPrivate(
-    this.browser.documentGlobal
+    this.browser.ownerGlobal
   );
   this.timeCreated = ChromeUtils.now();
 }
@@ -265,7 +265,7 @@ export function PopupNotifications(tabbrowser, panel, iconBox, options = {}) {
 
   this._getVisibleAnchorElement = options.getVisibleAnchorElement;
 
-  this.window = tabbrowser.documentGlobal;
+  this.window = tabbrowser.ownerGlobal;
   this.panel = panel;
   this.tabbrowser = tabbrowser;
   this.iconBox = iconBox;
@@ -1707,7 +1707,7 @@ PopupNotifications.prototype = {
       // to update our notification map.
 
       let ourNotifications = this.getNotificationsForBrowser(ourBrowser);
-      let other = otherBrowser.documentGlobal.PopupNotifications;
+      let other = otherBrowser.ownerGlobal.PopupNotifications;
       if (!other) {
         if (ourNotifications.length) {
           console.error(

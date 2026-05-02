@@ -221,7 +221,7 @@ var gSearchResultsPane = {
       let range = document.createRange();
       range.setStart(startNode, startValue);
       range.setEnd(endNode, endValue);
-      this.getFindSelection(startNode.documentGlobal).addRange(range);
+      this.getFindSelection(startNode.ownerGlobal).addRange(range);
 
       this.searchResultsHighlighted = true;
     }

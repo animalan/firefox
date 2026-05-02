@@ -8,13 +8,13 @@ const exampleUrl = "https://example.com/1";
 
 function click(target) {
   let promise = BrowserTestUtils.waitForEvent(target, "click");
-  EventUtils.synthesizeMouseAtCenter(target, {}, target.documentGlobal);
+  EventUtils.synthesizeMouseAtCenter(target, {}, target.ownerGlobal);
   return promise;
 }
 
 function openContextMenu(target) {
   let popupShownPromise = BrowserTestUtils.waitForEvent(
-    target.documentGlobal,
+    target.ownerGlobal,
     "contextmenu"
   );
 
@@ -24,7 +24,7 @@ function openContextMenu(target) {
       type: "contextmenu",
       button: 2,
     },
-    target.documentGlobal
+    target.ownerGlobal
   );
   return popupShownPromise;
 }
@@ -36,28 +36,28 @@ function drag(target, fromX, fromY, toX, toY) {
     fromX,
     fromY,
     { type: "mousemove" },
-    target.documentGlobal
+    target.ownerGlobal
   );
   EventUtils.synthesizeMouse(
     target,
     fromX,
     fromY,
     { type: "mousedown" },
-    target.documentGlobal
+    target.ownerGlobal
   );
   EventUtils.synthesizeMouse(
     target,
     toX,
     toY,
     { type: "mousemove" },
-    target.documentGlobal
+    target.ownerGlobal
   );
   EventUtils.synthesizeMouse(
     target,
     toX,
     toY,
     { type: "mouseup" },
-    target.documentGlobal
+    target.ownerGlobal
   );
   return promise;
 }

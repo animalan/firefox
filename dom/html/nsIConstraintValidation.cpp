@@ -64,7 +64,7 @@ bool nsIConstraintValidation::ReportValidity() {
   invalidElements.AppendElement(element);
 
   AutoJSAPI jsapi;
-  if (!jsapi.Init(element->GetRelevantGlobal())) {
+  if (!jsapi.Init(element->GetOwnerGlobal())) {
     return false;
   }
   JS::Rooted<JS::Value> detail(jsapi.cx());

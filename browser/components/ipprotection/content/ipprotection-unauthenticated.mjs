@@ -31,7 +31,7 @@ export default class IPProtectionUnauthenticatedContentElement extends MozLitEle
   handleLearnMoreClick(event) {
     event.preventDefault();
     if (event.target.classList.contains("learn-more-vpn")) {
-      const win = event.target.documentGlobal;
+      const win = event.target.ownerGlobal;
       win.openWebLinkIn(event.target.href, "tab");
       this.dispatchEvent(
         new CustomEvent("IPProtection:Close", { bubbles: true, composed: true })

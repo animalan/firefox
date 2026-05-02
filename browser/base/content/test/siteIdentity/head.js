@@ -88,12 +88,12 @@ async function assertMixedContentBlockingState(tabbrowser, states = {}) {
   }
 
   let { passiveLoaded, activeLoaded, activeBlocked } = states;
-  let { gIdentityHandler } = tabbrowser.documentGlobal;
+  let { gIdentityHandler } = tabbrowser.ownerGlobal;
   let doc = tabbrowser.ownerDocument;
   let identityBox = gIdentityHandler._identityBox;
   let classList = identityBox.classList;
   let identityIcon = doc.getElementById("identity-icon");
-  let identityIconImage = tabbrowser.documentGlobal
+  let identityIconImage = tabbrowser.ownerGlobal
     .getComputedStyle(identityIcon)
     .getPropertyValue("list-style-image");
 
@@ -203,7 +203,7 @@ async function assertMixedContentBlockingState(tabbrowser, states = {}) {
 
   // Make sure the identity popup has the correct mixedcontent states
   let promisePanelOpen = BrowserTestUtils.waitForEvent(
-    tabbrowser.documentGlobal,
+    tabbrowser.ownerGlobal,
     "popupshown",
     true,
     event => event.target == gIdentityHandler._identityPopup
@@ -252,14 +252,14 @@ async function assertMixedContentBlockingState(tabbrowser, states = {}) {
 
   // Make sure the correct icon is visible in the Control Center.
   // This logic is controlled with CSS, so this helps prevent regressions there.
-  let securityViewBG = tabbrowser.documentGlobal
+  let securityViewBG = tabbrowser.ownerGlobal
     .getComputedStyle(
       document
         .getElementById("identity-popup-securityView")
         .getElementsByClassName("identity-popup-security-connection")[0]
     )
     .getPropertyValue("list-style-image");
-  let securityContentBG = tabbrowser.documentGlobal
+  let securityContentBG = tabbrowser.ownerGlobal
     .getComputedStyle(
       document
         .getElementById("identity-popup-mainView")

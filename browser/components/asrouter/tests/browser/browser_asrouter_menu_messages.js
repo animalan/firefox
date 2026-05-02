@@ -803,7 +803,7 @@ add_task(async function test_default_cta_does_not_replace_fxa_row() {
       defaultMsg,
       window,
       async (_msgEl, panel) => {
-        const view = panel.documentGlobal.PanelUI.mainView;
+        const view = panel.ownerGlobal.PanelUI.mainView;
         const separator = view.querySelector("#appMenu-fxa-separator");
         const fxaRow = view.querySelector("#appMenu-fxa-status2");
 

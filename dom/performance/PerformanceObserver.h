@@ -45,7 +45,7 @@ class PerformanceObserver final : public nsISupports, public nsWrapperCache {
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;
 
-  nsISupports* GetParentObject() const { return mGlobal; }
+  nsISupports* GetParentObject() const { return mOwner; }
 
   void Observe(const PerformanceObserverInit& aOptions, ErrorResult& aRv);
   static void GetSupportedEntryTypes(const GlobalObject& aGlobal,
@@ -63,7 +63,7 @@ class PerformanceObserver final : public nsISupports, public nsWrapperCache {
  private:
   ~PerformanceObserver();
 
-  nsCOMPtr<nsIGlobalObject> mGlobal;
+  nsCOMPtr<nsIGlobalObject> mOwner;
   RefPtr<PerformanceObserverCallback> mCallback;
   RefPtr<Performance> mPerformance;
   nsTArray<nsString> mEntryTypes;

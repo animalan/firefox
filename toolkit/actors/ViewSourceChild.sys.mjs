@@ -25,7 +25,7 @@ export class ViewSourceChild extends JSWindowActorChild {
       case "ViewSource:GetSelection": {
         let selectionDetails;
         try {
-          selectionDetails = this.getSelection(this.document.documentGlobal);
+          selectionDetails = this.getSelection(this.document.ownerGlobal);
         } catch (e) {}
         return selectionDetails;
       }

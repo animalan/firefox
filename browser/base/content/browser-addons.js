@@ -372,7 +372,7 @@ customElements.define(
         domainItem.textContent = domain;
         domainsList.appendChild(domainItem);
       }
-      const { DocumentFragment } = this.documentGlobal;
+      const { DocumentFragment } = this.ownerGlobal;
       const fragment = new DocumentFragment();
       fragment.append(label);
       fragment.append(domainsList);
@@ -3022,7 +3022,7 @@ var gUnifiedExtensions = {
   onWidgetOverflow(aNode) {
     // We register a CUI listener for each window so we make sure that we
     // handle the event for the right window here.
-    if (window !== aNode.documentGlobal) {
+    if (window !== aNode.ownerGlobal) {
       return;
     }
 
@@ -3032,7 +3032,7 @@ var gUnifiedExtensions = {
   onWidgetUnderflow(aNode) {
     // We register a CUI listener for each window so we make sure that we
     // handle the event for the right window here.
-    if (window !== aNode.documentGlobal) {
+    if (window !== aNode.ownerGlobal) {
       return;
     }
 
@@ -3042,7 +3042,7 @@ var gUnifiedExtensions = {
   onAreaNodeRegistered(aArea, aContainer) {
     // We register a CUI listener for each window so we make sure that we
     // handle the event for the right window here.
-    if (window !== aContainer.documentGlobal) {
+    if (window !== aContainer.ownerGlobal) {
       return;
     }
 

@@ -20,7 +20,7 @@ add_task(async function testReportSentViewBGColor() {
   await BrowserTestUtils.withNewTab(
     REPORTABLE_PAGE_URL,
     async function (browser) {
-      const { defaultView } = browser.documentGlobal.document;
+      const { defaultView } = browser.ownerGlobal.document;
 
       const menu = AppMenu();
 

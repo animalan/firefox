@@ -127,7 +127,7 @@ export var TabCrashHandler = {
               [];
             for (let browserItem of browsers) {
               let browser = subframeCrashItem.get(browserItem);
-              if (browser.isConnected && !browser.documentGlobal.closed) {
+              if (browser.isConnected && !browser.ownerGlobal.closed) {
                 this.showSubFrameNotification(browser, childID, dumpID);
               }
             }
@@ -395,7 +395,7 @@ export var TabCrashHandler = {
       }
     };
 
-    gBrowser.documentGlobal.MozXULElement.insertFTLIfNeeded(
+    gBrowser.ownerGlobal.MozXULElement.insertFTLIfNeeded(
       "browser/contentCrash.ftl"
     );
 
@@ -666,7 +666,7 @@ export var TabCrashHandler = {
   onAboutTabCrashedLoad(browser) {
     this._crashedTabCount++;
 
-    let window = browser.documentGlobal;
+    let window = browser.ownerGlobal;
 
     // Reset the zoom for the tabcrashed page.
     window.ZoomManager.setZoomForBrowser(browser, 1);

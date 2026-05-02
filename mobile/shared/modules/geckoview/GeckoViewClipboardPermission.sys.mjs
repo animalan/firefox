@@ -46,7 +46,7 @@ export var GeckoViewClipboardPermission = {
 
       const mouseXInCSSPixels = {};
       const mouseYInCSSPixels = {};
-      const windowUtils = document.documentGlobal.windowUtils;
+      const windowUtils = document.ownerGlobal.windowUtils;
       windowUtils.getLastOverWindowPointerLocationInCSSPixels(
         mouseXInCSSPixels,
         mouseYInCSSPixels
@@ -61,7 +61,7 @@ export var GeckoViewClipboardPermission = {
       debug`confirmUserPaste (${screenRect.x}, ${screenRect.y})`;
 
       document.addEventListener("pointerdown", this);
-      document.documentGlobal.WindowEventDispatcher.sendRequestForResult(
+      document.ownerGlobal.WindowEventDispatcher.sendRequestForResult(
         "GeckoView:ClipboardPermissionRequest",
         {
           screenPoint: {
@@ -91,7 +91,7 @@ export var GeckoViewClipboardPermission = {
     debug`handleEvent: ${aEvent.type}`;
     switch (aEvent.type) {
       case "pointerdown": {
-        aEvent.target.documentGlobal.WindowEventDispatcher.sendRequestForResult(
+        aEvent.target.ownerGlobal.WindowEventDispatcher.sendRequestForResult(
           "GeckoView:DismissClipboardPermissionRequest"
         );
         break;

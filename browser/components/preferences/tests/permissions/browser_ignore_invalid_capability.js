@@ -32,7 +32,7 @@ add_task(async function testInvalidCapabilityIgnored() {
   EventUtils.synthesizeMouseAtCenter(
     cookieExceptionsButton,
     {},
-    doc.documentGlobal
+    doc.ownerGlobal
   );
 
   let win = await promiseSubDialogLoaded;

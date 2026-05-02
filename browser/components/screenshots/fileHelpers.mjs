@@ -140,7 +140,7 @@ export async function getFilename(filenameTitle, browser) {
       saveAsType: 0,
       file,
     };
-    let accepted = await promiseTargetFile(fpParams, browser.documentGlobal);
+    let accepted = await promiseTargetFile(fpParams, browser.ownerGlobal);
     if (!accepted) {
       return { filename: null, accepted };
     }

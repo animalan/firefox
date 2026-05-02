@@ -1358,7 +1358,7 @@ void RestoreFormEntry(Element* aNode, const FormEntryValue& aValue) {
         return;
       }
       auto* internals = data->GetElementInternals();
-      nsCOMPtr<nsIGlobalObject> global = aNode->GetRelevantGlobal();
+      nsCOMPtr<nsIGlobalObject> global = aNode->GetOwnerGlobal();
       internals->RestoreFormValue(
           nsContentUtils::ExtractFormAssociatedCustomElementValue(
               global, aValue.get_CustomElementTuple().value()),

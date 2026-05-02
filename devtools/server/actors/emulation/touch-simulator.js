@@ -199,7 +199,7 @@ class TouchSimulator {
   }
 
   sendContextMenu({ target, clientX, clientY, screenX, screenY }) {
-    const view = target.documentGlobal;
+    const view = target.ownerGlobal;
     const evt = new view.PointerEvent("contextmenu", {
       bubbles: true,
       cancelable: true,
@@ -248,7 +248,7 @@ class TouchSimulator {
   }
 
   getContent(target) {
-    const win = target?.ownerDocument ? target.documentGlobal : null;
+    const win = target?.ownerDocument ? target.ownerGlobal : null;
     return win;
   }
 }

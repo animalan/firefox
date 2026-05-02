@@ -1721,7 +1721,7 @@ nsDocShell::GetHasTrackingContentBlocked(Promise** aPromise) {
 
   ErrorResult rv;
   RefPtr<Document> doc(GetDocument());
-  RefPtr<Promise> retPromise = Promise::Create(doc->GetRelevantGlobal(), rv);
+  RefPtr<Promise> retPromise = Promise::Create(doc->GetOwnerGlobal(), rv);
   if (NS_WARN_IF(rv.Failed())) {
     return rv.StealNSResult();
   }
@@ -13111,7 +13111,7 @@ void nsDocShell::InformNavigationAPIAboutAbortingNavigation() {
   }
 
   AutoJSAPI jsapi;
-  if (!jsapi.Init(navigation->GetRelevantGlobal())) {
+  if (!jsapi.Init(navigation->GetOwnerGlobal())) {
     return;
   }
 
@@ -13138,7 +13138,7 @@ void nsDocShell::InformNavigationAPIAboutChildNavigableDestruction() {
   }
 
   AutoJSAPI jsapi;
-  if (!jsapi.Init(navigation->GetRelevantGlobal())) {
+  if (!jsapi.Init(navigation->GetOwnerGlobal())) {
     return;
   }
 

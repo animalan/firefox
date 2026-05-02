@@ -446,14 +446,14 @@ DownloadsViewUI.DownloadElementShell.prototype = {
     this.element.setAttribute("active", true);
     this.element.setAttribute("orient", "horizontal");
     this.element.addEventListener("click", ev => {
-      ev.target.documentGlobal.DownloadsView.onDownloadClick(ev);
+      ev.target.ownerGlobal.DownloadsView.onDownloadClick(ev);
     });
     this.element.appendChild(
       document.importNode(downloadListItemFragment, true)
     );
     let downloadButton = this.element.querySelector(".downloadButton");
     downloadButton.addEventListener("command", function (event) {
-      event.target.documentGlobal.DownloadsView.onDownloadButton(event);
+      event.target.ownerGlobal.DownloadsView.onDownloadButton(event);
     });
     for (let [propertyName, selector] of [
       ["_downloadTypeIcon", ".downloadTypeIcon"],
@@ -1161,7 +1161,7 @@ DownloadsViewUI.DownloadElementShell.prototype = {
   },
 
   downloadsCmd_openReferrer() {
-    this.element.documentGlobal.openURL(
+    this.element.ownerGlobal.openURL(
       this.download.source.referrerInfo.originalReferrer
     );
   },
@@ -1186,7 +1186,7 @@ DownloadsViewUI.DownloadElementShell.prototype = {
       return;
     }
 
-    let window = this.browserWindow || this.element.documentGlobal;
+    let window = this.browserWindow || this.element.ownerGlobal;
     let document = window.document;
 
     // Do not suggest a file name if we don't know the original target.
