@@ -13,6 +13,7 @@ import base64
 import configparser
 import json
 import os
+import textwrap
 import time
 import webbrowser
 from dataclasses import (
@@ -462,11 +463,13 @@ def push_to_lando_try(
     lando_config_section = os.getenv("LANDO_TRY_CONFIG", default_lando_config_section)
 
     if lando_config_section == NEW_LANDO_ENTRY:
-        notification_message = """
+        notification_message = textwrap.dedent(
+            """
             This Try push uses the new Lando instance.
             Please report any issue to https://matrix.to/#/#conduit:mozilla.org.
             If you want to use the old Lando instance, set the environment variable LANDO_TRY_CONFIG to `lando-prod` (section name from '.lando.ini')"
-        """
+            """
+        )
         print(notification_message)
 
     # Load Auth0 config from `.lando.ini`.
