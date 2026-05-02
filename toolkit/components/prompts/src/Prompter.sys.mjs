@@ -1149,7 +1149,7 @@ class ModalPrompter {
         parentWin = this.browsingContext.window;
       } else {
         // Try to get the window which is the browsers parent
-        parentWin = this.browsingContext.top?.embedderElement?.ownerGlobal;
+        parentWin = this.browsingContext.top?.embedderElement?.documentGlobal;
       }
       this.openWindowPrompt(parentWin, args);
       return args;

@@ -22,7 +22,7 @@ function openContextMenuFor(element, shiftkey, waitForSpellCheck) {
   function actuallyOpenContextMenuFor() {
     lastElement = element;
     var eventDetails = { type: "contextmenu", button: 2, shiftKey: shiftkey };
-    synthesizeMouse(element, 2, 2, eventDetails, element.ownerGlobal);
+    synthesizeMouse(element, 2, 2, eventDetails, element.documentGlobal);
   }
 
   if (waitForSpellCheck) {

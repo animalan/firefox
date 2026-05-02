@@ -1196,7 +1196,7 @@ var PlacesToolbarHelper = {
   onWidgetUnderflow(aNode) {
     // The view gets broken by being removed and reinserted by the overflowable
     // toolbar, so we have to force an uninit and reinit.
-    let win = aNode.ownerGlobal;
+    let win = aNode.documentGlobal;
     if (aNode.id == "personal-bookmarks" && win == window) {
       this._resetView();
     }
@@ -2160,7 +2160,7 @@ var BookmarkingUI = {
   },
 
   onWidgetUnderflow(aNode) {
-    let win = aNode.ownerGlobal;
+    let win = aNode.documentGlobal;
     if (aNode.id != this.BOOKMARK_BUTTON_ID || win != window) {
       return;
     }

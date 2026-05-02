@@ -14,7 +14,7 @@ HTMLIFrameElement.isInstance = element => element instanceof HTMLIFrameElement;
 HTMLFormElement.isInstance = element => element instanceof HTMLFormElement;
 ShadowRoot.isInstance = element => element instanceof ShadowRoot;
 
-HTMLElement.prototype.ownerGlobal = window;
+HTMLElement.prototype.documentGlobal = window;
 
 // We cannot mock this in WebKit because we lack access to low-level APIs.
 // For completeness, we simply return true when the input type is "password".

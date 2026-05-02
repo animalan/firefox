@@ -28,7 +28,7 @@ export default class BreachAlert extends MozLitElement {
 
   _handleCta(_event) {
     Glean.trustpanel.breachAlertDiscoveredMonitor.record();
-    this.ownerGlobal.switchToTabHavingURI(
+    this.documentGlobal.switchToTabHavingURI(
       "https://monitor.mozilla.org/?utm_medium=referral&utm_source=firefox-desktop&utm_campaign=privacy-panel&utm_content=sign-up-global",
       true
     );

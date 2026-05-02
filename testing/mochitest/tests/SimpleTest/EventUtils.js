@@ -4589,8 +4589,8 @@ async function synthesizeMockDragAndDrop(aParams) {
   let dragServiceCid;
   let sourceCxt;
   let targetCxt;
-  let srcWindowUtils = _getDOMWindowUtils(sourceBrowsingCxt.ownerGlobal);
-  let targetWindowUtils = _getDOMWindowUtils(targetBrowsingCxt.ownerGlobal);
+  let srcWindowUtils = _getDOMWindowUtils(sourceBrowsingCxt.documentGlobal);
+  let targetWindowUtils = _getDOMWindowUtils(targetBrowsingCxt.documentGlobal);
 
   try {
     // Disable native mouse events to avoid external interference while the test

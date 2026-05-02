@@ -496,7 +496,7 @@ export class LoginDataSource extends DataSourceBase {
       allowFromInactiveWorkspace: true,
     }).gBrowser;
     try {
-      lazy.MigrationUtils.showMigrationWizard(browser.ownerGlobal, {
+      lazy.MigrationUtils.showMigrationWizard(browser.documentGlobal, {
         entrypoint: lazy.MigrationUtils.MIGRATION_ENTRYPOINTS.PASSWORDS,
       });
     } catch (ex) {
@@ -625,7 +625,7 @@ export class LoginDataSource extends DataSourceBase {
     const browser = BrowserWindowTracker.getTopWindow({
       allowFromInactiveWorkspace: true,
     }).gBrowser;
-    browser.ownerGlobal.switchToTabHavingURI(url, true, {
+    browser.documentGlobal.switchToTabHavingURI(url, true, {
       ignoreFragment: "whenComparingAndReplace",
     });
   }

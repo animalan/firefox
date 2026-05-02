@@ -124,12 +124,12 @@ export var BrowserTestUtils = {
       };
     }
     let tab = await BrowserTestUtils.openNewForegroundTab(options);
-    let originalWindow = tab.ownerGlobal;
+    let originalWindow = tab.documentGlobal;
     let result;
     try {
       result = await taskFn(tab.linkedBrowser);
     } finally {
-      let finalWindow = tab.ownerGlobal;
+      let finalWindow = tab.documentGlobal;
       if (originalWindow == finalWindow && !tab.closing && tab.linkedBrowser) {
         // taskFn may resolve within a tick after opening a new tab.
         // We shouldn't remove the newly opened tab in the same tick.
@@ -175,8 +175,8 @@ export var BrowserTestUtils = {
     let startTime = ChromeUtils.now();
     let options;
     if (
-      tabbrowser.ownerGlobal &&
-      tabbrowser === tabbrowser.ownerGlobal.gBrowser
+      tabbrowser.documentGlobal &&
+      tabbrowser === tabbrowser.documentGlobal.gBrowser
     ) {
       // tabbrowser is a tabbrowser, read the rest of the arguments from args.
       let [
@@ -250,7 +250,7 @@ export var BrowserTestUtils = {
       }
     }
     return Promise.all(promises).then(() => {
-      let { innerWindowId } = tabbrowser.ownerGlobal.windowGlobalChild;
+      let { innerWindowId } = tabbrowser.documentGlobal.windowGlobalChild;
       ChromeUtils.addProfilerMarker(
         "BrowserTestUtils",
         { startTime, category: "Test", innerWindowId },
@@ -287,7 +287,7 @@ export var BrowserTestUtils = {
       return BrowserTestUtils.isHidden(element.getRootNode().host);
     }
 
-    let win = element.ownerGlobal;
+    let win = element.documentGlobal;
     let style = win.getComputedStyle(element);
     if (style.display == "none") {
       return true;
@@ -323,7 +323,7 @@ export var BrowserTestUtils = {
       return BrowserTestUtils.isVisible(element.getRootNode().host);
     }
 
-    let win = element.ownerGlobal;
+    let win = element.documentGlobal;
     let style = win.getComputedStyle(element);
     if (style.display == "none") {
       return false;
@@ -368,7 +368,7 @@ export var BrowserTestUtils = {
    */
   switchTab(tabbrowser, tab) {
     let startTime = ChromeUtils.now();
-    let { innerWindowId } = tabbrowser.ownerGlobal.windowGlobalChild;
+    let { innerWindowId } = tabbrowser.documentGlobal.windowGlobalChild;
 
     // Some tests depend on the delay and TabSwitched only fires if the browser is visible.
     // Bug 1977993 tracks always dispatching TabSwitched.
@@ -451,7 +451,7 @@ export var BrowserTestUtils = {
       maybeErrorPage = false,
     } = options;
     let startTime = ChromeUtils.now();
-    let { innerWindowId } = browser.ownerGlobal.windowGlobalChild;
+    let { innerWindowId } = browser.documentGlobal.windowGlobalChild;
 
     // Passing a url as second argument is a common mistake we should prevent.
     if (includeSubFrames && typeof includeSubFrames != "boolean") {
@@ -467,7 +467,7 @@ export var BrowserTestUtils = {
 
     // If browser belongs to tabbrowser-tab, ensure it has been
     // inserted into the document.
-    let tabbrowser = browser.ownerGlobal.gBrowser;
+    let tabbrowser = browser.documentGlobal.gBrowser;
     if (tabbrowser && tabbrowser.getTabForBrowser) {
       let tab = tabbrowser.getTabForBrowser(browser);
       if (tab) {
@@ -552,11 +552,11 @@ export var BrowserTestUtils = {
         }
 
         browser.removeEventListener(eventName, listener, true);
-        browser.ownerGlobal.removeEventListener("unload", listener);
+        browser.documentGlobal.removeEventListener("unload", listener);
       }
 
       browser.addEventListener(eventName, listener, true);
-      browser.ownerGlobal.addEventListener("unload", listener);
+      browser.documentGlobal.addEventListener("unload", listener);
     });
   },
 
@@ -991,7 +991,7 @@ export var BrowserTestUtils = {
    *        The tabbrowser in which to preload a browser.
    */
   async maybeCreatePreloadedBrowser(gBrowser) {
-    let win = gBrowser.ownerGlobal;
+    let win = gBrowser.documentGlobal;
     win.NewTabPagePreloading.maybeCreatePreloadedBrowser(win);
 
     // We cannot use the regular BrowserTestUtils helper for waiting here, since that
@@ -1319,7 +1319,7 @@ export var BrowserTestUtils = {
         return subject.windowGlobalChild.innerWindowId;
       }
       if ("ownerDocument" in subject) {
-        return subject.ownerGlobal.windowGlobalChild.innerWindowId;
+        return subject.documentGlobal.windowGlobalChild.innerWindowId;
       }
       return null;
     })();
@@ -1690,7 +1690,7 @@ export var BrowserTestUtils = {
       return Promise.resolve();
     }
     return new Promise(resolve => {
-      let obs = new target.ownerGlobal.MutationObserver(function () {
+      let obs = new target.documentGlobal.MutationObserver(function () {
         if (checkFn()) {
           obs.disconnect();
           resolve();
@@ -1955,7 +1955,7 @@ export var BrowserTestUtils = {
    *        Extra options to pass to tabbrowser's removeTab method.
    */
   removeTab(tab, options = {}) {
-    tab.ownerGlobal.gBrowser.removeTab(tab, options);
+    tab.documentGlobal.gBrowser.removeTab(tab, options);
   },
 
   /**
@@ -1995,7 +1995,7 @@ export var BrowserTestUtils = {
         Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE
       );
     } else {
-      tab.ownerGlobal.gBrowser.reloadTab(tab);
+      tab.documentGlobal.gBrowser.reloadTab(tab);
     }
     return finished;
   },
@@ -2236,7 +2236,7 @@ export var BrowserTestUtils = {
     await Promise.all(expectedPromises);
 
     if (shouldShowTabCrashPage) {
-      let gBrowser = browser.ownerGlobal.gBrowser;
+      let gBrowser = browser.documentGlobal.gBrowser;
       let tab = gBrowser.getTabForBrowser(browser);
       if (tab.getAttribute("crashed") != "true") {
         throw new Error("Tab should be marked as crashed");
@@ -2280,7 +2280,7 @@ export var BrowserTestUtils = {
       ? "oop-browser-buildid-mismatch"
       : "oop-browser-crashed";
 
-    let event = new browser.ownerGlobal.CustomEvent(eventType, {
+    let event = new browser.documentGlobal.CustomEvent(eventType, {
       bubbles: true,
     });
     event.isTopFrame = true;
@@ -2309,7 +2309,7 @@ export var BrowserTestUtils = {
    * @returns {Promise}
    */
   waitForAttribute(attr, element, value) {
-    let MutationObserver = element.ownerGlobal.MutationObserver;
+    let MutationObserver = element.documentGlobal.MutationObserver;
     return new Promise(resolve => {
       let mut = new MutationObserver(() => {
         if (
@@ -2340,7 +2340,7 @@ export var BrowserTestUtils = {
       return Promise.resolve();
     }
 
-    let MutationObserver = element.ownerGlobal.MutationObserver;
+    let MutationObserver = element.documentGlobal.MutationObserver;
     return new Promise(resolve => {
       dump("Waiting for removal\n");
       let mut = new MutationObserver(() => {
@@ -2524,7 +2524,7 @@ export var BrowserTestUtils = {
         element.removeEventListener("transitionend", listener);
       };
 
-      let timer = element.ownerGlobal.setTimeout(() => {
+      let timer = element.documentGlobal.setTimeout(() => {
         cleanup();
         reject();
       }, timeout);
@@ -2538,7 +2538,7 @@ export var BrowserTestUtils = {
           transitionCount--;
           if (transitionCount == 0) {
             cleanup();
-            element.ownerGlobal.clearTimeout(timer);
+            element.documentGlobal.clearTimeout(timer);
             resolve();
           }
         }
@@ -2752,7 +2752,7 @@ export var BrowserTestUtils = {
         Services.scriptSecurityManager.getSystemPrincipal();
     }
     if (beforeLoadFunc) {
-      let window = tabbrowser.ownerGlobal;
+      let window = tabbrowser.documentGlobal;
       window.addEventListener(
         "TabOpen",
         function (e) {

@@ -2894,7 +2894,7 @@ var DownloadAddonInstall = class extends AddonInstall {
     if (iid.equals(Ci.nsIAuthPrompt2)) {
       let win = null;
       if (this.browser) {
-        win = this.browser.contentWindow || this.browser.ownerGlobal;
+        win = this.browser.contentWindow || this.browser.documentGlobal;
       }
 
       let factory = Cc["@mozilla.org/prompter;1"].getService(

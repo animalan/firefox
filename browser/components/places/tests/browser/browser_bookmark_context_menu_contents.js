@@ -247,7 +247,7 @@ add_task(async function test_bookmark_contextmenu_contents() {
         EventUtils.synthesizeMouseAtCenter(
           toolbarNode,
           { button: 2, type: "contextmenu" },
-          toolbarNode.ownerGlobal
+          toolbarNode.documentGlobal
         );
       }
     );
@@ -799,7 +799,7 @@ add_task(async function test_library_noselection_contextmenu_contents() {
           EventUtils.synthesizeMouseAtCenter(
             right.body,
             { type: "contextmenu" },
-            right.ownerGlobal
+            right.documentGlobal
           );
         });
       },
@@ -846,7 +846,7 @@ add_task(async function test_private_browsing_window() {
         EventUtils.synthesizeMouseAtCenter(
           toolbarNode,
           { button: 2, type: "contextmenu" },
-          toolbarNode.ownerGlobal
+          toolbarNode.documentGlobal
         );
       });
     },

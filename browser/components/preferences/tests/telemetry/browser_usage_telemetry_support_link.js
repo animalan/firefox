@@ -99,7 +99,7 @@ add_task(async function testSupportLinkTelemetry() {
   console.log("STEP 1");
 
   const doc = gBrowser.contentDocument;
-  const win = doc.ownerGlobal;
+  const win = doc.documentGlobal;
   const SETTING_ID = "testSupportLinkSetting";
   const LINK_ID = `${SETTING_ID}Link`;
 
@@ -145,7 +145,7 @@ add_task(async function testSupportLinkWithIdOverride() {
   await resetTelemetry();
 
   const doc = gBrowser.contentDocument;
-  const win = doc.ownerGlobal;
+  const win = doc.documentGlobal;
   const SETTING_ID = "testSupportLinkWithIdSetting";
   const LINK_ID = "customSupportLinkId";
 

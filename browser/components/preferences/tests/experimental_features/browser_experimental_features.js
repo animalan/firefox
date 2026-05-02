@@ -29,7 +29,11 @@ add_task(async function testCanOpenWithPref() {
     "The setting-pane should be hidden when Home is selected"
   );
 
-  EventUtils.synthesizeMouseAtCenter(experimentalCategory, {}, doc.ownerGlobal);
+  EventUtils.synthesizeMouseAtCenter(
+    experimentalCategory,
+    {},
+    doc.documentGlobal
+  );
   await TestUtils.waitForCondition(
     () => !settingPane.hidden,
     "Waiting until pane is visible"

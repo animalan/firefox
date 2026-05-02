@@ -48,7 +48,7 @@ add_task(async function test_zoom_dropdown_reflects_current_zoom() {
     () => mozSelect.inputEl?.options.length > 0
   );
 
-  let ZoomUI = gBrowser.ownerGlobal.ZoomUI;
+  let ZoomUI = gBrowser.documentGlobal.ZoomUI;
   let currentZoom = await ZoomUI.getGlobalValue();
   let expectedValue = String(Math.round(currentZoom * 100));
 

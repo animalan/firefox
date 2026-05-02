@@ -377,7 +377,7 @@ async function testWithProperties(props, startTime) {
     );
     let option = doc.getElementById(props.clickMode);
     option.scrollIntoView();
-    let win = doc.ownerGlobal;
+    let win = doc.documentGlobal;
     EventUtils.synthesizeMouseAtCenter(option, {}, win);
     info(
       `${Date.now() - startTime} : testWithProperties: clickMode=${
@@ -431,7 +431,7 @@ async function testWithProperties(props, startTime) {
         startTime +
         ": testWithProperties: inputUriKeys, pref changed, now enter the new value"
     );
-    let win = doc.ownerGlobal;
+    let win = doc.documentGlobal;
     uriTextbox.focus();
     uriTextbox.value = props.inputUriKeys;
     uriTextbox.dispatchEvent(new win.Event("input", { bubbles: true }));
@@ -881,7 +881,7 @@ add_task(async function testRemoteSettingsEnable() {
 
   let option = doc.getElementById("dohEnabledRadio");
   option.scrollIntoView();
-  let win = doc.ownerGlobal;
+  let win = doc.documentGlobal;
   EventUtils.synthesizeMouseAtCenter(option, {}, win);
 
   await TestUtils.waitForCondition(
@@ -907,7 +907,7 @@ add_task(async function testRemoteSettingsEnable() {
 
   option = doc.getElementById("dohOffRadio");
   option.scrollIntoView();
-  win = doc.ownerGlobal;
+  win = doc.documentGlobal;
   EventUtils.synthesizeMouseAtCenter(option, {}, win);
   await TestUtils.waitForCondition(
     () => status.innerHTML == "Status: Off",

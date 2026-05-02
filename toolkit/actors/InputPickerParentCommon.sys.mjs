@@ -100,8 +100,8 @@ export class InputPickerParentCommon extends JSWindowActorParent {
       let browser = topBC.embedderElement;
       if (
         browser &&
-        browser.ownerGlobal.gBrowser &&
-        browser.ownerGlobal.gBrowser.selectedBrowser != browser
+        browser.documentGlobal.gBrowser &&
+        browser.documentGlobal.gBrowser.selectedBrowser != browser
       ) {
         debug("In background tab");
         return;

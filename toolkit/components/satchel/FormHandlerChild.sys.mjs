@@ -274,7 +274,7 @@ export class FormHandlerChild extends JSWindowActorChild {
       if (!this.manager.isProcessRoot) {
         // The progress listener is registered after the
         // FormHandlerChild is created in the process root
-        this.document.ownerGlobal.windowRoot.window.windowGlobalChild.getActor(
+        this.document.documentGlobal.windowRoot.window.windowGlobalChild.getActor(
           "FormHandler"
         );
       }

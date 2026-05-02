@@ -246,7 +246,7 @@ class ReportBrokenSiteHelper {
   }
 
   async click(triggerMenuItem) {
-    const window = triggerMenuItem.ownerGlobal;
+    const window = triggerMenuItem.documentGlobal;
     await EventUtils.synthesizeMouseAtCenter(triggerMenuItem, {}, window);
   }
 

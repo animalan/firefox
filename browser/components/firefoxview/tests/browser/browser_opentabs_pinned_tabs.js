@@ -200,9 +200,9 @@ add_task(async function test_indicator_pinned_tabs_with_keyboard() {
     );
 
     // Pin 2 of 5 tabs
-    browser.ownerGlobal.gBrowser.tabs.forEach((tab, i) => {
-      if (i > 2 && tab != browser.ownerGlobal.FirefoxViewHandler.tab) {
-        browser.ownerGlobal.gBrowser.pinTab(tab);
+    browser.documentGlobal.gBrowser.tabs.forEach((tab, i) => {
+      if (i > 2 && tab != browser.documentGlobal.FirefoxViewHandler.tab) {
+        browser.documentGlobal.gBrowser.pinTab(tab);
       }
     });
 

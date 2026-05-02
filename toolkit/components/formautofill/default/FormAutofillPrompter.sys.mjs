@@ -90,7 +90,7 @@ export class AutofillDoorhanger {
   }
 
   get chromeWin() {
-    return this.browser.ownerGlobal;
+    return this.browser.documentGlobal;
   }
 
   /*
@@ -165,12 +165,12 @@ export class AutofillDoorhanger {
     );
 
     if (evt == "open-pref") {
-      this.browser.ownerGlobal.openPreferences(this.preferenceURL);
+      this.browser.documentGlobal.openPreferences(this.preferenceURL);
     } else if (evt == "learn-more") {
       const url =
         Services.urlFormatter.formatURLPref("app.support.baseURL") +
         this.learnMoreURL;
-      this.browser.ownerGlobal.openWebLinkIn(url, "tab", {
+      this.browser.documentGlobal.openWebLinkIn(url, "tab", {
         relatedToCurrent: true,
       });
     }
@@ -1312,7 +1312,7 @@ export let FormAutofillPrompter = {
       } credit card doorhanger`
     );
 
-    const { ownerGlobal: win } = browser;
+    const { documentGlobal: win } = browser;
     win.MozXULElement.insertFTLIfNeeded(
       "toolkit/formautofill/formAutofill.ftl"
     );
@@ -1372,7 +1372,7 @@ export let FormAutofillPrompter = {
       `Show the ${showUpdateDoorhanger ? "update" : "save"} address doorhanger`
     );
 
-    const { ownerGlobal: win } = browser;
+    const { documentGlobal: win } = browser;
     win.MozXULElement.insertFTLIfNeeded(
       "toolkit/formautofill/formAutofill.ftl"
     );

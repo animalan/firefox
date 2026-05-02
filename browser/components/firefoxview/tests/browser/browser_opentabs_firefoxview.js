@@ -182,7 +182,7 @@ add_task(async function test_close_open_tab() {
 
 add_task(async function test_more_menus() {
   await withFirefoxView({}, async browser => {
-    let win = browser.ownerGlobal;
+    let win = browser.documentGlobal;
     let shown, menuHidden;
 
     gBrowser.selectedTab = gBrowser.visibleTabs[0];

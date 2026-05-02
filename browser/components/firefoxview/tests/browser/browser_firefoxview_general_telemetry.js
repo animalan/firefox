@@ -55,7 +55,7 @@ add_task(async function firefox_view_entered_telemetry() {
       "about:robots",
       "The selected tab is about:robots"
     );
-    await switchToFxViewTab(browser.ownerGlobal);
+    await switchToFxViewTab(browser.documentGlobal);
     await telemetryEvent(enteredAndTabSelectedEvents);
     await SpecialPowers.popPrefEnv();
     // clean up extra tabs

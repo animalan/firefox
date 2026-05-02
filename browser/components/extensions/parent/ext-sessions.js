@@ -109,7 +109,7 @@ this.sessions = class extends ExtensionAPIPersistent {
     function getTabParams(key, id) {
       let encodedKey = getEncodedKey(extension.id, key);
       let tab = tabTracker.getTab(id);
-      if (!context.canAccessWindow(tab.ownerGlobal)) {
+      if (!context.canAccessWindow(tab.documentGlobal)) {
         throw new ExtensionError(`Invalid tab ID: ${id}`);
       }
       return { encodedKey, tab };

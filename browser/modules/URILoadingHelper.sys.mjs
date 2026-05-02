@@ -685,7 +685,7 @@ export const URILoadingHelper = {
    */
   _resolveInitialTargetWindow(where, params, win, forceNonPrivate) {
     if (where === "current" && params.targetBrowser) {
-      return params.targetBrowser.ownerGlobal;
+      return params.targetBrowser.documentGlobal;
     }
 
     if (where === "tab" || where === "tabshifted") {
@@ -1027,7 +1027,7 @@ export const URILoadingHelper = {
               let tabToReplace = aSplitView.tabs.find(tab => tab.selected);
               let tabToMove = aWindow.gBrowser.tabs[i];
               aSplitView.replaceTab(tabToReplace, tabToMove);
-              aSplitView.ownerGlobal.focus();
+              aSplitView.documentGlobal.focus();
             } else {
               aWindow.gBrowser.tabContainer.selectedIndex = i;
             }

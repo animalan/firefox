@@ -422,7 +422,7 @@ export class AIWindow extends MozLitElement {
     );
 
     // Ensure disconnectedCallback gets called to clean up listeners
-    this.ownerGlobal.addEventListener("unload", () => this.remove(), {
+    this.documentGlobal.addEventListener("unload", () => this.remove(), {
       once: true,
     });
   }

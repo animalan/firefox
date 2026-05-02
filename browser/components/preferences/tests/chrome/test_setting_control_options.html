@@ -126,7 +126,7 @@
         });
 
         let settingChanged = waitForSettingChange(setting);
-        let topWindow = window.docShell.chromeEventHandler.ownerGlobal;
+        let topWindow = window.docShell.chromeEventHandler.documentGlobal;
         let pickerOpened = BrowserTestUtils.waitForSelectPopupShown(topWindow);
         control.controlEl.focus();
         synthesizeKey(" ");

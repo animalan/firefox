@@ -447,7 +447,7 @@ function formatDate(aDate) {
 }
 
 function is_hidden(aElement) {
-  var style = aElement.ownerGlobal.getComputedStyle(aElement);
+  var style = aElement.documentGlobal.getComputedStyle(aElement);
   if (style.display == "none") {
     return true;
   }

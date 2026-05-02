@@ -98,7 +98,7 @@ async function testBodyRuleView(view) {
     {
       button: 1,
     },
-    uriSpan.ownerGlobal
+    uriSpan.documentGlobal
   );
   let tab = await onTabOpen;
   is(
@@ -124,7 +124,7 @@ async function testBodyRuleView(view) {
       button: 1,
       [Services.appinfo.OS === "Darwin" ? "metaKey" : "ctrlKey"]: true,
     },
-    uriSpan.ownerGlobal
+    uriSpan.documentGlobal
   );
   tab = await onTabOpen;
   is(
@@ -145,7 +145,7 @@ async function testBodyRuleView(view) {
     uriSpanQuad.p1.x + 2,
     uriSpanQuad.p1.y + 2,
     {},
-    uriSpan.ownerGlobal
+    uriSpan.documentGlobal
   );
   tab = await onTabOpen;
   is(

@@ -963,7 +963,9 @@ add_task(async function testDisabledDimming() {
 
   const normalize = val => Math.floor(val * 10);
   const getOpacity = card => {
-    let { opacity } = card.ownerGlobal.getComputedStyle(card.firstElementChild);
+    let { opacity } = card.documentGlobal.getComputedStyle(
+      card.firstElementChild
+    );
     return normalize(opacity);
   };
   const checkOpacity = (card, expected, msg) => {

@@ -111,7 +111,7 @@
     connectedCallback() {
       // Set up TabSelect listener, as this gets
       // removed in disconnectedCallback
-      this.ownerGlobal.addEventListener("TabSelect", this);
+      this.documentGlobal.addEventListener("TabSelect", this);
 
       this.#observeTabChanges();
       this.#restorePanelWidths();
@@ -138,7 +138,7 @@
 
     disconnectedCallback() {
       this.#tabChangeObserver?.disconnect();
-      this.ownerGlobal.removeEventListener("TabSelect", this);
+      this.documentGlobal.removeEventListener("TabSelect", this);
       this.#deactivate();
       this.#resetPanelWidths();
       this.container.dispatchEvent(
@@ -324,7 +324,7 @@
           return;
         }
         let tabToMove =
-          this.ownerGlobal === tab.ownerGlobal
+          this.documentGlobal === tab.documentGlobal
             ? tab
             : gBrowser.adoptTab(tab, {
                 tabIndex: gBrowser.tabs.at(-1)._tPos + 1,

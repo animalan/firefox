@@ -53,7 +53,7 @@ export class SpeechDispatcherParent extends JSWindowActorParent {
         break;
     }
 
-    let MozXULElement = browser.ownerGlobal.MozXULElement;
+    let MozXULElement = browser.documentGlobal.MozXULElement;
     MozXULElement.insertFTLIfNeeded("browser/speechDispatcher.ftl");
 
     // Now actually create the notification

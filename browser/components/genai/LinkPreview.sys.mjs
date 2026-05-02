@@ -933,7 +933,7 @@ export const LinkPreview = {
       ogCard.progress = this.progress;
       // If we are still downloading, update the progress again.
       if (this.progress >= 0) {
-        doc.ownerGlobal.setTimeout(
+        doc.documentGlobal.setTimeout(
           () => ogCard.isConnected && updateProgress(),
           250
         );
@@ -1206,7 +1206,7 @@ export const LinkPreview = {
    * @param {object} nsContextMenu - The context menu object containing browser information.
    */
   async handleContextMenuClick(url, nsContextMenu) {
-    let win = nsContextMenu.browser.ownerGlobal;
+    let win = nsContextMenu.browser.documentGlobal;
     this.renderLinkPreviewPanel(win, url, "context");
   },
 

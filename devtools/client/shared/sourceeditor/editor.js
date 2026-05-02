@@ -1174,7 +1174,7 @@ class Editor extends EventEmitter {
           // Wait a cycle so the codemirror updates to the current cursor position,
           // information, TODO: Currently noticed this issue with CM6, not ideal but should
           // investigate further Bug 1890895.
-          event.target.ownerGlobal.setTimeout(() => {
+          event.target.documentGlobal.setTimeout(() => {
             const view = editor.viewState;
             const cursorPos = lezerUtils.positionToLocation(
               view.state.doc,

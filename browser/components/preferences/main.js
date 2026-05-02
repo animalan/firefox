@@ -1197,7 +1197,7 @@ Preferences.addSetting({
       );
   },
   onUserClick: ({ target }) => {
-    target.ownerGlobal.gSubDialog.open(
+    target.documentGlobal.gSubDialog.open(
       "chrome://formautofill/content/editCreditCard.xhtml"
     );
   },

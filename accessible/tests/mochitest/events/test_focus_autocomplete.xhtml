@@ -142,7 +142,7 @@
       {
         this.id = aIDFunc(aIDFuncArg);
         this.node = getNode(this.id);
-        this.window = this.node.ownerGlobal;
+        this.window = this.node.documentGlobal;
 
         if (this.node.localName == "tree") {
           var tree = getAccessible(this.node);
@@ -200,7 +200,7 @@
       {
         var id = aIDFunc(aIDFuncArg);
         var node = getNode(id);
-        var targetWindow = node.ownerGlobal;
+        var targetWindow = node.documentGlobal;
 
         if (node.localName == "tree") {
           var tree = getAccessible(node);

@@ -1683,7 +1683,7 @@ BrowserGlue.prototype = {
     );
 
     try {
-      const win = browser.ownerGlobal;
+      const win = browser.documentGlobal;
       const shellService = win.getShellService();
       const isNowDefault = shellService.isDefaultBrowser(false, false);
       const resultEnum =

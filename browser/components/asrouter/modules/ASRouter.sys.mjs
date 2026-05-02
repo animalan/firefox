@@ -2449,14 +2449,14 @@ export class _ASRouter {
       }
       if (typeof trigger.context === "object") {
         trigger.context.onThirdPartyPage = isThirdPartyPage(
-          browser.ownerGlobal.gBrowser?.currentURI
+          browser.documentGlobal.gBrowser?.currentURI
         );
         trigger.context.isAIWindow = !!lazy.AIWindow?.isAIWindowActive?.(
-          browser.ownerGlobal
+          browser.documentGlobal
         );
         trigger.context.browserIsSelected =
           trigger.context.browserIsSelected ||
-          browser === browser.ownerGlobal.gBrowser?.selectedBrowser;
+          browser === browser.documentGlobal.gBrowser?.selectedBrowser;
       }
     }
 
@@ -2519,7 +2519,7 @@ export class _ASRouter {
       (
         resolveOnContentBrowserCreated // wrap this in a promise to give back the right browser
       ) =>
-        browser.ownerGlobal.openTrustedLinkIn(
+        browser.documentGlobal.openTrustedLinkIn(
           "about:privatebrowsing?debug",
           "window",
           {

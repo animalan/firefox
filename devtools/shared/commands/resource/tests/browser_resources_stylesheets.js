@@ -442,7 +442,7 @@ async function testNestedResourceUpdateFeature() {
   info("Check nested resource update feature of the ResourceCommand");
 
   const tab = await addTab(STYLE_TEST_URL);
-  const win = tab.ownerGlobal;
+  const win = tab.documentGlobal;
 
   const { innerWidth: originalWindowWidth, innerHeight: originalWindowHeight } =
     win;

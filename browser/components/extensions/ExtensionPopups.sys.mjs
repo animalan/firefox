@@ -55,7 +55,7 @@ function addPanelHidingHandler(panel) {
   panel.addEventListener(
     "popuphiding",
     () => {
-      const window = panel.ownerGlobal;
+      const window = panel.documentGlobal;
       window.addEventListener("click", handleClick, true);
       window.setTimeout(() => {
         window.removeEventListener("click", handleClick, true);
@@ -80,7 +80,7 @@ export class BasePopup {
     this.popupURL = popupURL;
     this.viewNode = viewNode;
     this.browserStyle = browserStyle;
-    this.window = viewNode.ownerGlobal;
+    this.window = viewNode.documentGlobal;
     this.destroyed = false;
     this.fixedWidth = fixedWidth;
     this.blockParser = blockParser;
@@ -244,7 +244,7 @@ export class BasePopup {
               // to be fully flushed makes us sure that when the popup panel grabs the focus
               // nsMenuPopupFrame::LayoutPopup has already been colled and set the frame
               // visibility to `ViewVisibility::Show`).
-              this.browser.ownerGlobal.promiseDocumentFlushed(() => {
+              this.browser.documentGlobal.promiseDocumentFlushed(() => {
                 if (this.destroyed) {
                   return;
                 }
@@ -270,7 +270,7 @@ export class BasePopup {
 
       case "DoZoomEnlarge": {
         const browser = event.target;
-        let { ZoomManager } = browser.ownerGlobal;
+        let { ZoomManager } = browser.documentGlobal;
         let zoom = this.browser.fullZoom;
         zoom += 0.1;
         if (zoom > ZoomManager.MAX) {
@@ -282,7 +282,7 @@ export class BasePopup {
 
       case "DoZoomReduce": {
         const browser = event.target;
-        let { ZoomManager } = browser.ownerGlobal;
+        let { ZoomManager } = browser.documentGlobal;
         let zoom = browser.fullZoom;
         zoom -= 0.1;
         if (zoom < ZoomManager.MIN) {

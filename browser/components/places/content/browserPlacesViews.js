@@ -764,7 +764,7 @@ class PlacesViewBase {
               event.currentTarget.parentNode._placesNode
             ),
           ],
-          event.currentTarget.ownerGlobal
+          event.currentTarget.documentGlobal
         );
       });
       aPopup.appendChild(aPopup._endOptShareFolder);
