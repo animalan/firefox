@@ -262,7 +262,7 @@ export class PlacesFeed {
       lazy.PlacesUtils.history.markPageAsTyped(Services.io.newURI(urlToOpen));
     }
 
-    const win = action._target.browser.documentGlobal;
+    const win = action._target.window;
     win.openTrustedLinkIn(
       urlToOpen,
       where || lazy.BrowserUtils.whereToOpenLink(event),
@@ -299,7 +299,7 @@ export class PlacesFeed {
 
   async fillSearchTopSiteTerm({ _target, data }) {
     const searchEngine = await lazy.SearchService.getEngineByAlias(data.label);
-    _target.browser.documentGlobal.gURLBar.search(data.label, {
+    _target.window.gURLBar.search(data.label, {
       searchEngine,
       searchModeEntry: "topsites_newtab",
     });
@@ -386,7 +386,7 @@ export class PlacesFeed {
         const url = `${Services.urlFormatter.formatURLPref(
           "app.support.baseURL"
         )}sponsor-privacy`;
-        const win = action._target.browser.documentGlobal;
+        const win = action._target.window;
         win.openTrustedLinkIn(url, "tab");
         break;
       }
@@ -419,7 +419,7 @@ export class PlacesFeed {
       case at.BOOKMARK_URL:
         lazy.NewTabUtils.activityStreamLinks.addBookmark(
           action.data,
-          action._target.browser.documentGlobal
+          action._target.window
         );
         break;
       case at.DELETE_BOOKMARK_BY_ID:
