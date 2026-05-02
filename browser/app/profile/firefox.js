@@ -2926,7 +2926,9 @@ pref("browser.toolbars.bookmarks.showOtherBookmarks", true);
 // If preffed off, it makes it so that the button is no longer
 // available on the toolbar or in the customize section. Requires a
 // restart to reflect state changes.
-pref("browser.toolbars.share-button.enabled", true);
+#ifndef XP_LINUX
+  pref("browser.toolbars.share-button.enabled", true);
+#endif
 
 // Felt Privacy pref to control simplified private browsing UI
 pref("browser.privatebrowsing.felt-privacy-v1", false);

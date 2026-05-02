@@ -9,49 +9,27 @@ const BASE = getRootDirectory(gTestPath).replace(
 );
 const TEST_URL = BASE + "browser_shareurl.html";
 
-async function openShareTabPopup() {
-  await waitForOverflowButtonShown();
-  await document.getElementById("nav-bar").overflowable.show();
-
-  let shareTabButton = document.getElementById("share-tab-button");
-  ok(shareTabButton, "Share tab button appears in Panel Menu");
-
-  shareTabButton.click();
-
-  let popupElement = document.getElementById("share-tab-popup");
-  await BrowserTestUtils.waitForPopupEvent(popupElement, "shown");
-
-  return { shareTabButton, popupElement };
-}
-
-add_setup(async function () {
-  CustomizableUI.addWidgetToArea(
-    "share-tab-button",
-    CustomizableUI.AREA_FIXED_OVERFLOW_PANEL
-  );
-  registerCleanupFunction(() => CustomizableUI.reset());
-});
-
 add_task(async function test_button() {
   await BrowserTestUtils.withNewTab(TEST_URL, async () => {
-    let { popupElement } = await openShareTabPopup();
-
-    let copyLinkItem = popupElement.querySelector(".share-copy-link");
-    ok(copyLinkItem, "Copy Link item exists in submenu");
-
-    let menuPopupClosedPromise = BrowserTestUtils.waitForPopupEvent(
-      popupElement,
-      "hidden"
+    CustomizableUI.addWidgetToArea(
+      "share-tab-button",
+      CustomizableUI.AREA_FIXED_OVERFLOW_PANEL
     );
+    registerCleanupFunction(() => CustomizableUI.reset());
+
+    await waitForOverflowButtonShown();
+
+    await document.getElementById("nav-bar").overflowable.show();
+    info("Menu panel was opened");
+
+    let shareTabButton = document.getElementById("share-tab-button");
+    ok(shareTabButton, "Share tab button appears in Panel Menu");
+
     await SimpleTest.promiseClipboardChange(TEST_URL, () =>
-      popupElement.activateItem(copyLinkItem)
+      shareTabButton.click()
     );
-    await menuPopupClosedPromise;
 
     ok(true, "Copy works on linux");
-
-    if (isOverflowOpen()) {
-      await hideOverflow();
-    }
+    ok(!isOverflowOpen(), "The overflow menu should close on click");
   });
 });

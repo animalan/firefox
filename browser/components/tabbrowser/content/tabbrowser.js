@@ -10767,7 +10767,7 @@ var TabContextMenu = {
       PrivateBrowsingUtils.isWindowPrivate(window);
     reopenInContainer.disabled = this.contextTab.hidden;
 
-    SharingUtils.ensureShareMenu(
+    SharingUtils.updateShareURLMenuItem(
       this.contextTab.linkedBrowser,
       this.multiselected ? this.contextTabs.map(t => t.linkedBrowser) : null,
       document.getElementById("context_moveTabOptions")

@@ -498,23 +498,35 @@ if (
       node.setAttribute("id", "share-tab-button");
       aDocument.l10n.setAttributes(node, "toolbar-button-share-tab");
 
-      // share-tab-url-item is needed so BrowserUsageTelemetry can find the
-      // node carrying browsersToShare via .closest(".share-tab-url-item").
-      node.classList.add("toolbarbutton-1", "share-tab-url-item");
+      node.classList.add("toolbarbutton-1");
 
-      node.setAttribute("type", "menu");
+      if (AppConstants.platform == "macosx") {
+        node.setAttribute("type", "menu");
 
-      let popup = aDocument.createXULElement("menupopup");
-      popup.setAttribute("id", "share-tab-popup");
-      popup.addEventListener("popupshowing", () => {
-        let browser = aDocument.defaultView.gBrowser.selectedBrowser;
-        node.contextBrowserToShare = Cu.getWeakReference(browser);
-        node.browsersToShare = null;
+        let popup = aDocument.createXULElement("menupopup");
+        popup.setAttribute("id", "share-tab-popup");
+        popup.addEventListener("popupshowing", () => {
+          let browser = aDocument.defaultView.gBrowser.selectedBrowser;
+          node.contextBrowserToShare = Cu.getWeakReference(browser);
+          node.browsersToShare = null;
 
-        lazy.SharingUtils.populateSharePopup(popup);
-      });
+          lazy.SharingUtils.populateShareMenu(popup);
+        });
 
-      node.appendChild(popup);
+        node.appendChild(popup);
+      } else {
+        node.addEventListener("command", () => {
+          let browser = aDocument.defaultView.gBrowser.selectedBrowser;
+          node.contextBrowserToShare = Cu.getWeakReference(browser);
+          node.browsersToShare = null;
+
+          if (AppConstants.platform == "win") {
+            lazy.SharingUtils.shareOnWindows(node);
+          } else {
+            lazy.SharingUtils.copyLink(node);
+          }
+        });
+      }
 
       return node;
     },

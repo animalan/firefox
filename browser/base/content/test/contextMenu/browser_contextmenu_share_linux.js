@@ -15,23 +15,17 @@ const TEST_URL_2 = "https://example.org/";
  */
 add_task(async function test_contextmenu_share_linux() {
   await BrowserTestUtils.withNewTab(TEST_URL_1, async () => {
-    let contextMenu = await openTabContextMenu(gBrowser.selectedTab);
-    let shareMenu = contextMenu.querySelector(".share-tab-url-item");
-    ok(shareMenu, "Got Share menu on Linux");
-    is(shareMenu.tagName, "menu", "Share item is a submenu");
-
-    await openShareMenuPopup(contextMenu);
-
-    let popup = shareMenu.menupopup;
-    let copyLinkItem = popup.querySelector(".share-copy-link");
-    ok(copyLinkItem, "Copy Link item exists in submenu");
+    await openTabContextMenu(gBrowser.selectedTab);
+    let contextMenu = document.getElementById("tabContextMenu");
 
     let contextMenuClosedPromise = BrowserTestUtils.waitForPopupEvent(
       contextMenu,
       "hidden"
     );
+    let itemCreated = contextMenu.querySelector(".share-tab-url-item");
+    ok(itemCreated, "Got Share item on Linux");
     await SimpleTest.promiseClipboardChange(TEST_URL_1, () =>
-      popup.activateItem(copyLinkItem)
+      contextMenu.activateItem(itemCreated)
     );
     ok(true, "Copied to clipboard.");
 
@@ -40,7 +34,7 @@ add_task(async function test_contextmenu_share_linux() {
 });
 
 /**
- * Test that "Copy Links" on Linux copies all URLs when multiple tabs are
+ * Test that "Copy link" on Linux copies all URLs when multiple tabs are
  * selected.
  */
 add_task(async function test_contextmenu_share_multiselect_linux() {
@@ -52,22 +46,16 @@ add_task(async function test_contextmenu_share_multiselect_linux() {
   ok(tab2.multiselected, "tab2 is multiselected");
 
   let contextMenu = await openTabContextMenu(tab2);
-  let shareMenu = contextMenu.querySelector(".share-tab-url-item");
-  ok(shareMenu, "share menu exists for multiselected tabs");
-  ok(!shareMenu.hidden, "share menu is visible");
-
-  await openShareMenuPopup(contextMenu);
-
-  let popup = shareMenu.menupopup;
-  let copyLinkItem = popup.querySelector(".share-copy-link");
-  ok(copyLinkItem, "Copy Link item exists");
+  let shareItem = contextMenu.querySelector(".share-tab-url-item");
+  ok(shareItem, "share item exists for multiselected tabs");
+  ok(!shareItem.hidden, "share item is visible");
 
   let contextMenuClosed = BrowserTestUtils.waitForPopupEvent(
     contextMenu,
     "hidden"
   );
   await SimpleTest.promiseClipboardChange(TEST_URL_1 + "\n" + TEST_URL_2, () =>
-    popup.activateItem(copyLinkItem)
+    contextMenu.activateItem(shareItem)
   );
   await contextMenuClosed;
 
@@ -94,7 +82,7 @@ add_task(async function test_contextmenu_share_multiselect_linux() {
 });
 
 /**
- * Test that the share menu is visible when the first selected tab is about:blank
+ * Test that the share item is visible when the first selected tab is about:blank
  * but another selected tab has a real URL.
  */
 add_task(async function test_contextmenu_share_multiselect_blank_first_linux() {
@@ -109,21 +97,11 @@ add_task(async function test_contextmenu_share_multiselect_blank_first_linux() {
   ok(tab2.multiselected, "tab2 (real URL) is multiselected");
 
   let contextMenu = await openTabContextMenu(tab1);
-  let shareMenu = contextMenu.querySelector(".share-tab-url-item");
-  ok(shareMenu, "share menu exists");
+  let shareItem = contextMenu.querySelector(".share-tab-url-item");
+  ok(shareItem, "share item exists");
   ok(
-    !shareMenu.hidden,
-    "share menu is visible when at least one tab has a shareable URL"
-  );
-
-  await openShareMenuPopup(contextMenu);
-
-  let popup = shareMenu.menupopup;
-  let copyLinkItem = popup.querySelector(".share-copy-link");
-  ok(copyLinkItem, "Copy Link item exists");
-  ok(
-    !copyLinkItem.hasAttribute("disabled"),
-    "Copy Link is enabled when at least one tab has a shareable URL"
+    !shareItem.hidden,
+    "share item is visible when at least one tab has a shareable URL"
   );
 
   let contextMenuClosed = BrowserTestUtils.waitForPopupEvent(
@@ -131,7 +109,7 @@ add_task(async function test_contextmenu_share_multiselect_blank_first_linux() {
     "hidden"
   );
   await SimpleTest.promiseClipboardChange(TEST_URL_1, () =>
-    popup.activateItem(copyLinkItem)
+    contextMenu.activateItem(shareItem)
   );
   await contextMenuClosed;
 
@@ -140,7 +118,7 @@ add_task(async function test_contextmenu_share_multiselect_blank_first_linux() {
 });
 
 /**
- * Test that the share menu is hidden when all selected tabs have non-shareable URLs.
+ * Test that the share item is hidden when all selected tabs have non-shareable URLs.
  */
 add_task(async function test_contextmenu_share_multiselect_all_blank_linux() {
   let tab1 = await BrowserTestUtils.openNewForegroundTab(
@@ -157,11 +135,11 @@ add_task(async function test_contextmenu_share_multiselect_all_blank_linux() {
   ok(tab2.multiselected, "tab2 is multiselected");
 
   let contextMenu = await openTabContextMenu(tab2);
-  let shareMenu = contextMenu.querySelector(".share-tab-url-item");
-  ok(shareMenu, "share menu exists");
+  let shareItem = contextMenu.querySelector(".share-tab-url-item");
+  ok(shareItem, "share item exists");
   ok(
-    shareMenu.hidden,
-    "share menu is hidden when all selected tabs have non-shareable URLs"
+    shareItem.hidden,
+    "share item is hidden when all selected tabs have non-shareable URLs"
   );
 
   let contextMenuClosed = BrowserTestUtils.waitForPopupEvent(
@@ -174,3 +152,15 @@ add_task(async function test_contextmenu_share_multiselect_all_blank_linux() {
   BrowserTestUtils.removeTab(tab1);
   BrowserTestUtils.removeTab(tab2);
 });
+
+async function openTabContextMenu(tab) {
+  info("Opening tab context menu");
+  let contextMenu = document.getElementById("tabContextMenu");
+  let openTabContextMenuPromise = BrowserTestUtils.waitForPopupEvent(
+    contextMenu,
+    "shown"
+  );
+  EventUtils.synthesizeMouseAtCenter(tab, { type: "contextmenu" });
+  await openTabContextMenuPromise;
+  return contextMenu;
+}

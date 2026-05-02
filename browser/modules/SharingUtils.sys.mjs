@@ -30,83 +30,183 @@ Object.defineProperty(lazy, "MacSharingService", {
 
 class SharingUtilsCls {
   /**
-   * Ensures a "Share" submenu exists in a given menu, creating it if necessary.
+   * Updates a sharing item in a given menu, creating it if necessary.
    *
    * @param {MozBrowser} contextBrowser
-   *   The browser of the right-clicked (context) tab.
+   *   The browser of the right-clicked (context) tab. Used for sharing a
+   *   single URL in native share dialogs on Windows and macOS.
    * @param {MozBrowser[]|null} browsers
-   *   All selected browsers in tab strip order. Pass null for single URL sharing.
+   *   All selected browsers in tab strip order. Used for copy links.
+   *   Pass null for single URL sharing.
    * @param {Element} insertAfterEl
    *   The menu item after which the share item is inserted.
    */
-  ensureShareMenu(contextBrowser, browsers, insertAfterEl) {
+  updateShareURLMenuItem(contextBrowser, browsers, insertAfterEl) {
     if (!Services.prefs.getBoolPref("browser.menu.share_url.allow", true)) {
       return;
     }
 
-    let hasShareableURL =
-      browsers !== null
-        ? browsers.some(b => BrowserUtils.getShareableURL(b.currentURI))
-        : !!BrowserUtils.getShareableURL(contextBrowser.currentURI);
+    let isMultiTab = browsers !== null;
+    let shareableCount;
+    if (isMultiTab) {
+      shareableCount = browsers.filter(b =>
+        BrowserUtils.getShareableURL(b.currentURI)
+      ).length;
+    } else {
+      shareableCount = BrowserUtils.getShareableURL(contextBrowser.currentURI)
+        ? 1
+        : 0;
+    }
 
-    let shareMenu;
+    let shareURL;
     let oldElement = insertAfterEl.nextElementSibling;
 
     if (oldElement?.matches(".share-tab-url-item")) {
-      shareMenu = oldElement;
+      if (AppConstants.platform == "macosx") {
+        shareURL = oldElement;
+      } else if (AppConstants.platform == "win") {
+        // On Windows, single-tab uses a share sheet item while multi-tab uses a
+        // copy-link item. Recreate if that changed.
+        // Avoid removing the item during popupshowing otherwise, as DOM
+        // mutations can prevent the popup from appearing.
+        let existingIsMultiTab = oldElement.matches(".share-copy-link");
+        if (existingIsMultiTab !== isMultiTab) {
+          oldElement.remove();
+          shareURL = this.#createShareURLMenuItem(
+            insertAfterEl,
+            shareableCount,
+            isMultiTab
+          );
+        } else {
+          shareURL = oldElement;
+          if (isMultiTab) {
+            insertAfterEl.ownerDocument.l10n.setAttributes(
+              shareURL,
+              "menu-share-copy-links",
+              { count: Math.max(1, shareableCount) }
+            );
+          }
+        }
+      } else {
+        // Linux always uses a copy-link item, just update the count.
+        shareURL = oldElement;
+        insertAfterEl.ownerDocument.l10n.setAttributes(
+          shareURL,
+          "menu-share-copy-links",
+          { count: Math.max(1, shareableCount) }
+        );
+      }
     } else {
-      shareMenu = this.#createShareMenu(insertAfterEl);
+      shareURL = this.#createShareURLMenuItem(
+        insertAfterEl,
+        shareableCount,
+        isMultiTab
+      );
     }
 
-    shareMenu.contextBrowserToShare = Cu.getWeakReference(contextBrowser);
-    shareMenu.browsersToShare =
+    shareURL.contextBrowserToShare = Cu.getWeakReference(contextBrowser);
+    shareURL.browsersToShare =
       browsers?.map(b => Cu.getWeakReference(b)) ?? null;
 
     if (AppConstants.platform != "macosx") {
-      // On macOS, we keep the item visible and handle enable/disable
+      // On macOS, we keep the item visible and handle visibility
       // inside the menupopup.
-      shareMenu.hidden = !hasShareableURL;
+      // Everywhere else, we hide the item, as there's no submenu.
+      shareURL.hidden = shareableCount === 0;
     }
   }
 
   /**
-   * Creates and inserts the "Share" <menu> element with a <menupopup> child.
-   * All platforms now use a submenu.
+   * Creates and returns the "Share" menu item.
+   *
+   * @param {Element} insertAfterEl
+   * @param {number} shareableCount
+   * @param {boolean} isMultiTab
    */
-  #createShareMenu(insertAfterEl) {
-    let parentMenu = insertAfterEl.parentNode;
+  #createShareURLMenuItem(insertAfterEl, shareableCount, isMultiTab) {
+    let menu = insertAfterEl.parentNode;
+    let shareURL = null;
     let document = insertAfterEl.ownerDocument;
 
     let l10nID =
-      parentMenu.id == "tabContextMenu"
+      menu.id == "tabContextMenu"
         ? "tab-context-share-url"
         : "menu-file-share-url";
 
+    switch (AppConstants.platform) {
+      case "win":
+        if (isMultiTab) {
+          shareURL = this.#buildCopyLinkItem(document, shareableCount);
+        } else {
+          shareURL = this.#buildShareURLItem(document);
+          document.l10n.setAttributes(shareURL, l10nID);
+        }
+        break;
+      case "macosx":
+        shareURL = this.#buildShareURLMenu(document);
+        document.l10n.setAttributes(shareURL, l10nID);
+        break;
+      default:
+        shareURL = this.#buildCopyLinkItem(document, shareableCount);
+        break;
+    }
+
+    shareURL.classList.add("share-tab-url-item");
+
+    menu.insertBefore(shareURL, insertAfterEl.nextSibling);
+    return shareURL;
+  }
+
+  /**
+   * Returns a menu item specifically for accessing Windows sharing services.
+   */
+  #buildShareURLItem(document) {
+    let shareURLMenuItem = document.createXULElement("menuitem");
+    shareURLMenuItem.addEventListener("command", this);
+    return shareURLMenuItem;
+  }
+
+  /**
+   * Returns a menu specifically for accessing macOS sharing services.
+   */
+  #buildShareURLMenu(document) {
     let menu = document.createXULElement("menu");
     let menuPopup = document.createXULElement("menupopup");
     menuPopup.addEventListener("popupshowing", this);
     menu.appendChild(menuPopup);
-
-    document.l10n.setAttributes(menu, l10nID);
-    menu.classList.add("share-tab-url-item");
-
-    parentMenu.insertBefore(menu, insertAfterEl.nextSibling);
     return menu;
   }
 
   /**
-   * Return a menuitem that copies the link(s) to the clipboard.
+   * Return a menuitem that only copies the link.
+   * Used for OSes where we do not yet have full share support, like Linux, or
+   * on macOS, where Apple does not provide the share service option for this.
+   *
+   * Also supports copying multiple links on Windows, where the share sheet
+   * only supports copying one link at a time.
    */
-  #createCopyLinkMenuItem(document, shareableCount) {
-    let item = document.createXULElement("menuitem");
-    document.l10n.setAttributes(item, "menu-share-copy-links", {
-      // shareableCount can be zero when about:blank tabs are selected but no
-      // "real" tabs are. Clamp to 1 so the localized string is correct.
+  #buildCopyLinkItem(document, shareableCount) {
+    let shareURLMenuItem = document.createXULElement("menuitem");
+    document.l10n.setAttributes(shareURLMenuItem, "menu-share-copy-links", {
+      // shareableCount can be zero in cases where one or more about:blank tabs
+      // are selected, but no "real" tabs are in the selection. It should be 1
+      // minimum here to ensure the localized string is correct.
       count: Math.max(1, shareableCount),
     });
-    item.classList.add("menuitem-iconic", "share-copy-link");
-    item.setAttribute("image", "chrome://global/skin/icons/link.svg");
-    return item;
+    shareURLMenuItem.classList.add("share-copy-link");
+
+    if (AppConstants.platform == "macosx") {
+      shareURLMenuItem.classList.add("menuitem-iconic");
+      shareURLMenuItem.setAttribute(
+        "image",
+        "chrome://global/skin/icons/link.svg"
+      );
+    } else {
+      // On macOS the command handling happens by virtue of the submenu
+      // command event listener.
+      shareURLMenuItem.addEventListener("command", this);
+    }
+    return shareURLMenuItem;
   }
 
   async #showQRCodePanel(win, browser, url) {
@@ -175,21 +275,21 @@ class SharingUtilsCls {
     return links;
   }
 
-  #initSharePopup(menuPopup) {
-    this.populateSharePopup(menuPopup);
+  initializeShareURLPopup(menuPopup) {
+    if (AppConstants.platform != "macosx") {
+      return;
+    }
+
+    this.populateShareMenu(menuPopup);
 
     menuPopup.parentNode
       .closest("menupopup")
       .addEventListener("popuphiding", this);
+    menuPopup.setAttribute("data-initialized", true);
   }
 
-  /**
-   * Populates the share submenu popup with platform-appropriate items.
-   */
-  populateSharePopup(menuPopup) {
-    // Ensure the command listener is registered.
-    menuPopup.addEventListener("command", this);
-
+  populateShareMenu(menuPopup) {
+    // Clear existing
     while (menuPopup.firstChild) {
       menuPopup.firstChild.remove();
     }
@@ -201,111 +301,118 @@ class SharingUtilsCls {
     let { urlToShare } = this.getLinkToShare(node);
 
     // If we can't share the current URL, we display the items disabled,
-    // but enable the "more..." item at the bottom on macOS, to allow the
-    // user to change sharing preferences in the system dialog.
+    // but enable the "more..." item at the bottom, to allow the user to
+    // change sharing preferences in the system dialog.
     let shouldEnable = !!urlToShare;
-
-    let shareableCount;
-    if (isMultiTab) {
-      shareableCount = this.getLinksToShare(node).length;
-    } else {
-      shareableCount = shouldEnable ? 1 : 0;
+    if (!urlToShare) {
+      // Fake it so we can ask the sharing service for services:
+      urlToShare = "https://mozilla.org/";
     }
-    let copyLinkEnabled = shareableCount > 0;
 
-    // On macOS, query native services. We need this list to check whether
-    // Apple already provides a "Copy Link" service.
-    let services = [];
-    if (AppConstants.platform == "macosx") {
-      if (!urlToShare) {
-        // Fake it so we can ask the sharing service for services:
-        urlToShare = "https://mozilla.org/";
+    let services = lazy.MacSharingService.getSharingProviders(urlToShare);
+
+    if (!menuPopup.hasAttribute("data-command-listener")) {
+      menuPopup.addEventListener("command", event => {
+        if (event.target.classList.contains("share-qrcode-item")) {
+          let { urlToShare: url } = this.getLinkToShare(node);
+          let browser = node.contextBrowserToShare?.get();
+          if (url && browser) {
+            Glean.qrcode.opened.add(1);
+            this.#showQRCodePanel(node.documentGlobal, browser, url);
+          }
+        } else if (event.target.classList.contains("share-more-button")) {
+          this.openMacSharePreferences();
+        } else if (event.target.classList.contains("share-copy-link")) {
+          this.copyLink(node);
+        } else if (event.target.dataset.shareName) {
+          this.shareOnMac(node, event.target.dataset.shareName);
+        }
+      });
+
+      menuPopup.setAttribute("data-command-listener", "true");
+    }
+
+    // Apple seems reluctant to provide copy link as a feature. Add it at the
+    // start if it's not there.
+    if (!services.some(s => s.name == APPLE_COPY_LINK)) {
+      let shareableCount;
+      if (isMultiTab) {
+        shareableCount = this.getLinksToShare(node).length;
+      } else {
+        shareableCount = shouldEnable ? 1 : 0;
       }
-      services = lazy.MacSharingService.getSharingProviders(urlToShare);
-    }
-
-    // Copy Link(s) - all platforms. Apple seems reluctant to provide copy
-    // link as a feature, so add it if it's not already in the services list.
-    if (
-      AppConstants.platform != "macosx" ||
-      !services.some(s => s.name == APPLE_COPY_LINK)
-    ) {
-      let copyItem = this.#createCopyLinkMenuItem(document, shareableCount);
+      let copyLinkEnabled = shareableCount > 0;
+      let item = this.#buildCopyLinkItem(document, shareableCount);
       if (!copyLinkEnabled) {
-        copyItem.setAttribute("disabled", "true");
+        item.setAttribute("disabled", "true");
       }
-      menuPopup.appendChild(copyItem);
+      menuPopup.appendChild(item);
     }
 
-    // QR code - all platforms
     if (Services.prefs.getBoolPref("browser.shareqrcode.enabled", false)) {
       let qrCodeItem = document.createXULElement("menuitem");
       qrCodeItem.classList.add("menuitem-iconic", "share-qrcode-item");
       document.l10n.setAttributes(qrCodeItem, "menu-file-share-qrcode");
       qrCodeItem.setAttribute("image", "chrome://browser/skin/qrcode.svg");
-      if (!shouldEnable || isMultiTab) {
+      if (!shouldEnable) {
         qrCodeItem.setAttribute("disabled", "true");
       }
       menuPopup.appendChild(qrCodeItem);
     }
 
-    // macOS: native sharing services + "More..."
-    if (AppConstants.platform == "macosx") {
-      if (services.length) {
-        menuPopup.appendChild(document.createXULElement("menuseparator"));
-      }
-      // Share service items
-      services.forEach(share => {
-        let item = document.createXULElement("menuitem");
-        item.classList.add("menuitem-iconic");
-        item.setAttribute("label", share.menuItemTitle);
-        item.setAttribute("data-share-name", share.name);
-        item.setAttribute("image", ChromeUtils.encodeURIForSrcset(share.image));
-        if (!shouldEnable) {
-          item.setAttribute("disabled", "true");
-        }
-        menuPopup.appendChild(item);
-      });
+    if (services.length) {
       menuPopup.appendChild(document.createXULElement("menuseparator"));
-
-      // More item
-      let moreItem = document.createXULElement("menuitem");
-      document.l10n.setAttributes(moreItem, "menu-share-more");
-      moreItem.classList.add("menuitem-iconic", "share-more-button");
-      moreItem.setAttribute("data-share-name", "share_macosx_more");
-      menuPopup.appendChild(moreItem);
     }
 
-    // Windows: native share dialog
-    if (AppConstants.platform == "win") {
-      menuPopup.appendChild(document.createXULElement("menuseparator"));
-      let winShareItem = document.createXULElement("menuitem");
-      winShareItem.classList.add("share-windows-item");
-      document.l10n.setAttributes(winShareItem, "menu-share-windows");
-      if (!shouldEnable || isMultiTab) {
-        winShareItem.setAttribute("disabled", "true");
+    // Share service items
+    services.forEach(share => {
+      let item = document.createXULElement("menuitem");
+      item.classList.add("menuitem-iconic");
+      item.setAttribute("label", share.menuItemTitle);
+      item.setAttribute("data-share-name", share.name);
+      item.setAttribute("image", ChromeUtils.encodeURIForSrcset(share.image));
+      if (!shouldEnable) {
+        item.setAttribute("disabled", "true");
       }
-      menuPopup.appendChild(winShareItem);
-    }
+      menuPopup.appendChild(item);
+    });
+    menuPopup.appendChild(document.createXULElement("menuseparator"));
+
+    // More item
+    let moreItem = document.createXULElement("menuitem");
+    document.l10n.setAttributes(moreItem, "menu-share-more");
+    moreItem.classList.add("menuitem-iconic", "share-more-button");
+    moreItem.setAttribute("data-share-name", "share_macosx_more");
+    menuPopup.appendChild(moreItem);
   }
 
-  #onCommand(event) {
-    let node = event.currentTarget.parentNode;
-    if (event.target.classList.contains("share-qrcode-item")) {
-      let { urlToShare: url } = this.getLinkToShare(node);
-      let browser = node.contextBrowserToShare?.get();
-      if (url && browser) {
-        Glean.qrcode.opened.add(1);
-        this.#showQRCodePanel(node.documentGlobal, browser, url);
-      }
-    } else if (event.target.classList.contains("share-more-button")) {
+  onShareURLCommand(event) {
+    // Only call sharing services for the "Share" menu item. These services
+    // are accessed from a submenu popup for MacOS or the "Share" menu item
+    // for Windows. Use .closest() as a hack to find either the item itself
+    // or a parent with the right class.
+    let target = event.target.closest(".share-tab-url-item");
+    if (!target) {
+      return;
+    }
+
+    // urlToShare/titleToShare may be null, in which case only the "more"
+    // item is enabled, so handle that case first:
+    if (event.target.classList.contains("share-more-button")) {
       this.openMacSharePreferences();
-    } else if (event.target.classList.contains("share-copy-link")) {
-      this.copyLink(node);
-    } else if (event.target.classList.contains("share-windows-item")) {
-      this.shareOnWindows(node);
-    } else if (event.target.dataset.shareName) {
-      this.shareOnMac(node, event.target.dataset.shareName);
+      return;
+    }
+
+    if (event.target.classList.contains("share-copy-link")) {
+      this.copyLink(target);
+    } else if (AppConstants.platform == "win") {
+      this.shareOnWindows(target);
+    } else {
+      // On macOS platforms
+      let shareName = event.target.getAttribute("data-share-name");
+      if (shareName) {
+        this.shareOnMac(target, shareName);
+      }
     }
   }
 
@@ -315,21 +422,25 @@ class SharingUtilsCls {
     if (event.target.parentNode.closest("menupopup")) {
       return;
     }
+    // Otherwise, clear its "data-initialized" attribute.
     let menupopup = event.target.querySelector(
       ".share-tab-url-item"
     )?.menupopup;
-    menupopup?.removeEventListener("command", this);
+    menupopup?.removeAttribute("data-initialized");
+
     event.target.removeEventListener("popuphiding", this);
   }
 
   onPopupShowing(event) {
-    this.#initSharePopup(event.target);
+    if (!event.target.hasAttribute("data-initialized")) {
+      this.initializeShareURLPopup(event.target);
+    }
   }
 
   handleEvent(aEvent) {
     switch (aEvent.type) {
       case "command":
-        this.#onCommand(aEvent);
+        this.onShareURLCommand(aEvent);
         break;
       case "popuphiding":
         this.onPopupHiding(aEvent);

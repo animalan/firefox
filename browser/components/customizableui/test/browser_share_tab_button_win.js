@@ -26,31 +26,12 @@ registerCleanupFunction(function () {
   SharingUtils.testOnlyMockUIUtils(null);
 });
 
-async function openShareTabPopup() {
+async function openShareTabButton() {
   await waitForOverflowButtonShown();
   await document.getElementById("nav-bar").overflowable.show();
 
   let shareTabButton = document.getElementById("share-tab-button");
-  shareTabButton.click();
-
-  let popupElement = document.getElementById("share-tab-popup");
-  await BrowserTestUtils.waitForPopupEvent(popupElement, "shown");
-
-  return { shareTabButton, popupElement };
-}
-
-async function closePopup(popupElement) {
-  let menuPopupClosedPromise = BrowserTestUtils.waitForPopupEvent(
-    popupElement,
-    "hidden"
-  );
-  popupElement.hidePopup();
-  await menuPopupClosedPromise;
-  ok(true, "Menu popup closed");
-
-  if (isOverflowOpen()) {
-    await hideOverflow();
-  }
+  return shareTabButton;
 }
 
 add_setup(async function () {
@@ -63,10 +44,9 @@ add_setup(async function () {
 
 add_task(async function test_button_exists() {
   await BrowserTestUtils.withNewTab(TEST_URL, async () => {
-    let shareTabButton = await openShareTabPopup().then(r => r.shareTabButton);
+    let shareTabButton = await openShareTabButton();
     Assert.ok(shareTabButton, "Share tab button appears in Panel Menu");
-    let popupElement = document.getElementById("share-tab-popup");
-    await closePopup(popupElement);
+    await hideOverflow();
   });
 });
 
@@ -74,50 +54,14 @@ add_task(async function test_share_button_click() {
   await BrowserTestUtils.withNewTab(TEST_URL, async () => {
     shareUrlSpy.resetHistory();
 
-    let { popupElement } = await openShareTabPopup();
-
-    let winShareItem = popupElement.querySelector(".share-windows-item");
-    ok(winShareItem, "Share with Windows item exists in submenu");
-
-    let menuPopupClosedPromise = BrowserTestUtils.waitForPopupEvent(
-      popupElement,
-      "hidden"
-    );
-    popupElement.activateItem(winShareItem);
-    await menuPopupClosedPromise;
+    let shareTabButton = await openShareTabButton();
+    shareTabButton.click();
 
     ok(shareUrlSpy.calledOnce, "shareUrl was called");
 
     let [url, title] = shareUrlSpy.getCall(0).args;
     is(url, TEST_URL, "Shared correct URL");
     is(title, "Sharing URL", "Shared correct title");
-
-    if (isOverflowOpen()) {
-      await hideOverflow();
-    }
-  });
-});
-
-add_task(async function test_copy_link() {
-  await BrowserTestUtils.withNewTab(TEST_URL, async () => {
-    shareUrlSpy.resetHistory();
-
-    let { popupElement } = await openShareTabPopup();
-
-    let copyLinkItem = popupElement.querySelector(".share-copy-link");
-    ok(copyLinkItem, "Copy Link item exists in submenu");
-
-    let menuPopupClosedPromise = BrowserTestUtils.waitForPopupEvent(
-      popupElement,
-      "hidden"
-    );
-    await SimpleTest.promiseClipboardChange(TEST_URL, () =>
-      popupElement.activateItem(copyLinkItem)
-    );
-    await menuPopupClosedPromise;
-
-    ok(!shareUrlSpy.called, "native Windows share dialog was not invoked");
-
     if (isOverflowOpen()) {
       await hideOverflow();
     }
