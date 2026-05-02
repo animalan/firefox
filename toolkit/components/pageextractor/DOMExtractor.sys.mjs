@@ -438,7 +438,7 @@ class ExtractionContext {
     }
 
     if (innerText) {
-      if (node.ownerGlobal) {
+      if (node.documentGlobal) {
         // Use whitespace behavior from the DOM.
         this.#textContent += "\n" + innerText;
       } else {
@@ -889,7 +889,7 @@ function nodeNeedsSubdividing(node) {
  * @returns {boolean}
  */
 function isNodeHidden(node) {
-  if (!node.ownerGlobal) {
+  if (!node.documentGlobal) {
     // This node is not actually connected to a live browser context, so we can't
     // determine if it's hidden or not. This can happen for a DOMParser document.
     return false;
@@ -943,14 +943,14 @@ function isNodeHidden(node) {
     return true;
   }
 
-  const { ownerGlobal } = element;
-  if (!ownerGlobal) {
-    // We cannot compute the style without ownerGlobal, so we will assume it is not visible.
+  const { documentGlobal } = element;
+  if (!documentGlobal) {
+    // We cannot compute the style without documentGlobal, so we will assume it is not visible.
     return true;
   }
 
   // This flushes the style, which is a performance cost.
-  const style = ownerGlobal.getComputedStyle(element);
+  const style = documentGlobal.getComputedStyle(element);
   if (!style) {
     // We were unable to compute the style, so we will assume it is not visible.
     return true;
@@ -1180,8 +1180,8 @@ function getIsBlockLike(node) {
     return false;
   }
 
-  const { ownerGlobal } = element;
-  if (!ownerGlobal) {
+  const { documentGlobal } = element;
+  if (!documentGlobal) {
     // This root node is detached from a window, and so there is no computed style.
     // Just use the assumed style.
     return blockLikeElements.has(element.tagName);
@@ -1195,7 +1195,7 @@ function getIsBlockLike(node) {
 
   /** @type {Record<string, string>} */
   // @ts-expect-error - This is a workaround for the CSSStyleDeclaration not being indexable.
-  const style = ownerGlobal.getComputedStyle(element) ?? { display: null };
+  const style = documentGlobal.getComputedStyle(element) ?? { display: null };
 
   return style.display !== "inline" && style.display !== "none";
 }

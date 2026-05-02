@@ -102,10 +102,10 @@ function focusInChild(event) {
     window = event.target;
   } else if (event.target.nodeType == event.target.DOCUMENT_NODE) {
     id = getWindowDocId(event.originalTarget) + "-document";
-    window = event.target.ownerGlobal;
+    window = event.target.documentGlobal;
   } else {
     id = event.originalTarget.id;
-    window = event.target.ownerGlobal;
+    window = event.target.documentGlobal;
   }
 
   if (!window._eventsOccurred) {

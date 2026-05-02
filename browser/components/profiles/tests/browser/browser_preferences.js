@@ -73,7 +73,7 @@ add_task(async function testEnabled() {
     leaveOpen: true,
   });
   let doc = gBrowser.contentDocument;
-  let win = doc.ownerGlobal;
+  let win = doc.documentGlobal;
 
   // Verify the profiles section is shown when enabled.
   let profilesCategory = doc.getElementById("profilesGroup");
@@ -121,7 +121,7 @@ add_task(async function subpaneContentsWithOneProfile() {
     leaveOpen: true,
   });
   let doc = gBrowser.contentDocument;
-  let win = doc.ownerGlobal;
+  let win = doc.documentGlobal;
 
   let paneLoaded = waitForPaneChange("profiles");
   win.gotoPref("paneProfiles");
@@ -176,7 +176,7 @@ add_task(async function copyProfile() {
     leaveOpen: true,
   });
   let doc = gBrowser.contentDocument;
-  let win = doc.ownerGlobal;
+  let win = doc.documentGlobal;
 
   let paneLoaded = waitForPaneChange("profiles");
   win.gotoPref("paneProfiles");
@@ -255,7 +255,7 @@ add_task(async function testPrivacyInfoEnabled() {
     leaveOpen: true,
   });
   let doc = gBrowser.contentDocument;
-  let win = doc.ownerGlobal;
+  let win = doc.documentGlobal;
   let profilesNote = doc.getElementById("preferencesPrivacyProfiles");
 
   ok(BrowserTestUtils.isVisible(profilesNote), "The profiles note is visible");

@@ -321,7 +321,7 @@ async function selectHistoryMode(win, value) {
   await EventUtils.synthesizeMouseAtCenter(
     historyMode,
     {},
-    historyMode.ownerGlobal
+    historyMode.documentGlobal
   );
 
   let popup = await popupShownPromise;
@@ -340,7 +340,11 @@ async function selectHistoryMode(win, value) {
   if (popup.isNativeMenu) {
     popup.activateItem(targetItem);
   } else {
-    EventUtils.synthesizeMouseAtCenter(targetItem, {}, targetItem.ownerGlobal);
+    EventUtils.synthesizeMouseAtCenter(
+      targetItem,
+      {},
+      targetItem.documentGlobal
+    );
   }
 
   await popupHiddenPromise;
@@ -391,7 +395,11 @@ async function updateCheckBoxElement(checkbox, value) {
   checkbox.scrollIntoView();
 
   // Toggle the state.
-  await EventUtils.synthesizeMouseAtCenter(checkbox, {}, checkbox.ownerGlobal);
+  await EventUtils.synthesizeMouseAtCenter(
+    checkbox,
+    {},
+    checkbox.documentGlobal
+  );
 }
 
 async function updateCheckBox(win, id, value) {
@@ -408,7 +416,11 @@ async function updateCheckBox(win, id, value) {
   checkbox.scrollIntoView();
 
   // Toggle the state.
-  await EventUtils.synthesizeMouseAtCenter(checkbox, {}, checkbox.ownerGlobal);
+  await EventUtils.synthesizeMouseAtCenter(
+    checkbox,
+    {},
+    checkbox.documentGlobal
+  );
 }
 
 /**
@@ -487,7 +499,7 @@ async function settingControlRenders(settingId, win) {
 function synthesizeClick(el) {
   let target = el.buttonEl ?? el.inputEl ?? el;
   target.scrollIntoView({ block: "center" });
-  EventUtils.synthesizeMouseAtCenter(target, {}, target.ownerGlobal);
+  EventUtils.synthesizeMouseAtCenter(target, {}, target.documentGlobal);
 }
 
 async function changeMozSelectValue(selectEl, value) {

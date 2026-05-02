@@ -1447,7 +1447,7 @@ class WalkerActor extends Actor {
       return;
     }
 
-    loadSheet(node.rawNode.ownerGlobal, HELPER_SHEET);
+    loadSheet(node.rawNode.documentGlobal, HELPER_SHEET);
     node.rawNode.classList.add(HIDDEN_CLASS);
   }
 

@@ -60,7 +60,7 @@ add_setup(async function setup() {
 let urlbarBtn = win => win.document.getElementById("trust-icon");
 let urlbarLabel = win => win.document.getElementById("trust-label");
 let urlbarIcon = win =>
-  gBrowser.ownerGlobal
+  gBrowser.documentGlobal
     .getComputedStyle(urlbarBtn(win))
     .getPropertyValue("list-style-image");
 

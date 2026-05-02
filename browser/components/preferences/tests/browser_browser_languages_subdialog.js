@@ -184,7 +184,7 @@ function assertAvailableLocales(list, locales) {
 }
 
 function getDialogId(dialogDoc) {
-  return dialogDoc.ownerGlobal.arguments[0].telemetryId;
+  return dialogDoc.documentGlobal.arguments[0].telemetryId;
 }
 
 function assertTelemetryRecorded(events) {

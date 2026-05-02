@@ -24,20 +24,20 @@ export class SidebarPage extends MozLitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.ownerGlobal.addEventListener("beforeunload", this.clearDocument);
-    this.ownerGlobal.addEventListener("unload", this.clearDocument);
+    this.documentGlobal.addEventListener("beforeunload", this.clearDocument);
+    this.documentGlobal.addEventListener("unload", this.clearDocument);
 
     this._contextMenu = this.topWindow.SidebarController.currentContextMenu;
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.ownerGlobal.removeEventListener("beforeunload", this.clearDocument);
-    this.ownerGlobal.removeEventListener("unload", this.clearDocument);
+    this.documentGlobal.removeEventListener("beforeunload", this.clearDocument);
+    this.documentGlobal.removeEventListener("unload", this.clearDocument);
   }
 
   get topWindow() {
-    return this.ownerGlobal.top;
+    return this.documentGlobal.top;
   }
 
   get sidebarController() {
@@ -192,7 +192,7 @@ export class SidebarPage extends MozLitElement {
    * and all of the custom elements can cleanup.
    */
   clearDocument() {
-    this.ownerGlobal.document.body.textContent = "";
+    this.documentGlobal.document.body.textContent = "";
   }
 
   /**

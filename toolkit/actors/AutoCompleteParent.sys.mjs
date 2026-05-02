@@ -206,7 +206,7 @@ export class AutoCompleteParent extends JSWindowActorParent {
     }
 
     let browser = this.browsingContext.top.embedderElement;
-    let window = browser.ownerGlobal;
+    let window = browser.documentGlobal;
     // Also check window top in case this is a sidebar.
     if (
       Services.focus.activeWindow !== window.top &&
@@ -499,7 +499,7 @@ export class AutoCompleteParent extends JSWindowActorParent {
   }
 
   notifyListeners() {
-    let window = this.browsingContext.top.embedderElement.ownerGlobal;
+    let window = this.browsingContext.top.embedderElement.documentGlobal;
     for (let listener of autoCompleteListeners) {
       try {
         listener(window);

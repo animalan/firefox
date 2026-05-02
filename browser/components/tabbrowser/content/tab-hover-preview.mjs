@@ -265,7 +265,7 @@ class HoverPanel {
   constructor(panelElement, panelSet) {
     this.panelElement = panelElement;
     this.panelSet = panelSet;
-    this.win = this.panelElement.ownerGlobal;
+    this.win = this.panelElement.documentGlobal;
   }
 
   get isActive() {

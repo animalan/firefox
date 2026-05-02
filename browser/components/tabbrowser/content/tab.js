@@ -320,7 +320,7 @@
      */
     get lastSeenActive() {
       const isForegroundWindow =
-        this.ownerGlobal ==
+        this.documentGlobal ==
         BrowserWindowTracker.getTopWindow({ allowPopups: true });
       // the timestamp for the selected tab in the active window is always now
       if (isForegroundWindow && this.selected) {

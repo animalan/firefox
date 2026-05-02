@@ -256,7 +256,7 @@ class TabsListBase {
   _refreshDOM() {
     if (!this.#domRefreshPromise) {
       this.#domRefreshPromise = new Promise(resolve => {
-        this.containerNode.ownerGlobal.requestAnimationFrame(() => {
+        this.containerNode.documentGlobal.requestAnimationFrame(() => {
           if (this.#domRefreshPromise) {
             if (this.listenersRegistered) {
               // Only re-render the menu DOM if the menu is still open.

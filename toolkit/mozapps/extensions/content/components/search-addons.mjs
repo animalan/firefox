@@ -61,7 +61,7 @@ class SearchAddons extends HTMLElement {
     );
 
     let browser = getBrowserElement();
-    let chromewin = browser.ownerGlobal;
+    let chromewin = browser.documentGlobal;
     chromewin.openWebLinkIn(url, "tab");
   }
 }

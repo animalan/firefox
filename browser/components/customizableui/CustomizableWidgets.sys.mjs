@@ -118,7 +118,7 @@ export const CustomizableWidgets = [
           break;
         case "command": {
           let { target } = event;
-          let { PanelUI, PlacesCommandHook } = target.ownerGlobal;
+          let { PanelUI, PlacesCommandHook } = target.documentGlobal;
           if (target.id == "appMenuRecentlyClosedTabs") {
             PanelUI.showSubView(this.recentlyClosedTabsPanel, target);
           } else if (target.id == "appMenuRecentlyClosedWindows") {
@@ -274,7 +274,7 @@ export const CustomizableWidgets = [
     shortcutId: "key_find",
     tooltiptext: "find-button.tooltiptext3",
     onCommand(aEvent) {
-      let win = aEvent.target.ownerGlobal;
+      let win = aEvent.target.documentGlobal;
       if (win.gLazyFindCommand) {
         win.gLazyFindCommand("onFindCommand");
       }
@@ -294,7 +294,7 @@ export const CustomizableWidgets = [
     defaultArea: "nav-bar",
     _introducedByPref: "sidebar.revamp",
     onCommand(aEvent) {
-      const { SidebarController } = aEvent.target.ownerGlobal;
+      const { SidebarController } = aEvent.target.documentGlobal;
       if (lazy.sidebarRevampEnabled) {
         SidebarController.handleToolbarButtonClick();
       } else {
@@ -303,7 +303,7 @@ export const CustomizableWidgets = [
     },
     onCreated(aNode) {
       if (lazy.sidebarRevampEnabled) {
-        const { SidebarController } = aNode.ownerGlobal;
+        const { SidebarController } = aNode.documentGlobal;
         SidebarController.updateToolbarButton(aNode);
         aNode.setAttribute("overflows", "false");
         // Show the toolbar button badge by setting the badged attribute.
@@ -448,12 +448,12 @@ export const CustomizableWidgets = [
         },
         onWidgetOverflow(aWidgetNode) {
           if (aWidgetNode == node) {
-            node.ownerGlobal.updateEditUIVisibility();
+            node.documentGlobal.updateEditUIVisibility();
           }
         },
         onWidgetUnderflow(aWidgetNode) {
           if (aWidgetNode == node) {
-            node.ownerGlobal.updateEditUIVisibility();
+            node.documentGlobal.updateEditUIVisibility();
           }
         },
       };
@@ -545,7 +545,7 @@ if (Services.prefs.getBoolPref("identity.fxaccounts.enabled")) {
 
       let syncNowBtn = panelview.querySelector(".syncnow-label");
       let l10nId = syncNowBtn.getAttribute(
-        panelview.ownerGlobal.gSync._isCurrentlySyncing
+        panelview.documentGlobal.gSync._isCurrentlySyncing
           ? "syncing-data-l10n-id"
           : "sync-now-data-l10n-id"
       );
@@ -579,7 +579,7 @@ if (Services.prefs.getBoolPref("identity.fxaccounts.enabled")) {
     },
     handleEvent(aEvent) {
       let button = aEvent.target;
-      let { gSync } = button.ownerGlobal;
+      let { gSync } = button.documentGlobal;
       switch (aEvent.type) {
         case "mouseover":
           gSync.refreshSyncButtonsTooltip();
@@ -619,7 +619,7 @@ let preferencesButton = {
   id: "preferences-button",
   l10nId: "toolbar-settings-button",
   onCommand(aEvent) {
-    let win = aEvent.target.ownerGlobal;
+    let win = aEvent.target.documentGlobal;
     win.openPreferences(undefined);
   },
 };
@@ -677,7 +677,7 @@ if (Services.prefs.getBoolPref("privacy.panicButton.enabled")) {
       }
     },
     onViewShowing(aEvent) {
-      let win = aEvent.target.ownerGlobal;
+      let win = aEvent.target.documentGlobal;
       let doc = win.document;
       let eventBlocker = null;
       eventBlocker = doc.l10n.translateElements([aEvent.target]);
@@ -708,7 +708,7 @@ if (PrivateBrowsingUtils.enabled) {
     l10nId: "toolbar-button-new-private-window",
     shortcutId: "key_privatebrowsing",
     onCommand(e) {
-      let win = e.target.ownerGlobal;
+      let win = e.target.documentGlobal;
       win.OpenBrowserWindow({ private: true });
     },
   });

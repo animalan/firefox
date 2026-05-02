@@ -116,7 +116,7 @@ class PrintHelper {
   }
 
   async startPrint(condition = {}) {
-    this.sourceBrowser.ownerGlobal.document
+    this.sourceBrowser.documentGlobal.document
       .getElementById("cmd_print")
       .doCommand();
     return this.waitForDialog(condition);
@@ -149,7 +149,7 @@ class PrintHelper {
       );
     }).then(([doc]) => {
       doc.addEventListener("DOMContentLoaded", () => {
-        initFn(doc.ownerGlobal);
+        initFn(doc.documentGlobal);
       });
     });
   }
@@ -317,7 +317,7 @@ class PrintHelper {
   }
 
   get _tabDialogBox() {
-    return this.sourceBrowser.ownerGlobal.gBrowser.getTabDialogBox(
+    return this.sourceBrowser.documentGlobal.gBrowser.getTabDialogBox(
       this.sourceBrowser
     );
   }

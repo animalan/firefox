@@ -928,7 +928,7 @@ LoginManagerAuthPrompter.prototype = {
       return null;
     }
 
-    let chromeWin = browser.ownerGlobal;
+    let chromeWin = browser.documentGlobal;
     if (!chromeWin) {
       return null;
     }

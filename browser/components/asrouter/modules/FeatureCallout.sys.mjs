@@ -481,7 +481,7 @@ export class FeatureCallout {
       case "popupshowing":
         // If another panel is showing, close the tour.
         if (
-          event.target.ownerGlobal === this.win &&
+          event.target.documentGlobal === this.win &&
           event.target !== this._container &&
           event.target.localName === "panel" &&
           event.target.id !== "ctrlTab-panel" &&
@@ -804,7 +804,7 @@ export class FeatureCallout {
 
     // %triggerTab%
     if (this.browser && normalizedSelector.includes("%triggerTab%")) {
-      const triggerTab = this.browser.ownerGlobal.gBrowser?.getTabForBrowser(
+      const triggerTab = this.browser.documentGlobal.gBrowser?.getTabForBrowser(
         this.browser
       );
       if (!triggerTab) {
@@ -819,7 +819,7 @@ export class FeatureCallout {
 
     // %triggeredTabBookmark%
     if (normalizedSelector.includes("%triggeredTabBookmark%")) {
-      const gBrowser = this.browser?.ownerGlobal?.gBrowser;
+      const gBrowser = this.browser?.documentGlobal?.gBrowser;
       const tab = gBrowser?.getTabForBrowser(this.browser);
       const url = this.browser?.currentURI?.spec;
       const label = tab?.label;
@@ -990,7 +990,7 @@ export class FeatureCallout {
         case "end": {
           // Inline arrow, i.e. arrow is on one of the left/right edges.
           let isRTL =
-            this.ownerGlobal.getComputedStyle(this).direction === "rtl";
+            this.documentGlobal.getComputedStyle(this).direction === "rtl";
           let isRight = isRTL ^ (positionParts[1] === "start");
           let side = isRight ? "end" : "start";
           arrowPosition = `inline-${side}`;
@@ -2035,7 +2035,7 @@ export class FeatureCallout {
       if (doc !== this.doc) {
         let windowIndex = [
           ...Services.wm.getEnumerator("navigator:browser"),
-        ].indexOf(target.ownerGlobal);
+        ].indexOf(target.documentGlobal);
         source = `window${windowIndex + 1}: ${source}`;
       }
     }

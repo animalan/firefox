@@ -55,7 +55,7 @@ this.sidebarAction = class extends ExtensionAPI {
       if (ChromeUtils.getClassName(target) == "Window") {
         return this.globals;
       }
-      return this.tabContext.get(target.ownerGlobal);
+      return this.tabContext.get(target.documentGlobal);
     });
 
     // We need to ensure our elements are available before session restore.
@@ -124,7 +124,7 @@ this.sidebarAction = class extends ExtensionAPI {
   build() {
     // eslint-disable-next-line mozilla/balanced-listeners
     this.tabContext.on("tab-select", (evt, tab) => {
-      this.updateWindow(tab.ownerGlobal);
+      this.updateWindow(tab.documentGlobal);
     });
 
     let install = this.extension.startupReason === "ADDON_INSTALL";
@@ -243,7 +243,7 @@ this.sidebarAction = class extends ExtensionAPI {
       if (ChromeUtils.getClassName(target) == "Window") {
         this.updateWindow(target);
       } else if (target.selected) {
-        this.updateWindow(target.ownerGlobal);
+        this.updateWindow(target.documentGlobal);
       }
     } else {
       for (let window of windowTracker.browserWindows()) {
@@ -277,7 +277,7 @@ this.sidebarAction = class extends ExtensionAPI {
     let target = null;
     if (tabId != null) {
       target = tabTracker.getTab(tabId);
-      if (!this.extension.canAccessWindow(target.ownerGlobal)) {
+      if (!this.extension.canAccessWindow(target.documentGlobal)) {
         throw new ExtensionError(`Invalid tab ID: ${tabId}`);
       }
     } else if (windowId != null) {

@@ -93,8 +93,6 @@ class DOMEventTargetHelper : public dom::EventTarget,
 
   bool HasListenersFor(nsAtom* aTypeWithOn) const;
 
-  nsPIDOMWindowOuter* GetOwnerGlobalForBindingsInternal() override;
-
   // Like GetOwner, but only returns non-null if the window being returned is
   // current (in the "current document" sense of the HTML spec).
   nsPIDOMWindowInner* GetWindowIfCurrent() const;

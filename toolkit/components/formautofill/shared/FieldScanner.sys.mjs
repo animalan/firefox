@@ -141,9 +141,9 @@ export class FieldDetail {
       fieldDetail.browsingContextId =
         element.localName == "iframe"
           ? element.browsingContext.id
-          : BrowsingContext.getFromWindow(element.ownerGlobal).id;
+          : BrowsingContext.getFromWindow(element.documentGlobal).id;
     } catch {
-      /* unit test doesn't have ownerGlobal */
+      /* unit test doesn't have documentGlobal */
     }
 
     fieldDetail.isVisible = isVisible;

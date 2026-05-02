@@ -1015,7 +1015,7 @@ SimpleTest.promiseFocus = async function (
 
     browser =
       browsingContext == aObject ? aObject.top.embedderElement : aObject;
-    windowToFocus = browser.ownerGlobal;
+    windowToFocus = browser.documentGlobal;
   }
 
   if (!windowToFocus.document.hasFocus()) {

@@ -117,7 +117,7 @@ export let PromptTestUtils = {
       if (Element.isInstance(parent)) {
         // Parent is browser
         parentBrowser = parent;
-        parentWindow = parentBrowser.ownerGlobal;
+        parentWindow = parentBrowser.documentGlobal;
       } else if (parent.isChromeWindow) {
         // Parent is window
         parentWindow = parent;

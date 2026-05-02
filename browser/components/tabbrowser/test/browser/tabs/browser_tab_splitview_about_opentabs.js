@@ -495,7 +495,7 @@ add_task(async function test_aboutOpenTabsReplacedWhenLeftViewActive() {
   EventUtils.synthesizeMouseAtCenter(
     tabRowForTab2,
     {},
-    tabRowForTab2.ownerGlobal
+    tabRowForTab2.documentGlobal
   );
 
   await TestUtils.waitForCondition(

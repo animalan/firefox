@@ -229,9 +229,9 @@ class IPProtectionWidget {
    * @param {Event} event - the panel shown.
    */
   #onViewShowing(event) {
-    let { ownerGlobal } = event.target;
-    if (this.#panels.has(ownerGlobal)) {
-      let panel = this.#panels.get(ownerGlobal);
+    let { documentGlobal } = event.target;
+    if (this.#panels.has(documentGlobal)) {
+      let panel = this.#panels.get(documentGlobal);
       panel.showing(event.target);
     }
   }
@@ -242,9 +242,9 @@ class IPProtectionWidget {
    * @param {Event} event - the panel hidden.
    */
   #onViewHiding(event) {
-    let { ownerGlobal } = event.target;
-    if (this.#panels.has(ownerGlobal)) {
-      let panel = this.#panels.get(ownerGlobal);
+    let { documentGlobal } = event.target;
+    if (this.#panels.has(documentGlobal)) {
+      let panel = this.#panels.get(documentGlobal);
       panel.hiding();
     }
   }
@@ -255,10 +255,10 @@ class IPProtectionWidget {
    * @param {Document} doc - the document containing the panel.
    */
   #onBeforeCreated(doc) {
-    let { ownerGlobal } = doc;
-    if (ownerGlobal && !this.#panels.has(ownerGlobal)) {
-      let panel = new lazy.IPProtectionPanel(ownerGlobal, this.variant);
-      this.#panels.set(ownerGlobal, panel);
+    let { documentGlobal } = doc;
+    if (documentGlobal && !this.#panels.has(documentGlobal)) {
+      let panel = new lazy.IPProtectionPanel(documentGlobal, this.variant);
+      this.#panels.set(documentGlobal, panel);
     }
   }
 
@@ -269,7 +269,7 @@ class IPProtectionWidget {
    * @param {XULElement} toolbaritem - the widget toolbaritem.
    */
   #onCreated(toolbaritem) {
-    let window = toolbaritem.ownerGlobal;
+    let window = toolbaritem.documentGlobal;
     if (window && !this.#toolbarButtons.has(window)) {
       let toolbarButton = new lazy.IPProtectionToolbarButton(
         window,

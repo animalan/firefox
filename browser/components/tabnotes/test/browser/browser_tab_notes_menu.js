@@ -29,7 +29,7 @@ let activateTabContextMenuItem = async (
   let submenuItem;
   let submenuItemHiddenPromise;
 
-  const win = selectedTab.ownerGlobal;
+  const win = selectedTab.documentGlobal;
   const tabContextMenu = win.document.getElementById("tabContextMenu");
   const contextMenuShown = BrowserTestUtils.waitForEvent(
     tabContextMenu,

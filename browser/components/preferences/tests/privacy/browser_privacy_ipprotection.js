@@ -599,7 +599,7 @@ add_task(async function test_get_started_button() {
       );
 
       const waitForPanelShown = BrowserTestUtils.waitForEvent(
-        browser.ownerGlobal.document,
+        browser.documentGlobal.document,
         "popupshown",
         false,
         event => {
@@ -655,7 +655,7 @@ add_task(async function test_VPN_get_started_entrypoint() {
       let getStartedButton = settingGroup?.querySelector("#getStartedButton");
 
       const waitForPanelShown = BrowserTestUtils.waitForEvent(
-        browser.ownerGlobal.document,
+        browser.documentGlobal.document,
         "popupshown",
         false,
         event => event.target.getAttribute("viewId") === "PanelUI-ipprotection"

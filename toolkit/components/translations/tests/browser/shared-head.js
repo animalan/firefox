@@ -2356,8 +2356,8 @@ async function createTranslationsDoc(
  */
 function doubleRaf(doc) {
   return new Promise(resolve => {
-    doc.ownerGlobal.requestAnimationFrame(() => {
-      doc.ownerGlobal.requestAnimationFrame(() => {
+    doc.documentGlobal.requestAnimationFrame(() => {
+      doc.documentGlobal.requestAnimationFrame(() => {
         resolve(
           // Wait for a tick to be after anything that resolves with a double rAF.
           TestUtils.waitForTick()
@@ -3827,7 +3827,7 @@ async function setupAboutPreferences(
     EventUtils.synthesizeMouseAtCenter(
       document.getElementById("category-languages"),
       {},
-      document.ownerGlobal
+      document.documentGlobal
     );
     let event = await loaded;
     is(event.detail.category, "paneLanguages", "Loaded the correct pane");

@@ -184,7 +184,7 @@ testUrlsWithForm.forEach(testUrl => {
       "The first tab should be backgrounded"
     );
 
-    const dialogObserved = waitForMPDialog("authenticate", tab1.ownerGlobal);
+    const dialogObserved = waitForMPDialog("authenticate", tab1.documentGlobal);
 
     // In this case we will try to autofill while hidden, so look for the passwordmgr-processed-form
     // to be observed

@@ -351,7 +351,7 @@ var BrowserCommands = {
     // Switch to and focus the opener
     const openerBC = gBrowser.selectedBrowser.browsingContext.opener;
     const openerBrowser = openerBC.embedderElement;
-    const openerWindow = openerBrowser.ownerGlobal;
+    const openerWindow = openerBrowser.documentGlobal;
     const openerTab = openerWindow.gBrowser.getTabForBrowser(openerBrowser);
     openerWindow.gBrowser.selectedTab = openerTab;
     openerWindow.focus();

@@ -1681,14 +1681,19 @@ EventListenerManager* nsINode::GetExistingListenerManager() const {
 }
 
 Nullable<WindowProxyHolder> nsINode::GetDocumentGlobalForBindings() {
-  return OwnerDoc()->GetOwnerGlobalForBindings();
-}
-
-nsPIDOMWindowOuter* nsINode::GetOwnerGlobalForBindingsInternal() {
-  // FIXME(bz): This cast is a bit bogus.  See
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1515709
-  auto* window = static_cast<nsGlobalWindowInner*>(GetOwnerGlobal());
-  return window ? nsPIDOMWindowOuter::GetFromCurrentInner(window) : nullptr;
+  nsIGlobalObject* global = GetDocumentGlobal();
+  if (!global) {
+    return {};
+  }
+  auto* win = nsGlobalWindowInner::Cast(global->GetAsInnerWindow());
+  if (!win) {
+    return {};
+  }
+  auto* bc = win->GetBrowsingContext();
+  if (!bc) {
+    return {};
+  }
+  return WindowProxyHolder(bc);
 }
 
 nsIGlobalObject* nsINode::GetDocumentGlobal() const {

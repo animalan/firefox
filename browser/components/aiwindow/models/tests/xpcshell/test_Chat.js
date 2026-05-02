@@ -721,7 +721,7 @@ add_task(
       sb.stub(openAIEngine, "getFxAccountToken").resolves("mock_token");
 
       const mockBrowser = {
-        ownerGlobal: {
+        documentGlobal: {
           closed: false,
           gBrowser: {
             getTabForBrowser: () => ({ selected: true }),
