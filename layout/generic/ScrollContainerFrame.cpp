@@ -3569,11 +3569,12 @@ void ScrollContainerFrame::AppendScrollPartsTo(nsDisplayListBuilder* aBuilder,
           nsIFrame::DisplayChildFlag::ForceStackingContext);
     }
 
-    // DisplayChildFlag::ForceStackingContext put everything into
-    // partList.PositionedDescendants().
-    if (partList.PositionedDescendants()->IsEmpty()) {
+    if (partList.IsEmpty()) {
       continue;
     }
+
+    nsDisplayList list(aBuilder);
+    partList.SerializeWithCorrectZOrder(&list, scrollPart->GetContent());
 
     if (createLayer) {
       appendToTopFlags |= APPEND_OWN_LAYER;
@@ -3607,8 +3608,8 @@ void ScrollContainerFrame::AppendScrollPartsTo(nsDisplayListBuilder* aBuilder,
       nsDisplayListBuilder::AutoCurrentScrollbarInfoSetter infoSetter(
           aBuilder, scrollTargetId, scrollDirection, createLayer);
 
-      ::AppendToTop(aBuilder, aLists, partList.PositionedDescendants(),
-                    scrollPart, this, appendToTopFlags);
+      ::AppendToTop(aBuilder, aLists, &list, scrollPart, this,
+                    appendToTopFlags);
     }
   }
 }
