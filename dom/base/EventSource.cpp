@@ -570,8 +570,8 @@ nsresult EventSourceImpl::AddGlobalObservers(nsIGlobalObject* aGlobal) {
   MOZ_ASSERT(mIsMainThread);
   MOZ_ASSERT(!mIsShutDown);
 
-  GlobalTeardownObserver::BindToOwner(aGlobal);
-  GlobalFreezeObserver::BindToOwner(aGlobal);
+  GlobalTeardownObserver::BindToGlobal(aGlobal);
+  GlobalFreezeObserver::BindToGlobal(aGlobal);
 
   return NS_OK;
 }

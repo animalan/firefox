@@ -35,7 +35,7 @@ class GlobalFreezeObserver : public nsISupports,
  protected:
   virtual ~GlobalFreezeObserver() { DisconnectFreezeObserver(); }
 
-  void BindToOwner(nsIGlobalObject* aOwner) {
+  void BindToGlobal(nsIGlobalObject* aOwner) {
     MOZ_ASSERT(!mOwner);
 
     if (aOwner) {

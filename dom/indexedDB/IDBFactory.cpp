@@ -109,7 +109,7 @@ Result<RefPtr<IDBFactory>, nsresult> IDBFactory::CreateForWindow(
 
     auto factory =
         MakeRefPtr<IDBFactory>(IDBFactoryGuard{}, /* aAllowed */ false);
-    factory->BindToOwner(aWindow->AsGlobal());
+    factory->BindToGlobal(aWindow->AsGlobal());
     factory->mInnerWindowID = aWindow->WindowID();
 
     return factory;
@@ -138,7 +138,7 @@ Result<RefPtr<IDBFactory>, nsresult> IDBFactory::CreateForWindow(
   auto factory = MakeRefPtr<IDBFactory>(IDBFactoryGuard{}, /* aAllowed */ true);
   factory->mPrincipalInfo = std::move(principalInfo);
 
-  factory->BindToOwner(aWindow->AsGlobal());
+  factory->BindToGlobal(aWindow->AsGlobal());
 
   factory->mBrowserChild = BrowserChild::GetFrom(aWindow);
   factory->mEventTarget =
@@ -168,7 +168,7 @@ Result<RefPtr<IDBFactory>, nsresult> IDBFactory::CreateForMainThreadJS(
   if (!AllowedForPrincipal(principal, &isSystem)) {
     auto factory =
         MakeRefPtr<IDBFactory>(IDBFactoryGuard{}, /* aAllowed */ false);
-    factory->BindToOwner(aGlobal);
+    factory->BindToGlobal(aGlobal);
 
     return factory;
   }
@@ -195,7 +195,7 @@ Result<RefPtr<IDBFactory>, nsresult> IDBFactory::CreateForWorker(
   if (!aPrincipalInfo) {
     auto factory =
         MakeRefPtr<IDBFactory>(IDBFactoryGuard{}, /* aAllowed */ false);
-    factory->BindToOwner(aGlobal);
+    factory->BindToGlobal(aGlobal);
     factory->mInnerWindowID = aInnerWindowID;
 
     return factory;
@@ -243,7 +243,7 @@ Result<RefPtr<IDBFactory>, nsresult> IDBFactory::CreateInternal(
 
     auto factory =
         MakeRefPtr<IDBFactory>(IDBFactoryGuard{}, /* aAllowed */ false);
-    factory->BindToOwner(aGlobal);
+    factory->BindToGlobal(aGlobal);
     factory->mInnerWindowID = aInnerWindowID;
 
     return factory;
@@ -251,7 +251,7 @@ Result<RefPtr<IDBFactory>, nsresult> IDBFactory::CreateInternal(
 
   auto factory = MakeRefPtr<IDBFactory>(IDBFactoryGuard{}, /* aAllowed */ true);
   factory->mPrincipalInfo = std::move(aPrincipalInfo);
-  factory->BindToOwner(aGlobal);
+  factory->BindToGlobal(aGlobal);
   factory->mEventTarget = GetCurrentSerialEventTarget();
   factory->mInnerWindowID = aInnerWindowID;
 

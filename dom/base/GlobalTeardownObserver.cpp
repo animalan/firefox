@@ -13,7 +13,7 @@ GlobalTeardownObserver::GlobalTeardownObserver() = default;
 GlobalTeardownObserver::GlobalTeardownObserver(nsIGlobalObject* aGlobalObject,
                                                bool aHasOrHasHadOwnerWindow)
     : mHasOrHasHadOwnerWindow(aHasOrHasHadOwnerWindow) {
-  BindToOwner(aGlobalObject);
+  BindToGlobal(aGlobalObject);
 }
 
 GlobalTeardownObserver::~GlobalTeardownObserver() {
@@ -28,7 +28,7 @@ nsGlobalWindowInner* GlobalTeardownObserver::GetOwnerWindow() const {
              : nullptr;
 }
 
-void GlobalTeardownObserver::BindToOwner(nsIGlobalObject* aOwner) {
+void GlobalTeardownObserver::BindToGlobal(nsIGlobalObject* aOwner) {
   MOZ_ASSERT(!mParentObject);
 
   if (aOwner) {
