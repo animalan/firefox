@@ -51,6 +51,10 @@ class nsAnimationManager final
   void RemoveNamedTimelineAnimation(const nsAtom* aName,
                                     mozilla::dom::CSSAnimation* aAnimation);
 
+  void UpdateNamedTimelineAnimations(
+      const nsTArray<RefPtr<const nsAtom>>& aChanged);
+  void UpdateAllNamedTimelineAnimations();
+
   // Utility function to walk through |aIter| to find the Keyframe with
   // matching offset and timing function but stopping as soon as the offset
   // differs from |aOffset| (i.e. it assumes a sorted iterator).

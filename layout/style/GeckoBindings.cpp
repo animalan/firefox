@@ -555,20 +555,25 @@ void Gecko_UpdateAnimations(const Element* aElement,
   if (aTasks & UpdateAnimationsTasks::TimelineScopes) {
     presContext->TimelineManager()->UpdateTimelineScopes(element,
                                                          aComputedData);
+    // We could try to limit the impact here, at least for changes involving not
+    // `all`. However, defer any such optimization until after bug 2024012.
+    presContext->AnimationManager()->UpdateAllNamedTimelineAnimations();
   }
 
   // Handle scroll/view timelines first because CSS animations may refer to the
   // timeline defined by itself.
   if (aTasks & UpdateAnimationsTasks::ScrollTimelines) {
-    presContext->TimelineManager()->UpdateTimelines(
+    const auto affected = presContext->TimelineManager()->UpdateTimelines(
         const_cast<Element*>(element), pseudoRequest, aComputedData,
         TimelineManager::ProgressTimelineType::Scroll);
+    presContext->AnimationManager()->UpdateNamedTimelineAnimations(affected);
   }
 
   if (aTasks & UpdateAnimationsTasks::ViewTimelines) {
-    presContext->TimelineManager()->UpdateTimelines(
+    const auto affected = presContext->TimelineManager()->UpdateTimelines(
         const_cast<Element*>(element), pseudoRequest, aComputedData,
         TimelineManager::ProgressTimelineType::View);
+    presContext->AnimationManager()->UpdateNamedTimelineAnimations(affected);
   }
 
   if (aTasks & UpdateAnimationsTasks::CSSAnimations) {
