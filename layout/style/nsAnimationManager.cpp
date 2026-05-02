@@ -265,7 +265,7 @@ static void UpdateOldAnimationPropertiesWithNew(
 
 static already_AddRefed<dom::AnimationTimeline> GetNamedProgressTimeline(
     dom::Document* aDocument, const NonOwningAnimationTarget& aTarget,
-    nsAtom* aName) {
+    const nsAtom* aName) {
   auto* presContext = aDocument->GetPresContext();
   const auto* timelineManager =
       presContext ? presContext->TimelineManager() : nullptr;
@@ -518,6 +518,62 @@ void nsAnimationManager::UpdateAnimations(
 void nsAnimationManager::RemoveNamedTimelineAnimation(
     const nsAtom* aName, mozilla::dom::CSSAnimation* aAnimation) {
   RemoveCorrespondingAnimation(aName, aAnimation, mAnimationsWithNamedTimeline);
+}
+
+static void UpdateNamedTimelineAnimation(dom::Document* aDocument,
+                                         CSSAnimation* aAnimation,
+                                         const nsAtom* aTimelineName) {
+  if (aTimelineName != aAnimation->GetTimelineName()) {
+    return;
+  }
+  const auto target = aAnimation->GetTargetForAnimation();
+  const RefPtr<dom::AnimationTimeline> newTimeline =
+      GetNamedProgressTimeline(aDocument, target, aTimelineName);
+  const auto* oldTimeline = aAnimation->GetTimeline();
+  if (oldTimeline == newTimeline) {
+    return;
+  }
+  aAnimation->SetTimeline(newTimeline, aTimelineName);
+}
+
+#ifdef DEBUG
+static void CheckNamedTimelineMap(
+    nsAnimationManager::TimelineNamesToAnimationMap&
+        aTimelineNamesToAnimationMap) {
+  for (const auto& key : aTimelineNamesToAnimationMap.Keys()) {
+    MOZ_ASSERT(key != nsGkAtoms::_empty);
+  }
+}
+#endif
+
+void nsAnimationManager::UpdateNamedTimelineAnimations(
+    const nsTArray<RefPtr<const nsAtom>>& aChanged) {
+  auto* document = mPresContext->Document();
+  for (const auto& name : aChanged) {
+    auto entries = mAnimationsWithNamedTimeline.Lookup(name);
+    if (!entries) {
+      continue;
+    }
+    for (auto& animation : *entries) {
+      UpdateNamedTimelineAnimation(document, animation.get(), name.get());
+    }
+  }
+#ifdef DEBUG
+  CheckNamedTimelineMap(mAnimationsWithNamedTimeline);
+#endif
+}
+
+void nsAnimationManager::UpdateAllNamedTimelineAnimations() {
+  auto* document = mPresContext->Document();
+  for (auto& entry : mAnimationsWithNamedTimeline) {
+    const auto& name = entry.GetKey();
+    for (auto& animation : entry.GetData()) {
+      UpdateNamedTimelineAnimation(document, animation.get(), name);
+    }
+  }
+#ifdef DEBUG
+  CheckNamedTimelineMap(mAnimationsWithNamedTimeline);
+#endif
 }
 
 void nsAnimationManager::DoUpdateAnimations(

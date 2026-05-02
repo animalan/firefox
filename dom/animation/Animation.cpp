@@ -406,6 +406,15 @@ void Animation::SetTimelineNoUpdate(AnimationTimeline* aTimeline,
     SetCurrentTimeNoUpdate(
         TimeDuration(EffectEnd().MultDouble(previousProgress.Value())));
   }
+  if (fromFiniteTimeline && !aTimeline && mTimelineName) {
+    // Make sure to remove any pending playing task, if we stopped referring to
+    // an existing named timeline.
+    Document* doc = GetRenderedDocument();
+    auto* tracker = doc ? doc->GetScrollTimelineAnimationTracker() : nullptr;
+    if (tracker) {
+      tracker->RemovePending(*this);
+    }
+  }
 
   // 10. If the start time of animation is resolved, make animation’s hold time
   // unresolved.
