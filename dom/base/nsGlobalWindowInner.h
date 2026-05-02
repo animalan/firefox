@@ -295,7 +295,7 @@ class nsGlobalWindowInner final : public mozilla::dom::EventTarget,
 
   bool ComputeDefaultWantsUntrusted(mozilla::ErrorResult& aRv) final;
 
-  nsIGlobalObject* GetOwnerGlobal() const override;
+  nsIGlobalObject* GetRelevantGlobal() const override;
 
   EventTarget* GetTargetForDOMEvent() override;
 
@@ -1542,7 +1542,7 @@ inline nsISupports* ToCanonicalSupports(nsGlobalWindowInner* p) {
 // XXX: EWW - This is an awful hack - let's not do this
 #include "nsGlobalWindowOuter.h"
 
-inline nsIGlobalObject* nsGlobalWindowInner::GetOwnerGlobal() const {
+inline nsIGlobalObject* nsGlobalWindowInner::GetRelevantGlobal() const {
   return const_cast<nsGlobalWindowInner*>(this);
 }
 

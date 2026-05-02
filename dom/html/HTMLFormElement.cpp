@@ -763,7 +763,7 @@ nsresult HTMLFormElement::BuildSubmission(HTMLFormSubmission** aFormSubmission,
   //
   auto encoding = GetSubmitEncoding()->OutputEncoding();
   RefPtr<FormData> formData =
-      new FormData(GetOwnerGlobal(), encoding, submitter);
+      new FormData(GetRelevantGlobal(), encoding, submitter);
   rv = ConstructEntryList(formData);
   NS_ENSURE_SUBMIT_SUCCESS(rv);
 
@@ -1694,7 +1694,7 @@ bool HTMLFormElement::CheckValidFormSubmission() {
   }
 
   AutoJSAPI jsapi;
-  if (!jsapi.Init(GetOwnerGlobal())) {
+  if (!jsapi.Init(GetRelevantGlobal())) {
     return false;
   }
   JS::Rooted<JS::Value> detail(jsapi.cx());

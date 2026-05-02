@@ -6331,7 +6331,7 @@ static void SetAndFilterHTML(
 
   // Step 2. Let sanitizer be the result of calling get a sanitizer instance
   // from options with options and safe.
-  nsCOMPtr<nsIGlobalObject> global = aTarget->GetOwnerGlobal();
+  nsCOMPtr<nsIGlobalObject> global = aTarget->GetRelevantGlobal();
   if (!global) {
     aError.ThrowInvalidStateError("Missing owner global.");
     return;

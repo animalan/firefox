@@ -5913,25 +5913,25 @@ void HTMLMediaElement::EndSrcMediaStreamPlayback() {
 }
 
 static already_AddRefed<AudioTrack> CreateAudioTrack(
-    AudioStreamTrack* aStreamTrack, nsIGlobalObject* aOwnerGlobal) {
+    AudioStreamTrack* aStreamTrack, nsIGlobalObject* aRelevantGlobal) {
   nsAutoString id;
   nsAutoString label;
   aStreamTrack->GetId(id);
   aStreamTrack->GetLabel(label, CallerType::System);
 
-  return MediaTrackList::CreateAudioTrack(aOwnerGlobal, id, u"main"_ns, label,
-                                          u""_ns, true, aStreamTrack);
+  return MediaTrackList::CreateAudioTrack(aRelevantGlobal, id, u"main"_ns,
+                                          label, u""_ns, true, aStreamTrack);
 }
 
 static already_AddRefed<VideoTrack> CreateVideoTrack(
-    VideoStreamTrack* aStreamTrack, nsIGlobalObject* aOwnerGlobal) {
+    VideoStreamTrack* aStreamTrack, nsIGlobalObject* aRelevantGlobal) {
   nsAutoString id;
   nsAutoString label;
   aStreamTrack->GetId(id);
   aStreamTrack->GetLabel(label, CallerType::System);
 
-  return MediaTrackList::CreateVideoTrack(aOwnerGlobal, id, u"main"_ns, label,
-                                          u""_ns, aStreamTrack);
+  return MediaTrackList::CreateVideoTrack(aRelevantGlobal, id, u"main"_ns,
+                                          label, u""_ns, aStreamTrack);
 }
 
 void HTMLMediaElement::NotifyMediaStreamTrackAdded(
@@ -5954,7 +5954,7 @@ void HTMLMediaElement::NotifyMediaStreamTrackAdded(
   if (AudioStreamTrack* t = aTrack->AsAudioStreamTrack()) {
     MOZ_DIAGNOSTIC_ASSERT(AudioTracks(), "Element can't have been unlinked");
     RefPtr<AudioTrack> audioTrack =
-        CreateAudioTrack(t, AudioTracks()->GetOwnerGlobal());
+        CreateAudioTrack(t, AudioTracks()->GetRelevantGlobal());
     AudioTracks()->AddTrack(audioTrack);
   } else if (VideoStreamTrack* t = aTrack->AsVideoStreamTrack()) {
     // TODO: Fix this per the spec on bug 1273443.
@@ -5963,7 +5963,7 @@ void HTMLMediaElement::NotifyMediaStreamTrackAdded(
     }
     MOZ_DIAGNOSTIC_ASSERT(VideoTracks(), "Element can't have been unlinked");
     RefPtr<VideoTrack> videoTrack =
-        CreateVideoTrack(t, VideoTracks()->GetOwnerGlobal());
+        CreateVideoTrack(t, VideoTracks()->GetRelevantGlobal());
     VideoTracks()->AddTrack(videoTrack);
     // New MediaStreamTrack added, set the new added video track as selected
     // video track when there is no selected track.
@@ -8241,7 +8241,7 @@ void HTMLMediaElement::ConstructMediaTracks(const MediaInfo* aInfo) {
     LOG(LogLevel::Debug, ("%p ConstructMediaTracks, add an audio track", this));
     const TrackInfo& info = aInfo->mAudio;
     RefPtr<AudioTrack> track = MediaTrackList::CreateAudioTrack(
-        audioList->GetOwnerGlobal(), info.mId, info.mKind, info.mLabel,
+        audioList->GetRelevantGlobal(), info.mId, info.mKind, info.mLabel,
         info.mLanguage, info.mEnabled);
 
     audioList->AddTrack(track);
@@ -8252,7 +8252,7 @@ void HTMLMediaElement::ConstructMediaTracks(const MediaInfo* aInfo) {
     LOG(LogLevel::Debug, ("%p ConstructMediaTracks, add a video track", this));
     const TrackInfo& info = aInfo->mVideo;
     RefPtr<VideoTrack> track = MediaTrackList::CreateVideoTrack(
-        videoList->GetOwnerGlobal(), info.mId, info.mKind, info.mLabel,
+        videoList->GetRelevantGlobal(), info.mId, info.mKind, info.mLabel,
         info.mLanguage);
 
     videoList->AddTrack(track);

@@ -226,7 +226,7 @@ void ClientWebGLContext::JsWarning(const std::string& utf8) const {
       global = doc->GetScopeObject();
     }
   } else if (mOffscreenCanvas) {
-    global = mOffscreenCanvas->GetOwnerGlobal();
+    global = mOffscreenCanvas->GetRelevantGlobal();
   }
 
   dom::AutoJSAPI api;
@@ -3455,8 +3455,8 @@ CanvasUtils::ImageExtraction ImageExtractionResult(
   if (aOffscreenCanvas) {
     return CanvasUtils::ImageExtractionResult(
         aOffscreenCanvas, nsContentUtils::GetCurrentJSContext(),
-        aOffscreenCanvas->GetOwnerGlobal()
-            ? aOffscreenCanvas->GetOwnerGlobal()->PrincipalOrNull()
+        aOffscreenCanvas->GetRelevantGlobal()
+            ? aOffscreenCanvas->GetRelevantGlobal()->PrincipalOrNull()
             : nullptr);
   }
 
@@ -6006,7 +6006,7 @@ uint32_t ClientWebGLContext::GetPrincipalHashValue() const {
     return mCanvasElement->NodePrincipal()->GetHashValue();
   }
   if (mOffscreenCanvas) {
-    nsIGlobalObject* global = mOffscreenCanvas->GetOwnerGlobal();
+    nsIGlobalObject* global = mOffscreenCanvas->GetRelevantGlobal();
     if (global) {
       nsIPrincipal* principal = global->PrincipalOrNull();
       if (principal) {

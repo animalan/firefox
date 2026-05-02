@@ -157,7 +157,7 @@ SpeechRecognition::SpeechRecognition(nsPIDOMWindowInner* aOwnerWindow)
       mEndpointer(kSAMPLE_RATE),
       mAudioSamplesPerChunk(mEndpointer.FrameSize()),
       mSpeechDetectionTimer(NS_NewTimer()),
-      mSpeechGrammarList(new SpeechGrammarList(GetOwnerGlobal())),
+      mSpeechGrammarList(new SpeechGrammarList(GetRelevantGlobal())),
       mContinuous(false),
       mInterimResults(false),
       mMaxAlternatives(1) {

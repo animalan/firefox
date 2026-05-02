@@ -57,7 +57,7 @@ class nsWindowRoot final : public nsPIWindowRoot {
     mParent = aTarget;
   }
   mozilla::dom::EventTarget* GetParentTarget() override { return mParent; }
-  nsIGlobalObject* GetOwnerGlobal() const override;
+  nsIGlobalObject* GetRelevantGlobal() const override;
 
   nsIGlobalObject* GetParentObject();
 

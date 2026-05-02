@@ -6510,7 +6510,7 @@ bool nsGlobalWindowOuter::FindOuter(const nsAString& aString,
 // EventTarget
 //*****************************************************************************
 
-nsIGlobalObject* nsGlobalWindowOuter::GetOwnerGlobal() const {
+nsIGlobalObject* nsGlobalWindowOuter::GetRelevantGlobal() const {
   return GetCurrentInnerWindowInternal(this);
 }
 

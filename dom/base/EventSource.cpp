@@ -1467,7 +1467,7 @@ void EventSourceImpl::DispatchAllMessageEvents() {
       return;
     }
 
-    if (NS_WARN_IF(!jsapi.Init(lock->mEventSource->GetOwnerGlobal()))) {
+    if (NS_WARN_IF(!jsapi.Init(lock->mEventSource->GetRelevantGlobal()))) {
       return;
     }
   }

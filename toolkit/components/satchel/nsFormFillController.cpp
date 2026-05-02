@@ -729,7 +729,7 @@ nsFormFillController::HandleEvent(Event* aEvent) {
 
   mInvalidatePreviousResult = false;
 
-  nsIGlobalObject* global = target->GetOwnerGlobal();
+  nsIGlobalObject* global = target->GetRelevantGlobal();
   NS_ENSURE_STATE(global);
   nsPIDOMWindowInner* inner = global->GetAsInnerWindow();
   NS_ENSURE_STATE(inner);

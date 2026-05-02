@@ -1697,10 +1697,10 @@ Nullable<WindowProxyHolder> nsINode::GetDocumentGlobalForBindings() {
 }
 
 nsIGlobalObject* nsINode::GetDocumentGlobal() const {
-  return OwnerDoc()->GetOwnerGlobal();
+  return OwnerDoc()->GetRelevantGlobal();
 }
 
-nsIGlobalObject* nsINode::GetOwnerGlobal() const {
+nsIGlobalObject* nsINode::GetRelevantGlobal() const {
   if (auto* wrapper = GetWrapperPreserveColor()) {
     if (auto* global = xpc::NativeGlobal(wrapper);
         global && global->IsInnerWindow()) {
