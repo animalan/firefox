@@ -816,7 +816,8 @@ nsWindow::nsWindow()
       mFrameState(std::in_place, this),
       mMicaBackdrop(false),
       mLastPaintEndTime(TimeStamp::Now()),
-      mCachedHitTestTime(TimeStamp::Now()) {
+      mCachedHitTestTime(TimeStamp::Now()),
+      mSizeConstraintsScale(GetDefaultScale().scale) {
   if (!gInitializedVirtualDesktopManager) {
     TaskController::Get()->AddTask(
         MakeAndAddRef<InitializeVirtualDesktopManagerTask>());
@@ -1923,48 +1924,46 @@ void nsWindow::SetInputRegion(const InputRegion& aInputRegion) {
 void nsWindow::SetSizeConstraints(const SizeConstraints& aConstraints) {
   SizeConstraints c = aConstraints;
 
-  // Constraints are in desktop pixels; convert device-pixel values coming
-  // from the OS and the compositor into desktop pixels for the comparison.
-  //
-  // TODO: If GetDesktopToDeviceScale is always 1 now we could simplify.
-  const double scale = GetDesktopToDeviceScale().scale;
-
   if (mWindowType != WindowType::Popup && mResizable) {
-    const int32_t minTrackW =
-        NSToIntRound(::GetSystemMetrics(SM_CXMINTRACK) / scale);
-    const int32_t minTrackH =
-        NSToIntRound(::GetSystemMetrics(SM_CYMINTRACK) / scale);
-    c.mMinSize.width = std::max(minTrackW, c.mMinSize.width);
-    c.mMinSize.height = std::max(minTrackH, c.mMinSize.height);
+    c.mMinSize.width =
+        std::max(int32_t(::GetSystemMetrics(SM_CXMINTRACK)), c.mMinSize.width);
+    c.mMinSize.height =
+        std::max(int32_t(::GetSystemMetrics(SM_CYMINTRACK)), c.mMinSize.height);
   }
 
   if (mMaxTextureSize > 0) {
     // We can't make ThebesLayers bigger than this anyway.. no point it letting
     // a window grow bigger as we won't be able to draw content there in
     // general.
-    const int32_t maxTexDesktop = NSToIntRound(mMaxTextureSize / scale);
-    c.mMaxSize.width = std::min(c.mMaxSize.width, maxTexDesktop);
-    c.mMaxSize.height = std::min(c.mMaxSize.height, maxTexDesktop);
+    c.mMaxSize.width = std::min(c.mMaxSize.width, mMaxTextureSize);
+    c.mMaxSize.height = std::min(c.mMaxSize.height, mMaxTextureSize);
   }
+
+  mSizeConstraintsScale = GetDefaultScale().scale;
 
   nsIWidget::SetSizeConstraints(c);
 }
 
-// Size constraints are stored in desktop pixels; convert them to device pixels
-// for use with OS messages that operate in device pixels.
-nsWindow::DeviceSizeConstraints nsWindow::GetDeviceSizeConstraints() const {
-  // TODO: If GetDesktopToDeviceScale is always 1 now we could simplify.
-  const double scale = GetDesktopToDeviceScale().scale;
-  return {
-      NSToIntRound(mSizeConstraints.mMinSize.width * scale),
-      NSToIntRound(mSizeConstraints.mMinSize.height * scale),
-      mSizeConstraints.mMaxSize.width == NS_MAXSIZE
-          ? NS_MAXSIZE
-          : NSToIntRound(mSizeConstraints.mMaxSize.width * scale),
-      mSizeConstraints.mMaxSize.height == NS_MAXSIZE
-          ? NS_MAXSIZE
-          : NSToIntRound(mSizeConstraints.mMaxSize.height * scale),
-  };
+const SizeConstraints nsWindow::GetSizeConstraints() {
+  double scale = GetDefaultScale().scale;
+  if (mSizeConstraintsScale == scale || mSizeConstraintsScale == 0.0) {
+    return mSizeConstraints;
+  }
+  scale /= mSizeConstraintsScale;
+  SizeConstraints c = mSizeConstraints;
+  if (c.mMinSize.width != NS_MAXSIZE) {
+    c.mMinSize.width = NSToIntRound(c.mMinSize.width * scale);
+  }
+  if (c.mMinSize.height != NS_MAXSIZE) {
+    c.mMinSize.height = NSToIntRound(c.mMinSize.height * scale);
+  }
+  if (c.mMaxSize.width != NS_MAXSIZE) {
+    c.mMaxSize.width = NSToIntRound(c.mMaxSize.width * scale);
+  }
+  if (c.mMaxSize.height != NS_MAXSIZE) {
+    c.mMaxSize.height = NSToIntRound(c.mMaxSize.height * scale);
+  }
+  return c;
 }
 
 // Move this component
@@ -3855,10 +3854,8 @@ WindowRenderer* nsWindow::GetWindowRenderer() {
     if (knowsCompositor) {
       SizeConstraints c = mSizeConstraints;
       mMaxTextureSize = knowsCompositor->GetMaxTextureSize();
-      const double scale = GetDesktopToDeviceScale().scale;
-      const int32_t maxTexDesktop = NSToIntRound(mMaxTextureSize / scale);
-      c.mMaxSize.width = std::min(c.mMaxSize.width, maxTexDesktop);
-      c.mMaxSize.height = std::min(c.mMaxSize.height, maxTexDesktop);
+      c.mMaxSize.width = std::min(c.mMaxSize.width, mMaxTextureSize);
+      c.mMaxSize.height = std::min(c.mMaxSize.height, mMaxTextureSize);
       nsIWidget::SetSizeConstraints(c);
     }
   }
@@ -5406,8 +5403,6 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
         LPRECT rect = (LPRECT)lParam;
         int32_t newWidth, newHeight;
 
-        const auto [minW, minH, maxW, maxH] = GetDeviceSizeConstraints();
-
         // The following conditions and switch statement borrow heavily from the
         // Chromium source code from
         // https://chromium.googlesource.com/chromium/src/+/456d6e533cfb4531995e0ef52c279d4b5aa8a352/ui/views/window/window_resize_utils.cc#45
@@ -5415,21 +5410,21 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
             wParam == WMSZ_TOPLEFT || wParam == WMSZ_BOTTOMLEFT) {
           newWidth = rect->right - rect->left;
           newHeight = newWidth / mAspectRatio;
-          if (newHeight < minH) {
-            newHeight = minH;
+          if (newHeight < mSizeConstraints.mMinSize.height) {
+            newHeight = mSizeConstraints.mMinSize.height;
             newWidth = newHeight * mAspectRatio;
-          } else if (newHeight > maxH) {
-            newHeight = maxH;
+          } else if (newHeight > mSizeConstraints.mMaxSize.height) {
+            newHeight = mSizeConstraints.mMaxSize.height;
             newWidth = newHeight * mAspectRatio;
           }
         } else {
           newHeight = rect->bottom - rect->top;
           newWidth = newHeight * mAspectRatio;
-          if (newWidth < minW) {
-            newWidth = minW;
+          if (newWidth < mSizeConstraints.mMinSize.width) {
+            newWidth = mSizeConstraints.mMinSize.width;
             newHeight = newWidth / mAspectRatio;
-          } else if (newWidth > maxW) {
-            newWidth = maxW;
+          } else if (newWidth > mSizeConstraints.mMaxSize.width) {
+            newWidth = mSizeConstraints.mMaxSize.width;
             newHeight = newWidth / mAspectRatio;
           }
         }
@@ -5656,17 +5651,20 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
     case WM_GETMINMAXINFO: {
       MINMAXINFO* mmi = (MINMAXINFO*)lParam;
-      const auto [minW, minH, maxW, maxH] = GetDeviceSizeConstraints();
       // Set the constraints. The minimum size should also be constrained to the
       // default window maximum size so that it fits on screen.
       mmi->ptMinTrackSize.x =
           std::min((int32_t)mmi->ptMaxTrackSize.x,
-                   std::max((int32_t)mmi->ptMinTrackSize.x, minW));
+                   std::max((int32_t)mmi->ptMinTrackSize.x,
+                            mSizeConstraints.mMinSize.width));
       mmi->ptMinTrackSize.y =
           std::min((int32_t)mmi->ptMaxTrackSize.y,
-                   std::max((int32_t)mmi->ptMinTrackSize.y, minH));
-      mmi->ptMaxTrackSize.x = std::min((int32_t)mmi->ptMaxTrackSize.x, maxW);
-      mmi->ptMaxTrackSize.y = std::min((int32_t)mmi->ptMaxTrackSize.y, maxH);
+                   std::max((int32_t)mmi->ptMinTrackSize.y,
+                            mSizeConstraints.mMinSize.height));
+      mmi->ptMaxTrackSize.x = std::min((int32_t)mmi->ptMaxTrackSize.x,
+                                       mSizeConstraints.mMaxSize.width);
+      mmi->ptMaxTrackSize.y = std::min((int32_t)mmi->ptMaxTrackSize.y,
+                                       mSizeConstraints.mMaxSize.height);
     } break;
 
     case WM_SETFOCUS: {

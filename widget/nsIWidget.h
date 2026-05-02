@@ -218,6 +218,7 @@ enum TouchPointerState : uint8_t {
 #endif
 
 #define MOZ_WIDGET_MAX_SIZE 16384
+#define MOZ_WIDGET_INVALID_SCALE 0.0
 
 // Must be kept in sync with xpcom/rust/xpcom/src/interfaces/nonidl.rs
 #define NS_IWIDGET_IID \
@@ -306,17 +307,17 @@ namespace mozilla::widget {
 
 /**
  * Size constraints for setting the minimum and maximum size of a widget.
- * Values are in desktop pixels, so they do not depend on the widget's
- * current backing scale factor. Each widget implementation converts to
- * its native coordinate system using its own scale factor when applying
- * the constraints.
+ * Values are in device pixels.
  */
 struct SizeConstraints {
-  SizeConstraints() : mMaxSize(MOZ_WIDGET_MAX_SIZE, MOZ_WIDGET_MAX_SIZE) {}
+  SizeConstraints()
+      : mMaxSize(MOZ_WIDGET_MAX_SIZE, MOZ_WIDGET_MAX_SIZE),
+        mScale(MOZ_WIDGET_INVALID_SCALE) {}
 
-  SizeConstraints(mozilla::DesktopIntSize aMinSize,
-                  mozilla::DesktopIntSize aMaxSize)
-      : mMinSize(aMinSize), mMaxSize(aMaxSize) {
+  SizeConstraints(mozilla::LayoutDeviceIntSize aMinSize,
+                  mozilla::LayoutDeviceIntSize aMaxSize,
+                  mozilla::DesktopToLayoutDeviceScale aScale)
+      : mMinSize(aMinSize), mMaxSize(aMaxSize), mScale(aScale) {
     if (mMaxSize.width > MOZ_WIDGET_MAX_SIZE) {
       mMaxSize.width = MOZ_WIDGET_MAX_SIZE;
     }
@@ -325,8 +326,18 @@ struct SizeConstraints {
     }
   }
 
-  mozilla::DesktopIntSize mMinSize;
-  mozilla::DesktopIntSize mMaxSize;
+  mozilla::LayoutDeviceIntSize mMinSize;
+  mozilla::LayoutDeviceIntSize mMaxSize;
+
+  /*
+   * The scale used to convert from desktop to device dimensions.
+   * MOZ_WIDGET_INVALID_SCALE if the value is not known.
+   *
+   * Bug 1701109 is filed to revisit adding of 'mScale' and deal
+   * with multi-monitor scaling issues in more complete way across
+   * all widget implementations.
+   */
+  mozilla::DesktopToLayoutDeviceScale mScale;
 };
 
 class MOZ_RAII AutoSynthesizedEventCallbackNotifier final {
@@ -2155,7 +2166,7 @@ class nsIWidget : public nsSupportsWeakReference {
    * does not necessarily change the size of a window to conform to this size,
    * thus Resize should be called afterwards.
    *
-   * @param aConstraints: the size constraints in desktop pixels
+   * @param aConstraints: the size constraints in device pixels
    */
   virtual void SetSizeConstraints(const SizeConstraints& aConstraints);
 
@@ -2167,29 +2178,20 @@ class nsIWidget : public nsSupportsWeakReference {
   /**
    * Return the size constraints currently observed by the widget.
    *
-   * @return the constraints in desktop pixels
+   * @return the constraints in device pixels
    */
   virtual const SizeConstraints GetSizeConstraints();
 
   /**
-   * Apply the current size constraints to the given size. The size and
-   * constraints are converted through the widget's current scale factor
-   * so that callers can continue to work in device pixels.
+   * Apply the current size constraints to the given size.
    *
-   * @param aWidth width in device pixels to constrain
-   * @param aHeight height in device pixels to constrain
+   * @param aWidth width to constrain
+   * @param aHeight height to constrain
    */
   virtual void ConstrainSize(int32_t* aWidth, int32_t* aHeight) {
     SizeConstraints c = GetSizeConstraints();
-    const double scale = GetDesktopToDeviceScale().scale;
-    auto ToDevice = [scale](int32_t aDesktop) {
-      return aDesktop == NS_MAXSIZE ? NS_MAXSIZE
-                                    : NSToIntRound(aDesktop * scale);
-    };
-    *aWidth = std::clamp(*aWidth, ToDevice(c.mMinSize.width),
-                         ToDevice(c.mMaxSize.width));
-    *aHeight = std::clamp(*aHeight, ToDevice(c.mMinSize.height),
-                          ToDevice(c.mMaxSize.height));
+    *aWidth = std::clamp(*aWidth, c.mMinSize.width, c.mMaxSize.width);
+    *aHeight = std::clamp(*aHeight, c.mMinSize.height, c.mMaxSize.height);
   }
 
   /**
