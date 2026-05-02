@@ -123,6 +123,8 @@ skip-if = [
 
 ["browser_smartwindow_beta_badge.js"]
 
+["browser_smartwindow_chat_browser_tabbable.js"]
+
 ["browser_smartwindow_chat_markdown_parser.js"]
 
 ["browser_smartwindow_classic_mode_switch.js"]

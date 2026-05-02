@@ -524,6 +524,21 @@ export class AIWindow extends MozLitElement {
     browser.setAttribute("src", "about:aichatcontent");
     container.prepend(browser);
     this.#browser = browser;
+    this.#updateBrowserTabbable();
+  }
+
+  // Keep the empty chat browser out of the tab cycle so keyboard users don't
+  // hit a 0-height/contentless focus stop between the chat header and the
+  // smartbar. Once a conversation is active, the browser rejoins tab order.
+  #updateBrowserTabbable() {
+    if (!this.#browser) {
+      return;
+    }
+    if (this.classList.contains("chat-active")) {
+      this.#browser.removeAttribute("tabindex");
+    } else {
+      this.#browser.setAttribute("tabindex", "-1");
+    }
   }
 
   #setupWindowModeObserver() {
@@ -1377,6 +1392,7 @@ export class AIWindow extends MozLitElement {
 
   #resetConversationState() {
     this.classList.remove("chat-active");
+    this.#updateBrowserTabbable();
     this.#hostBrowser?.setAttribute(
       "data-conversation-id",
       this.#conversation.id
@@ -1387,12 +1403,14 @@ export class AIWindow extends MozLitElement {
   #setBrowserContainerActiveState(isActive) {
     if (isActive) {
       this.classList.add("chat-active");
+      this.#updateBrowserTabbable();
       this.#smartbar?.suppressStartQuery({ permanent: true });
       this.#smartbar?.view.close();
       return;
     }
 
     this.classList.remove("chat-active");
+    this.#updateBrowserTabbable();
     this.#smartbar?.unsuppressStartQuery();
   }
 
