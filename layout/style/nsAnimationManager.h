@@ -25,6 +25,10 @@ struct PseudoStyleRequest;
 class nsAnimationManager final
     : public mozilla::CommonAnimationManager<mozilla::dom::CSSAnimation> {
  public:
+  using TimelineNamesToAnimationMap =
+      nsTHashMap<RefPtr<const nsAtom>,
+                 nsTArray<RefPtr<mozilla::dom::CSSAnimation>>>;
+
   explicit nsAnimationManager(nsPresContext* aPresContext)
       : mozilla::CommonAnimationManager<mozilla::dom::CSSAnimation>(
             aPresContext) {}
@@ -43,6 +47,9 @@ class nsAnimationManager final
   void UpdateAnimations(mozilla::dom::Element* aElement,
                         const mozilla::PseudoStyleRequest& aPseudoRequest,
                         const mozilla::ComputedStyle* aComputedValues);
+
+  void RemoveNamedTimelineAnimation(const nsAtom* aName,
+                                    mozilla::dom::CSSAnimation* aAnimation);
 
   // Utility function to walk through |aIter| to find the Keyframe with
   // matching offset and timing function but stopping as soon as the offset
@@ -96,6 +103,8 @@ class nsAnimationManager final
   // contain names which are currently referenced, so that it is usable for
   // style invalidation.
   nsTHashSet<RefPtr<nsAtom>> mMaybeReferencedAnimations;
+  // Animations that refer to a timeline by name.
+  TimelineNamesToAnimationMap mAnimationsWithNamedTimeline;
 
   void DoUpdateAnimations(const mozilla::NonOwningAnimationTarget& aTarget,
                           const nsStyleUIReset& aStyle,

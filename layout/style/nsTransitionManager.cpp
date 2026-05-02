@@ -499,7 +499,7 @@ already_AddRefed<CSSTransition> nsTransitionManager::DoCreateTransition(
   auto animation = MakeRefPtr<CSSTransition>(
       mPresContext->Document()->GetScopeObject(), aProperty);
   animation->SetOwningElement(OwningElementRef(*aElement, aPseudoRequest));
-  animation->SetTimelineNoUpdate(timeline);
+  animation->SetTimelineNoUpdate(timeline, nullptr);
   animation->SetCreationSequence(
       mPresContext->RestyleManager()->GetAnimationGeneration());
   animation->SetEffectFromStyle(keyframeEffect);
