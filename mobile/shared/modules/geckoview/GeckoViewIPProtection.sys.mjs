@@ -117,6 +117,7 @@ export const GeckoViewIPProtection = {
             GeckoViewIPProtection
           );
           lazy.IPProtectionActivator.uninit();
+          lazy.IPProtectionActivator.removeHelpers();
         }
         aCallback.onSuccess();
         break;

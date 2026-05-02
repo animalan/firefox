@@ -15,7 +15,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
  *
  * Unlike the FxA desktop counterpart, this watcher does not observe UIState
  * directly. Instead, it receives auth state changes from the Android layer via
- * the EventDispatcher ("IPP:AuthStateChanged"), and exposes
+ * the EventDispatcher ("GeckoView:IPProtection:AuthStateChanged"), and exposes
  * notifySignInStateChanged() for the mobile bridge to call directly if needed.
  */
 class IPPAndroidSignInWatcherSingleton extends EventTarget {
@@ -30,19 +30,24 @@ class IPPAndroidSignInWatcherSingleton extends EventTarget {
 
   async initOnStartupCompleted() {
     this.#listener = {
-      onEvent: (_event, data) => {
-        this.notifySignInStateChanged(data.isSignedIn);
+      onEvent: (_event, data, callback) => {
+        try {
+          this.notifySignInStateChanged(data.isSignedIn);
+          callback?.onSuccess();
+        } catch (error) {
+          callback?.onError(error?.message ?? String(error));
+        }
       },
     };
     lazy.EventDispatcher.instance.registerListener(this.#listener, [
-      "IPP:AuthStateChanged",
+      "GeckoView:IPProtection:AuthStateChanged",
     ]);
   }
 
   uninit() {
     if (this.#listener) {
       lazy.EventDispatcher.instance.unregisterListener(this.#listener, [
-        "IPP:AuthStateChanged",
+        "GeckoView:IPProtection:AuthStateChanged",
       ]);
       this.#listener = null;
     }

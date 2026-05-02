@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.function.Consumer;
 import org.mozilla.gecko.EventDispatcher;
 import org.mozilla.gecko.util.BundleEventListener;
 import org.mozilla.gecko.util.EventCallback;
@@ -23,6 +24,7 @@ import org.mozilla.gecko.util.ThreadUtils;
 public class IPProtectionController {
   private static final String LOGTAG = "IPProtectionController";
   private Delegate mDelegate;
+  private AuthProvider mAuthProvider;
   private final BundleEventListener mEventListener;
 
   /** The possible states of the IP protection service. */
@@ -156,6 +158,26 @@ public class IPProtectionController {
     }
   }
 
+  /** Embedder-provided hooks for authentication. */
+  public interface AuthProvider {
+    /**
+     * Returns a fresh authentication token. Called for every Guardian API request; the implementer
+     * is responsible for caching and refreshing.
+     *
+     * <p>The token must have the "https://identity.mozilla.com/apps/vpn" scope.
+     *
+     * <p>To signal that no token is available, return a {@link GeckoResult} that rejects (e.g.
+     * {@link GeckoResult#fromException(Throwable)}) or resolves to {@code null} or an empty string.
+     * In all of those cases the in-flight Guardian request will fail with {@code "no-token"}.
+     *
+     * @return A {@link GeckoResult} that resolves to a non-empty token string.
+     */
+    @UiThread
+    default @NonNull GeckoResult<String> getToken() {
+      return GeckoResult.fromException(new RuntimeException(ERROR_NO_TOKEN));
+    }
+  }
+
   /** Delegate for receiving IP protection state notifications. */
   public interface Delegate {
     /**
@@ -190,7 +212,8 @@ public class IPProtectionController {
             mEventListener,
             "GeckoView:IPProtection:IPProtectionService:StateChanged",
             "GeckoView:IPProtection:IPPProxyManager:StateChanged",
-            "GeckoView:IPProtection:IPPProxyManager:UsageChanged");
+            "GeckoView:IPProtection:IPPProxyManager:UsageChanged",
+            "GeckoView:IPProtection:GetToken");
   }
 
   /**
@@ -225,6 +248,68 @@ public class IPProtectionController {
   public Delegate getDelegate() {
     ThreadUtils.assertOnUiThread();
     return mDelegate;
+  }
+
+  /**
+   * Sets the {@link AuthProvider} used to supply authentication tokens. Pass {@code null} to clear
+   * the provider.
+   *
+   * <p>The provider governs token retrieval only. Sign-in state must be signalled separately via
+   * {@link #notifySignInStateChanged(boolean)}.
+   *
+   * <p>Requires {@link #init()} to have been called; otherwise the JS-side listeners that consume
+   * the provider have not yet been registered.
+   *
+   * @param provider The {@link AuthProvider}, or {@code null} to clear.
+   */
+  @UiThread
+  public void setAuthProvider(final @Nullable AuthProvider provider) {
+    ThreadUtils.assertOnUiThread();
+    mAuthProvider = provider;
+  }
+
+  /**
+   * Gets the {@link AuthProvider} for this instance.
+   *
+   * @return The {@link AuthProvider} instance, or {@code null} if none is set.
+   */
+  @UiThread
+  @Nullable
+  public AuthProvider getAuthProvider() {
+    ThreadUtils.assertOnUiThread();
+    return mAuthProvider;
+  }
+
+  /**
+   * Notifies the IP protection service of a sign-in state change. The service recomputes its state
+   * and may transition in or out of {@link #SERVICE_STATE_UNAUTHENTICATED}.
+   *
+   * <p>Announcing a signed-in user requires an {@link AuthProvider} to be set via {@link
+   * #setAuthProvider(AuthProvider)} beforehand, since the service immediately queries tokens
+   * through the provider. Announcing a signed-out user does not require a provider. If the
+   * precondition is violated, the returned {@link GeckoResult} is rejected with {@link
+   * IllegalStateException}.
+   *
+   * <p>Requires {@link #init()} to have been called; otherwise the JS-side listeners that consume
+   * the event have not yet been registered.
+   *
+   * @param signedIn Whether the embedding app currently has a signed-in user.
+   * @return A {@link GeckoResult} that resolves once the JS side has acknowledged the event, or
+   *     rejects with {@link IllegalStateException} if {@code signedIn} is true and no {@link
+   *     AuthProvider} has been set.
+   */
+  @UiThread
+  public @NonNull GeckoResult<Void> notifySignInStateChanged(final boolean signedIn) {
+    ThreadUtils.assertOnUiThread();
+    if (signedIn && mAuthProvider == null) {
+      return GeckoResult.fromException(
+          new IllegalStateException(
+              "notifySignInStateChanged(true) requires an AuthProvider; call setAuthProvider first"));
+    }
+    final GeckoBundle bundle = new GeckoBundle(1);
+    bundle.putBoolean("isSignedIn", signedIn);
+    return EventDispatcher.getInstance()
+        .queryVoid("GeckoView:IPProtection:AuthStateChanged", bundle);
   }
 
   /**
@@ -368,26 +453,61 @@ public class IPProtectionController {
     }
   }
 
+  private static final String ERROR_NO_AUTH_PROVIDER = "no-auth-provider";
+  private static final String ERROR_NO_TOKEN = "no-token";
+
   private class EventListener implements BundleEventListener {
     @Override
     public void handleMessage(
         final String event, final GeckoBundle message, final EventCallback callback) {
+      switch (event) {
+        case "GeckoView:IPProtection:IPProtectionService:StateChanged":
+          withDelegate(
+              event, d -> d.onServiceStateChanged(parseServiceState(message.getString("state"))));
+          break;
+        case "GeckoView:IPProtection:IPPProxyManager:StateChanged":
+          withDelegate(event, d -> d.onProxyStateChanged(new ProxyState(message)));
+          break;
+        case "GeckoView:IPProtection:IPPProxyManager:UsageChanged":
+          withDelegate(event, d -> d.onUsageChanged(new UsageInfo(message)));
+          break;
+        case "GeckoView:IPProtection:GetToken":
+          {
+            final AuthProvider provider = tryAuthProvider(event, callback);
+            if (provider == null) return;
+            callback.resolveTo(
+                provider
+                    .getToken()
+                    .map(
+                        token -> {
+                          if (token == null || token.isEmpty()) {
+                            throw new RuntimeException(ERROR_NO_TOKEN);
+                          }
+                          final GeckoBundle result = new GeckoBundle(1);
+                          result.putString("token", token);
+                          return result;
+                        }));
+            break;
+          }
+      }
+    }
+
+    private void withDelegate(final String event, final Consumer<Delegate> action) {
       if (mDelegate == null) {
         Log.w(LOGTAG, "Received event " + event + " but no delegate is set");
         return;
       }
+      action.accept(mDelegate);
+    }
 
-      switch (event) {
-        case "GeckoView:IPProtection:IPProtectionService:StateChanged":
-          mDelegate.onServiceStateChanged(parseServiceState(message.getString("state")));
-          break;
-        case "GeckoView:IPProtection:IPPProxyManager:StateChanged":
-          mDelegate.onProxyStateChanged(new ProxyState(message));
-          break;
-        case "GeckoView:IPProtection:IPPProxyManager:UsageChanged":
-          mDelegate.onUsageChanged(new UsageInfo(message));
-          break;
+    private @Nullable AuthProvider tryAuthProvider(
+        final String event, final EventCallback callback) {
+      if (mAuthProvider == null) {
+        Log.w(LOGTAG, "Received event " + event + " but no auth provider is set");
+        callback.sendError(ERROR_NO_AUTH_PROVIDER);
+        return null;
       }
+      return mAuthProvider;
     }
   }
 }

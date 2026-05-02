@@ -15,6 +15,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.gecko.EventDispatcher
+import org.mozilla.gecko.util.BundleEventListener
 import org.mozilla.gecko.util.GeckoBundle
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.IPProtectionController
@@ -32,6 +33,8 @@ class IPProtectionControllerTest : BaseSessionTest() {
             mapOf(
                 "browser.ipProtection.enabled" to true,
                 "browser.ipProtection.cacheDisabled" to true,
+                "browser.ipProtection.guardian.endpoint" to "https://vpn.mozilla.com",
+                "browser.ipProtection.log" to true,
             ),
         )
     }
@@ -39,6 +42,7 @@ class IPProtectionControllerTest : BaseSessionTest() {
     @After
     fun teardown() {
         ipProtectionController.setDelegate(null)
+        ipProtectionController.setAuthProvider(null)
         sessionRule.waitForResult(ipProtectionController.uninit())
     }
 
@@ -216,5 +220,98 @@ class IPProtectionControllerTest : BaseSessionTest() {
         assertThat(info.remaining, equalTo(0L))
         assertThat(info.max, equalTo(5000L))
         assertThat(info.resetTime, nullValue())
+    }
+
+    private class StubAuthProvider(
+        private val token: GeckoResult<String> = GeckoResult.fromValue("stub-token"),
+    ) : IPProtectionController.AuthProvider {
+        override fun getToken(): GeckoResult<String> = token
+    }
+
+    @Test
+    fun setAuthProviderRoundTrips() {
+        val provider = StubAuthProvider()
+        ipProtectionController.setAuthProvider(provider)
+        assertThat(ipProtectionController.authProvider, equalTo<IPProtectionController.AuthProvider>(provider))
+        ipProtectionController.setAuthProvider(null)
+        assertThat(ipProtectionController.authProvider, nullValue())
+    }
+
+    @Test
+    fun getTokenEventIsRoutedToAuthProvider() {
+        ipProtectionController.setAuthProvider(
+            StubAuthProvider(token = GeckoResult.fromValue("secret-token")),
+        )
+        val response = sessionRule.waitForResult(
+            EventDispatcher.getInstance().queryBundle("GeckoView:IPProtection:GetToken"),
+        )
+        assertThat(response.getString("token"), equalTo("secret-token"))
+    }
+
+    @Test
+    fun getTokenEventWithoutProviderReturnsError() {
+        ipProtectionController.setAuthProvider(null)
+        assertGetTokenError("no-auth-provider")
+    }
+
+    @Test
+    fun getTokenEventWithRejectedTokenReturnsError() {
+        ipProtectionController.setAuthProvider(
+            StubAuthProvider(token = GeckoResult.fromException(RuntimeException("no-token"))),
+        )
+        assertGetTokenError("no-token")
+    }
+
+    @Test
+    fun getTokenEventWithNullTokenStringReturnsError() {
+        ipProtectionController.setAuthProvider(
+            StubAuthProvider(token = GeckoResult.fromValue(null)),
+        )
+        assertGetTokenError("no-token")
+    }
+
+    @Test
+    fun getTokenEventWithEmptyTokenStringReturnsError() {
+        ipProtectionController.setAuthProvider(
+            StubAuthProvider(token = GeckoResult.fromValue("")),
+        )
+        assertGetTokenError("no-token")
+    }
+
+    private fun assertGetTokenError(expected: String) {
+        val thrown = assertThrows(RuntimeException::class.java) {
+            sessionRule.waitForResult(
+                EventDispatcher.getInstance().queryBundle("GeckoView:IPProtection:GetToken"),
+            )
+        }
+        val cause = thrown.cause as EventDispatcher.QueryException
+        assertThat(cause.data.toString(), equalTo(expected))
+    }
+
+    @Test
+    fun notifySignInStateChangedDispatchesAuthStateChanged() {
+        ipProtectionController.setAuthProvider(StubAuthProvider())
+        val result = GeckoResult<Boolean>()
+        val listener = BundleEventListener { _, message, callback ->
+            result.complete(message.getBoolean("isSignedIn", false))
+            callback?.sendSuccess(null)
+        }
+        EventDispatcher.getInstance()
+            .registerUiThreadListener(listener, "GeckoView:IPProtection:AuthStateChanged")
+        try {
+            sessionRule.waitForResult(ipProtectionController.notifySignInStateChanged(true))
+            assertThat(sessionRule.waitForResult(result), equalTo(true))
+        } finally {
+            EventDispatcher.getInstance()
+                .unregisterUiThreadListener(listener, "GeckoView:IPProtection:AuthStateChanged")
+        }
+    }
+
+    @Test
+    fun notifySignInStateChangedRejectsWithoutAuthProvider() {
+        ipProtectionController.setAuthProvider(null)
+        assertThrows(IllegalStateException::class.java) {
+            sessionRule.waitForResult(ipProtectionController.notifySignInStateChanged(true))
+        }
     }
 }

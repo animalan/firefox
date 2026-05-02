@@ -8,7 +8,6 @@ with Files("**"):
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "android":
     MOZ_SRC_FILES += [
         "fxa/IPPAndroidAuthProvider.sys.mjs",
-        "fxa/IPPAndroidEnrollAndEntitle.sys.mjs",
         "fxa/IPPAndroidSignInWatcher.sys.mjs",
         "gpi/IPPGpiAuthProvider.sys.mjs",
     ]

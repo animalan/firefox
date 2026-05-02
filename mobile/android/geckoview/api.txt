@@ -2250,10 +2250,13 @@ package org.mozilla.geckoview {
   public class IPProtectionController {
     method @HandlerThread @NonNull public GeckoResult<Void> activate();
     method @HandlerThread @NonNull public GeckoResult<Void> deactivate();
+    method @Nullable @UiThread public IPProtectionController.AuthProvider getAuthProvider();
     method @Nullable @UiThread public IPProtectionController.Delegate getDelegate();
     method @HandlerThread @NonNull public GeckoResult<IPProtectionController.ProxyState> getProxyState();
     method @HandlerThread @NonNull public GeckoResult<Integer> getServiceState();
     method @HandlerThread @NonNull public GeckoResult<Void> init();
+    method @NonNull @UiThread public GeckoResult<Void> notifySignInStateChanged(boolean);
+    method @UiThread public void setAuthProvider(@Nullable IPProtectionController.AuthProvider);
     method @UiThread public void setDelegate(@Nullable IPProtectionController.Delegate);
     method @HandlerThread @NonNull public GeckoResult<Void> uninit();
     field public static final int SERVICE_STATE_OPTED_OUT = 3;
@@ -2261,6 +2264,10 @@ package org.mozilla.geckoview {
     field public static final int SERVICE_STATE_UNAUTHENTICATED = 2;
     field public static final int SERVICE_STATE_UNAVAILABLE = 1;
     field public static final int SERVICE_STATE_UNINITIALIZED = 0;
+  }
+
+  public static interface IPProtectionController.AuthProvider {
+    method @NonNull @UiThread default public GeckoResult<String> getToken();
   }
 
   public static interface IPProtectionController.Delegate {
