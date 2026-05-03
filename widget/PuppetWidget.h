@@ -203,7 +203,7 @@ class PuppetWidget final : public nsIWidget,
     mDesktopToDeviceScale = aDesktopToDeviceScale;
   }
 
-  mozilla::DesktopToLayoutDeviceScale GetDesktopToDeviceScale() override {
+  mozilla::DesktopToLayoutDeviceScale GetDesktopToDeviceScale() const override {
     return mozilla::DesktopToLayoutDeviceScale(mDesktopToDeviceScale);
   }
 

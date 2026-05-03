@@ -415,7 +415,7 @@ class nsCocoaWindow final : public nsIWidget {
                         const bool aIsVertical,
                         const LayoutDeviceIntPoint& aPoint) override;
 
-  mozilla::DesktopToLayoutDeviceScale GetDesktopToDeviceScale() final {
+  mozilla::DesktopToLayoutDeviceScale GetDesktopToDeviceScale() const final {
     return mozilla::DesktopToLayoutDeviceScale(BackingScaleFactor());
   }
 

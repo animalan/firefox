@@ -193,7 +193,7 @@ class nsWindow : public nsIWidget {
   float GetDPI() override;
   double GetDefaultScaleInternal() override;
   uint32_t GetMaxTouchPoints() const override;
-  mozilla::DesktopToLayoutDeviceScale GetDesktopToDeviceScale() override;
+  mozilla::DesktopToLayoutDeviceScale GetDesktopToDeviceScale() const override;
   void SetModal(bool aModal) override;
   bool IsVisible() const override;
   void ConstrainPosition(DesktopIntPoint&) override;

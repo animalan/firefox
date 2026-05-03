@@ -544,37 +544,52 @@ void nsContainerFrame::SetSizeConstraints(nsPresContext* aPresContext,
                                           nsIWidget* aWidget,
                                           const nsSize& aMinSize,
                                           const nsSize& aMaxSize) {
-  LayoutDeviceIntSize devMinSize(
-      aPresContext->AppUnitsToDevPixels(aMinSize.width),
-      aPresContext->AppUnitsToDevPixels(aMinSize.height));
-  LayoutDeviceIntSize devMaxSize(
-      aMaxSize.width == NS_UNCONSTRAINEDSIZE
-          ? NS_MAXSIZE
-          : aPresContext->AppUnitsToDevPixels(aMaxSize.width),
-      aMaxSize.height == NS_UNCONSTRAINEDSIZE
-          ? NS_MAXSIZE
-          : aPresContext->AppUnitsToDevPixels(aMaxSize.height));
+  // Compute constraints in desktop pixels so they are independent of the
+  // widget's current backing scale factor. Each widget converts to its
+  // native coordinate system using its own scale.
+  //
+  // Use the pres context's nearest widget for the desktop-to-device scale
+  // to match the scale used by AppUnitsToDevPixels. That widget may differ
+  // from aWidget (e.g. for popups on macOS whose NSWindow is initially
+  // backed by a different screen than the frame's nearest widget).
+  nsIWidget* rootWidget = aPresContext->GetNearestWidget();
+  const DesktopToLayoutDeviceScale desktopToDev =
+      rootWidget ? rootWidget->GetDesktopToDeviceScale()
+                 : aWidget->GetDesktopToDeviceScale();
+
+  auto AppUnitsToDesktop = [&](nscoord aAppUnits) {
+    return NSToIntRound(aPresContext->AppUnitsToDevPixels(aAppUnits) /
+                        desktopToDev.scale);
+  };
+
+  DesktopIntSize minSize(AppUnitsToDesktop(aMinSize.width),
+                         AppUnitsToDesktop(aMinSize.height));
+  DesktopIntSize maxSize(aMaxSize.width == NS_UNCONSTRAINEDSIZE
+                             ? NS_MAXSIZE
+                             : AppUnitsToDesktop(aMaxSize.width),
+                         aMaxSize.height == NS_UNCONSTRAINEDSIZE
+                             ? NS_MAXSIZE
+                             : AppUnitsToDesktop(aMaxSize.height));
 
   // MinSize has a priority over MaxSize
-  if (devMinSize.width > devMaxSize.width) {
-    devMaxSize.width = devMinSize.width;
+  if (minSize.width > maxSize.width) {
+    maxSize.width = minSize.width;
   }
-  if (devMinSize.height > devMaxSize.height) {
-    devMaxSize.height = devMinSize.height;
-  }
-
-  DesktopToLayoutDeviceScale constraintsScale(MOZ_WIDGET_INVALID_SCALE);
-  if (nsIWidget* rootWidget = aPresContext->GetNearestWidget()) {
-    constraintsScale = rootWidget->GetDesktopToDeviceScale();
+  if (minSize.height > maxSize.height) {
+    maxSize.height = minSize.height;
   }
 
-  widget::SizeConstraints constraints(devMinSize, devMaxSize, constraintsScale);
+  widget::SizeConstraints constraints(minSize, maxSize);
 
   // The sizes are in inner window sizes, so convert them into outer window
   // sizes. Use a size of (200, 200) as only the difference between the inner
-  // and outer size is needed.
-  const LayoutDeviceIntSize sizeDiff =
+  // and outer size is needed. NormalSizeModeClientToWindowSizeDifference
+  // reports values in aWidget's device pixels, so convert through aWidget's
+  // scale rather than rootWidget's.
+  const LayoutDeviceIntSize devSizeDiff =
       aWidget->NormalSizeModeClientToWindowSizeDifference();
+  const DesktopIntSize sizeDiff =
+      DesktopIntSize::Round(devSizeDiff / aWidget->GetDesktopToDeviceScale());
   if (constraints.mMinSize.width) {
     constraints.mMinSize.width += sizeDiff.width;
   }
