@@ -1329,19 +1329,13 @@ void nsHttpTransaction::MaybeReportFailedSVCDomain(
   }
 }
 
-void nsHttpTransaction::OnPSKResumptionAccepted() {
-  LOG(("nsHttpTransaction::OnPSKResumptionAccepted [this=%p]\n", this));
-  mResumptionAttempted = false;
-}
-
-bool nsHttpTransaction::ShouldRestartOnResumptionError(nsresult reason) {
+bool nsHttpTransaction::ShouldRestartOn0RttError(nsresult reason) {
   LOG(
-      ("nsHttpTransaction::ShouldRestartOnResumptionError [this=%p, "
-       "mResumptionAttempted=%d error=%" PRIx32 "]\n",
-       this, mResumptionAttempted, static_cast<uint32_t>(reason)));
+      ("nsHttpTransaction::ShouldRestartOn0RttError [this=%p, "
+       "mEarlyDataWasAvailable=%d error=%" PRIx32 "]\n",
+       this, mEarlyDataWasAvailable, static_cast<uint32_t>(reason)));
   return StaticPrefs::network_http_early_data_disable_on_error() &&
-         mResumptionAttempted &&
-         NS_ERROR_GET_MODULE(reason) == NS_ERROR_MODULE_SECURITY;
+         mEarlyDataWasAvailable && PossibleZeroRTTRetryError(reason);
 }
 
 static void MaybeRemoveSSLToken(nsITransportSecurityInfo* aSecurityInfo) {
@@ -1476,7 +1470,7 @@ void nsHttpTransaction::Close(nsresult reason) {
        reason ==
            psm::GetXPCOMFromNSSError(SSL_ERROR_DOWNGRADE_WITH_EARLY_DATA) ||
        reason == NS_ERROR_HTTP2_FALLBACK_TO_HTTP1 ||
-       ShouldRestartOnResumptionError(reason) ||
+       ShouldRestartOn0RttError(reason) ||
        shouldRestartTransactionForHTTPSRR) &&
       (!(mCaps & NS_HTTP_STICKY_CONNECTION) ||
        (mCaps & NS_HTTP_CONNECTION_RESTARTABLE) ||
@@ -1520,6 +1514,7 @@ void nsHttpTransaction::Close(nsresult reason) {
 
     if (reason ==
             psm::GetXPCOMFromNSSError(SSL_ERROR_DOWNGRADE_WITH_EARLY_DATA) ||
+        PossibleZeroRTTRetryError(reason) ||
         (!mReceivedData && ((mRequestHead && mRequestHead->IsSafeMethod()) ||
                             !reallySentData || connReused)) ||
         shouldRestartTransactionForHTTPSRR) {
@@ -1561,13 +1556,13 @@ void nsHttpTransaction::Close(nsresult reason) {
           return TRANSACTION_RESTART_OTHERS;
         };
         SetRestartReason(toRestartReason(reason));
+      } else if (!reallySentData) {
+        SetRestartReason(TRANSACTION_RESTART_NO_DATA_SENT);
       } else if (reason == psm::GetXPCOMFromNSSError(
                                SSL_ERROR_DOWNGRADE_WITH_EARLY_DATA)) {
         SetRestartReason(TRANSACTION_RESTART_DOWNGRADE_WITH_EARLY_DATA);
-      } else if (mResumptionAttempted) {
+      } else if (PossibleZeroRTTRetryError(reason)) {
         SetRestartReason(TRANSACTION_RESTART_POSSIBLE_0RTT_ERROR);
-      } else if (!reallySentData) {
-        SetRestartReason(TRANSACTION_RESTART_NO_DATA_SENT);
       }
       // if restarting fails, then we must proceed to close the pipe,
       // which will notify the channel that the transaction failed.
@@ -1959,7 +1954,7 @@ nsresult nsHttpTransaction::Restart() {
 
   // Reset mDoNotRemoveAltSvc for the next try.
   mDoNotRemoveAltSvc = false;
-  mResumptionAttempted = false;
+  mEarlyDataWasAvailable = false;
   mRestarted = true;
 
   // If we weren't trying to do 'proper' ECH, disable ECH GREASE when retrying.
@@ -3204,11 +3199,10 @@ void nsHttpTransaction::GetNetworkAddresses(
   aEchConfigUsed = mEchConfigUsed;
 }
 
-bool nsHttpTransaction::Do0RTT(bool aCanSendEarlyData) {
-  LOG(("nsHttpTransaction::Do0RTT [aCanSendEarlyData=%d]", aCanSendEarlyData));
-  mResumptionAttempted = true;
-  if (aCanSendEarlyData && mRequestHead->IsSafeMethod() &&
-      !mDoNotTryEarlyData &&
+bool nsHttpTransaction::Do0RTT() {
+  LOG(("nsHttpTransaction::Do0RTT"));
+  mEarlyDataWasAvailable = true;
+  if (mRequestHead->IsSafeMethod() && !mDoNotTryEarlyData &&
       (!mConnection || !mConnection->IsProxyConnectInProgress())) {
     m0RTTInProgress = true;
   }
