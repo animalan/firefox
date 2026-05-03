@@ -2382,9 +2382,9 @@ bool nsContainerFrame::ShouldAvoidBreakInside(
       case StyleBreakWithin::Avoid:
         return true;
       case StyleBreakWithin::AvoidPage:
-        return aReflowInput.mBreakType == ReflowInput::BreakType::Page;
+        return aReflowInput.mBreakType == BreakType::Page;
       case StyleBreakWithin::AvoidColumn:
-        return aReflowInput.mBreakType == ReflowInput::BreakType::Column;
+        return aReflowInput.mBreakType == BreakType::Column;
     }
     MOZ_ASSERT_UNREACHABLE("Unknown break-inside value");
     return false;

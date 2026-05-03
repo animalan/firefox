@@ -12444,20 +12444,19 @@ bool nsIFrame::HasUnreflowedContainerQueryAncestor() const {
   return false;
 }
 
-bool nsIFrame::ShouldBreakBefore(
-    const ReflowInput::BreakType aBreakType) const {
+bool nsIFrame::ShouldBreakBefore(const BreakType aBreakType) const {
   const auto* display = StyleDisplay();
   return ShouldBreakBetween(display, display->mBreakBefore, aBreakType);
 }
 
-bool nsIFrame::ShouldBreakAfter(const ReflowInput::BreakType aBreakType) const {
+bool nsIFrame::ShouldBreakAfter(const BreakType aBreakType) const {
   const auto* display = StyleDisplay();
   return ShouldBreakBetween(display, display->mBreakAfter, aBreakType);
 }
 
-bool nsIFrame::ShouldBreakBetween(
-    const nsStyleDisplay* aDisplay, const StyleBreakBetween aBreakBetween,
-    const ReflowInput::BreakType aBreakType) const {
+bool nsIFrame::ShouldBreakBetween(const nsStyleDisplay* aDisplay,
+                                  const StyleBreakBetween aBreakBetween,
+                                  const BreakType aBreakType) const {
   const bool shouldBreakBetween = [&] {
     switch (aBreakBetween) {
       case StyleBreakBetween::Always:
@@ -12468,7 +12467,7 @@ bool nsIFrame::ShouldBreakBetween(
       case StyleBreakBetween::Page:
       case StyleBreakBetween::Left:
       case StyleBreakBetween::Right:
-        return aBreakType == ReflowInput::BreakType::Page;
+        return aBreakType == BreakType::Page;
     }
     MOZ_ASSERT_UNREACHABLE("Unknown break-between value!");
     return false;

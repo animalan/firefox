@@ -695,6 +695,7 @@ class nsIFrame : public nsQueryFrame {
   using AlignmentContext = mozilla::AlignmentContext;
   using BaselineSharingGroup = mozilla::BaselineSharingGroup;
   using BaselineExportContext = mozilla::BaselineExportContext;
+  using BreakType = mozilla::BreakType;
   template <typename T>
   using Maybe = mozilla::Maybe<T>;
   template <typename T, typename E>
@@ -1482,19 +1483,19 @@ class nsIFrame : public nsQueryFrame {
   // Note: this method only checks 'break-before' property on *this* frame, and
   // it doesn't handle forced break value propagation from its first child.
   // Callers should handle the propagation in reflow.
-  bool ShouldBreakBefore(const ReflowInput::BreakType aBreakType) const;
+  bool ShouldBreakBefore(const BreakType aBreakType) const;
 
   // Return True if this frame has a forced break value after it.
   //
   // Note: this method only checks 'break-after' property on *this* frame, and
   // it doesn't handle forced break value propagation from its last child.
   // Callers should handle the propagation in reflow.
-  bool ShouldBreakAfter(const ReflowInput::BreakType aBreakType) const;
+  bool ShouldBreakAfter(const BreakType aBreakType) const;
 
  private:
   bool ShouldBreakBetween(const nsStyleDisplay* aDisplay,
                           const mozilla::StyleBreakBetween aBreakBetween,
-                          const ReflowInput::BreakType aBreakType) const;
+                          const BreakType aBreakType) const;
 
   mozilla::LogicalSize SizeReducedBy(mozilla::WritingMode aWritingMode,
                                      mozilla::LogicalMargin aMargin) const {

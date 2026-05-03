@@ -349,7 +349,7 @@ void nsPageSequenceFrame::Reflow(nsPresContext* aPresContext,
       // Given the kid is reflowed under an unconstrained available block-size,
       // BreakType::Page doesn't really have any effect, but we keep it for
       // consistency with the normal reflow below.
-      kidReflowInput.mBreakType = ReflowInput::BreakType::Page;
+      kidReflowInput.mBreakType = BreakType::Page;
       kidReflowInput.mFlags.mIsInFragmentainerMeasuringReflow = true;
 
       ReflowOutput kidReflowOutput(kidReflowInput);
@@ -413,7 +413,7 @@ void nsPageSequenceFrame::Reflow(nsPresContext* aPresContext,
     ReflowInput kidReflowInput(
         aPresContext, aReflowInput, kidFrame,
         LogicalSize(kidFrame->GetWritingMode(), sheetSize));
-    kidReflowInput.mBreakType = ReflowInput::BreakType::Page;
+    kidReflowInput.mBreakType = BreakType::Page;
 
     ReflowOutput kidReflowOutput(kidReflowInput);
     nsReflowStatus status;

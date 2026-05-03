@@ -667,7 +667,7 @@ nsColumnSetFrame::ColumnBalanceData nsColumnSetFrame::ReflowColumns(
           aConfig.mIsLastBalancingReflow;
       kidReflowInput.mFlags.mIsInFragmentainerMeasuringReflow =
           aConfig.mIsInMeasuringReflow;
-      kidReflowInput.mBreakType = ReflowInput::BreakType::Column;
+      kidReflowInput.mBreakType = BreakType::Column;
 
       // We need to reflow any float placeholders, even if our column block-size
       // hasn't changed.
