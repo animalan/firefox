@@ -211,10 +211,6 @@ export var BrowserTestUtils = {
 
       tabbrowser = tabbrowser.gBrowser;
       options = { opening, waitForLoad, waitForStateStop, forceNewProcess };
-      /**
-       * @backward-compat { version 152 }
-       * Get rid of the documentGlobal fallback once 152 makes it to release.
-       */
       win = tabbrowser.documentGlobal || tabbrowser.ownerGlobal;
     }
 
