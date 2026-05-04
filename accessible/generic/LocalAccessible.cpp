@@ -1694,7 +1694,10 @@ void LocalAccessible::ApplyARIAState(uint64_t* aState) const {
     // We only force the readonly bit off if we have a real mapping for the aria
     // role. This preserves the ability for screen readers to use readonly
     // (primarily on the document) as the hint for creating a virtual buffer.
-    if (roleMapEntry->role != roles::NOTHING) *aState &= ~states::READONLY;
+    // Avoid doing this on text fields, since the readonly state is useful
+    // there.
+    if (roleMapEntry->role != roles::NOTHING && !IsTextField())
+      *aState &= ~states::READONLY;
 
     if (mContent->HasID()) {
       // If has a role & ID and aria-activedescendant on the container, assume
