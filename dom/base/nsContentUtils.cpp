@@ -2951,7 +2951,7 @@ bool nsContentUtils::ShouldResistFingerprinting_dangerous(
     return ShouldResistFingerprinting("Null object", aTarget);
   }
 
-  auto originAttributes =
+  const auto& originAttributes =
       BasePrincipal::Cast(aPrincipal)->OriginAttributesRef();
   // With this check, we can ensure that the prefs and target say yes, so only
   // an exemption would cause us to return false.
