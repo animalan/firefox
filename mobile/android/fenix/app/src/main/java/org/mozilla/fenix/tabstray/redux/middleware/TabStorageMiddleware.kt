@@ -33,6 +33,7 @@ import org.mozilla.fenix.tabstray.redux.action.TabsTrayAction
 import org.mozilla.fenix.tabstray.redux.action.TabsTrayAction.InitAction
 import org.mozilla.fenix.tabstray.redux.action.TabsTrayAction.TabDataUpdateReceived
 import org.mozilla.fenix.tabstray.redux.action.TabsTrayAction.TabsStorageAction
+import org.mozilla.fenix.tabstray.redux.state.TabGroupFormState
 import org.mozilla.fenix.tabstray.redux.state.TabsTrayState
 
 private typealias TabItemId = String
@@ -208,7 +209,14 @@ class TabStorageMiddleware(
         when {
             // Source and target are tabs
             dragAndDropItems.source is TabsTrayItem.Tab && dragAndDropItems.target is TabsTrayItem.Tab -> {
-                // todo bug 2019823: handle tab group creation from drag and drop
+                mainScope.launch {
+                    store.dispatch(
+                        TabGroupAction.DragAndDropTwoTabs(
+                            sourceTabId = action.sourceId,
+                            destinationTabId = action.destinationId,
+                        ),
+                    )
+                }
             }
             // Source and target are groups
             dragAndDropItems.source is TabsTrayItem.TabGroup && dragAndDropItems.target is TabsTrayItem.TabGroup -> {
@@ -453,8 +461,40 @@ class TabStorageMiddleware(
         store: Store<TabsTrayState, TabsTrayAction>,
     ) {
         val formState = store.state.tabGroupState.formState ?: return
-        val selectedTabIds = store.state.mode.selectedTabIds
+        val mode = store.state.mode
+        when (mode) {
+            is TabsTrayState.Mode.DragAndDrop -> {
+                handleSaveFromDragAndDrop(formState = formState, mode = mode)
+            }
 
+            is TabsTrayState.Mode.Normal, is TabsTrayState.Mode.Select -> {
+                handleSaveFromMultiSelection(formState = formState, selectedTabIds = store.state.mode.selectedTabIds)
+            }
+        }
+    }
+
+    private fun handleSaveFromDragAndDrop(formState: TabGroupFormState, mode: TabsTrayState.Mode.DragAndDrop) {
+        scope.launch {
+            val sourceId = mode.sourceId
+            val destinationId = mode.destinationId ?: return@launch
+            val storedTabGroup = StoredTabGroup(
+                title = formState.name,
+                theme = formState.theme.toStorageValue(),
+                lastModified = dateTimeProvider.currentTimeMillis(),
+            )
+            // Sequence from the destination
+            sequenceGroupedTabsTogether(
+                tabIds = listOf(sourceId),
+                targetTabId = destinationId,
+            )
+            tabGroupRepository.createTabGroupWithTabs(
+                tabGroup = storedTabGroup,
+                tabIds = listOf(sourceId, destinationId),
+            )
+        }
+    }
+
+    private fun handleSaveFromMultiSelection(formState: TabGroupFormState, selectedTabIds: List<String>) {
         scope.launch {
             if (formState.tabGroupId == null) {
                 val storedTabGroup = StoredTabGroup(

@@ -37,6 +37,15 @@ object TabGroupActionReducer {
 
             is TabGroupAction.AddToNewTabGroup -> state.navigateToCreateTabGroup()
 
+            is TabGroupAction.DragAndDropTwoTabs -> {
+                state.navigateToCreateTabGroup().copy(
+                    mode = TabsTrayState.Mode.DragAndDrop(
+                        sourceId = action.sourceTabId,
+                        destinationId = action.destinationTabId,
+                    ),
+                )
+            }
+
             is TabGroupAction.NameChanged -> {
                 handleNameChange(state = state, action = action)
             }
@@ -46,6 +55,7 @@ object TabGroupActionReducer {
             }
 
             TabGroupAction.FormDismissed -> state.copy(
+                // mode = if (state.mode is TabsTrayState.Mode.DragAndDrop) TabsTrayState.Mode.Normal else state.mode,
                 tabGroupState = state.tabGroupState.copy(
                     formState = null,
                 ),
@@ -149,7 +159,7 @@ object TabGroupActionReducer {
         currentState: TabsTrayState,
         group: TabsTrayItem.TabGroup,
     ): TabsTrayState = when (currentState.mode) {
-        is TabsTrayState.Mode.Normal -> currentState.copy(
+        is TabsTrayState.Mode.Normal, is TabsTrayState.Mode.DragAndDrop -> currentState.copy(
             backStack = currentState.backStack + ExpandedTabGroup(group = group),
         )
 

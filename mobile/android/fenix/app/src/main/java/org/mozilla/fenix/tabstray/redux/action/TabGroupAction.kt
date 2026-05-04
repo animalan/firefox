@@ -23,6 +23,11 @@ sealed interface TabGroupAction : TabsTrayAction {
     data object AddToNewTabGroup : TabGroupAction
 
     /**
+     * Fired when the user drags a tab onto another to create a new tab group.
+     */
+    data class DragAndDropTwoTabs(val sourceTabId: String, val destinationTabId: String) : TabGroupAction
+
+    /**
      * Fired when the user changes the tab group name.
      *
      * @property name The name of the tab group the user has typed in.
