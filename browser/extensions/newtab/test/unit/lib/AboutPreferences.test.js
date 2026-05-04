@@ -51,25 +51,27 @@ describe("AboutPreferences Feed", () => {
       const action = {
         type: at.SETTINGS_OPEN,
         _target: {
-          window: { openPreferences: sinon.spy() },
+          browser: { documentGlobal: { openPreferences: sinon.spy() } },
         },
       };
       instance.onAction(action);
-      assert.calledOnce(action._target.window.openPreferences);
+      assert.calledOnce(action._target.browser.documentGlobal.openPreferences);
     });
     it("should call .BrowserAddonUI.openAddonsMgr with the extension id on OPEN_WEBEXT_SETTINGS", () => {
       const action = {
         type: at.OPEN_WEBEXT_SETTINGS,
         data: "foo",
         _target: {
-          window: {
-            BrowserAddonUI: { openAddonsMgr: sinon.spy() },
+          browser: {
+            documentGlobal: {
+              BrowserAddonUI: { openAddonsMgr: sinon.spy() },
+            },
           },
         },
       };
       instance.onAction(action);
       assert.calledWith(
-        action._target.window.BrowserAddonUI.openAddonsMgr,
+        action._target.browser.documentGlobal.BrowserAddonUI.openAddonsMgr,
         "addons://detail/foo"
       );
     });

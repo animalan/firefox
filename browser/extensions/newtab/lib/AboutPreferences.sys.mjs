@@ -134,11 +134,11 @@ export class AboutPreferences {
         this.uninit();
         break;
       case at.SETTINGS_OPEN:
-        action._target.window.openPreferences("paneHome");
+        action._target.browser.documentGlobal.openPreferences("paneHome");
         break;
       // This is used to open the web extension settings page for an extension
       case at.OPEN_WEBEXT_SETTINGS:
-        action._target.window.BrowserAddonUI.openAddonsMgr(
+        action._target.browser.documentGlobal.BrowserAddonUI.openAddonsMgr(
           `addons://detail/${encodeURIComponent(action.data)}`
         );
         break;

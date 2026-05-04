@@ -302,11 +302,7 @@ describe("ActivityStreamMessageChannel", () => {
         const expectedAction = {
           type: action.data.type,
           data: action.data.data,
-          _target: {
-            browser: msg.data.browser,
-            window:
-              msg.data.browser.documentGlobal || msg.data.browser.ownerGlobal,
-          },
+          _target: { browser: msg.data.browser },
         };
         mm.onMessage(action, msg.data);
         assert.calledWith(mm.onActionFromContent, expectedAction, "foo");

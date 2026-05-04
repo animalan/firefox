@@ -277,10 +277,13 @@ add_task(async function test_onAction_BOOKMARK_URL() {
   sandbox.stub(NewTabUtils.activityStreamLinks, "addBookmark");
 
   let data = { url: "pear.com", title: "A pear" };
-  let _target = { window() {} };
+  let _target = { browser: { documentGlobal() {} } };
   feed.onAction({ type: actionTypes.BOOKMARK_URL, data, _target });
   Assert.ok(
-    NewTabUtils.activityStreamLinks.addBookmark.calledWith(data, _target.window)
+    NewTabUtils.activityStreamLinks.addBookmark.calledWith(
+      data,
+      _target.browser.documentGlobal
+    )
   );
 
   sandbox.restore();
@@ -359,7 +362,7 @@ add_task(async function test_onAction_OPEN_NEW_WINDOW() {
   let openWindowAction = {
     type: actionTypes.OPEN_NEW_WINDOW,
     data: { url: "https://foo.com" },
-    _target: { window: { openTrustedLinkIn } },
+    _target: { browser: { documentGlobal: { openTrustedLinkIn } } },
   };
 
   feed.onAction(openWindowAction);
@@ -385,7 +388,7 @@ add_task(async function test_onAction_OPEN_PRIVATE_WINDOW() {
   let openWindowAction = {
     type: actionTypes.OPEN_PRIVATE_WINDOW,
     data: { url: "https://foo.com" },
-    _target: { window: { openTrustedLinkIn } },
+    _target: { browser: { documentGlobal: { openTrustedLinkIn } } },
   };
 
   feed.onAction(openWindowAction);
@@ -412,8 +415,8 @@ add_task(async function test_onAction_OPEN_LINK() {
     type: actionTypes.OPEN_LINK,
     data: { url: "https://foo.com" },
     _target: {
-      window: {
-        openTrustedLinkIn,
+      browser: {
+        documentGlobal: { openTrustedLinkIn },
       },
     },
   };
@@ -438,8 +441,8 @@ add_task(async function test_onAction_OPEN_LINK_where() {
     type: actionTypes.OPEN_LINK,
     data: { url: "https://foo.com", where: "tab" },
     _target: {
-      window: {
-        openTrustedLinkIn,
+      browser: {
+        documentGlobal: { openTrustedLinkIn },
       },
     },
   };
@@ -461,9 +464,8 @@ add_task(async function test_onAction_OPEN_LINK_referrer() {
     type: actionTypes.OPEN_LINK,
     data: { url: "https://foo.com", referrer: "https://foo.com/ref" },
     _target: {
-      window: {
-        openTrustedLinkIn,
-        whereToOpenLink: () => "tab",
+      browser: {
+        documentGlobal: { openTrustedLinkIn, whereToOpenLink: () => "tab" },
       },
     },
   };
@@ -508,9 +510,8 @@ add_task(async function test_onAction_OPEN_LINK_typed_bonus() {
       url: "https://foo.com",
     },
     _target: {
-      window: {
-        openTrustedLinkIn,
-        whereToOpenLink: () => "tab",
+      browser: {
+        documentGlobal: { openTrustedLinkIn, whereToOpenLink: () => "tab" },
       },
     },
   };
@@ -537,8 +538,8 @@ add_task(async function test_onAction_OPEN_LINK_pocket() {
       type: "pocket",
     },
     _target: {
-      window: {
-        openTrustedLinkIn,
+      browser: {
+        documentGlobal: { openTrustedLinkIn },
       },
     },
   };
@@ -564,7 +565,9 @@ add_task(async function test_onAction_OPEN_LINK_not_http() {
     type: actionTypes.OPEN_LINK,
     data: { url: "file:///foo.com" },
     _target: {
-      window: { openTrustedLinkIn },
+      browser: {
+        documentGlobal: { openTrustedLinkIn },
+      },
     },
   };
 
@@ -604,7 +607,9 @@ add_task(async function test_onAction_ABOUT_SPONSORED_TOP_SITES() {
   let openLinkAction = {
     type: actionTypes.ABOUT_SPONSORED_TOP_SITES,
     _target: {
-      window: { openTrustedLinkIn },
+      browser: {
+        documentGlobal: { openTrustedLinkIn },
+      },
     },
   };
 
@@ -631,7 +636,7 @@ add_task(async function test_onAction_FILL_SEARCH_TERM() {
   let action = {
     type: actionTypes.FILL_SEARCH_TERM,
     data: { label: "@Foo" },
-    _target: { window: { gURLBar: locationBar } },
+    _target: { browser: { documentGlobal: { gURLBar: locationBar } } },
   };
 
   await feed.onAction(action);

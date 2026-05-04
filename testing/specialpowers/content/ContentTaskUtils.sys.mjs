@@ -205,7 +205,7 @@ export var ContentTaskUtils = {
        *
        * Get rid of the documentGlobal fallback once 152 makes it to release.
        */
-      let global = subject.documentGlobal ?? subject.ownerGlobal;
+      let global = subject.documentGlobal ?? subject.documentGlobal;
       let obs = new global.MutationObserver(function () {
         if (checkFn && !checkFn()) {
           return;
