@@ -646,8 +646,11 @@ static void PrintStackValue(JSContext* maybeCx, StackValue* stackVal,
 }
 #endif
 
+WasmBaselinePerfSpewer::WasmBaselinePerfSpewer()
+    : needsToRecordInstruction_(PerfIREnabled() || PerfSrcEnabled()) {}
+
 [[nodiscard]] bool WasmBaselinePerfSpewer::needsToRecordInstruction() const {
-  return PerfIREnabled() || PerfSrcEnabled();
+  return needsToRecordInstruction_;
 }
 
 void WasmBaselinePerfSpewer::recordInstruction(MacroAssembler& masm,
