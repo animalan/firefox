@@ -40,6 +40,7 @@ ConnectionEntry::ConnectionEntry(nsHttpConnectionInfo* ci,
       mPreferIPv4(false),
       mPreferIPv6(false),
       mUsedForConnection(false),
+      mPendingQProcessingScheduled(false),
       mPendingQSet(aPendingQSet) {
   LOG(("ConnectionEntry::ConnectionEntry this=%p key=%s", this,
        ci->HashKey().get()));

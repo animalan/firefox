@@ -648,15 +648,23 @@ nsresult nsHttpConnectionMgr::UpdateParam(nsParamName name, uint16_t value) {
 
 void nsHttpConnectionMgr::ProcessPendingQForEntry(ConnectionEntry* aEntry) {
   LOG(("nsHttpConnectionMgr::ProcessPendingQForEntry [aEntry=%p]\n", aEntry));
+
+  if (aEntry->mPendingQProcessingScheduled) {
+    return;
+  }
+  aEntry->mPendingQProcessingScheduled = true;
+
   RefPtr<ConnectionEntry> entry = aEntry;
   NS_DispatchToCurrentThread(NS_NewRunnableFunction(
       "nsHttpConnectionMgr::ProcessPendingQForEntry",
       [self = RefPtr{this}, entry]() {
+        entry->mPendingQProcessingScheduled = false;
         if (!self->ProcessPendingQForEntry(entry, false)) {
           // if we reach here, it means that we couldn't dispatch a transaction
           // for the specified connection info.  walk the connection table...
           for (const auto& ent : self->mCT.Values()) {
-            if (self->ProcessPendingQForEntry(ent.get(), false)) {
+            if (ent.get() != entry.get() &&
+                self->ProcessPendingQForEntry(ent.get(), false)) {
               break;
             }
           }

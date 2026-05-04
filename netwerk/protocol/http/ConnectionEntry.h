@@ -155,6 +155,11 @@ class ConnectionEntry : public SupportsWeakPtr {
   // True if this connection entry has initiated a socket
   bool mUsedForConnection : 1;
 
+  // True if a ProcessPendingQForEntry runnable is already pending for this
+  // entry on the socket thread event queue. Prevents posting redundant
+  // runnables when many connection events fire in rapid succession.
+  bool mPendingQProcessingScheduled : 1;
+
   // Returns true when the entry has no connections, no pending transactions,
   // and no in-progress connection attempts. Used to determine whether the
   // entry can be removed from the connection table.
