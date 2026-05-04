@@ -38,11 +38,16 @@ const TEST_URI = `
     .contrast-color {
       color: contrast-color(gold);
     }
+
+    .relative-color {
+      color: rgb(from gold g b r);
+    }
   </style>
   <h1>Testing the color picker contrast ratio data</h1>
   <div>————</div>
   <section class="color-mix">mixed colors</section>
-  <section class="contrast-color">mixed colors</section>
+  <section class="contrast-color">contrast color</section>
+  <section class="relative-color">relative color</section>
 `;
 
 add_task(async function () {
@@ -118,7 +123,7 @@ add_task(async function () {
   await checkColorPickerConstrastData({
     view,
     label:
-      "Does not displays contrast information on color within color-mix function (#1)",
+      "Does not display contrast information on color within color-mix function (#1)",
     // color: color-mix(in srgb, blue, var(--title-color) 50%);
     ruleViewPropertyEl: colorWithColorMixProperty,
     // This is for `blue`
@@ -128,7 +133,7 @@ add_task(async function () {
   await checkColorPickerConstrastData({
     view,
     label:
-      "Does not displays contrast information on color within color-mix function (#2)",
+      "Does not display contrast information on color within color-mix function (#2)",
     // color: color-mix(in srgb, blue, var(--title-color) 50%);
     ruleViewPropertyEl: colorWithColorMixProperty,
     // This is for `var(--title-color)`
@@ -158,9 +163,37 @@ add_task(async function () {
   await checkColorPickerConstrastData({
     view,
     label:
-      "Does not displays contrast information on color within `contrast-color` function",
+      "Does not display contrast information on color within `contrast-color` function",
     // color: contrast-color(gold)
     ruleViewPropertyEl: colorWithContrastColorProperty,
+    // This is for `gold`
+    swatchIndex: 1,
+    expectVisibleContrast: false,
+  });
+
+  await selectNode(".relative-color", inspector);
+  const colorWithRelativeColorProperty = getRuleViewProperty(
+    view,
+    ".relative-color",
+    "color"
+  );
+  await checkColorPickerConstrastData({
+    view,
+    label: "Displays contrast information on resulting color from `rgb()`",
+    // color: rgb(from gold g b r)
+    ruleViewPropertyEl: colorWithRelativeColorProperty,
+    swatchIndex: 0,
+    expectVisibleContrast: true,
+    expectedContrastValueResult: "FAIL",
+    expectedContrastValueTitle:
+      "Does not meet WCAG standards for accessible text. Calculated against background: rgba(238,238,238,1)",
+    expectedContrastValueScore: "3.39",
+  });
+  await checkColorPickerConstrastData({
+    view,
+    label: "Does not display contrast information on color within `rgb()`",
+    // color: rgb(from gold g b r)
+    ruleViewPropertyEl: colorWithRelativeColorProperty,
     // This is for `gold`
     swatchIndex: 1,
     expectVisibleContrast: false,

@@ -335,7 +335,7 @@ function testParseCssProperty(doc, parser) {
       expected: getColorMarkup({
         color: "rgb(from gold r g b)",
         // we have a nested color span for the `gold` after `from`
-        content: `rgb(from ${getColorMarkup({ color: "gold" })} r g b)`,
+        content: `rgb(from ${getColorMarkup({ color: "gold", colorFunction: "rgb" })} r g b)`,
       }),
     },
 
@@ -347,7 +347,7 @@ function testParseCssProperty(doc, parser) {
         // we have a nested color span for the inner `hsl()` after `from`
         content:
           `color(from ` +
-          getColorMarkup({ color: "hsl(0 100% 50%)" }) +
+          getColorMarkup({ color: "hsl(0 100% 50%)", colorFunction: "color" }) +
           ` xyz x y 0.5)`,
       }),
     },
@@ -360,7 +360,7 @@ function testParseCssProperty(doc, parser) {
         // we have a nested color span for the inner `red` after `from`
         content:
           `oklab(from ` +
-          getColorMarkup({ color: "red" }) +
+          getColorMarkup({ color: "red", colorFunction: "oklab" }) +
           ` calc(l - 1) calc(a * 2) calc(b + 3) / alpha)`,
       }),
     },
@@ -375,6 +375,7 @@ function testParseCssProperty(doc, parser) {
           // we have a nested color span for the inner `color-mix()` after `from`
           getColorMarkup({
             color: "color-mix(in lch, plum 40%, pink)",
+            colorFunction: "rgb",
             content:
               `color-mix(in lch, ` +
               // and we have nested colors representing the color-mix color params (plum and pink)
@@ -397,10 +398,11 @@ function testParseCssProperty(doc, parser) {
           // we have a nested color span for the inner `rgb()` after `from`
           getColorMarkup({
             color: "rgb(from gold r g b)",
+            colorFunction: "rgb",
             content:
               `rgb(from ` +
               // we have a nested color span for `gold` after `from`
-              getColorMarkup({ color: "gold" }) +
+              getColorMarkup({ color: "gold", colorFunction: "rgb" }) +
               ` r g b)`,
           }) +
           ` r g b)`,
@@ -422,7 +424,7 @@ function testParseCssProperty(doc, parser) {
             // nested color span for `gold` after `from`
             getColorMarkup({
               color: "gold",
-              colorFunction: "linear-gradient",
+              colorFunction: "rgb",
             }) +
             " r g b)",
         }) +

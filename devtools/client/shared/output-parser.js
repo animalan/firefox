@@ -48,6 +48,15 @@ const COLOR_TAKING_FUNCTIONS = new Set([
   "color-mix",
   "contrast-color",
   "light-dark",
+  // color functions can take a relative color after `from`
+  "color",
+  "hsl",
+  "hwb",
+  "lab",
+  "lch",
+  "oklab",
+  "oklch",
+  "rgb",
 ]);
 // Functions that accept a shape argument.
 const BASIC_SHAPE_FUNCTIONS = new Set([
