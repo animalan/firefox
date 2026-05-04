@@ -70,9 +70,6 @@ pub struct Args {
     /// `--cert-replace-script` and `--cert-dir` must also be passed.
     #[arg(long)]
     pub cert_override: Vec<CertOverride>,
-    /// Path to replace-updater-certs.py. Required when --cert-override is given.
-    #[arg(long)]
-    pub cert_replace_script: Option<PathBuf>,
     /// Path to directory that contains mar certs. Required when --cert-override is given.
     #[arg(long)]
     pub cert_dir: Option<PathBuf>,
@@ -84,14 +81,6 @@ impl Args {
     pub fn parse_and_validate() -> Self {
         let mut args = Self::parse();
         if !args.cert_override.is_empty() {
-            if args.cert_replace_script.is_none() {
-                Self::command()
-                    .error(
-                        clap::error::ErrorKind::MissingRequiredArgument,
-                        "--cert-replace-script is required when --cert-override is given",
-                    )
-                    .exit();
-            }
             if args.cert_dir.is_none() {
                 Self::command()
                     .error(
@@ -138,12 +127,6 @@ impl Args {
         }
         args.check_updates_script = absolute(args.check_updates_script)
             .expect("Failed to convert check updates script into an absolute path!");
-        if let Some(script) = args.cert_replace_script {
-            args.cert_replace_script = Some(
-                absolute(script)
-                    .expect("Failed to convert cert replace script into an absolute path!"),
-            );
-        }
         return args;
     }
 }
