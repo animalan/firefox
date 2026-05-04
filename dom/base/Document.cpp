@@ -16523,8 +16523,7 @@ static bool ElementIsRemoteFrame(Element* aElement) {
   return loader && loader->IsRemoteFrame();
 }
 
-Document::ElementReadyCheckResult Document::FullscreenElementReadyCheck(
-    FullscreenRequest& aRequest) {
+bool Document::FullscreenElementReadyCheck(FullscreenRequest& aRequest) {
   Element* elem = aRequest.Element();
   // Strictly speaking, this isn't part of the fullscreen element ready
   // check in the spec, but per steps in the spec, when an element which
@@ -16532,7 +16531,9 @@ Document::ElementReadyCheckResult Document::FullscreenElementReadyCheck(
   // should change and no event should be dispatched, but we still need
   // to resolve the returned promise.
   Element* fullscreenElement = GetUnretargetedFullscreenElement();
-  if (NS_WARN_IF(elem == fullscreenElement)) {
+  if (NS_WARN_IF(elem == fullscreenElement &&
+                 aRequest.mFullscreenKeyboardLock ==
+                     GetFullscreenKeyboardLockStatus())) {
     // But this introduces behavior that we now need to account for;
     // because we can have arbitrary depth of OOP-frames, we may hit this check
     // for a process that already is fullscreen, e.g. the parent process.
@@ -16543,57 +16544,44 @@ Document::ElementReadyCheckResult Document::FullscreenElementReadyCheck(
     // instance. Note: this is just for JSWA not the platform-only fullscreen
     // implementation.
     if (ElementIsRemoteFrame(elem)) {
-      // XXXsfarre: ApplyFullscreen will not complete for this chrome document.
-      // But we must update the keyboard lock state before
-      // PropagateFullscreenRequest runs, because it will force a warning to be
-      // displayed, and it can temporarily be wrong, if we don't pre-set the
-      // kblock value here. JSWA-only problem.
-      if (XRE_IsParentProcess()) {
-        SetFullscreenKeyboardLockStatus(aRequest.mFullscreenKeyboardLock);
-      }
       PropagateFullscreenRequest(this, elem);
     }
-
-    // Parent process need not dispatch kblock event, it's already set.
-    return (aRequest.mFullscreenKeyboardLock ==
-                GetFullscreenKeyboardLockStatus() ||
-            XRE_IsParentProcess())
-               ? ElementReadyCheckResult::eSame
-               : ElementReadyCheckResult::eKeyboardLockOnly;
+    aRequest.MayResolvePromise();
+    return false;
   }
   if (!elem->IsInComposedDoc()) {
     aRequest.Reject("FullscreenDeniedNotInDocument");
-    return ElementReadyCheckResult::eErrorPromiseRejected;
+    return false;
   }
   if (elem->IsPopoverOpen()) {
     aRequest.Reject("FullscreenDeniedPopoverOpen");
-    return ElementReadyCheckResult::eErrorPromiseRejected;
+    return false;
   }
   if (elem->OwnerDoc() != this) {
     aRequest.Reject("FullscreenDeniedMovedDocument");
-    return ElementReadyCheckResult::eErrorPromiseRejected;
+    return false;
   }
   if (!GetWindow()) {
     aRequest.Reject("FullscreenDeniedLostWindow");
-    return ElementReadyCheckResult::eErrorPromiseRejected;
+    return false;
   }
   if (const char* msg = GetFullscreenError(aRequest.mCallerType)) {
     aRequest.Reject(msg);
-    return ElementReadyCheckResult::eErrorPromiseRejected;
+    return false;
   }
   if (HasFullscreenSubDocument(*this)) {
     aRequest.Reject("FullscreenDeniedSubDocFullScreen");
-    return ElementReadyCheckResult::eErrorPromiseRejected;
+    return false;
   }
   if (elem->IsHTMLElement(nsGkAtoms::dialog)) {
     aRequest.Reject("FullscreenDeniedHTMLDialog");
-    return ElementReadyCheckResult::eErrorPromiseRejected;
+    return false;
   }
   if (!nsContentUtils::IsChromeDoc(this) && !IsInFocusedTab(this)) {
     aRequest.Reject("FullscreenDeniedNotFocusedTab");
-    return ElementReadyCheckResult::eErrorPromiseRejected;
+    return false;
   }
-  return ElementReadyCheckResult::eOk;
+  return true;
 }
 
 static nsCOMPtr<nsPIDOMWindowOuter> GetRootWindow(Document* aDoc) {
@@ -16660,28 +16648,15 @@ void Document::RequestFullscreen(UniquePtr<FullscreenRequest> aRequest,
   }
 }
 
-static void SetKeyboardLockStatusAndMaybeDispatchEvent(
-    Document* aDoc, const FullscreenRequest& aRequest) {
-  aDoc->SetFullscreenKeyboardLockStatus(aRequest.mFullscreenKeyboardLock);
-  if (aRequest.ShouldDispatchKeyboardLockEvent()) {
-    DispatchFullscreenUpdateKeyboardLockEvent(aDoc);
-  }
-}
-
 void Document::RequestFullscreenInContentProcess(
     UniquePtr<FullscreenRequest> aRequest, bool aApplyFullscreenDirectly) {
   MOZ_ASSERT(XRE_IsContentProcess());
+
   // If we are in the content process, we can apply the fullscreen
   // state directly only if we have been in DOM fullscreen, because
   // otherwise we always need to notify the chrome.
-
   if (aApplyFullscreenDirectly ||
       nsContentUtils::GetInProcessSubtreeRootDocument(this)->Fullscreen()) {
-    // This optimization causes edge case behaviors, due to not going via the
-    // parent process. We must make sure that we update keyboard lock state for
-    // this scenario.
-    aRequest->SetShouldDispatchKeyboardLockEvent(aRequest->GetPromise() &&
-                                                 aRequest->Document() == this);
     ApplyFullscreen(std::move(aRequest));
     return;
   }
@@ -16693,14 +16668,8 @@ void Document::RequestFullscreenInContentProcess(
 
   // We don't need to check element ready before this point, because
   // if we called ApplyFullscreen, it would check that for us.
-  switch (FullscreenElementReadyCheck(*aRequest)) {
-    case ElementReadyCheckResult::eSame:
-      aRequest->MayResolvePromise();
-      [[fallthrough]];
-    case ElementReadyCheckResult::eErrorPromiseRejected:
-      return;
-    default:
-      break;
+  if (!FullscreenElementReadyCheck(*aRequest)) {
+    return;
   }
 
   auto fullscreenKeyboardLock = aRequest->mFullscreenKeyboardLock;
@@ -16761,16 +16730,11 @@ void Document::RequestFullscreenInParentProcess(
     rootWin->SetFullscreenInternal(FullscreenReason::ForFullscreenAPI, true);
     return;
   }
+
   // We don't need to check element ready before this point, because
   // if we called ApplyFullscreen, it would check that for us.
-  switch (FullscreenElementReadyCheck(*aRequest)) {
-    case ElementReadyCheckResult::eSame:
-      aRequest->MayResolvePromise();
-      [[fallthrough]];
-    case ElementReadyCheckResult::eErrorPromiseRejected:
-      return;
-    default:
-      break;
+  if (!FullscreenElementReadyCheck(*aRequest)) {
+    return;
   }
 
   PendingFullscreenChangeList::Add(std::move(aRequest));
@@ -16833,20 +16797,22 @@ bool Document::HasPendingFullscreenRequests() {
 
 MOZ_CAN_RUN_SCRIPT_BOUNDARY
 bool Document::ApplyFullscreen(UniquePtr<FullscreenRequest> aRequest) {
-  Element* elem = aRequest->Element();
+  if (!FullscreenElementReadyCheck(*aRequest)) {
+    return false;
+  }
 
-  switch (FullscreenElementReadyCheck(*aRequest)) {
-    case ElementReadyCheckResult::eOk:
-      break;
-    case ElementReadyCheckResult::eKeyboardLockOnly:
-      SetKeyboardLockStatusAndMaybeDispatchEvent(this, *aRequest);
+  Element* elem = aRequest->Element();
+  if (GetUnretargetedFullscreenElement() == elem) {
+    // We are applying fullscreen to the already fullscreen element - this must
+    // be because fullscreen was requested again with different options.
+    if (aRequest->mFullscreenKeyboardLock !=
+        GetFullscreenKeyboardLockStatus()) {
+      SetFullscreenKeyboardLockStatus(aRequest->mFullscreenKeyboardLock);
+      DispatchFullscreenUpdateKeyboardLockEvent(this);
       aRequest->MayResolvePromise();
       return true;
-    case ElementReadyCheckResult::eSame:
-      aRequest->MayResolvePromise();
-      [[fallthrough]];
-    case ElementReadyCheckResult::eErrorPromiseRejected:
-      return false;
+    }
+    return false;
   }
 
   // Hide auto popovers until the topmost auto ancestor (or document if none).
@@ -16948,7 +16914,10 @@ bool Document::ApplyFullscreen(UniquePtr<FullscreenRequest> aRequest) {
 
   FullscreenRoots::Add(this);
 
-  SetKeyboardLockStatusAndMaybeDispatchEvent(this, *aRequest);
+  SetFullscreenKeyboardLockStatus(aRequest->mFullscreenKeyboardLock);
+  if (previousFullscreenDoc) {
+    DispatchFullscreenUpdateKeyboardLockEvent(this);
+  }
 
   // If it is the first entry of the fullscreen, trigger an event so
   // that the UI can response to this change, e.g. hide chrome, or
