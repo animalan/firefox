@@ -5,7 +5,25 @@
 import { MozLitElement } from "chrome://global/content/lit-utils.mjs";
 import { html } from "chrome://global/content/vendor/lit.all.mjs";
 
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
+);
+
 const MAX_PREVIEW_LINKS = 3;
+const lazy = {};
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "CONTENT_SHARING_SERVER_URL",
+  "browser.contentsharing.server.url",
+  ""
+);
+
+const DEFAULT_COPY_ICON = "chrome://global/skin/icons/edit-copy.svg";
+const DEFAULT_COPY_L10N_ID = "content-sharing-modal-copy-link";
+
+const COPIED_COPY_ICON = "chrome://global/skin/icons/check.svg";
+const COPIED_COPY_L10N_ID = "content-sharing-modal-link-copied";
 
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://global/content/elements/moz-card.mjs";
@@ -16,7 +34,11 @@ import "chrome://global/content/elements/moz-button.mjs";
  * Element used for content sharing modal content
  */
 export class ContentSharingModal extends MozLitElement {
-  static properties = { share: { type: Object } };
+  static properties = {
+    share: { type: Object },
+    error: { type: String },
+    isSignedIn: { type: Boolean },
+  };
 
   static queries = {
     title: ".share-title",
@@ -24,6 +46,9 @@ export class ContentSharingModal extends MozLitElement {
     links: { all: ".link" },
     moreLinks: ".more-links",
     previewCard: ".preview > moz-card",
+    copyButton: "#copy-button",
+    viewPageButton: "#view-page",
+    signInButton: "#sign-in",
   };
 
   async getUpdateComplete() {
@@ -36,6 +61,9 @@ export class ContentSharingModal extends MozLitElement {
 
     const shareObject = window.arguments?.[0];
     this.share = shareObject.share;
+    this.error = shareObject.error;
+    this.url = shareObject.url;
+    this.isSignedIn = shareObject.isSignedIn;
   }
 
   close() {
@@ -77,6 +105,58 @@ export class ContentSharingModal extends MozLitElement {
     return this.share.links.map(link => this.linkTemplate(link));
   }
 
+  handleViewPageClick() {
+    this.close();
+    this.documentGlobal.frameElement.documentGlobal.openTrustedLinkIn(
+      this.url,
+      "tab"
+    );
+  }
+
+  handleCopyClick() {
+    window.navigator.clipboard.writeText(this.url);
+
+    this.copyButton.setAttribute("iconsrc", COPIED_COPY_ICON);
+    this.copyButton.setAttribute("data-l10n-id", COPIED_COPY_L10N_ID);
+
+    new Promise(r => setTimeout(r, 1000)).then(() => {
+      this.copyButton.setAttribute("iconsrc", DEFAULT_COPY_ICON);
+      this.copyButton.setAttribute("data-l10n-id", DEFAULT_COPY_L10N_ID);
+    });
+  }
+
+  handleSignInClick() {
+    this.close();
+    this.documentGlobal.frameElement.documentGlobal.openTrustedLinkIn(
+      lazy.CONTENT_SHARING_SERVER_URL,
+      "tab"
+    );
+  }
+
+  buttonsTemplate() {
+    if (this.isSignedIn) {
+      return html`<moz-button
+          @click=${this.handleViewPageClick}
+          id="view-page"
+          data-l10n-id="content-sharing-modal-view-page"
+        ></moz-button
+        ><moz-button
+          id="copy-button"
+          iconsrc=${DEFAULT_COPY_ICON}
+          data-l10n-id=${DEFAULT_COPY_L10N_ID}
+          type="primary"
+          @click=${this.handleCopyClick}
+        ></moz-button>`;
+    }
+
+    return html`<moz-button
+      @click=${this.handleSignInClick}
+      id="sign-in"
+      data-l10n-id="content-sharing-modal-sign-in"
+      type="primary"
+    ></moz-button>`;
+  }
+
   render() {
     if (!this.share) {
       return null;
@@ -115,6 +195,16 @@ export class ContentSharingModal extends MozLitElement {
             id="close-button"
             iconsrc="chrome://global/skin/icons/close.svg"
           ></moz-button>
+
+          <div class="description-content">
+            <div>
+              <h2 data-l10n-id="content-sharing-modal-title"></h2>
+              <p data-l10n-id="content-sharing-modal-description"></p>
+            </div>
+            <moz-button-group>${this.buttonsTemplate()}</moz-button-group>
+          </div>
+
+          <div class="empty"></div>
         </div>
       </div>`;
   }

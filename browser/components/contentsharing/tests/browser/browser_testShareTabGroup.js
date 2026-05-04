@@ -28,6 +28,7 @@ add_task(async function test_handleShareTabGroup() {
     await assertContentSharingModal(window, {
       share: body,
       url: server.mockResponse.url,
+      isSignedIn: false,
     });
 
     Assert.equal(body.type, "tab_group", "Share type is 'tab_group'");
