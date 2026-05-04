@@ -20343,11 +20343,7 @@
 
 - name: zoom.minPercent
   type: uint32_t
-#ifdef ANDROID
   value: 20
-#else
-  value: 30
-#endif
   mirror: always
 
 #---------------------------------------------------------------------------
