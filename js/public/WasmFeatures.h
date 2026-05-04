@@ -32,7 +32,9 @@
 //   a. Set `set_spidermonkey_pref: startup`
 //   b. Set value to 'true' for default features, @IS_NIGHTLY_BUILD@ for
 //      tentative features, and 'false' for experimental features.
-// 5. [fuzzing] Add the feature to gluesmith/src/lib.rs, if wasm-smith has
+// 5. Update the jit-test/tests/wasm/directiveless/features.js test to include
+//    this feature.
+// 6. [fuzzing] Add the feature to gluesmith/src/lib.rs, if wasm-smith has
 //    support for it.
 
 #ifdef ENABLE_WASM_RELAXED_SIMD
@@ -75,7 +77,7 @@
 #define JS_FOR_WASM_FEATURES(FEATURE)                                   \
   FEATURE(                                                              \
     /* capitalized name   */ RelaxedSimd,                               \
-    /* lower case name    */ v128Relaxed,                               \
+    /* lower case name    */ relaxedSimd,                               \
     /* compile predicate  */ WASM_RELAXED_SIMD_ENABLED,                 \
     /* compiler predicate */ AnyCompilerAvailable(cx),                  \
     /* flag predicate     */ js::jit::JitSupportsWasmSimd(),            \
