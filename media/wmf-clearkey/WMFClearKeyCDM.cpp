@@ -15,6 +15,7 @@
 #include "WMFClearKeySession.h"
 #include "WMFDecryptedBlock.h"
 #include "WMFPMPServer.h"
+#include "nss.h"
 
 using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::MakeAndInitialize;
@@ -118,6 +119,11 @@ static HRESULT GetOrCreateSharedPMPServer(
 
 HRESULT WMFClearKeyCDM::RuntimeClassInitialize(IPropertyStore* aProperties) {
   ENTRY_LOG();
+  if (NSS_NoDB_Init(nullptr) != SECSuccess) {
+    ENTRY_LOG_ARGS("NSS_NoDB_Init failed");
+    return E_FAIL;
+  }
+
   mSessionManager = new SessionManagerWrapper(this);
   return S_OK;
 }
