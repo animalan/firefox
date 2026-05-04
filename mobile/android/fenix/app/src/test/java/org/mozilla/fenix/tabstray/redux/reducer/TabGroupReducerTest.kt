@@ -407,7 +407,7 @@ class TabGroupReducerTest {
                 mode = Mode.Select(),
                 backStack = TabsTrayState().backStack + AddToTabGroup,
             ),
-            action = TabGroupAction.TabsAddedToGroup(groupId = "12345"),
+            action = TabGroupAction.SelectedTabsAddedToGroup(groupId = "12345"),
         )
         val expectedState = TabsTrayState(
             mode = Mode.Normal,
@@ -580,5 +580,14 @@ class TabGroupReducerTest {
         )
 
         assertEquals(expectedState, resultState)
+    }
+
+    @Test
+    fun `WHEN the user performs a drag and drop action THEN the state is unchanged`() {
+        val resultState = TabGroupActionReducer.reduce(
+            state = TabsTrayState(),
+            action = TabGroupAction.DragAndDropCompleted(sourceId = "54321", destinationId = "12345"),
+        )
+        assertEquals(TabsTrayState(), resultState)
     }
 }
