@@ -2273,6 +2273,11 @@ JS_PUBLIC_API bool js::ShouldIgnorePropertyDefinition(JSContext* cx,
       return true;
     }
   }
+  if (key == JSProto_Locale && !JS::Prefs::experimental_intl_locale_info()) {
+    if (id == NameToId(cx->names().firstDayOfWeek)) {
+      return true;
+    }
+  }
 #endif
 
   if (key == JSProto_Function &&

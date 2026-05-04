@@ -48,6 +48,7 @@ static constexpr auto UnicodeExtensionKeyNames() {
   names[UnicodeExtensionKey::Collation] = "co";
   names[UnicodeExtensionKey::CollationCaseFirst] = "kf";
   names[UnicodeExtensionKey::CollationNumeric] = "kn";
+  names[UnicodeExtensionKey::FirstDayOfWeek] = "fw";
   names[UnicodeExtensionKey::HourCycle] = "hc";
   names[UnicodeExtensionKey::NumberingSystem] = "nu";
   return names;
@@ -923,6 +924,10 @@ static bool IsSupported(JSContext* cx, LocaleData localeData, LanguageId locale,
     case UnicodeExtensionKey::CollationNumeric: {
       *result = IsSupportedCollationNumeric(value);
       return true;
+    }
+    case UnicodeExtensionKey::FirstDayOfWeek: {
+      // Not used as an option.
+      break;
     }
     case UnicodeExtensionKey::HourCycle: {
       *result = IsSupportedHourCycle(value);

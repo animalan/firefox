@@ -27,6 +27,7 @@ enum class UnicodeExtensionKey : uint8_t {
   Collation /* co */,
   CollationCaseFirst /* kf */,
   CollationNumeric /* kn */,
+  FirstDayOfWeek /* fw */,
   HourCycle /* hc */,
   NumberingSystem /* nu */,
 };

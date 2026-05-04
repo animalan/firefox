@@ -15,6 +15,7 @@
 #include "mozilla/UsingEnum.h"
 
 #include <algorithm>
+#include <array>
 #include <string>
 #include <utility>
 
@@ -29,6 +30,7 @@
 #include "builtin/String.h"
 #include "js/Conversions.h"
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
+#include "js/Prefs.h"
 #include "js/Printer.h"
 #include "js/TypeDecls.h"
 #include "js/Wrapper.h"
@@ -53,7 +55,12 @@ const JSClass LocaleObject::class_ = {
     &LocaleObject::classSpec_,
 };
 
-const JSClass& LocaleObject::protoClass_ = PlainObject::class_;
+const JSClass LocaleObject::protoClass_ = {
+    "Intl.Locale.prototype",
+    JSCLASS_HAS_CACHED_PROTO(JSProto_Locale),
+    JS_NULL_CLASS_OPS,
+    &LocaleObject::classSpec_,
+};
 
 static inline bool IsLocale(Handle<JS::Value> v) {
   return v.isObject() && v.toObject().is<LocaleObject>();
@@ -265,6 +272,24 @@ static JSLinearString* ToUnicodeValue(JSContext* cx,
       return cx->names().upper;
   }
   MOZ_CRASH("invalid locale case first");
+}
+
+/**
+ * WeekdayToUValue ( fw )
+ */
+static JSLinearString* WeekdayToUValue(JSContext* cx, JSLinearString* fw) {
+  static constexpr std::array weekdays = {
+      "sun", "mon", "tue", "wed", "thu", "fri", "sat", "sun",
+  };
+
+  if (fw->length() == 1) {
+    char16_t ch = fw->latin1OrTwoByteChar(0);
+    if ('0' <= ch && ch <= '7') {
+      size_t index = ch - '0';
+      return NewStringCopyN<CanGC>(cx, weekdays[index], 3);
+    }
+  }
+  return fw;
 }
 
 /**
@@ -612,6 +637,39 @@ static bool Locale(JSContext* cx, unsigned argc, Value* vp) {
         return false;
       }
     }
+
+#ifdef NIGHTLY_BUILD
+    if (JS::Prefs::experimental_intl_locale_info()) {
+      Rooted<JSLinearString*> firstDayOfWeek(cx);
+
+      // Step 22.
+      if (!GetStringOption(cx, options, cx->names().firstDayOfWeek,
+                           &firstDayOfWeek)) {
+        return false;
+      }
+
+      // Steps 23-24.
+      if (firstDayOfWeek) {
+        // Step 23.a.
+        firstDayOfWeek = WeekdayToUValue(cx, firstDayOfWeek);
+        if (!firstDayOfWeek) {
+          return false;
+        }
+
+        // Step 23.b.
+        firstDayOfWeek = GetUnicodeExtensionOption(
+            cx, UnicodeExtensionKey::FirstDayOfWeek, firstDayOfWeek);
+        if (!firstDayOfWeek) {
+          return false;
+        }
+
+        // Step 24.
+        if (!keywords.emplaceBack("fw", firstDayOfWeek)) {
+          return false;
+        }
+      }
+    }
+#endif
 
     // Step 25.
     static constexpr auto hourCycles = MapOptions<LocaleHourCycleToString>(
@@ -1130,6 +1188,24 @@ static bool Locale_collation(JSContext* cx, unsigned argc, Value* vp) {
   return CallNonGenericMethod<IsLocale, Locale_collation>(cx, args);
 }
 
+#ifdef NIGHTLY_BUILD
+// get Intl.Locale.prototype.firstDayOfWeek
+static bool Locale_firstDayOfWeek(JSContext* cx, const CallArgs& args) {
+  MOZ_ASSERT(IsLocale(args.thisv()));
+
+  // Step 3.
+  auto* locale = &args.thisv().toObject().as<LocaleObject>();
+  return GetUnicodeExtension(cx, locale, "fw", args.rval());
+}
+
+// get Intl.Locale.prototype.firstDayOfWeek
+static bool Locale_firstDayOfWeek(JSContext* cx, unsigned argc, Value* vp) {
+  // Steps 1-2.
+  CallArgs args = CallArgsFromVp(argc, vp);
+  return CallNonGenericMethod<IsLocale, Locale_firstDayOfWeek>(cx, args);
+}
+#endif
+
 // get Intl.Locale.prototype.hourCycle
 static bool Locale_hourCycle(JSContext* cx, const CallArgs& args) {
   MOZ_ASSERT(IsLocale(args.thisv()));
@@ -1337,6 +1413,9 @@ static const JSPropertySpec locale_properties[] = {
     JS_PSG("calendar", Locale_calendar, 0),
     JS_PSG("caseFirst", Locale_caseFirst, 0),
     JS_PSG("collation", Locale_collation, 0),
+#ifdef NIGHTLY_BUILD
+    JS_PSG("firstDayOfWeek", Locale_firstDayOfWeek, 0),
+#endif
     JS_PSG("hourCycle", Locale_hourCycle, 0),
     JS_PSG("numeric", Locale_numeric, 0),
     JS_PSG("numberingSystem", Locale_numberingSystem, 0),
