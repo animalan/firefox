@@ -2334,16 +2334,23 @@ void MacroAssembler::test32LoadPtr(Condition cond, const Address& addr,
                                    Register dest) {
   MOZ_ASSERT(cond == Assembler::Zero || cond == Assembler::NonZero);
 
+  vixl::UseScratchRegisterScope temps(this);
+  Register scratch = temps.AcquireX().asUnsized();
+  MOZ_ASSERT(scratch != addr.base);
+
+  // Can't use branchTest32() here, because it may select Tbz/Tbnz which don't
+  // affect condition flags.
   Label done;
-  branchTest32(Assembler::InvertCondition(cond), addr, mask, &done);
+  load32(addr, scratch);
+  test32(scratch, mask);
+  B(&done, Assembler::InvertCondition(cond));
 
   // ARM64 does not support conditional loads, so we use a branch with a CSel
   // (to prevent Spectre attacks).
-  vixl::UseScratchRegisterScope temps(this);
-  const ARMRegister scratch64 = temps.AcquireX();
 
-  loadPtr(src, scratch64.asUnsized());
-  Csel(ARMRegister(dest, 64), scratch64, ARMRegister(dest, 64), cond);
+  loadPtr(src, scratch);
+  Csel(ARMRegister(dest, 64), ARMRegister(scratch, 64), ARMRegister(dest, 64),
+       cond);
   bind(&done);
 }
 
