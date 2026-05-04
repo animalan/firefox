@@ -809,6 +809,12 @@ DictionaryCacheEntry::OnStopRequest(nsIRequest* request, nsresult result) {
           }
         }
 
+        if (NS_SUCCEEDED(finalResult) && !self->mDictionaryDataComplete) {
+          DICTIONARY_LOG(("Zero-byte cache entry for %s", self->mURI.get()));
+          finalResult = NS_ERROR_FAILURE;
+          shouldRemoveDictionary = true;
+        }
+
         self->CleanupOnCacheData(finalResult);
         self->mStopReceived = true;
         if (shouldRemoveDictionary) {
