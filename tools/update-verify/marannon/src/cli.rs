@@ -100,6 +100,41 @@ impl Args {
                     )
                     .exit();
             }
+
+            let cert_dir = args.cert_dir.as_ref().unwrap();
+            for cert_pair in &args.cert_override {
+                let orig_len = std::fs::metadata(cert_dir.join(&cert_pair.orig))
+                    .unwrap_or_else(|e| {
+                        Self::command()
+                            .error(
+                                clap::error::ErrorKind::InvalidValue,
+                                format!("Failed to stat cert '{}': {e}", cert_pair.orig),
+                            )
+                            .exit()
+                    })
+                    .len();
+                let replacement_len = std::fs::metadata(cert_dir.join(&cert_pair.replacement))
+                    .unwrap_or_else(|e| {
+                        Self::command()
+                            .error(
+                                clap::error::ErrorKind::InvalidValue,
+                                format!("Failed to stat cert '{}': {e}", cert_pair.replacement),
+                            )
+                            .exit()
+                    })
+                    .len();
+                if orig_len != replacement_len {
+                    Self::command()
+                        .error(
+                            clap::error::ErrorKind::InvalidValue,
+                            format!(
+                                "certs '{}' and '{}' must be the same length, but are {} and {} bytes respectively",
+                                cert_pair.orig, cert_pair.replacement, orig_len, replacement_len
+                            ),
+                        )
+                        .exit();
+                }
+            }
         }
         args.check_updates_script = absolute(args.check_updates_script)
             .expect("Failed to convert check updates script into an absolute path!");
