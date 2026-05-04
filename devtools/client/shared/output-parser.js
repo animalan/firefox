@@ -511,7 +511,8 @@ class OutputParser {
             lowerCaseFunctionName === "cubic-bezier" ||
             lowerCaseFunctionName === "linear" ||
             lowerCaseFunctionName === "attr" ||
-            BASIC_SHAPE_FUNCTIONS.has(lowerCaseFunctionName)
+            BASIC_SHAPE_FUNCTIONS.has(lowerCaseFunctionName) ||
+            lowerCaseFunctionName === "url"
           ) {
             // The function can accept a color or an angle argument, and we know
             // it isn't special in some other way. So, we let it
@@ -554,12 +555,8 @@ class OutputParser {
             }
             this.#onCloseParenthesis(options);
           } else {
-            const {
-              functionData,
-              sawVariable,
-              tokens: functionContentTokens,
-              depth,
-            } = this.#parseMatchingParens(text, tokenStream, options);
+            const { functionData, sawVariable, depth } =
+              this.#parseMatchingParens(text, tokenStream, options);
 
             if (sawVariable) {
               const computedFunctionText =
@@ -619,27 +616,7 @@ class OutputParser {
                 // See Bug 1891461.
                 (depth == 0 ? ")" : "");
 
-              if (lowerCaseFunctionName === "url" && options.urlClass) {
-                // url() with quoted strings are not mapped as UnquotedUrl,
-                // instead, we get a "Function" token with "url" function name,
-                // and later, a "QuotedString" token, which contains the actual URL.
-                let url;
-                for (const argToken of functionContentTokens) {
-                  if (argToken.tokenType === "QuotedString") {
-                    url = argToken.value;
-                    break;
-                  }
-                }
-
-                if (url !== undefined) {
-                  this.#appendURL(functionText, url, options);
-                } else {
-                  this.#appendTextNode(functionText);
-                }
-              } else if (
-                colorOK() &&
-                InspectorUtils.isValidCSSColor(functionText)
-              ) {
+              if (colorOK() && InspectorUtils.isValidCSSColor(functionText)) {
                 const colorFunctionEntry = this.#stack.findLast(
                   entry => entry.isColorTakingFunction
                 );
@@ -737,7 +714,13 @@ class OutputParser {
         }
         case "UnquotedUrl":
         case "BadUrl":
-          this.#appendURL(tokenText, token.value, options);
+          for (const part of this.#createURLElements(
+            tokenText,
+            token.value,
+            options
+          )) {
+            this.#append(part, token);
+          }
           break;
 
         case "QuotedString":
@@ -878,17 +861,19 @@ class OutputParser {
     }
 
     const stackEntry = this.#stack.pop();
-    let { parts, text } = stackEntry;
-    if (stackEntry.lowerCaseFunctionName === "light-dark") {
+    let { lowerCaseFunctionName, parts, text } = stackEntry;
+    if (lowerCaseFunctionName === "light-dark") {
       parts = this.#onCloseParenthesisForLightDark(stackEntry, options);
-    } else if (stackEntry.lowerCaseFunctionName === "cubic-bezier") {
+    } else if (lowerCaseFunctionName === "cubic-bezier") {
       parts = this.#onCloseParenthesisForCubicBezier(stackEntry, options);
-    } else if (stackEntry.lowerCaseFunctionName === "linear") {
+    } else if (lowerCaseFunctionName === "linear") {
       parts = this.#onCloseParenthesisForLinear(stackEntry, options);
-    } else if (stackEntry.lowerCaseFunctionName === "attr") {
+    } else if (lowerCaseFunctionName === "attr") {
       parts = this.#onCloseParenthesisForAttr(stackEntry, options);
-    } else if (BASIC_SHAPE_FUNCTIONS.has(stackEntry.lowerCaseFunctionName)) {
+    } else if (BASIC_SHAPE_FUNCTIONS.has(lowerCaseFunctionName)) {
       parts = this.#onCloseParenthesisForBasicShape(stackEntry, options);
+    } else if (lowerCaseFunctionName === "url") {
+      parts = this.#onCloseParenthesisForUrl(stackEntry, options);
     }
 
     // Put all the parts in the "new" last stack, or the main parsed array if there
@@ -1799,6 +1784,47 @@ class OutputParser {
   }
 
   /**
+   * Called when we got the closing parenthesis for `url()`.
+   * It will wrap the URL into a proper <a> element.
+   *
+   * @param {object} stackEntry
+   *        The last item in this.#stack
+   * @param {object} options
+   *        options passed to the parse function. @see #mergeOptions for valid options
+   *        and default values
+   * @returns {Array<string|Element>} The updated parts for the stack entry that is being closed.
+   */
+  #onCloseParenthesisForUrl(stackEntry, options) {
+    if (!options.urlClass) {
+      return stackEntry.parts;
+    }
+
+    // url() with quoted strings are not mapped as UnquotedUrl, instead, we get a "Function"
+    // token with "url" (the one we're closing here), and later, a "QuotedString" token
+    // which contains the actual URL.
+    // So here, we only need to loop through the parts to find the one which holds the
+    // QuotedString token and wrap it in an anchor.
+    let url;
+    for (let i = 0; i < stackEntry.parts.length; i++) {
+      const part = stackEntry.parts[i];
+      const token = stackEntry.tokensByPart.get(part);
+      if (token?.tokenType !== "QuotedString") {
+        continue;
+      }
+
+      // url() only takes a string, so we'll only have a single part refering to the url token
+      url = token.value;
+      break;
+    }
+
+    if (!url) {
+      return stackEntry.parts;
+    }
+
+    return this.#createURLElements(stackEntry.text, url, options);
+  }
+
+  /**
    * Parse a string.
    *
    * @param  {string} text
@@ -2190,35 +2216,37 @@ class OutputParser {
   }
 
   /**
-   * Append a URL to the output.
+   * Returns the elements representing a URL.
    *
    * @param  {string} match
    *         Complete match that may include "url(xxx)"
    * @param  {string} url
    *         Actual URL
-   * @param  {object} [options]
-   *         Options object. For valid options and default values see
-   *         #mergeOptions().
+   * @param  {object} options
+   *         Options object. For valid options and default values see #mergeOptions().
+   * @returns {Array<Node>}
    */
-  #appendURL(match, url, options) {
-    if (options.urlClass) {
-      // Sanitize the URL. Note that if we modify the URL, we just
-      // leave the termination characters. This isn't strictly
-      // "as-authored", but it makes a bit more sense.
-      match = this.#sanitizeURL(match);
-      const urlParts = URL_REGEX.exec(match);
+  #createURLElements(match, url, options) {
+    if (!options.urlClass) {
+      return [this.#createTextElement(match)];
+    }
 
-      // Bail out if that didn't match anything.
-      if (!urlParts) {
-        this.#appendTextNode(match);
-        return;
-      }
+    // Sanitize the URL. Note that if we modify the URL, we just
+    // leave the termination characters. This isn't strictly
+    // "as-authored", but it makes a bit more sense.
+    match = this.#sanitizeURL(match);
+    const urlParts = URL_REGEX.exec(match);
 
-      const { leader, body, trailer } = urlParts.groups;
+    // Bail out if that didn't match anything.
+    if (!urlParts) {
+      return [this.#doc.createTextNode(match)];
+    }
 
-      this.#appendTextNode(leader);
+    const { leader, body, trailer } = urlParts.groups;
 
-      this.#appendNode(
+    return [
+      this.#doc.createTextNode(leader),
+      this.#createNode(
         "a",
         {
           target: "_blank",
@@ -2228,12 +2256,9 @@ class OutputParser {
             : url,
         },
         body
-      );
-
-      this.#appendTextNode(trailer);
-    } else {
-      this.#appendTextNode(match);
-    }
+      ),
+      this.#doc.createTextNode(trailer),
+    ];
   }
 
   /**
@@ -2318,9 +2343,29 @@ class OutputParser {
     if (value) {
       const textNode = this.#doc.createTextNode(value);
       node.appendChild(textNode);
+      const truncated = value.length > TRUNCATE_LENGTH_THRESHOLD;
+      node.classList.toggle(TRUNCATE_NODE_CLASSNAME, truncated);
     }
 
     return node;
+  }
+
+  /**
+   * Create an element representing a simple text.
+   *
+   * @param  {string} text
+   *         Text to append
+   * @returns {Text|Element} Returns a Text, or, if the text is greater than the truncate
+   *          threshold, a Node with a specific class to trigger CSS "truncation".
+   */
+  #createTextElement(text) {
+    if (text.length > TRUNCATE_LENGTH_THRESHOLD) {
+      // If the text is too long, force creating a node, which will add the
+      // necessary classname to truncate the property correctly.
+      return this.#createNode("span", {}, text);
+    }
+
+    return this.#doc.createTextNode(text);
   }
 
   /**
@@ -2337,10 +2382,6 @@ class OutputParser {
    */
   #appendNode(tagName, attributes, value, token) {
     const node = this.#createNode(tagName, attributes, value);
-    if (value.length > TRUNCATE_LENGTH_THRESHOLD) {
-      node.classList.add(TRUNCATE_NODE_CLASSNAME);
-    }
-
     this.#append(node, token);
   }
 

@@ -497,6 +497,7 @@ function testParseURL(doc, parser) {
     },
   ];
 
+  const target = doc.querySelector("div");
   for (const test of tests) {
     const url = test.leader + "something.jpg" + test.trailer;
     const frag = parser.parseCssProperty("background", url, {
@@ -504,8 +505,7 @@ function testParseURL(doc, parser) {
       baseURI: test.baseURI,
     });
 
-    const target = doc.querySelector("div");
-    target.appendChild(frag);
+    target.replaceChildren(frag);
 
     const expectedTrailer = test.expectedTrailer || test.trailer;
 
@@ -516,9 +516,36 @@ function testParseURL(doc, parser) {
       expectedTrailer;
 
     is(target.innerHTML, expected, test.desc);
-
-    target.innerHTML = "";
   }
+
+  info("Check that long URLs get the class for visual truncation");
+  const LONG_URL = `something.jpg?${"a".repeat(5000)}`;
+  target.replaceChildren(
+    parser.parseCssProperty("background", `url(${LONG_URL})`, {
+      urlClass: "test-urlclass",
+    })
+  );
+  is(
+    target.innerHTML,
+    // prettier-ignore
+    `url(` +
+    `<a target="_blank" class="test-urlclass propertyvalue-long-text" href="${LONG_URL}">` +
+    LONG_URL +
+    `</a>` +
+    `)`,
+    "long url is wrapped in an element with a specific class"
+  );
+
+  target.replaceChildren(
+    parser.parseCssProperty("background", `url(${LONG_URL})`, {})
+  );
+  is(
+    target.innerHTML,
+    `<span class="propertyvalue-long-text">url(${LONG_URL})</span>`,
+    "long url is wrapped in an element with a specific class, even when urlClass option is not set"
+  );
+
+  target.innerHTML = "";
 }
 
 function testParseFilter(doc, parser) {
