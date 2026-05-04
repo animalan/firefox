@@ -651,7 +651,7 @@ class TIPMessageHandler {
 
     mHook = ::SetWindowsHookEx(WH_GETMESSAGE, &TIPHook, nullptr,
                                ::GetCurrentThreadId());
-    MOZ_ASSERT(mHook);
+    NS_WARNING_ASSERTION(mHook, "SetWindowsHookEx(WH_GETMESSAGE) failed");
 
     if (!sSendMessageTimeoutWStub) {
       sUser32Intercept.Init("user32.dll");
