@@ -125,6 +125,12 @@ class MFMediaEngineParent final : public PMFMediaEngineParent {
   MediaEventListener mMediaEngineEventListener;
   MediaEventListener mRequestSampleListener;
   bool mIsCreatedMediaEngine = false;
+  // Set to true when EnableWindowlessSwapchainMode succeeds during media source
+  // setup. Guards DComp surface handle creation in EnsureDcompSurfaceHandle:
+  // if false (e.g. when a CDM incompatible with windowless swap chain is
+  // active), DComp setup is skipped and we fall back to frame-server mode.
+  bool mDCompModeEnabled = false;
+  bool mIsFrameServerMode = false;
 
   Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> mDXGIDeviceManager;
 

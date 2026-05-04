@@ -56,6 +56,15 @@ void MFMediaEngineVideoStream::SetKnowsCompositor(
       }));
 }
 
+void MFMediaEngineVideoStream::SetFrameServerMode() {
+  ComPtr<MFMediaEngineVideoStream> self = this;
+  (void)mTaskQueue->Dispatch(NS_NewRunnableFunction(
+      "MFMediaEngineVideoStream::SetFrameServerMode", [self, this]() {
+        mFrameServerMode = true;
+        LOG("Set frame server mode");
+      }));
+}
+
 void MFMediaEngineVideoStream::SetDCompSurfaceHandle(HANDLE aDCompSurfaceHandle,
                                                      gfx::IntSize aDisplay) {
   ComPtr<MFMediaEngineVideoStream> self = this;
@@ -257,7 +266,15 @@ RefPtr<MediaDataDecoder::DecodePromise> MFMediaEngineVideoStream::OutputData(
 
 already_AddRefed<MediaData> MFMediaEngineVideoStream::OutputDataInternal() {
   AssertOnTaskQueue();
-  if (mRawDataQueueForGeneratingOutput.GetSize() == 0 || !IsDCompImageReady()) {
+  if (mRawDataQueueForGeneratingOutput.GetSize() == 0) {
+    return nullptr;
+  }
+  if (mFrameServerMode) {
+    RefPtr<MediaRawData> discarded =
+        mRawDataQueueForGeneratingOutput.PopFront();
+    return nullptr;
+  }
+  if (!IsDCompImageReady()) {
     return nullptr;
   }
   RefPtr<MediaRawData> sample = mRawDataQueueForGeneratingOutput.PopFront();
@@ -283,6 +300,15 @@ RefPtr<MediaDataDecoder::DecodePromise> MFMediaEngineVideoStream::Drain() {
   }
   AssertOnTaskQueue();
   MediaDataDecoder::DecodedData outputs;
+  if (mFrameServerMode) {
+    mRawDataQueueForGeneratingOutput.Reset();
+    if (!mSampleRequestTokens.empty() &&
+        mRawDataQueueForFeedingEngine.GetSize() == 0) {
+      NotifyEndEvent();
+    }
+    return MediaDataDecoder::DecodePromise::CreateAndResolve(std::move(outputs),
+                                                             __func__);
+  }
   if (!IsDCompImageReady()) {
     LOGV("Waiting for dcomp image for draining");
     // A workaround for a special case where we have sent all input data to the
@@ -441,7 +467,7 @@ bool MFMediaEngineVideoStream::IsEncrypted() const {
 }
 
 bool MFMediaEngineVideoStream::ShouldDelayVideoDecodeBeforeDcompReady() {
-  return HasEnoughRawData() && !IsDCompImageReady();
+  return !mFrameServerMode && HasEnoughRawData() && !IsDCompImageReady();
 }
 
 nsCString MFMediaEngineVideoStream::GetCodecName() const {
