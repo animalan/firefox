@@ -63,7 +63,6 @@ namespace gfx {
   _(WEBGPU_EXTERNAL_TEXTURE, Feature, "WebGPU external textures")            \
   _(MESA_THREADING, Feature, "Mesa glthread enabled")                        \
   _(WEBGL, Feature, "WebGL")                                                 \
-  _(VIDEO_HDR, Feature, "HDR video supported in media features")             \
   /* Add new entries above this comment */
 
 enum class Feature : uint32_t {

@@ -16,7 +16,6 @@
 #include <fstream>
 #include <utility>
 
-#include "gfxPlatform.h"
 #include "gfxUtils.h"
 #include "GLBlitHelper.h"
 #ifdef XP_MACOSX
@@ -878,7 +877,8 @@ void NativeLayerCA::AttachExternalImage(wr::RenderTextureHost* aExternalImage) {
   mIsDRM = isDRM;
 
   MacIOSurface* macIOSurface = texture->GetSurface();
-  mIsHDR = macIOSurface->IsHDRSurface() && gfxPlatform::UseHDR();
+  mIsHDR =
+      macIOSurface->IsHDRSurface() && StaticPrefs::gfx_color_management_hdr();
 
   bool specializeVideo = ShouldSpecializeVideo(lock);
   bool changedSpecializeVideo = (mSpecializeVideo != specializeVideo);
