@@ -11366,7 +11366,7 @@
 # field-sizing CSS property
 - name: layout.css.field-sizing.enabled
   type: RelaxedAtomicBool
-  value: false
+  value: true
   mirror: always
 
 # Whether :-moz-broken is supported in content.
