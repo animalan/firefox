@@ -2273,18 +2273,6 @@ JS_PUBLIC_API bool js::ShouldIgnorePropertyDefinition(JSContext* cx,
       return true;
     }
   }
-  if (key == JSProto_Locale && !JS::Prefs::experimental_intl_locale_info()) {
-    if (id == NameToId(cx->names().firstDayOfWeek) ||
-        id == NameToId(cx->names().getTextInfo) ||
-        id == NameToId(cx->names().getNumberingSystems) ||
-        id == NameToId(cx->names().getCollations) ||
-        id == NameToId(cx->names().getCalendars) ||
-        id == NameToId(cx->names().getHourCycles) ||
-        id == NameToId(cx->names().getWeekInfo) ||
-        id == NameToId(cx->names().getTimeZones)) {
-      return true;
-    }
-  }
 #endif
 
   if (key == JSProto_Function &&

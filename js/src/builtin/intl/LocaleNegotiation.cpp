@@ -48,7 +48,6 @@ static constexpr auto UnicodeExtensionKeyNames() {
   names[UnicodeExtensionKey::Collation] = "co";
   names[UnicodeExtensionKey::CollationCaseFirst] = "kf";
   names[UnicodeExtensionKey::CollationNumeric] = "kn";
-  names[UnicodeExtensionKey::FirstDayOfWeek] = "fw";
   names[UnicodeExtensionKey::HourCycle] = "hc";
   names[UnicodeExtensionKey::NumberingSystem] = "nu";
   return names;
@@ -118,8 +117,7 @@ static void AssertCanonicalLocale(JSContext* cx, const JSLinearString* locale) {
 #endif
 }
 
-mozilla::Maybe<LanguageId> js::intl::ToLanguageId(
-    JSContext* cx, const JSLinearString* locale) {
+static auto ToLanguageId(JSContext* cx, const JSLinearString* locale) {
   AssertCanonicalLocale(cx, locale);
 
   // Tell the analysis the |ToLanguageId| function can't GC. (bug 1588528)
@@ -471,19 +469,6 @@ static bool LookupMatcher(JSContext* cx, AvailableLocaleKind availableLocales,
   // Steps 3-5.
   result.set({defaultLocale, nullptr});
   return true;
-}
-
-bool js::intl::LookupMatcher(JSContext* cx,
-                             AvailableLocaleKind availableLocales,
-                             LanguageId locale,
-                             mozilla::Maybe<LanguageId>* result) {
-  auto defaultLocale = LanguageId::und();
-  if (!DefaultLocale(cx, &defaultLocale)) {
-    return false;
-  }
-
-  return BestAvailableLocale(cx, availableLocales, locale,
-                             mozilla::Some(defaultLocale), result);
 }
 
 void js::intl::LocaleOptions::trace(JSTracer* trc) {
@@ -891,8 +876,11 @@ JSLinearString* js::intl::DefaultCalendar(JSContext* cx,
  * Return the default numbering system of a locale.
  */
 JSLinearString* js::intl::DefaultNumberingSystem(JSContext* cx,
-                                                 LanguageId locale) {
-  auto localeStr = locale.toString();
+                                                 const JSLinearString* locale) {
+  auto langId = ToLanguageId(cx, locale);
+  MOZ_RELEASE_ASSERT(langId, "locale expected to be a valid data locale");
+
+  auto localeStr = langId->toString();
 
   auto numberingSystem =
       mozilla::intl::NumberingSystem::TryCreate(localeStr.c_str());
@@ -908,17 +896,6 @@ JSLinearString* js::intl::DefaultNumberingSystem(JSContext* cx,
   }
 
   return NewStringCopy<CanGC>(cx, name.unwrap());
-}
-
-/**
- * Return the default numbering system of a locale.
- */
-JSLinearString* js::intl::DefaultNumberingSystem(JSContext* cx,
-                                                 const JSLinearString* locale) {
-  auto langId = ToLanguageId(cx, locale);
-  MOZ_RELEASE_ASSERT(langId, "locale expected to be a valid data locale");
-
-  return DefaultNumberingSystem(cx, *langId);
 }
 
 /**
@@ -946,10 +923,6 @@ static bool IsSupported(JSContext* cx, LocaleData localeData, LanguageId locale,
     case UnicodeExtensionKey::CollationNumeric: {
       *result = IsSupportedCollationNumeric(value);
       return true;
-    }
-    case UnicodeExtensionKey::FirstDayOfWeek: {
-      // Not used as an option.
-      break;
     }
     case UnicodeExtensionKey::HourCycle: {
       *result = IsSupportedHourCycle(value);

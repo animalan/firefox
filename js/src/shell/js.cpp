@@ -13378,8 +13378,6 @@ bool InitOptionParser(OptionParser& op) {
       !op.addBoolOption('\0', "enable-iterator-join", "Enable Iterator.join") ||
       !op.addBoolOption('\0', "enable-iterator-includes",
                         "Enable Iterator.prototype.includes") ||
-      !op.addBoolOption('\0', "enable-intl-locale-info",
-                        "Enable Intl Locale Info") ||
       !op.addBoolOption('\0', "enable-source-phase-imports",
                         "Enable source phase imports") ||
       !op.addBoolOption(
@@ -13485,9 +13483,6 @@ bool SetGlobalOptionsPreJSInit(const OptionParser& op) {
   }
   if (op.getBoolOption("enable-error-stack-trace-limit")) {
     JS::Prefs::setAtStartup_experimental_error_stack_trace_limit(true);
-  }
-  if (op.getBoolOption("enable-intl-locale-info")) {
-    JS::Prefs::setAtStartup_experimental_intl_locale_info(true);
   }
 #endif
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS

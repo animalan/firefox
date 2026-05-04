@@ -285,13 +285,6 @@ bool GetUnicodeExtensionOption(JSContext* cx, JS::Handle<JSObject*> options,
                                UnicodeExtensionKey key,
                                JS::MutableHandle<JSLinearString*> result);
 
-/**
- * Validate and canonicalize the option value.
- */
-JSLinearString* GetUnicodeExtensionOption(JSContext* cx,
-                                          UnicodeExtensionKey key,
-                                          JS::Handle<JSLinearString*> option);
-
 }  // namespace js::intl
 
 #endif /* builtin_intl_ParameterNegotiation_h */

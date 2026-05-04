@@ -83,6 +83,7 @@ UNUSED_SOURCES = set(
         "intl/icu/source/i18n/uni2name.cpp",
         "intl/icu/source/i18n/uregexc.cpp",
         "intl/icu/source/i18n/uregex.cpp",
+        "intl/icu/source/i18n/uregion.cpp",
         "intl/icu/source/i18n/uspoof_build.cpp",
         "intl/icu/source/i18n/uspoof_conf.cpp",
         "intl/icu/source/i18n/utrans.cpp",
