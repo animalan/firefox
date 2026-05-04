@@ -2177,8 +2177,8 @@ MediaManager::CreateEnumerationParams(dom::MediaSourceEnum aVideoInputType,
         }
       }
     }
-    videoParams = Some(VideoDeviceEnumerationParams(aVideoInputType, type,
-                                                    videoDev, audioDev));
+    videoParams = Some(VideoDeviceEnumerationParams(
+        aVideoInputType, type, std::move(videoDev), audioDev));
   }
   if (MediaEngineSource::IsAudio(aAudioInputType)) {
     nsAutoCString realAudioDev;
@@ -2193,14 +2193,15 @@ MediaManager::CreateEnumerationParams(dom::MediaSourceEnum aVideoInputType,
         if (fakeByPref && audioDev.IsEmpty()) {
           type = DeviceType::Fake;
         } else {
-          realAudioDev = audioDev;
+          realAudioDev = std::move(audioDev);
         }
       }
     }
-    audioParams =
-        Some(DeviceEnumerationParams(aAudioInputType, type, realAudioDev));
+    audioParams = Some(DeviceEnumerationParams(aAudioInputType, type,
+                                               std::move(realAudioDev)));
   }
-  return EnumerationParams(aFlags, videoParams, audioParams);
+  return EnumerationParams(aFlags, std::move(videoParams),
+                           std::move(audioParams));
 }
 
 RefPtr<DeviceSetPromise>

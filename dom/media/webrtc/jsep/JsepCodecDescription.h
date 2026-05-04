@@ -242,7 +242,7 @@ class JsepCodecDescription {
 
       if (!aUsedPts.count(freePtAsString)) {
         aUsedPts.insert(freePtAsString);
-        aPtToCheck = freePtAsString;
+        aPtToCheck = std::move(freePtAsString);
         return true;
       }
     }
@@ -760,9 +760,9 @@ class JsepVideoCodecDescription final : public JsepCodecDescription {
     }
 
     mFECEnabled = true;
-    mREDPayloadType = redPayloadType;
-    mULPFECPayloadType = ulpfecPayloadType;
-    mREDRTXPayloadType = redRtxPayloadType;
+    mREDPayloadType = std::move(redPayloadType);
+    mULPFECPayloadType = std::move(ulpfecPayloadType);
+    mREDRTXPayloadType = std::move(redRtxPayloadType);
   }
 
   void EnableTransportCC() {

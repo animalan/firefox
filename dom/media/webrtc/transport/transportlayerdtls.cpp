@@ -1043,7 +1043,7 @@ bool TransportLayerDtls::CheckAlpn() {
                                    << "'; permitted:" << ss.str());
     return false;
   }
-  alpn_ = chosen;
+  alpn_ = std::move(chosen);
   return true;
 }
 
