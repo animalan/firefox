@@ -20,6 +20,8 @@ support-files = [
 
 ["test_eme_mfcdm_getstatusforpolicy.html"]
 
+["test_eme_mfcdm_update_error.html"]
+
 ["test_eme_wideinve_l1_installation.html"]
 
 ["test_eme_wmfclearkey_playback.html"]
