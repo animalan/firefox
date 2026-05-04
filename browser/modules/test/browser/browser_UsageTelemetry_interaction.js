@@ -29,8 +29,6 @@ const AREAS = [
   "preferencesPaneContainers",
   "preferencesPaneAbout",
   "preferencesPaneAccessibility",
-  "preferencesPaneAppearance",
-  "preferencesPanePermissionsData",
 ];
 
 function resetGleanEvents() {
