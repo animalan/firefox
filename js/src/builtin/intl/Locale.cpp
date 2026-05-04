@@ -23,6 +23,7 @@
 #include "builtin/Boolean.h"
 #include "builtin/intl/CommonFunctions.h"
 #include "builtin/intl/FormatBuffer.h"
+#include "builtin/intl/glue/Locale.h"
 #include "builtin/intl/LanguageTag.h"
 #include "builtin/intl/LocaleNegotiation.h"
 #include "builtin/intl/ParameterNegotiation.h"
@@ -1038,6 +1039,46 @@ static mozilla::Maybe<IndexAndLength> GetLocaleVariants(
   return mozilla::Some(IndexAndLength{index, length});
 }
 
+#ifdef NIGHTLY_BUILD
+/**
+ * TextDirectionOfLocale ( loc )
+ *
+ * Return the text direction of |locale|.
+ */
+static JS::Value TextDirectionOfLocale(JSContext* cx, LocaleObject* locale) {
+  auto langId = LanguageId::und();
+  if (auto parsedLangId = ToLanguageId(cx, locale->getBaseName())) {
+    langId = *parsedLangId;
+  } else {
+    // ICU4X doesn't support language subtags with more than three letters.
+    //
+    // If |baseName| contains a script subtag, then replace the language subtag
+    // with "und". Otherwise return `undefined` because the script subtag of
+    // non-registered languages can't be inferred.
+    MOZ_ASSERT(GetLocaleLanguage(locale).Length() > 3);
+
+    auto script = GetLocaleScript(locale);
+    if (script.Missing()) {
+      return JS::UndefinedValue();
+    }
+    auto span = script.Span();
+
+    langId = LanguageId::fromParts("und", {span.data(), span.size()}, "");
+  }
+
+  auto langIdStr = langId.toString();
+  switch (locale_text_direction_of(langIdStr.data(), langIdStr.length())) {
+    case TextDirection::Unknown:
+      return JS::UndefinedValue();
+    case TextDirection::LeftToRight:
+      return JS::StringValue(cx->names().ltr);
+    case TextDirection::RightToLeft:
+      return JS::StringValue(cx->names().rtl);
+  }
+  MOZ_CRASH("invalid text direction");
+}
+#endif
+
 // Intl.Locale.prototype.maximize ()
 static bool Locale_maximize(JSContext* cx, const CallArgs& args) {
   MOZ_ASSERT(IsLocale(args.thisv()));
@@ -1400,11 +1441,49 @@ static bool Locale_toSource(JSContext* cx, unsigned argc, Value* vp) {
   return true;
 }
 
+#ifdef NIGHTLY_BUILD
+// Intl.Locale.prototype.getTextInfo ( )
+static bool Locale_getTextInfo(JSContext* cx, const CallArgs& args) {
+  MOZ_ASSERT(IsLocale(args.thisv()));
+
+  auto* locale = &args.thisv().toObject().as<LocaleObject>();
+
+  // Step 3.
+  Rooted<IdValueVector> info(cx, cx);
+
+  // Step 4.
+  auto dir = TextDirectionOfLocale(cx, locale);
+
+  // Step 5.
+  if (!info.emplaceBack(NameToId(cx->names().direction), dir)) {
+    return false;
+  }
+
+  // Step 6.
+  auto* result = NewPlainObjectWithUniqueNames(cx, info);
+  if (!result) {
+    return false;
+  }
+  args.rval().setObject(*result);
+  return true;
+}
+
+// Intl.Locale.prototype.getTextInfo ( )
+static bool Locale_getTextInfo(JSContext* cx, unsigned argc, Value* vp) {
+  // Steps 1-2.
+  CallArgs args = CallArgsFromVp(argc, vp);
+  return CallNonGenericMethod<IsLocale, Locale_getTextInfo>(cx, args);
+}
+#endif
+
 static const JSFunctionSpec locale_methods[] = {
     JS_FN("maximize", Locale_maximize, 0, 0),
     JS_FN("minimize", Locale_minimize, 0, 0),
     JS_FN("toString", Locale_toString, 0, 0),
     JS_FN("toSource", Locale_toSource, 0, 0),
+#ifdef NIGHTLY_BUILD
+    JS_FN("getTextInfo", Locale_getTextInfo, 0, 0),
+#endif
     JS_FS_END,
 };
 

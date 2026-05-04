@@ -63,6 +63,12 @@ ArrayObject* CanonicalizeLocaleList(JSContext* cx,
                                     JS::Handle<JS::Value> locales);
 
 /**
+ * Parse the BCP-47 locale as a language identifier.
+ */
+mozilla::Maybe<LanguageId> ToLanguageId(JSContext* cx,
+                                        const JSLinearString* locale);
+
+/**
  * Locale data selection for ResolveLocale.
  */
 enum class LocaleData {

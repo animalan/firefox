@@ -118,7 +118,8 @@ static void AssertCanonicalLocale(JSContext* cx, const JSLinearString* locale) {
 #endif
 }
 
-static auto ToLanguageId(JSContext* cx, const JSLinearString* locale) {
+mozilla::Maybe<LanguageId> js::intl::ToLanguageId(
+    JSContext* cx, const JSLinearString* locale) {
   AssertCanonicalLocale(cx, locale);
 
   // Tell the analysis the |ToLanguageId| function can't GC. (bug 1588528)

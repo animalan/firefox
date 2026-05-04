@@ -207,6 +207,7 @@
   MACRO_(getOwnPropertyDescriptor, "getOwnPropertyDescriptor")                 \
   MACRO_(getPropertySuper, "getPropertySuper")                                 \
   MACRO_(getPrototypeOf, "getPrototypeOf")                                     \
+  MACRO_(getTextInfo, "getTextInfo")                                           \
   MACRO_(GetTypeError, "GetTypeError")                                         \
   MACRO_(global, "global")                                                     \
   MACRO_(globalThis, "globalThis")                                             \
@@ -290,6 +291,7 @@
   MACRO_(locale, "locale")                                                     \
   MACRO_(localeMatcher, "localeMatcher")                                       \
   MACRO_(lower, "lower")                                                       \
+  MACRO_(ltr, "ltr")                                                           \
   MACRO_(many, "many")                                                         \
   MACRO_(MapConstructorInit, "MapConstructorInit")                             \
   MACRO_(MapIteratorNext, "MapIteratorNext")                                   \
@@ -429,6 +431,7 @@
   MACRO_(roundingIncrement, "roundingIncrement")                               \
   MACRO_(roundingMode, "roundingMode")                                         \
   MACRO_(roundingPriority, "roundingPriority")                                 \
+  MACRO_(rtl, "rtl")                                                           \
   MACRO_(script, "script")                                                     \
   MACRO_(scripts, "scripts")                                                   \
   MACRO_(second, "second")                                                     \

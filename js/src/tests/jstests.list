@@ -695,11 +695,6 @@ skip script test262/intl402/Locale/prototype/getHourCycles/name.js
 skip script test262/intl402/Locale/prototype/getHourCycles/output-array.js
 skip script test262/intl402/Locale/prototype/getHourCycles/output-array-values.js
 skip script test262/intl402/Locale/prototype/getHourCycles/prop-desc.js
-skip script test262/intl402/Locale/prototype/getTextInfo/branding.js
-skip script test262/intl402/Locale/prototype/getTextInfo/name.js
-skip script test262/intl402/Locale/prototype/getTextInfo/output-object.js
-skip script test262/intl402/Locale/prototype/getTextInfo/output-object-keys.js
-skip script test262/intl402/Locale/prototype/getTextInfo/prop-desc.js
 skip script test262/intl402/Locale/prototype/getWeekInfo/branding.js
 skip script test262/intl402/Locale/prototype/getWeekInfo/firstDay-by-id.js
 skip script test262/intl402/Locale/prototype/getWeekInfo/firstDay-by-option.js
