@@ -260,7 +260,12 @@ addAccessibleTask(
     // before the input to make tab consistent.
     info("Focusing before");
     const before = findAccessibleChildByID(docAcc, "before");
-    let events = waitForOrderedEvents([[EVENT_FOCUS, before]]);
+    // Focusing a button fires a selection event. We must swallow this to
+    // avoid confusing the later test.
+    let events = waitForOrderedEvents([
+      [EVENT_FOCUS, before],
+      [EVENT_TEXT_SELECTION_CHANGED, docAcc],
+    ]);
     before.takeFocus();
     await events;
 
