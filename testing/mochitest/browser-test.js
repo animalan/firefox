@@ -1323,14 +1323,6 @@ Tester.prototype = {
         );
 
         barrier.wait().then(() => {
-          // Simulate memory pressure so that we're forced to free more resources
-          // and thus get rid of more false leaks like already terminated workers.
-          Services.obs.notifyObservers(
-            null,
-            "memory-pressure",
-            "heap-minimize"
-          );
-
           Services.ppmm.broadcastAsyncMessage("browser-test:collect-request");
 
           this._shutdownCleanup(() => {
