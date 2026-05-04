@@ -608,7 +608,10 @@ nsresult DnsAndConnectSocket::SetupConn(bool isPrimary, nsresult status) {
 
   // This half-open socket has created a connection.  This flag excludes it
   // from counter of actual connections used for checking limits.
-  mHasConnected = true;
+  if (!mHasConnected) {
+    mHasConnected = true;
+    ent->OnConnectionAttemptConnected();
+  }
 
   // if this is still in the pending list, remove it and dispatch it
   RefPtr<PendingTransactionInfo> pendingTransInfo =
