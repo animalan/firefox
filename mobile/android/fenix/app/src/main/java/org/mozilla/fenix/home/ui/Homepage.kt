@@ -55,6 +55,7 @@ import org.mozilla.fenix.components.components
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.compose.MessageCard
 import org.mozilla.fenix.compose.home.HomeSectionHeader
+import org.mozilla.fenix.debugsettings.sportswidget.SportsWidgetDebugTool
 import org.mozilla.fenix.ext.isLargeWindow
 import org.mozilla.fenix.home.bookmarks.Bookmark
 import org.mozilla.fenix.home.bookmarks.interactor.BookmarksInteractor
@@ -314,6 +315,13 @@ internal fun Homepage(
                                         showSportsCountrySelector = false
                                     },
                                     onDismiss = { showSportsCountrySelector = false },
+                                )
+                            }
+
+                            if (sportsWidgetState.isDebugToolVisible) {
+                                SportsWidgetDebugTool(
+                                    state = sportsWidgetState,
+                                    appStore = components.appStore,
                                 )
                             }
                         }
