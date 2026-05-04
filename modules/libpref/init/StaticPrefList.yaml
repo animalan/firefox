@@ -9623,7 +9623,7 @@
 
 -   name: javascript.options.wasm_js_promise_integration
     type: bool
-    value: false
+    value: @IS_NIGHTLY_BUILD@
     mirror: always
     set_spidermonkey_pref: always
 

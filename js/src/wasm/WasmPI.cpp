@@ -215,6 +215,7 @@ class SuspendingFunctionModuleFactory {
                      const SharedTypeContext& foreignTypes,
                      ValTypeVector&& params, ValTypeVector&& results) {
     FeatureOptions options;
+    // Builtin modules can use special opcodes and get stack switching enabled.
     options.isBuiltinModule = true;
 
     SharedCompileArgs compileArgs = CompileArgs::buildAndReport(
@@ -849,6 +850,7 @@ class PromisingFunctionModuleFactory {
     size_t paramsSize = params.length();
 
     FeatureOptions options;
+    // Builtin modules can use special opcodes and get stack switching enabled.
     options.isBuiltinModule = true;
 
     SharedCompileArgs compileArgs = CompileArgs::buildAndReport(
