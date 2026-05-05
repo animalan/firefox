@@ -5,7 +5,6 @@
 #include "jsapi/RTCEncodedFrameBase.h"
 
 #include <cstddef>
-
 #include <span>
 
 #include "api/frame_transformer_interface.h"
