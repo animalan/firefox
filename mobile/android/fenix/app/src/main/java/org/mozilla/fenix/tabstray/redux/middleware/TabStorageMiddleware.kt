@@ -148,7 +148,7 @@ class TabStorageMiddleware(
 
             is TabGroupAction.SelectedTabsAddedToGroup -> {
                 val selectedTabIds = store.state.mode.selectedTabIds
-                val selectedTabGroupIds = store.state.mode.selectedTabGroupIds
+                val selectedTabGroupIds = store.state.mode.selectedTabGroupIds - action.groupId
                 val lastTabInGroupId = store.state.lastTabInGroupId(groupId = action.groupId)
 
                 scope.launch {
@@ -165,7 +165,8 @@ class TabStorageMiddleware(
                         tabIds = selectedTabIds,
                     )
 
-                    // If group(s) were merged, delete them
+                    // If group(s) were merged, delete them, but do NOT delete the destination group if it was also
+                    // selected.
                     if (selectedTabGroupIds.isNotEmpty()) {
                         tabGroupRepository.deleteTabGroupsById(ids = selectedTabGroupIds)
                     }
