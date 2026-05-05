@@ -43,7 +43,11 @@ class OpenWindowTest : BaseSessionTest() {
         })
     }
 
-    private fun openPageClickNotification(teardownAlertsService: Boolean = false, urlParam: String = "") {
+    private fun openPageClickNotification(
+        teardownAlertsService: Boolean = false,
+        urlParam: String = "",
+        clickAction: String? = null,
+    ) {
         mainSession.loadUri(OPEN_WINDOW_PATH + urlParam)
         sessionRule.waitForPageStop()
         val result = mainSession.waitForJS("Notification.requestPermission()")
@@ -71,7 +75,11 @@ class OpenWindowTest : BaseSessionTest() {
             mainSession.teardownAlertsService()
         }
 
-        notificationShown!!.click()
+        if (clickAction != null) {
+            notificationShown!!.click(clickAction)
+        } else {
+            notificationShown!!.click()
+        }
     }
 
     @Test
@@ -220,7 +228,7 @@ class OpenWindowTest : BaseSessionTest() {
                 return GeckoResult.fromValue(mainSession)
             }
         })
-        openPageClickNotification(teardownAlertsService = true, urlParam = "?action=foo")
+        openPageClickNotification(teardownAlertsService = true, urlParam = "?action=foo", clickAction = "foo")
         sessionRule.waitUntilCalled(object : ContentDelegate, NavigationDelegate {
             @AssertCalled(count = 1)
             override fun onLocationChange(session: GeckoSession, url: String?, perms: MutableList<PermissionDelegate.ContentPermission>, hasUserGesture: Boolean) {
