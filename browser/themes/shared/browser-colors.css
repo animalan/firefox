@@ -38,7 +38,7 @@
   --chrome-content-separator-color: var(--card-border-color);
 
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media not -moz-pref("sidebar.revamp"), -moz-pref("browser.nova.enabled") {
+  @media not -moz-pref("sidebar.revamp") {
     &:not([lwtheme]) {
       --chrome-content-separator-color: ThreeDShadow;
     }
@@ -85,11 +85,6 @@
     /* stylelint-disable-next-line media-query-no-invalid */
     @media not -moz-pref("sidebar.revamp") {
       --chrome-content-separator-color: light-dark(rgb(204, 204, 204), hsl(240, 5%, 5%));
-    }
-
-    /* stylelint-disable-next-line media-query-no-invalid */
-    @media -moz-pref("browser.nova.enabled") {
-      --chrome-content-separator-color: light-dark(rgb(201, 192, 227), rgb(16, 17, 24));
     }
 
     --link-color: light-dark(rgb(0, 97, 224), rgb(0, 221, 255));

@@ -153,28 +153,6 @@ body {
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     color: var(--lwt-text-color);
   }
-
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media -moz-pref("browser.nova.enabled") {
-    --chrome-window-gap: 4px;
-    --chrome-block-radius: 10px;
-
-    @media (-moz-platform: linux) {
-      --chrome-block-radius: env(-moz-gtk-csd-titlebar-radius);
-    }
-
-    @media (-moz-platform: windows) {
-      --chrome-block-radius: 4px;
-    }
-
-    @media (-moz-windows-mica) {
-      --chrome-block-radius: 8px;
-    }
-
-    @media (-moz-mac-tahoe-theme) {
-      --chrome-block-radius: 16px;
-    }
-  }
 }
 
 body {
@@ -199,24 +177,15 @@ body {
   /* Prevents the background from propagating to the viewport */
   contain: paint;
   position: relative;
+  background-color: var(--toolbox-background-color);
+  color: var(--toolbox-text-color);
 
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media not -moz-pref("browser.nova.enabled") {
-    background-color: var(--toolbox-background-color);
-    color: var(--toolbox-text-color);
+  will-change: background-color;
+  transition: background-color var(--inactive-window-transition);
 
-    will-change: background-color;
-    transition: background-color var(--inactive-window-transition);
-
-    &:-moz-window-inactive {
-      background-color: var(--toolbox-background-color-inactive);
-      color: var(--toolbox-text-color-inactive);
-    }
-  }
-
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media -moz-pref("browser.nova.enabled") {
-    background-color: var(--background-color-canvas);
+  &:-moz-window-inactive {
+    background-color: var(--toolbox-background-color-inactive);
+    color: var(--toolbox-text-color-inactive);
   }
 
   :root[customizing] & {
@@ -247,24 +216,6 @@ body {
         -moz-default-appearance: -moz-window-titlebar;
         appearance: auto;
       }
-    }
-  }
-}
-
-/* stylelint-disable-next-line media-query-no-invalid */
-@media -moz-pref("browser.nova.enabled") {
-  .chrome-block {
-    background-color: var(--toolbox-background-color);
-    color: var(--toolbox-text-color);
-    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
-    border-radius: var(--chrome-block-radius);
-    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
-    border: 1px solid var(--chrome-content-separator-color);
-    overflow: clip;
-
-    &:-moz-window-inactive {
-      background-color: var(--toolbox-background-color-inactive);
-      color: var(--toolbox-text-color-inactive);
     }
   }
 }
