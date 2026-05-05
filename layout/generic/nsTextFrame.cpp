@@ -11156,11 +11156,7 @@ void nsTextFrame::ReflowText(nsLineLayout& aLineLayout, nscoord aAvailableWidth,
     nscoord width = finalSize.ISize(wm);
     nscoord em = fm->EmHeight();
     // Compress the characters in horizontal axis if necessary.
-    auto* data = GetProperty(TextCombineDataProperty());
-    if (!data) {
-      data = new TextCombineData;
-      SetProperty(TextCombineDataProperty(), data);
-    }
+    auto* data = GetOrCreateDeletableProperty(TextCombineDataProperty());
     data->mNaturalWidth = width;
     finalSize.ISize(wm) = em;
     // If we're going to have to adjust the block-size to make it 1em, make an

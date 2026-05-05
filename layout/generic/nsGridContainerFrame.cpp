@@ -3240,11 +3240,8 @@ struct MOZ_STACK_CLASS nsGridContainerFrame::GridReflowInput {
     mRows = mSharedGridData->mRows;
 
     if (firstInFlow->GetProperty(UsedTrackSizes::Prop())) {
-      auto* prop = aGridContainerFrame->GetProperty(UsedTrackSizes::Prop());
-      if (!prop) {
-        prop = new UsedTrackSizes();
-        aGridContainerFrame->SetProperty(UsedTrackSizes::Prop(), prop);
-      }
+      auto* prop = aGridContainerFrame->GetOrCreateDeletableProperty(
+          UsedTrackSizes::Prop());
       prop->mCanResolveLineRangeSize = {true, true};
       prop->mTrackPlans[LogicalAxis::Inline].Assign(mCols.mSizes);
       prop->mTrackPlans[LogicalAxis::Block].Assign(mRows.mSizes);
@@ -4172,11 +4169,8 @@ void nsGridContainerFrame::UsedTrackSizes::ResolveTrackSizesForAxis(
     return;
   }
   auto* parent = aFrame->ParentGridContainerForSubgrid();
-  auto* parentSizes = parent->GetUsedTrackSizes();
-  if (!parentSizes) {
-    parentSizes = new UsedTrackSizes();
-    parent->SetProperty(UsedTrackSizes::Prop(), parentSizes);
-  }
+  auto* parentSizes =
+      parent->GetOrCreateDeletableProperty(UsedTrackSizes::Prop());
   auto* subgrid = aFrame->GetProperty(Subgrid::Prop());
   const auto parentAxis =
       subgrid->mIsOrthogonal ? GetOrthogonalAxis(aAxis) : aAxis;
@@ -5952,11 +5946,8 @@ static nscoord ContentContribution(const GridItemInfo& aGridItem,
         auto* subgridFrame =
             static_cast<nsGridContainerFrame*>(child->GetParent());
         MOZ_ASSERT(subgridFrame->IsGridContainerFrame());
-        auto* uts = subgridFrame->GetProperty(UsedTrackSizes::Prop());
-        if (!uts) {
-          uts = new UsedTrackSizes();
-          subgridFrame->SetProperty(UsedTrackSizes::Prop(), uts);
-        }
+        auto* uts =
+            subgridFrame->GetOrCreateDeletableProperty(UsedTrackSizes::Prop());
         // The grid-item's inline-axis as expressed in the subgrid's WM.
         const auto subgridAxis = childWM.ConvertAxisTo(
             LogicalAxis::Inline, subgridFrame->GetWritingMode());
@@ -9355,11 +9346,8 @@ void nsGridContainerFrame::ReflowAbsoluteChildren(
     LogicalRect itemCB =
         aGridRI.ContainingBlockForAbsPos(area, gridOrigin, gridCB);
     // AbsoluteContainingBlock::Reflow uses physical coordinates.
-    nsRect* cb = child->GetProperty(GridItemContainingBlockRect());
-    if (!cb) {
-      cb = new nsRect;
-      child->SetProperty(GridItemContainingBlockRect(), cb);
-    }
+    nsRect* cb =
+        child->GetOrCreateDeletableProperty(GridItemContainingBlockRect());
     *cb = itemCB.GetPhysicalRect(wm, gridCBPhysicalSize);
     ++i;
   }
@@ -10014,12 +10002,9 @@ void nsGridContainerFrame::Reflow(nsPresContext* aPresContext,
   }
 
   if (!prevInFlow) {
-    SharedGridData* sharedGridData = GetProperty(SharedGridData::Prop());
     if (!aStatus.IsFullyComplete()) {
-      if (!sharedGridData) {
-        sharedGridData = new SharedGridData;
-        SetProperty(SharedGridData::Prop(), sharedGridData);
-      }
+      SharedGridData* sharedGridData =
+          GetOrCreateDeletableProperty(SharedGridData::Prop());
       sharedGridData->mCols.mSizes = std::move(gridRI.mCols.mSizes);
       sharedGridData->mCols.mContentBoxSize = gridRI.mCols.mContentBoxSize;
       sharedGridData->mCols.mBaselineSubtreeAlign =
@@ -10046,7 +10031,7 @@ void nsGridContainerFrame::Reflow(nsPresContext* aPresContext,
 
       sharedGridData->mGenerateComputedGridInfo =
           HasAnyStateBits(NS_STATE_GRID_COMPUTED_INFO);
-    } else if (sharedGridData && !GetNextInFlow()) {
+    } else if (!GetNextInFlow()) {
       RemoveProperty(SharedGridData::Prop());
     }
   }
@@ -10577,11 +10562,7 @@ nsGridContainerFrame::UsedTrackSizes* nsGridContainerFrame::GetUsedTrackSizes()
 
 void nsGridContainerFrame::StoreUsedTrackSizes(LogicalAxis aAxis,
                                                const TrackPlan& aSizes) {
-  auto* uts = GetUsedTrackSizes();
-  if (!uts) {
-    uts = new UsedTrackSizes();
-    SetProperty(UsedTrackSizes::Prop(), uts);
-  }
+  auto* uts = GetOrCreateDeletableProperty(UsedTrackSizes::Prop());
   uts->mTrackPlans[aAxis].Assign(aSizes);
   uts->mCanResolveLineRangeSize[aAxis] = true;
   // XXX is resetting these bits necessary?
