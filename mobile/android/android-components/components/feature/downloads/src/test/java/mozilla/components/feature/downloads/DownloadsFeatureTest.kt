@@ -470,6 +470,27 @@ class DownloadsFeatureTest {
     }
 
     @Test
+    fun `Calling start() will register listeners from download manager`() = runTest(testDispatcher) {
+        val downloadManager: DownloadManager = mock()
+
+        val feature = DownloadsFeature(
+            testContext,
+            store,
+            useCases = mock(),
+            downloadManager = downloadManager,
+            downloadFileUtils = FakeDownloadFileUtils(),
+            mainDispatcher = testDispatcher,
+        )
+        verify(downloadManager, never()).registerListeners()
+
+        feature.start()
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        verify(downloadManager).registerListeners()
+    }
+
+    @Test
     fun `DownloadManager failing to start download will cause error toast to be displayed`() = runTest(testDispatcher) {
         grantPermissions()
 
