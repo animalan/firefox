@@ -1088,10 +1088,8 @@ function Lists({
             onClick={() => handleCopyListToClipboard()}
           ></panel-item>
           {novaEnabled && widgetsMayBeMaximized && (
-            <panel-item
-              submenu="lists-size-submenu"
-              data-l10n-id="newtab-widget-menu-change-size"
-            >
+            <panel-item submenu="lists-size-submenu">
+              <span data-l10n-id="newtab-widget-menu-change-size"></span>
               <panel-list
                 ref={sizeSubmenuRef}
                 slot="submenu"
