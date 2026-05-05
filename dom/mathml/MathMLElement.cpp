@@ -653,7 +653,8 @@ void MathMLElement::SetIncrementScriptLevel(bool aIncrementScriptLevel,
 }
 
 int32_t MathMLElement::TabIndexDefault() {
-  if (!StaticPrefs::mathml_href_link_on_non_anchor_element_disabled() && IsLink()) {
+  if (!StaticPrefs::mathml_href_link_on_non_anchor_element_disabled() &&
+      IsLink()) {
     return 0;
   }
   return mNodeInfo->Equals(nsGkAtoms::a) ? 0 : -1;
