@@ -243,36 +243,36 @@ void SVGSVGElement::DeselectAll() {
 }
 
 already_AddRefed<DOMSVGNumber> SVGSVGElement::CreateSVGNumber() {
-  return do_AddRef(new DOMSVGNumber(this));
+  return MakeAndAddRef<DOMSVGNumber>(this);
 }
 
 already_AddRefed<DOMSVGLength> SVGSVGElement::CreateSVGLength() {
-  return do_AddRef(new DOMSVGLength());
+  return MakeAndAddRef<DOMSVGLength>();
 }
 
 already_AddRefed<DOMSVGAngle> SVGSVGElement::CreateSVGAngle() {
-  return do_AddRef(new DOMSVGAngle(this));
+  return MakeAndAddRef<DOMSVGAngle>(this);
 }
 
 already_AddRefed<DOMSVGPoint> SVGSVGElement::CreateSVGPoint() {
-  return do_AddRef(new DOMSVGPoint(Point(0, 0)));
+  return MakeAndAddRef<DOMSVGPoint>(Point(0, 0));
 }
 
 already_AddRefed<SVGMatrix> SVGSVGElement::CreateSVGMatrix() {
-  return do_AddRef(new SVGMatrix());
+  return MakeAndAddRef<SVGMatrix>();
 }
 
 already_AddRefed<SVGRect> SVGSVGElement::CreateSVGRect() {
-  return do_AddRef(new SVGRect(this));
+  return MakeAndAddRef<SVGRect>(this);
 }
 
 already_AddRefed<DOMSVGTransform> SVGSVGElement::CreateSVGTransform() {
-  return do_AddRef(new DOMSVGTransform());
+  return MakeAndAddRef<DOMSVGTransform>();
 }
 
 already_AddRefed<DOMSVGTransform> SVGSVGElement::CreateSVGTransformFromMatrix(
     const DOMMatrix2DInit& matrix, ErrorResult& rv) {
-  return do_AddRef(new DOMSVGTransform(matrix, rv));
+  return MakeAndAddRef<DOMSVGTransform>(matrix, rv);
 }
 
 void SVGSVGElement::DidChangeTranslate() {

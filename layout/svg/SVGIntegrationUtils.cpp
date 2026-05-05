@@ -1206,7 +1206,7 @@ already_AddRefed<gfxDrawable> SVGIntegrationUtils::DrawableFromPaintServer(
     gfxFloat scaleY = overrideBounds.Height() / aRenderSize.height;
     gfxMatrix scaleMatrix = gfxMatrix::Scaling(scaleX, scaleY);
     pattern->SetMatrix(scaleMatrix * pattern->GetMatrix());
-    return do_AddRef(new gfxPatternDrawable(pattern, aRenderSize));
+    return MakeAndAddRef<gfxPatternDrawable>(pattern, aRenderSize);
   }
 
   if (aFrame->IsSVGFrame() &&
@@ -1221,7 +1221,7 @@ already_AddRefed<gfxDrawable> SVGIntegrationUtils::DrawableFromPaintServer(
   // set up a drawing callback.
   RefPtr<gfxDrawingCallback> cb =
       new PaintFrameCallback(aFrame, aPaintServerSize, aRenderSize, aFlags);
-  return do_AddRef(new gfxCallbackDrawable(cb, aRenderSize));
+  return MakeAndAddRef<gfxCallbackDrawable>(cb, aRenderSize);
 }
 
 }  // namespace mozilla

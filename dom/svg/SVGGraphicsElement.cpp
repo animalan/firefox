@@ -80,14 +80,14 @@ already_AddRefed<SVGRect> SVGGraphicsElement::GetBBox(
     rec.x += float(text->GetPosition().x) / AppUnitsPerCSSPixel();
     rec.y += float(text->GetPosition().y) / AppUnitsPerCSSPixel();
 
-    return do_AddRef(new SVGRect(this, ToRect(rec)));
+    return MakeAndAddRef<SVGRect>(this, ToRect(rec));
   }
 
   if (!NS_SVGNewGetBBoxEnabled()) {
-    return do_AddRef(new SVGRect(
+    return MakeAndAddRef<SVGRect>(
         this, ToRect(SVGUtils::GetBBox(
                   frame, {SVGBBoxFlag::IncludeFillGeometry,
-                          SVGBBoxFlag::UseUserSpaceOfUseElement}))));
+                          SVGBBoxFlag::UseUserSpaceOfUseElement})));
   }
   SVGBBoxFlags flags;
   if (aOptions.mFill) {
@@ -103,10 +103,10 @@ already_AddRefed<SVGRect> SVGGraphicsElement::GetBBox(
     flags += {SVGBBoxFlag::IncludeFillGeometry, SVGBBoxFlag::IncludeClipped};
   }
   if (flags.isEmpty()) {
-    return do_AddRef(new SVGRect(this, {}));
+    return MakeAndAddRef<SVGRect>(this, gfx::Rect());
   }
   flags += SVGBBoxFlag::UseUserSpaceOfUseElement;
-  return do_AddRef(new SVGRect(this, ToRect(SVGUtils::GetBBox(frame, flags))));
+  return MakeAndAddRef<SVGRect>(this, ToRect(SVGUtils::GetBBox(frame, flags)));
 }
 
 already_AddRefed<SVGMatrix> SVGGraphicsElement::GetCTM() {
@@ -118,7 +118,7 @@ already_AddRefed<SVGMatrix> SVGGraphicsElement::GetCTM() {
   if (m.IsSingular()) {
     m = {};
   }
-  return do_AddRef(new SVGMatrix(ThebesMatrix(m)));
+  return MakeAndAddRef<SVGMatrix>(ThebesMatrix(m));
 }
 
 already_AddRefed<SVGMatrix> SVGGraphicsElement::GetScreenCTM() {
@@ -130,7 +130,7 @@ already_AddRefed<SVGMatrix> SVGGraphicsElement::GetScreenCTM() {
   if (m.IsSingular()) {
     m = {};
   }
-  return do_AddRef(new SVGMatrix(ThebesMatrix(m)));
+  return MakeAndAddRef<SVGMatrix>(ThebesMatrix(m));
 }
 
 bool SVGGraphicsElement::IsSVGFocusable(bool* aIsFocusable,

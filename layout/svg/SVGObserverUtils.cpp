@@ -159,7 +159,7 @@ static already_AddRefed<SVGReference> ResolveURLUsingLocalRef(
     return nullptr;
   }
 
-  return do_AddRef(new SVGReference(uri, aURL.ExtraData()));
+  return MakeAndAddRef<SVGReference>(uri, aURL.ExtraData());
 }
 
 static already_AddRefed<SVGReference> ResolveURLUsingLocalRef(
@@ -195,7 +195,7 @@ static already_AddRefed<SVGReference> ResolveURLUsingLocalRef(
   if (!uri) {
     return nullptr;
   }
-  return do_AddRef(new SVGReference(uri, referrerInfo));
+  return MakeAndAddRef<SVGReference>(uri, referrerInfo);
 }
 
 class SVGFilterObserverList;
@@ -1464,8 +1464,8 @@ already_AddRefed<ISVGFilterObserverList>
 SVGObserverUtils::ObserveFiltersForCanvasContext(
     CanvasRenderingContext2D* aContext, Element* aCanvasElement,
     const Span<const StyleFilter> aFilters) {
-  return do_AddRef(new SVGFilterObserverListForCanvasContext(
-      aContext, aCanvasElement, aFilters));
+  return MakeAndAddRef<SVGFilterObserverListForCanvasContext>(
+      aContext, aCanvasElement, aFilters);
 }
 
 static SVGPaintingProperty* GetOrCreateClipPathObserver(

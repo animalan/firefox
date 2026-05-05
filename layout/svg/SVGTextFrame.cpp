@@ -3904,7 +3904,7 @@ already_AddRefed<DOMSVGPoint> SVGTextFrame::GetStartPositionOfChar(
   // We need to return the start position of the whole glyph.
   uint32_t startIndex = it.GlyphStartTextElementCharIndex();
 
-  return do_AddRef(new DOMSVGPoint(ToPoint(mPositions[startIndex].mPosition)));
+  return MakeAndAddRef<DOMSVGPoint>(ToPoint(mPositions[startIndex].mPosition));
 }
 
 /**
@@ -4004,7 +4004,7 @@ already_AddRefed<DOMSVGPoint> SVGTextFrame::GetEndPositionOfChar(
   Matrix m = Matrix::Rotation(mPositions[startIndex].mAngle) *
              Matrix::Translation(ToPoint(mPositions[startIndex].mPosition));
 
-  return do_AddRef(new DOMSVGPoint(m.TransformPoint(p)));
+  return MakeAndAddRef<DOMSVGPoint>(m.TransformPoint(p));
 }
 
 /**
@@ -4074,7 +4074,7 @@ already_AddRefed<SVGRect> SVGTextFrame::GetExtentOfChar(nsIContent* aContent,
   // Transform the glyph's rect into user space.
   gfxRect r = m.TransformBounds(glyphRect);
 
-  return do_AddRef(new SVGRect(aContent, ToRect(r)));
+  return MakeAndAddRef<SVGRect>(aContent, ToRect(r));
 }
 
 /**

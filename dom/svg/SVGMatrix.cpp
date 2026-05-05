@@ -99,7 +99,7 @@ already_AddRefed<SVGMatrix> SVGMatrix::Multiply(const DOMMatrix2DInit& aMatrix,
     aRv.ThrowTypeError<MSG_NOT_FINITE>("SVGMatrix::Multiply matrix");
     return nullptr;
   }
-  return do_AddRef(new SVGMatrix(matrix2D * GetMatrix()));
+  return MakeAndAddRef<SVGMatrix>(matrix2D * GetMatrix());
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::Inverse(ErrorResult& aRv) {
@@ -108,12 +108,12 @@ already_AddRefed<SVGMatrix> SVGMatrix::Inverse(ErrorResult& aRv) {
     aRv.ThrowInvalidStateError("Matrix is not invertible");
     return nullptr;
   }
-  return do_AddRef(new SVGMatrix(mat));
+  return MakeAndAddRef<SVGMatrix>(mat);
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::Translate(float x, float y) {
-  return do_AddRef(
-      new SVGMatrix(gfxMatrix(GetMatrix()).PreTranslate(gfxPoint(x, y))));
+  return MakeAndAddRef<SVGMatrix>(
+      gfxMatrix(GetMatrix()).PreTranslate(gfxPoint(x, y)));
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::Scale(float scaleFactor) {
@@ -122,13 +122,13 @@ already_AddRefed<SVGMatrix> SVGMatrix::Scale(float scaleFactor) {
 
 already_AddRefed<SVGMatrix> SVGMatrix::ScaleNonUniform(float scaleFactorX,
                                                        float scaleFactorY) {
-  return do_AddRef(new SVGMatrix(
-      gfxMatrix(GetMatrix()).PreScale(scaleFactorX, scaleFactorY)));
+  return MakeAndAddRef<SVGMatrix>(
+      gfxMatrix(GetMatrix()).PreScale(scaleFactorX, scaleFactorY));
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::Rotate(float angle) {
-  return do_AddRef(
-      new SVGMatrix(gfxMatrix(GetMatrix()).PreRotate(angle * radPerDegree)));
+  return MakeAndAddRef<SVGMatrix>(
+      gfxMatrix(GetMatrix()).PreRotate(angle * radPerDegree));
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::RotateFromVector(float x, float y,
@@ -138,20 +138,20 @@ already_AddRefed<SVGMatrix> SVGMatrix::RotateFromVector(float x, float y,
     return nullptr;
   }
 
-  return do_AddRef(
-      new SVGMatrix(gfxMatrix(GetMatrix()).PreRotate(atan2(y, x))));
+  return MakeAndAddRef<SVGMatrix>(
+      gfxMatrix(GetMatrix()).PreRotate(atan2(y, x)));
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::FlipX() {
   const gfxMatrix& mx = GetMatrix();
-  return do_AddRef(new SVGMatrix(
-      gfxMatrix(-mx._11, -mx._12, mx._21, mx._22, mx._31, mx._32)));
+  return MakeAndAddRef<SVGMatrix>(
+      gfxMatrix(-mx._11, -mx._12, mx._21, mx._22, mx._31, mx._32));
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::FlipY() {
   const gfxMatrix& mx = GetMatrix();
-  return do_AddRef(new SVGMatrix(
-      gfxMatrix(mx._11, mx._12, -mx._21, -mx._22, mx._31, mx._32)));
+  return MakeAndAddRef<SVGMatrix>(
+      gfxMatrix(mx._11, mx._12, -mx._21, -mx._22, mx._31, mx._32));
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::SkewX(float angle, ErrorResult& aRv) {
@@ -164,7 +164,7 @@ already_AddRefed<SVGMatrix> SVGMatrix::SkewX(float angle, ErrorResult& aRv) {
   const gfxMatrix& mx = GetMatrix();
   gfxMatrix skewMx(mx._11, mx._12, mx._21 + mx._11 * ta, mx._22 + mx._12 * ta,
                    mx._31, mx._32);
-  return do_AddRef(new SVGMatrix(skewMx));
+  return MakeAndAddRef<SVGMatrix>(skewMx);
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::SkewY(float angle, ErrorResult& aRv) {
@@ -178,7 +178,7 @@ already_AddRefed<SVGMatrix> SVGMatrix::SkewY(float angle, ErrorResult& aRv) {
   gfxMatrix skewMx(mx._11 + mx._21 * ta, mx._12 + mx._22 * ta, mx._21, mx._22,
                    mx._31, mx._32);
 
-  return do_AddRef(new SVGMatrix(skewMx));
+  return MakeAndAddRef<SVGMatrix>(skewMx);
 }
 
 }  // namespace mozilla::dom

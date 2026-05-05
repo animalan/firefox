@@ -78,7 +78,7 @@ already_AddRefed<dom::SVGPathSegment> SVGPathData::GetPathSegmentAtLength(
   for (const auto& cmd : aPath) {
     SVGPathSegUtils::TraversePathSegment(cmd, state);
     if (state.length >= aDistance) {
-      return do_AddRef(new dom::SVGPathSegment(aPathElement, cmd));
+      return MakeAndAddRef<dom::SVGPathSegment>(aPathElement, cmd);
     }
   }
   return nullptr;
