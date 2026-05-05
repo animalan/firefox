@@ -32,7 +32,6 @@ add_task(async function test_panel_no_error_when_opened_offline() {
   Services.io.offline = true;
 
   let content = await openPanel({
-    isSignedOut: false,
     unauthenticated: false,
   });
 

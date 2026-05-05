@@ -30,8 +30,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/ipprotection/IPProtection.sys.mjs",
   IPProtectionInfobarManager:
     "moz-src:///browser/components/ipprotection/IPProtectionInfobarManager.sys.mjs",
-  IPPSignInWatcher:
-    "moz-src:///toolkit/components/ipprotection/fxa/IPPSignInWatcher.sys.mjs",
   IPProtectionStates:
     "moz-src:///toolkit/components/ipprotection/IPProtectionService.sys.mjs",
   PanelMultiView:
@@ -118,8 +116,6 @@ export class IPProtectionPanel {
    * @typedef {object} State
    * @property {boolean} isProtectionEnabled
    *  The timestamp in milliseconds since IP Protection was enabled
-   * @property {boolean} isSignedOut
-   *  True if not signed in to account
    * @property {string} location
    *  The location country code
    * @property {Array<{code: string, available: boolean}>} locationsList
@@ -324,7 +320,6 @@ export class IPProtectionPanel {
     this.handlePrefChange = this.#handlePrefChange.bind(this);
 
     this.state = {
-      isSignedOut: !lazy.IPPSignInWatcher.isSignedIn,
       unauthenticated:
         lazy.IPProtectionService.state ===
         lazy.IPProtectionStates.UNAUTHENTICATED,
@@ -1058,7 +1053,6 @@ export class IPProtectionPanel {
       }
 
       this.setState({
-        isSignedOut: !lazy.IPPSignInWatcher.isSignedIn,
         unauthenticated:
           lazy.IPProtectionService.state ===
           lazy.IPProtectionStates.UNAUTHENTICATED,

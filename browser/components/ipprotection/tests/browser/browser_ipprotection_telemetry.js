@@ -192,7 +192,6 @@ add_task(async function click_upgrade_button() {
 
   Assert.ok(content, "Panel content should be present");
 
-  content.state.isSignedOut = false;
   content.state.paused = true;
   content.requestUpdate();
   await content.updateComplete;

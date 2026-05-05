@@ -35,7 +35,6 @@ add_task(async function test_site_exclusion_feature_pref_disabled() {
   );
 
   let content = await openPanel({
-    isSignedOut: false,
     isProtectionEnabled: true,
     siteData: {
       isExclusion: false,
@@ -79,7 +78,6 @@ add_task(async function test_site_exclusion_toggle_with_siteData() {
   await IPPEnrollAndEntitleManager.refetchEntitlement();
 
   let content = await openPanel({
-    isSignedOut: false,
     isProtectionEnabled: false,
     siteData: {
       isExclusion: false,
@@ -105,7 +103,6 @@ add_task(async function test_site_exclusion_toggle_with_siteData() {
 
   // Turn VPN on
   await setPanelState({
-    isSignedOut: false,
     isProtectionEnabled: true,
     siteData: {
       isExclusion: false,
@@ -137,7 +134,6 @@ add_task(async function test_site_exclusion_toggle_no_siteData() {
   await IPPEnrollAndEntitleManager.refetchEntitlement();
 
   let content = await openPanel({
-    isSignedOut: false,
     isProtectionEnabled: false,
     siteData: null,
   });
@@ -165,7 +161,6 @@ add_task(async function test_site_exclusion_VPN_error() {
   await IPPEnrollAndEntitleManager.refetchEntitlement();
 
   let content = await openPanel({
-    isSignedOut: false,
     isProtectionEnabled: true,
     siteData: {
       isExclusion: false,
@@ -190,7 +185,6 @@ add_task(async function test_site_exclusion_VPN_error() {
 
   // Turn VPN on
   await setPanelState({
-    isSignedOut: false,
     isProtectionEnabled: true,
     siteData: {
       isExclusion: false,
@@ -219,7 +213,6 @@ add_task(async function test_site_exclusion_toggle_pressed_isExclusion() {
   await IPPEnrollAndEntitleManager.refetchEntitlement();
 
   let content = await openPanel({
-    isSignedOut: false,
     isProtectionEnabled: true,
     siteData: {
       isExclusion: false,
@@ -256,7 +249,6 @@ add_task(async function test_site_exclusion_toggle_pressed_isExclusion() {
 
   // Set isExclusion to true
   await setPanelState({
-    isSignedOut: false,
     isProtectionEnabled: true,
     siteData: {
       isExclusion: true,
@@ -298,7 +290,6 @@ add_task(
     );
 
     let content = await openPanel({
-      isSignedOut: false,
       isProtectionEnabled: true,
       siteData: {
         isExclusion: false,
@@ -416,7 +407,6 @@ add_task(
     );
 
     let content = await openPanel({
-      isSignedOut: false,
       isProtectionEnabled: true,
     });
 
@@ -511,7 +501,6 @@ add_task(async function test_site_exclusion_updates_on_navigation_same_tab() {
   );
 
   let content = await openPanel({
-    isSignedOut: false,
     isProtectionEnabled: true,
   });
 
@@ -672,7 +661,6 @@ add_task(async function test_site_exclusion_toggle_privileged_page() {
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, ABOUT_PAGE);
 
   let content = await openPanel({
-    isSignedOut: false,
     isProtectionEnabled: true,
   });
 

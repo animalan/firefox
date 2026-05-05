@@ -457,7 +457,6 @@ add_task(async function test_confirmation_hint_exclusions_toggle() {
   );
 
   let content = await openPanel({
-    isSignedOut: false,
     isProtectionEnabled: true,
     siteData: { isExclusion: false },
   });

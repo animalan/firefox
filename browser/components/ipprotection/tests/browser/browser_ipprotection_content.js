@@ -30,17 +30,14 @@ ChromeUtils.defineESModuleGetters(lazy, {
 
 const PANELSTATES = {
   signedOutVPNOff: {
-    isSignedOut: true,
     unauthenticated: true,
     isProtectionEnabled: false,
   },
   signedInVPNOff: {
-    isSignedOut: false,
     unauthenticated: false,
     isProtectionEnabled: false,
   },
   signedInVPNOn: {
-    isSignedOut: false,
     unauthenticated: false,
     isProtectionEnabled: true,
   },
@@ -235,7 +232,6 @@ add_task(async function test_settings_button_closes_panel() {
  */
 add_task(async function test_enrolling_skeleton() {
   let content = await openPanel({
-    isSignedOut: false,
     unauthenticated: false,
     isCheckingEntitlement: true,
   });
@@ -277,7 +273,6 @@ add_task(async function test_enrolling_skeleton() {
  */
 add_task(async function test_enrolling_overrides_unauthenticated() {
   let content = await openPanel({
-    isSignedOut: true,
     unauthenticated: true,
     isCheckingEntitlement: true,
   });
@@ -312,7 +307,6 @@ add_task(async function test_enrolling_transitions_to_ready() {
   await IPPEnrollAndEntitleManager.refetchEntitlement();
 
   let content = await openPanel({
-    isSignedOut: false,
     unauthenticated: false,
     isProtectionEnabled: false,
     isCheckingEntitlement: true,
@@ -324,7 +318,6 @@ add_task(async function test_enrolling_transitions_to_ready() {
   );
 
   await setPanelState({
-    isSignedOut: false,
     unauthenticated: false,
     isProtectionEnabled: false,
     isCheckingEntitlement: false,
