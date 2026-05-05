@@ -627,7 +627,7 @@ class VsyncRefreshDriverTimer : public RefreshDriverTimer {
         mLastRunOutOfMTTasksCount(0),
         mProcessedVsync(true),
         mHasPendingLowPrioTask(false) {
-    mVsyncObserver = new RefreshDriverVsyncObserver(this);
+    mVsyncObserver = MakeRefPtr<RefreshDriverVsyncObserver>(this);
   }
 
   ~VsyncRefreshDriverTimer() override {
@@ -1381,7 +1381,7 @@ TimeDuration nsRefreshDriver::GetMinRecomputeVisibilityInterval() {
 RefreshDriverTimer* nsRefreshDriver::ChooseTimer() {
   if (mThrottled) {
     if (!sThrottledRateTimer) {
-      sThrottledRateTimer = new InactiveRefreshDriverTimer(
+      sThrottledRateTimer = MakeRefPtr<InactiveRefreshDriverTimer>(
           GetThrottledTimerInterval(),
           DEFAULT_INACTIVE_TIMER_DISABLE_SECONDS * 1000.0);
     }
@@ -1398,7 +1398,7 @@ RefreshDriverTimer* nsRefreshDriver::ChooseTimer() {
 
   if (!sRegularRateTimer) {
     double rate = GetRegularTimerInterval();
-    sRegularRateTimer = new StartupRefreshDriverTimer(rate);
+    sRegularRateTimer = MakeRefPtr<StartupRefreshDriverTimer>(rate);
   }
 
   return sRegularRateTimer;

@@ -262,7 +262,7 @@ class nsDisplayCanvas final : public nsPaintedDisplayItem {
       return;
     }
 
-    RefPtr<CanvasRenderer> renderer = new CanvasRenderer();
+    auto renderer = MakeRefPtr<CanvasRenderer>();
     if (!canvas->InitializeCanvasRenderer(aBuilder, renderer)) {
       return;
     }

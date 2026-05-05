@@ -663,10 +663,11 @@ void nsPresContext::Init(nsDeviceContext* aDeviceContext) {
   }
   mCurAppUnitsPerDevPixel = mDeviceContext->AppUnitsPerDevPixel();
 
-  mEventManager = new mozilla::EventStateManager();
+  mEventManager = MakeRefPtr<mozilla::EventStateManager>();
 
-  mAnimationEventDispatcher = new mozilla::AnimationEventDispatcher(this);
-  mEffectCompositor = new mozilla::EffectCompositor(this);
+  mAnimationEventDispatcher =
+      MakeRefPtr<mozilla::AnimationEventDispatcher>(this);
+  mEffectCompositor = MakeRefPtr<mozilla::EffectCompositor>(this);
   mTransitionManager = MakeUnique<nsTransitionManager>(this);
   mAnimationManager = MakeUnique<nsAnimationManager>(this);
   mTimelineManager = MakeUnique<mozilla::TimelineManager>(this);
@@ -699,7 +700,7 @@ void nsPresContext::Init(nsDeviceContext* aDeviceContext) {
     }
 
     if (!mRefreshDriver) {
-      mRefreshDriver = new nsRefreshDriver(this);
+      mRefreshDriver = MakeRefPtr<nsRefreshDriver>(this);
     }
   }
 
@@ -786,7 +787,7 @@ bool nsPresContext::UpdateFontVisibility() {
 
 void nsPresContext::InitFontCache() {
   if (!mFontCache) {
-    mFontCache = new nsFontCache();
+    mFontCache = MakeRefPtr<nsFontCache>();
     mFontCache->Init(this);
   }
 }
@@ -828,7 +829,7 @@ void nsPresContext::AttachPresShell(mozilla::PresShell* aPresShell) {
   // Since CounterStyleManager is also the name of a method of
   // nsPresContext, it is necessary to prefix the class with the mozilla
   // namespace here.
-  mCounterStyleManager = new mozilla::CounterStyleManager(this);
+  mCounterStyleManager = MakeRefPtr<mozilla::CounterStyleManager>(this);
 
   dom::Document* doc = mPresShell->GetDocument();
   MOZ_ASSERT(doc);
@@ -3123,7 +3124,7 @@ nsRootPresContext::nsRootPresContext(dom::Document* aDocument,
 
 void nsRootPresContext::AddWillPaintObserver(nsIRunnable* aRunnable) {
   if (!mWillPaintFallbackEvent.IsPending()) {
-    mWillPaintFallbackEvent = new RunWillPaintObservers(this);
+    mWillPaintFallbackEvent = MakeRefPtr<RunWillPaintObservers>(this);
     Document()->Dispatch(do_AddRef(mWillPaintFallbackEvent));
   }
   mWillPaintObservers.AppendElement(aRunnable);

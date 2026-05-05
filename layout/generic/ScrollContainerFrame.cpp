@@ -300,7 +300,7 @@ ScrollContainerFrame::ScrollContainerFrame(ComputedStyle* aStyle,
   AppendScrollUpdate(ScrollPositionUpdate::NewScrollframe(nsPoint()));
 
   if (PresContext()->UseOverlayScrollbars()) {
-    mScrollbarActivity = new ScrollbarActivity(this);
+    mScrollbarActivity = MakeRefPtr<ScrollbarActivity>(this);
   }
 
   if (mIsRoot) {
@@ -1747,7 +1747,7 @@ void ScrollContainerFrame::HandleScrollbarStyleSwitching() {
     mScrollbarActivity->Destroy();
     mScrollbarActivity = nullptr;
   } else if (!mScrollbarActivity && PresContext()->UseOverlayScrollbars()) {
-    mScrollbarActivity = new ScrollbarActivity(this);
+    mScrollbarActivity = MakeRefPtr<ScrollbarActivity>(this);
   }
 }
 
@@ -2604,7 +2604,7 @@ void ScrollContainerFrame::ScrollToWithOrigin(nsPoint aScrollPosition,
         return;
       }
 
-      mAsyncSmoothMSDScroll = new AsyncSmoothMSDScroll(
+      mAsyncSmoothMSDScroll = MakeRefPtr<AsyncSmoothMSDScroll>(
           GetScrollPosition(), mDestination, currentVelocity,
           GetLayoutScrollRange(), now, presContext, std::move(snapTargetIds),
           aParams.mTriggeredByScript);
@@ -2636,7 +2636,7 @@ void ScrollContainerFrame::ScrollToWithOrigin(nsPoint aScrollPosition,
       return;
     }
 
-    mAsyncScroll = new AsyncScroll(aParams.mTriggeredByScript);
+    mAsyncScroll = MakeRefPtr<AsyncScroll>(aParams.mTriggeredByScript);
     mAsyncScroll->SetRefreshObserver(this);
   }
 
@@ -5520,7 +5520,7 @@ void ScrollContainerFrame::PostScrollEndEvent() {
   }
 
   // The ScrollEndEvent constructor registers itself.
-  mScrollEndEvent = new ScrollEndEvent(this);
+  mScrollEndEvent = MakeRefPtr<ScrollEndEvent>(this);
 }
 
 RefPtr<nsINode> ScrollContainerFrame::ScrollEventTargetNode(
@@ -6076,7 +6076,7 @@ void ScrollContainerFrame::PostScrollEvent() {
   }
 
   // The ScrollEvent constructor registers itself.
-  mScrollEvent = new ScrollEvent(this);
+  mScrollEvent = MakeRefPtr<ScrollEvent>(this);
 }
 
 // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230, bug 1535398)
@@ -6111,7 +6111,7 @@ void ScrollContainerFrame::PostOverflowEvent() {
     return;
   }
 
-  mAsyncScrollPortEvent = new AsyncScrollPortEvent(this);
+  mAsyncScrollPortEvent = MakeRefPtr<AsyncScrollPortEvent>(this);
   rpc->AddWillPaintObserver(mAsyncScrollPortEvent.get());
 }
 
@@ -7365,7 +7365,7 @@ void ScrollContainerFrame::PostScrolledAreaEvent() {
   if (mScrolledAreaEvent.IsPending()) {
     return;
   }
-  mScrolledAreaEvent = new ScrolledAreaEvent(this);
+  mScrolledAreaEvent = MakeRefPtr<ScrolledAreaEvent>(this);
   nsContentUtils::AddScriptRunner(mScrolledAreaEvent.get());
 }
 

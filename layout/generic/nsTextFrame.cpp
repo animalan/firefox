@@ -2658,14 +2658,15 @@ already_AddRefed<gfxTextRun> BuildTextRunsScanner::BuildTextRunForFrames(
         // want to create new nsTransformedCharStyle for them anyway.
         if (sc != f->Style() || sc->IsTextCombined()) {
           sc = f->Style();
-          defaultStyle = new nsTransformedCharStyle(sc, f->PresContext());
+          auto* pc = f->PresContext();
+          defaultStyle = MakeRefPtr<nsTransformedCharStyle>(sc, pc);
           if (sc->IsTextCombined() && f->CountGraphemeClusters() > 1) {
             defaultStyle->mForceNonFullWidth = true;
           }
           if (needsToMaskPassword) {
             defaultStyle->mMaskPassword = true;
             if (unmaskStart != unmaskEnd) {
-              unmaskStyle = new nsTransformedCharStyle(sc, f->PresContext());
+              unmaskStyle = MakeRefPtr<nsTransformedCharStyle>(sc, pc);
               unmaskStyle->mForceNonFullWidth =
                   defaultStyle->mForceNonFullWidth;
             }

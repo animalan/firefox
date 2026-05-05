@@ -4682,7 +4682,7 @@ void nsIFrame::FireDOMEvent(const nsAString& aDOMEventName,
   nsIContent* target = aContent ? aContent : GetContent();
 
   if (target) {
-    RefPtr<AsyncEventDispatcher> asyncDispatcher = new AsyncEventDispatcher(
+    auto asyncDispatcher = MakeRefPtr<AsyncEventDispatcher>(
         target, aDOMEventName, CanBubble::eYes, ChromeOnlyDispatch::eNo);
     DebugOnly<nsresult> rv = asyncDispatcher->PostDOMEvent();
     NS_ASSERTION(NS_SUCCEEDED(rv), "AsyncEventDispatcher failed to dispatch");
