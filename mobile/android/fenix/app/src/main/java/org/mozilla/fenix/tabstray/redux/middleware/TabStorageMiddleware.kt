@@ -149,20 +149,12 @@ class TabStorageMiddleware(
             is TabGroupAction.SelectedTabsAddedToGroup -> {
                 val selectedTabIds = store.state.mode.selectedTabIds
                 val selectedTabGroupIds = store.state.mode.selectedTabGroupIds - action.groupId
-                val lastTabInGroupId = store.state.lastTabInGroupId(groupId = action.groupId)
 
                 scope.launch {
-                    // Sequence the selected tabs after the group's other tabs, if it has any.
-                    lastTabInGroupId?.let {
-                        sequenceGroupedTabsTogether(
-                            tabIds = selectedTabIds,
-                            targetTabId = lastTabInGroupId,
-                        )
-                    }
-
-                    tabGroupRepository.addTabsToTabGroup(
-                        tabGroupId = action.groupId,
+                    addTabItemsToTabGroup(
+                        groupId = action.groupId,
                         tabIds = selectedTabIds,
+                        store = store,
                     )
 
                     // If group(s) were merged, delete them, but do NOT delete the destination group if it was also
@@ -221,7 +213,11 @@ class TabStorageMiddleware(
             }
             // Source and target are groups
             dragAndDropItems.source is TabsTrayItem.TabGroup && dragAndDropItems.target is TabsTrayItem.TabGroup -> {
-                // todo bug 2019825: handle group merges
+                handleTabGroupMerge(
+                    sourceGroupId = action.sourceId,
+                    targetGroupId = action.destinationId,
+                    store = store,
+                )
             }
             // Source is tab, target is group
             dragAndDropItems.source is TabsTrayItem.Tab && dragAndDropItems.target is TabsTrayItem.TabGroup -> {
@@ -272,11 +268,50 @@ class TabStorageMiddleware(
         )
     }
 
+    private fun handleTabGroupMerge(
+        sourceGroupId: String,
+        targetGroupId: String,
+        store: Store<TabsTrayState, TabsTrayAction>,
+    ) {
+        scope.launch {
+            val groupedTabs =
+                store.state.tabIdsForGroup(groupId = sourceGroupId)
+            if (groupedTabs.isNotEmpty()) {
+                addTabItemsToTabGroup(
+                    groupId = targetGroupId,
+                    tabIds = groupedTabs,
+                    store = store,
+                )
+            }
+            tabGroupRepository.deleteTabGroupById(sourceGroupId)
+        }
+    }
+
+    private suspend fun addTabItemsToTabGroup(
+        groupId: String,
+        tabIds: List<String>,
+        store: Store<TabsTrayState, TabsTrayAction>,
+    ) {
+        val lastTabInGroupId = store.state.lastTabInGroupId(groupId = groupId)
+        // Sequence the selected tabs after the group's other tabs, if it has any.
+        lastTabInGroupId?.let {
+            sequenceGroupedTabsTogether(
+                tabIds = tabIds,
+                targetTabId = lastTabInGroupId,
+            )
+        }
+
+        tabGroupRepository.addTabsToTabGroup(
+            tabGroupId = groupId,
+            tabIds = tabIds,
+        )
+    }
+
     private fun handleGroupAddedToTab(groupId: String, tabId: String, store: Store<TabsTrayState, TabsTrayAction>) {
-        val groupedTabs = store.state.tabGroupState.groups.find { it.id == groupId }?.tabs?.map { it.id }
+        val groupedTabs = store.state.tabIdsForGroup(groupId)
         scope.launch {
             // Sequence the group's tabs in front of the target tab.
-            if (groupedTabs?.isNotEmpty() == true) {
+            if (groupedTabs.isNotEmpty()) {
                 moveTabsUseCase.invoke(
                     tabIds = groupedTabs,
                     targetTabId = tabId,
@@ -576,6 +611,16 @@ class TabStorageMiddleware(
         initialValue = CombinedTabData(combinedData = Triple(TabData(), listOf(), mapOf())),
     )
 }
+
+/**
+ * Fetches a list of tab IDs in the group with [groupId].
+ * Returns an empty list if the group is empty or not found.
+ */
+private fun TabsTrayState.tabIdsForGroup(groupId: String): List<String> =
+    tabGroupState.groups
+        .find { it.id == groupId }
+        ?.tabs
+        ?.map { it.id } ?: emptyList()
 
 /**
  * Fetches the ID of the last tab in the group with [groupId], or null if the group is empty.
