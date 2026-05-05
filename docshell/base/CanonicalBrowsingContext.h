@@ -393,8 +393,9 @@ class CanonicalBrowsingContext final : public BrowsingContext {
   }
 
   void GetDownloadFolderOverride(nsString& aOut) const {
-    MOZ_RELEASE_ASSERT(IsTop());
-    aOut = mDownloadFolderOverride;
+    if (IsTop()) {
+      aOut = mDownloadFolderOverride;
+    }
   }
   void SetDownloadFolderOverride(const nsAString& aValue, ErrorResult& aRv) {
     if (!IsTop()) {
