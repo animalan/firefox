@@ -1,3 +1,6 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 import contextlib
 import os
 import pathlib
@@ -5,10 +8,7 @@ import shutil
 import tempfile
 from unittest import mock
 
-import mozunit
 import pytest
-
-LINTER = "perfdocs"
 
 
 class PerfDocsLoggerMock:
@@ -163,40 +163,34 @@ def temp_dir():
 
 
 def setup_sample_logger(logger, structured_logger, top_dir):
-    from perfdocs.logger import PerfDocLogger
+    from mozperftest.perfdocs.logger import PerfDocLogger
 
     PerfDocLogger.LOGGER = structured_logger
     PerfDocLogger.PATHS = ["perfdocs"]
     PerfDocLogger.TOP_DIR = top_dir
 
-    import perfdocs.gatherer as gt
-    import perfdocs.generator as gn
-    import perfdocs.verifier as vf
+    import mozperftest.perfdocs.gatherer as gt
+    import mozperftest.perfdocs.generator as gn
+    import mozperftest.perfdocs.verifier as vf
 
     gt.logger = logger
     vf.logger = logger
     gn.logger = logger
 
 
-@mock.patch("taskgraph.util.taskcluster.get_artifact")
-@mock.patch("tryselect.tasks.generate_tasks")
-@mock.patch("perfdocs.generator.Generator")
-@mock.patch("perfdocs.verifier.Verifier")
-@mock.patch("perfdocs.logger.PerfDocLogger", new=PerfDocsLoggerMock)
+@mock.patch("mozperftest.perfdocs.generator.Generator")
+@mock.patch("mozperftest.perfdocs.verifier.Verifier")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger", new=PerfDocsLoggerMock)
 def test_perfdocs_start_and_fail(
     verifier,
     generator,
-    get_artifact_mock,
-    gen_tasks_mock,
     structured_logger,
-    config,
-    paths,
 ):
-    from perfdocs.perfdocs import run_perfdocs
+    from mozperftest.perfdocs.perfdocs import run_perfdocs
 
     with temp_file("bad", content="foo") as temp:
         run_perfdocs(
-            config, logger=structured_logger, paths=[str(temp)], generate=False
+            None, logger=structured_logger, paths=[str(temp)], generate=False
         )
         assert PerfDocsLoggerMock.LOGGER == structured_logger
         assert PerfDocsLoggerMock.PATHS == [temp]
@@ -207,18 +201,16 @@ def test_perfdocs_start_and_fail(
     assert generator.call_count == 0
 
 
-@mock.patch("taskgraph.util.taskcluster.get_artifact")
-@mock.patch("tryselect.tasks.generate_tasks")
-@mock.patch("perfdocs.generator.Generator")
-@mock.patch("perfdocs.verifier.Verifier")
-@mock.patch("perfdocs.logger.PerfDocLogger", new=PerfDocsLoggerMock)
-def test_perfdocs_start_and_pass(verifier, generator, structured_logger, config, paths):
-    from perfdocs.perfdocs import run_perfdocs
+@mock.patch("mozperftest.perfdocs.generator.Generator")
+@mock.patch("mozperftest.perfdocs.verifier.Verifier")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger", new=PerfDocsLoggerMock)
+def test_perfdocs_start_and_pass(verifier, generator, structured_logger):
+    from mozperftest.perfdocs.perfdocs import run_perfdocs
 
     PerfDocsLoggerMock.FAILED = False
     with temp_file("bad", content="foo") as temp:
         run_perfdocs(
-            config, logger=structured_logger, paths=[str(temp)], generate=False
+            None, logger=structured_logger, paths=[str(temp)], generate=False
         )
         assert PerfDocsLoggerMock.LOGGER == structured_logger
         assert PerfDocsLoggerMock.PATHS == [temp]
@@ -230,22 +222,22 @@ def test_perfdocs_start_and_pass(verifier, generator, structured_logger, config,
     assert mock.call().generate_perfdocs() in generator.mock_calls
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger", new=PerfDocsLoggerMock)
-def test_perfdocs_bad_paths(structured_logger, config, paths):
-    from perfdocs.perfdocs import run_perfdocs
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger", new=PerfDocsLoggerMock)
+def test_perfdocs_bad_paths(structured_logger):
+    from mozperftest.perfdocs.perfdocs import run_perfdocs
 
     with pytest.raises(Exception):
-        run_perfdocs(config, logger=structured_logger, paths=["bad"], generate=False)
+        run_perfdocs(None, logger=structured_logger, paths=["bad"], generate=False)
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_gatherer_fetch_perfdocs_tree(
     logger, structured_logger, perfdocs_sample
 ):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.gatherer import Gatherer
+    from mozperftest.perfdocs.gatherer import Gatherer
 
     gatherer = Gatherer(top_dir)
     assert not gatherer._perfdocs_tree
@@ -264,12 +256,12 @@ def test_perfdocs_gatherer_fetch_perfdocs_tree(
         assert key == expected[i]
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_gatherer_get_test_list(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.gatherer import Gatherer
+    from mozperftest.perfdocs.gatherer import Gatherer
 
     gatherer = Gatherer(top_dir)
     gatherer.fetch_perfdocs_tree()
@@ -280,12 +272,12 @@ def test_perfdocs_gatherer_get_test_list(logger, structured_logger, perfdocs_sam
         assert key == expected[i]
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verification(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
@@ -296,7 +288,7 @@ def test_perfdocs_verification(logger, structured_logger, perfdocs_sample):
     assert len(logger.mock_calls) == 1
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_validate_yaml_pass(
     logger, structured_logger, perfdocs_sample
 ):
@@ -304,20 +296,20 @@ def test_perfdocs_verifier_validate_yaml_pass(
     yaml_path = perfdocs_sample["config"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     valid = Verifier(top_dir).validate_yaml(pathlib.Path(yaml_path))
 
     assert valid
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_invalid_yaml(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     yaml_path = perfdocs_sample["config"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier("top_dir")
     with open(yaml_path, newline="\n") as f:
@@ -335,7 +327,7 @@ def test_perfdocs_verifier_invalid_yaml(logger, structured_logger, perfdocs_samp
     assert not valid
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_validate_rst_pass(
     logger, structured_logger, perfdocs_sample
 ):
@@ -343,7 +335,7 @@ def test_perfdocs_verifier_validate_rst_pass(
     rst_path = perfdocs_sample["index"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     valid = Verifier(top_dir).validate_rst_content(
         pathlib.Path(rst_path), expected_str="{documentation}"
@@ -352,7 +344,7 @@ def test_perfdocs_verifier_validate_rst_pass(
     assert valid
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_invalid_rst(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     rst_path = perfdocs_sample["index"]
@@ -367,7 +359,7 @@ def test_perfdocs_verifier_invalid_rst(logger, structured_logger, perfdocs_sampl
     with open(rst_path, "w", newline="\n") as file:
         file.write(filedata)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier("top_dir")
     valid = verifier.validate_rst_content(rst_path, expected_str="{documentation}")
@@ -383,14 +375,14 @@ def test_perfdocs_verifier_invalid_rst(logger, structured_logger, perfdocs_sampl
     assert not valid
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_validate_descriptions_pass(
     logger, structured_logger, perfdocs_sample
 ):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier._check_framework_descriptions(verifier._gatherer.perfdocs_tree[0])
@@ -400,7 +392,7 @@ def test_perfdocs_verifier_validate_descriptions_pass(
     assert len(logger.mock_calls) == 1
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_not_existing_suite_in_test_list(
     logger, structured_logger, perfdocs_sample
 ):
@@ -408,7 +400,7 @@ def test_perfdocs_verifier_not_existing_suite_in_test_list(
     manifest_path = perfdocs_sample["manifest"]["path"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     os.remove(manifest_path)
@@ -424,7 +416,7 @@ def test_perfdocs_verifier_not_existing_suite_in_test_list(
     assert args == expected
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_not_existing_tests_in_suites(
     logger, structured_logger, perfdocs_sample
 ):
@@ -437,7 +429,7 @@ def test_perfdocs_verifier_not_existing_tests_in_suites(
     with open(perfdocs_sample["config"], "w", newline="\n") as file:
         file.write(filedata)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier._check_framework_descriptions(verifier._gatherer.perfdocs_tree[0])
@@ -453,7 +445,7 @@ def test_perfdocs_verifier_not_existing_tests_in_suites(
         assert args[0] == expected[i]
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_missing_contents_in_suite(
     logger, structured_logger, perfdocs_sample
 ):
@@ -466,7 +458,7 @@ def test_perfdocs_verifier_missing_contents_in_suite(
     with open(perfdocs_sample["config"], "w", newline="\n") as file:
         file.write(filedata)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier._check_framework_descriptions(verifier._gatherer.perfdocs_tree[0])
@@ -482,12 +474,12 @@ def test_perfdocs_verifier_missing_contents_in_suite(
         assert args[0] == expected[i]
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_invalid_dir(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier("invalid_path")
     with pytest.raises(Exception) as exceinfo:
@@ -496,16 +488,18 @@ def test_perfdocs_verifier_invalid_dir(logger, structured_logger, perfdocs_sampl
     assert str(exceinfo.value) == "No valid perfdocs directories found"
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_file_invalidation(
     logger, structured_logger, perfdocs_sample
 ):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
-    with mock.patch("perfdocs.verifier.Verifier.validate_yaml", return_value=False):
+    with mock.patch(
+        "mozperftest.perfdocs.verifier.Verifier.validate_yaml", return_value=False
+    ):
         verifier = Verifier(top_dir)
         with pytest.raises(Exception):
             verifier.validate_tree()
@@ -547,7 +541,7 @@ metrics:
         ],
     ],
 )
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_nonexistent_documented_metrics(
     logger, structured_logger, perfdocs_sample, manifest, metric_definitions, expected
 ):
@@ -564,9 +558,11 @@ def test_perfdocs_verifier_nonexistent_documented_metrics(
         "another_suite": {"Example": {}},
     }
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
-    with mock.patch("perfdocs.framework_gatherers.RaptorGatherer.get_test_list") as m:
+    with mock.patch(
+        "mozperftest.perfdocs.framework_gatherers.RaptorGatherer.get_test_list"
+    ) as m:
         m.return_value = sample_gatherer_result
         verifier = Verifier(top_dir)
         verifier.validate_tree()
@@ -602,7 +598,7 @@ metrics:
         ],
     ],
 )
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_undocumented_metrics(
     logger, structured_logger, perfdocs_sample, manifest, metric_definitions
 ):
@@ -619,9 +615,11 @@ def test_perfdocs_verifier_undocumented_metrics(
         "another_suite": {"Example": {}},
     }
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
-    with mock.patch("perfdocs.framework_gatherers.RaptorGatherer.get_test_list") as m:
+    with mock.patch(
+        "mozperftest.perfdocs.framework_gatherers.RaptorGatherer.get_test_list"
+    ) as m:
         m.return_value = sample_gatherer_result
         verifier = Verifier(top_dir)
         verifier.validate_tree()
@@ -678,7 +676,7 @@ metrics:
         ],
     ],
 )
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_duplicate_metrics(
     logger, structured_logger, perfdocs_sample, manifest, metric_definitions, expected
 ):
@@ -695,9 +693,11 @@ def test_perfdocs_verifier_duplicate_metrics(
         "another_suite": {"Example": {}},
     }
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
-    with mock.patch("perfdocs.framework_gatherers.RaptorGatherer.get_test_list") as m:
+    with mock.patch(
+        "mozperftest.perfdocs.framework_gatherers.RaptorGatherer.get_test_list"
+    ) as m:
         m.return_value = sample_gatherer_result
         verifier = Verifier(top_dir)
         verifier.validate_tree()
@@ -737,7 +737,7 @@ metrics:
         ],
     ],
 )
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_verifier_valid_metrics(
     logger, structured_logger, perfdocs_sample, manifest, metric_definitions
 ):
@@ -754,9 +754,11 @@ def test_perfdocs_verifier_valid_metrics(
         "another_suite": {"Example": {}},
     }
 
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.verifier import Verifier
 
-    with mock.patch("perfdocs.framework_gatherers.RaptorGatherer.get_test_list") as m:
+    with mock.patch(
+        "mozperftest.perfdocs.framework_gatherers.RaptorGatherer.get_test_list"
+    ) as m:
         m.return_value = sample_gatherer_result
         verifier = Verifier(top_dir)
         verifier.validate_tree()
@@ -764,7 +766,7 @@ def test_perfdocs_verifier_valid_metrics(
     assert len(logger.warning.call_args_list) == 0
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_framework_gatherers(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
@@ -773,7 +775,7 @@ def test_perfdocs_framework_gatherers(logger, structured_logger, perfdocs_sample
     # gatherer that has been implemented produces a test list
     # in every suite that contains a test with an associated
     # manifest.
-    from perfdocs.gatherer import frameworks
+    from mozperftest.perfdocs.gatherer import frameworks
 
     for framework, gatherer in frameworks.items():
         with open(perfdocs_sample["config"], "w", newline="\n") as f:
@@ -816,15 +818,15 @@ def test_perfdocs_framework_gatherers(logger, structured_logger, perfdocs_sample
                 )
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_framework_gatherers_urls(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.gatherer import frameworks
-    from perfdocs.generator import Generator
-    from perfdocs.utils import read_yaml
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.gatherer import frameworks
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.utils import read_yaml
+    from mozperftest.perfdocs.verifier import Verifier
 
     # This test is only for raptor
     gatherer = frameworks["raptor"]
@@ -879,8 +881,8 @@ def test_perfdocs_framework_gatherers_urls(logger, structured_logger, perfdocs_s
             assert test_name in desc[0]
 
 
-def test_perfdocs_logger_failure(config, paths):
-    from perfdocs.logger import PerfDocLogger
+def test_perfdocs_logger_failure():
+    from mozperftest.perfdocs.logger import PerfDocLogger
 
     PerfDocLogger.LOGGER = None
     with pytest.raises(Exception):
@@ -889,7 +891,3 @@ def test_perfdocs_logger_failure(config, paths):
     PerfDocLogger.PATHS = []
     with pytest.raises(Exception):
         PerfDocLogger()
-
-
-if __name__ == "__main__":
-    mozunit.main()

@@ -1,7 +1,7 @@
-import mozunit
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 import pytest
-
-LINTER = "perfdocs"
 
 testdata = [
     {
@@ -97,7 +97,7 @@ table_specifications = {
 
 @pytest.mark.parametrize("testdata", testdata)
 def test_table_builder_invalid_attributes(testdata):
-    from perfdocs.doc_helpers import TableBuilder
+    from mozperftest.perfdocs.doc_helpers import TableBuilder
 
     table_specifications = testdata["table_specifications"]
     error_msg = testdata["error_msg"]
@@ -115,7 +115,10 @@ def test_table_builder_invalid_attributes(testdata):
 
 
 def test_table_builder_mismatched_columns():
-    from perfdocs.doc_helpers import MismatchedRowLengthsException, TableBuilder
+    from mozperftest.perfdocs.doc_helpers import (
+        MismatchedRowLengthsException,
+        TableBuilder,
+    )
 
     table_specifications = {
         "title": "I've got a lovely bunch of coconuts",
@@ -140,7 +143,10 @@ def test_table_builder_mismatched_columns():
 
 
 def test_table_builder_add_row_too_long():
-    from perfdocs.doc_helpers import MismatchedRowLengthsException, TableBuilder
+    from mozperftest.perfdocs.doc_helpers import (
+        MismatchedRowLengthsException,
+        TableBuilder,
+    )
 
     table = TableBuilder(
         table_specifications["title"],
@@ -163,7 +169,7 @@ def test_table_builder_add_row_too_long():
 
 
 def test_table_builder_add_rows_type_error():
-    from perfdocs.doc_helpers import TableBuilder
+    from mozperftest.perfdocs.doc_helpers import TableBuilder
 
     table = TableBuilder(
         table_specifications["title"],
@@ -183,7 +189,7 @@ def test_table_builder_add_rows_type_error():
 
 
 def test_table_builder_validate():
-    from perfdocs.doc_helpers import TableBuilder
+    from mozperftest.perfdocs.doc_helpers import TableBuilder
 
     table = TableBuilder(
         table_specifications["title"],
@@ -208,7 +214,3 @@ def test_table_builder_validate():
         "     * - **Give 'em a twist**\n       - A flick of the wrist\n"
         "       - That's what the showman said!\n\n"
     )
-
-
-if __name__ == "__main__":
-    mozunit.main()

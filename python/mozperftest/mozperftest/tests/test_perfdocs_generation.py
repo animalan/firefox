@@ -1,23 +1,24 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 import os
 import pathlib
 from unittest import mock
 
-import mozunit
-
-LINTER = "perfdocs"
+from mozperftest.tests.test_perfdocs import temp_file
 
 
 def setup_sample_logger(logger, structured_logger, top_dir):
-    from perfdocs.logger import PerfDocLogger
+    from mozperftest.perfdocs.logger import PerfDocLogger
 
     PerfDocLogger.LOGGER = structured_logger
     PerfDocLogger.PATHS = ["perfdocs"]
     PerfDocLogger.TOP_DIR = top_dir
 
-    import perfdocs.gatherer as gt
-    import perfdocs.generator as gn
-    import perfdocs.utils as utls
-    import perfdocs.verifier as vf
+    import mozperftest.perfdocs.gatherer as gt
+    import mozperftest.perfdocs.generator as gn
+    import mozperftest.perfdocs.utils as utls
+    import mozperftest.perfdocs.verifier as vf
 
     gt.logger = logger
     vf.logger = logger
@@ -25,45 +26,42 @@ def setup_sample_logger(logger, structured_logger, top_dir):
     utls.logger = logger
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_generate_perfdocs_pass(
     logger, structured_logger, perfdocs_sample
 ):
-    from test_perfdocs import temp_file
-
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    templates_dir = pathlib.Path(top_dir, "tools", "lint", "perfdocs", "templates")
+    templates_dir = pathlib.Path(top_dir, "perfdocs_templates")
     templates_dir.mkdir(parents=True, exist_ok=True)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
 
     generator = Generator(verifier, generate=True, workspace=top_dir)
+    generator.templates_path = templates_dir
     with temp_file("index.rst", tempdir=templates_dir, content="{test_documentation}"):
         generator.generate_perfdocs()
 
     assert logger.warning.call_count == 0
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_generate_perfdocs_metrics_pass(
     logger, structured_logger, perfdocs_sample
 ):
-    from test_perfdocs import temp_file
-
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    templates_dir = pathlib.Path(top_dir, "tools", "lint", "perfdocs", "templates")
+    templates_dir = pathlib.Path(top_dir, "perfdocs_templates")
     templates_dir.mkdir(parents=True, exist_ok=True)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     sample_gatherer_result = {
         "suite": {"Example": {"metrics": ["fcp", "SpeedIndex"]}},
@@ -80,7 +78,7 @@ def test_perfdocs_generator_generate_perfdocs_metrics_pass(
         content="{metrics_documentation}",
     ):
         with mock.patch(
-            "perfdocs.framework_gatherers.RaptorGatherer.get_test_list"
+            "mozperftest.perfdocs.framework_gatherers.RaptorGatherer.get_test_list"
         ) as m:
             m.return_value = sample_gatherer_result
             with perfdocs_sample["config"].open("w") as f1, perfdocs_sample[
@@ -97,6 +95,7 @@ def test_perfdocs_generator_generate_perfdocs_metrics_pass(
             ]._descriptions = sample_test_list_result
 
         generator = Generator(verifier, generate=True, workspace=top_dir)
+        generator.templates_path = templates_dir
         with temp_file(
             "index.rst", tempdir=templates_dir, content="{test_documentation}"
         ):
@@ -116,15 +115,15 @@ def test_perfdocs_generator_generate_perfdocs_metrics_pass(
     assert logger.warning.call_count == 0
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_needed_regeneration(
     logger, structured_logger, perfdocs_sample
 ):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
@@ -139,26 +138,25 @@ def test_perfdocs_generator_needed_regeneration(
     assert args[0] == expected
 
 
-@mock.patch("perfdocs.generator.get_changed_files", new=lambda x: [])
-@mock.patch("perfdocs.generator.ON_TRY", new=True)
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.generator.get_changed_files", new=lambda x: [])
+@mock.patch("mozperftest.perfdocs.generator.ON_TRY", new=True)
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_needed_update(logger, structured_logger, perfdocs_sample):
-    from test_perfdocs import temp_file
-
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    templates_dir = pathlib.Path(top_dir, "tools", "lint", "perfdocs", "templates")
+    templates_dir = pathlib.Path(top_dir, "perfdocs_templates")
     templates_dir.mkdir(parents=True, exist_ok=True)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     # Initializing perfdocs
     verifier = Verifier(top_dir)
     verifier.validate_tree()
 
     generator = Generator(verifier, generate=True, workspace=top_dir)
+    generator.templates_path = templates_dir
     with temp_file("index.rst", tempdir=templates_dir, content="{test_documentation}"):
         generator.generate_perfdocs()
 
@@ -171,9 +169,9 @@ def test_perfdocs_generator_needed_update(logger, structured_logger, perfdocs_sa
         generator.generate_perfdocs()
 
     expected = (
-        "PerfDocs are outdated, run `./mach lint -l perfdocs --outgoing --fix` to update them. "
-        "You can also apply the perfdocs.diff patch file produced from this "
-        "reviewbot test to fix the issue."
+        "PerfDocs are outdated, run `./mach perfdocs --generate` "
+        "to update them. You can also apply the perfdocs.diff patch file "
+        "produced from this reviewbot test to fix the issue."
     )
     args, _ = logger.warning.call_args
 
@@ -192,12 +190,12 @@ def test_perfdocs_generator_needed_update(logger, structured_logger, perfdocs_sa
         assert failure_log in logs
 
 
-@mock.patch("perfdocs.generator.get_changed_files", new=lambda x: [])
-@mock.patch("perfdocs.generator.ON_TRY", new=True)
+@mock.patch("mozperftest.perfdocs.generator.get_changed_files", new=lambda x: [])
+@mock.patch("mozperftest.perfdocs.generator.ON_TRY", new=True)
 def test_perfdocs_generator_update_with_no_changes(structured_logger, perfdocs_sample):
     """This test ensures that when no changed files exist, we'll still trigger a failure."""
-    from perfdocs.logger import PerfDocLogger
-    from test_perfdocs import temp_file
+    from mozperftest.perfdocs.logger import PerfDocLogger
+    from mozperftest.tests.test_perfdocs import temp_file
 
     top_dir = perfdocs_sample["top_dir"]
 
@@ -209,17 +207,18 @@ def test_perfdocs_generator_update_with_no_changes(structured_logger, perfdocs_s
 
     setup_sample_logger(logger, logger_mock, top_dir)
 
-    templates_dir = pathlib.Path(top_dir, "tools", "lint", "perfdocs", "templates")
+    templates_dir = pathlib.Path(top_dir, "perfdocs_templates")
     templates_dir.mkdir(parents=True, exist_ok=True)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     # Initializing perfdocs
     verifier = Verifier(top_dir)
     verifier.validate_tree()
 
     generator = Generator(verifier, generate=True, workspace=top_dir)
+    generator.templates_path = templates_dir
     with temp_file("index.rst", tempdir=templates_dir, content="{test_documentation}"):
         generator.generate_perfdocs()
 
@@ -232,9 +231,9 @@ def test_perfdocs_generator_update_with_no_changes(structured_logger, perfdocs_s
         generator.generate_perfdocs()
 
     expected = (
-        "PerfDocs are outdated, run `./mach lint -l perfdocs --outgoing --fix` to update them. "
-        "You can also apply the perfdocs.diff patch file produced from this "
-        "reviewbot test to fix the issue."
+        "PerfDocs are outdated, run `./mach perfdocs --generate` "
+        "to update them. You can also apply the perfdocs.diff patch file "
+        "produced from this reviewbot test to fix the issue."
     )
     assert logger.LOGGER.lint_error.call_args is not None
     _, msg = logger.LOGGER.lint_error.call_args
@@ -245,25 +244,24 @@ def test_perfdocs_generator_update_with_no_changes(structured_logger, perfdocs_s
     assert msg["rule"] == "Flawless performance docs (unknown file)"
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_created_perfdocs(
     logger, structured_logger, perfdocs_sample
 ):
-    from test_perfdocs import temp_file
-
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    templates_dir = pathlib.Path(top_dir, "tools", "lint", "perfdocs", "templates")
+    templates_dir = pathlib.Path(top_dir, "perfdocs_templates")
     templates_dir.mkdir(parents=True, exist_ok=True)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
 
     generator = Generator(verifier, generate=True, workspace=top_dir)
+    generator.templates_path = templates_dir
     with temp_file("index.rst", tempdir=templates_dir, content="{test_documentation}"):
         perfdocs_tmpdir = generator._create_perfdocs()
 
@@ -279,13 +277,13 @@ def test_perfdocs_generator_created_perfdocs(
     assert "".join(filedata) == "  * :doc:`mozperftest`"
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_build_perfdocs(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
@@ -300,13 +298,13 @@ def test_perfdocs_generator_build_perfdocs(logger, structured_logger, perfdocs_s
             assert framework_info == expected[i]
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_create_temp_dir(logger, structured_logger, perfdocs_sample):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
@@ -317,21 +315,21 @@ def test_perfdocs_generator_create_temp_dir(logger, structured_logger, perfdocs_
     assert pathlib.Path(tmpdir).is_dir()
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_create_temp_dir_fail(
     logger, structured_logger, perfdocs_sample
 ):
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
 
     generator = Generator(verifier, generate=True, workspace=top_dir)
-    with mock.patch("perfdocs.generator.pathlib") as path_mock:
+    with mock.patch("mozperftest.perfdocs.generator.pathlib") as path_mock:
         path_mock.Path().mkdir.side_effect = OSError()
         path_mock.Path().is_dir.return_value = False
         tmpdir = generator._create_temp_dir()
@@ -344,25 +342,24 @@ def test_perfdocs_generator_create_temp_dir_fail(
     assert args[0] == expected
 
 
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_save_perfdocs_pass(
     logger, structured_logger, perfdocs_sample
 ):
-    from test_perfdocs import temp_file
-
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    templates_dir = pathlib.Path(top_dir, "tools", "lint", "perfdocs", "templates")
+    templates_dir = pathlib.Path(top_dir, "perfdocs_templates")
     templates_dir.mkdir(parents=True, exist_ok=True)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
 
     generator = Generator(verifier, generate=True, workspace=top_dir)
+    generator.templates_path = templates_dir
 
     assert not generator.perfdocs_path.is_dir()
 
@@ -379,26 +376,25 @@ def test_perfdocs_generator_save_perfdocs_pass(
         assert file == expected[i]
 
 
-@mock.patch("perfdocs.generator.shutil")
-@mock.patch("perfdocs.logger.PerfDocLogger")
+@mock.patch("mozperftest.perfdocs.generator.shutil")
+@mock.patch("mozperftest.perfdocs.logger.PerfDocLogger")
 def test_perfdocs_generator_save_perfdocs_fail(
     logger, shutil, structured_logger, perfdocs_sample
 ):
-    from test_perfdocs import temp_file
-
     top_dir = perfdocs_sample["top_dir"]
     setup_sample_logger(logger, structured_logger, top_dir)
 
-    templates_dir = pathlib.Path(top_dir, "tools", "lint", "perfdocs", "templates")
+    templates_dir = pathlib.Path(top_dir, "perfdocs_templates")
     templates_dir.mkdir(parents=True, exist_ok=True)
 
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     verifier = Verifier(top_dir)
     verifier.validate_tree()
 
     generator = Generator(verifier, generate=True, workspace=top_dir)
+    generator.templates_path = templates_dir
     with temp_file("index.rst", tempdir=templates_dir, content="{test_documentation}"):
         perfdocs_tmpdir = generator._create_perfdocs()
 
@@ -410,7 +406,3 @@ def test_perfdocs_generator_save_perfdocs_fail(
 
     assert logger.critical.call_count == 1
     assert args[0] == expected
-
-
-if __name__ == "__main__":
-    mozunit.main()
