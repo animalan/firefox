@@ -124,10 +124,10 @@ add_task(
 );
 
 /**
- * Tests that refetchEntitlement works as expected if a linked VPN is found and sends an event.
+ * Tests that checkForUpgrade works as expected if a linked VPN is found and sends an event.
  */
 add_task(
-  async function test_IPProtectionService_refetchEntitlement_has_vpn_linked() {
+  async function test_IPProtectionService_checkForUpgrade_has_vpn_linked() {
     const sandbox = sinon.createSandbox();
     setupStubs(sandbox);
 
@@ -153,7 +153,7 @@ add_task(
       () => IPProtectionService.authProvider.hasUpgraded
     );
 
-    await IPPEnrollAndEntitleManager.refetchEntitlement();
+    await IPProtectionService.authProvider.checkForUpgrade();
 
     await hasUpgradedEventPromise;
 
@@ -168,11 +168,11 @@ add_task(
 );
 
 /**
- * Tests that refetchEntitlement returns errors if no linked VPN is found and
+ * Tests that checkForUpgrade returns errors if no linked VPN is found and
  * sends an event.
  */
 add_task(
-  async function test_IPProtectionService_refetchEntitlement_no_vpn_linked() {
+  async function test_IPProtectionService_checkForUpgrade_no_vpn_linked() {
     const sandbox = sinon.createSandbox();
     setupStubs(sandbox);
 
@@ -187,7 +187,7 @@ add_task(
       "IPPAuthProvider:StateChanged"
     );
 
-    await IPPEnrollAndEntitleManager.refetchEntitlement();
+    await IPProtectionService.authProvider.checkForUpgrade();
 
     await hasUpgradedEventPromise;
 

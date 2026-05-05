@@ -26,6 +26,14 @@ export class IPPAuthProvider extends EventTarget {
   }
 
   /**
+   * Checks whether the user has upgraded their subscription since the last
+   * known state and updates accordingly.
+   *
+   * @returns {Promise<void>}
+   */
+  async checkForUpgrade() {}
+
+  /**
    * Called before the proxy starts. Should resolve enrollment and verify
    * entitlement. Returns an error object if the proxy should not start,
    * or null if everything is in order.

@@ -447,7 +447,7 @@ add_task(async function test_confirmation_hint_exclusions_toggle() {
     isSignedIn: true,
     isEnrolledAndEntitled: true,
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   sandbox.stub(IPPProxyManager, "state").value(IPPProxyStates.ACTIVE);
 

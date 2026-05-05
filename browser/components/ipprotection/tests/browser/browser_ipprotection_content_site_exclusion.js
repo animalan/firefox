@@ -75,7 +75,7 @@ add_task(async function test_site_exclusion_toggle_with_siteData() {
     isSignedIn: true,
     isEnrolledAndEntitled: true,
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   let content = await openPanel({
     isProtectionEnabled: false,
@@ -131,7 +131,7 @@ add_task(async function test_site_exclusion_toggle_no_siteData() {
     isSignedIn: true,
     isEnrolledAndEntitled: true,
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   let content = await openPanel({
     isProtectionEnabled: false,
@@ -158,7 +158,7 @@ add_task(async function test_site_exclusion_VPN_error() {
     isSignedIn: true,
     isEnrolledAndEntitled: true,
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   let content = await openPanel({
     isProtectionEnabled: true,
@@ -210,7 +210,7 @@ add_task(async function test_site_exclusion_toggle_pressed_isExclusion() {
     isSignedIn: true,
     isEnrolledAndEntitled: true,
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   let content = await openPanel({
     isProtectionEnabled: true,
@@ -278,7 +278,7 @@ add_task(
       isSignedIn: true,
       isEnrolledAndEntitled: true,
     });
-    await IPPEnrollAndEntitleManager.refetchEntitlement();
+    await IPPFxaAuthProvider.checkForUpgrade();
 
     let setExclusionSpy = sandbox.spy(IPPExceptionsManager, "setExclusion");
     sandbox.stub(IPPProxyManager, "state").value(IPPProxyStates.ACTIVE);
@@ -382,7 +382,7 @@ add_task(
       isSignedIn: true,
       isEnrolledAndEntitled: true,
     });
-    await IPPEnrollAndEntitleManager.refetchEntitlement();
+    await IPPFxaAuthProvider.checkForUpgrade();
 
     sandbox.stub(IPPProxyManager, "state").value(IPPProxyStates.ACTIVE);
 
@@ -477,7 +477,7 @@ add_task(async function test_site_exclusion_updates_on_navigation_same_tab() {
     isSignedIn: true,
     isEnrolledAndEntitled: true,
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   sandbox.stub(IPPProxyManager, "state").value(IPPProxyStates.ACTIVE);
 
@@ -566,7 +566,7 @@ add_task(async function test_site_exclusion_updates_on_tab_switch() {
     isSignedIn: true,
     isEnrolledAndEntitled: true,
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   sandbox.stub(IPPProxyManager, "state").value(IPPProxyStates.ACTIVE);
 
@@ -653,7 +653,7 @@ add_task(async function test_site_exclusion_toggle_privileged_page() {
     isSignedIn: true,
     isEnrolledAndEntitled: true,
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   let panel = IPProtection.getPanel(window);
   sandbox.stub(panel, "_isPrivilegedPage").returns(true);

@@ -502,7 +502,7 @@ export class IPProtectionPanel {
    */
   showing(panelView) {
     if (this.initiatedUpgrade) {
-      lazy.IPPEnrollAndEntitleManager.refetchEntitlement();
+      lazy.IPProtectionService.authProvider.checkForUpgrade();
       this.initiatedUpgrade = false;
     }
 

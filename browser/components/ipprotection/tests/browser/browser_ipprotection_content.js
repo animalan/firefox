@@ -304,7 +304,7 @@ add_task(async function test_enrolling_transitions_to_ready() {
       pass: makePass(),
     },
   });
-  await IPPEnrollAndEntitleManager.refetchEntitlement();
+  await IPPFxaAuthProvider.checkForUpgrade();
 
   let content = await openPanel({
     unauthenticated: false,
