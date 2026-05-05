@@ -36,8 +36,8 @@ namespace {
 // The two-statement form (with `product` as an explicit named
 // intermediate) is also resistant to fusion regardless of the flag,
 // since the C/C++ standard requires rounding at each assignment.
-void ReferenceAddWithScale(const float* aInput, float aScale,
-                           float* aOutput, uint32_t aSize) {
+void ReferenceAddWithScale(const float* aInput, float aScale, float* aOutput,
+                           uint32_t aSize) {
   for (uint32_t i = 0; i < aSize; ++i) {
     float product = aInput[i] * aScale;
     aOutput[i] = aOutput[i] + product;
@@ -55,10 +55,9 @@ void ExpectBitIdentical(const float* aActual, const float* aExpected,
     std::memcpy(&expected_bits, &aExpected[i], sizeof(uint32_t));
     if (actual_bits != expected_bits) {
       ADD_FAILURE() << aLabel << ": sample " << i
-                    << " bit-mismatch: expected 0x" << std::hex
-                    << expected_bits << " (" << aExpected[i]
-                    << "), got 0x" << actual_bits << " (" << aActual[i]
-                    << ")";
+                    << " bit-mismatch: expected 0x" << std::hex << expected_bits
+                    << " (" << aExpected[i] << "), got 0x" << actual_bits
+                    << " (" << aActual[i] << ")";
       return;  // one mismatch is enough to localize
     }
   }
