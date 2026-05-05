@@ -1433,7 +1433,7 @@ class TabStorageMiddlewareTest {
         )
         val expectedState = TabsTrayState(
             normalTabsState = TabsTrayState.NormalTabsState(
-                tabCount = tabs.size,
+                tabCount = 0,
             ),
             tabGroupState = TabsTrayState.TabGroupState(
                 groups = listOf(displayGroup.copy(closed = true)),

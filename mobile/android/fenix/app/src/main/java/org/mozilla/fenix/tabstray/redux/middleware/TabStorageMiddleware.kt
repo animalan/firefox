@@ -338,7 +338,9 @@ class TabStorageMiddleware(
 
             when {
                 assignedGroup != null -> {
-                    normalTabCount++
+                    if (!assignedGroup.closed) {
+                        normalTabCount++
+                    }
                     addToTabGroup(
                         tab = displayTab,
                         assignedGroup = assignedGroup,
