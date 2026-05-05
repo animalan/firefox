@@ -1,7 +1,4 @@
 [DEFAULT]
-skip-if = [
-  "debug && standalone", # Bug 2028423
-]
 support-files = [
   "dummy_page.html",
   "head.js",
