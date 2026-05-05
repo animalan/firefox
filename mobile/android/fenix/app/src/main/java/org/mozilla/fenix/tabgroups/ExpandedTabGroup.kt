@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import mozilla.components.compose.base.annotation.FlexibleWindowLightDarkPreview
 import mozilla.components.compose.base.button.IconButton
 import org.mozilla.fenix.R
-import org.mozilla.fenix.tabstray.DefaultTabManagementFeatureHelper
 import org.mozilla.fenix.tabstray.TabsTrayTestTag
 import org.mozilla.fenix.tabstray.controller.NoOpTabInteractionHandler
 import org.mozilla.fenix.tabstray.data.TabGroupTheme
@@ -169,11 +168,22 @@ private fun ViewTabGroupHeader(
             ),
         )
 
-        if (DefaultTabManagementFeatureHelper.shareTabGroupEnabled) {
-            ShareTabGroupButton(
-                title = title,
-                groupTabsSize = groupTabsSize,
-                onClick = {},
+        IconButton(
+            onClick = {
+            },
+            contentDescription = pluralStringResource(
+                id = R.plurals.share_tab_group_button_content_description,
+                count = groupTabsSize,
+                title,
+                groupTabsSize,
+            ),
+            modifier = Modifier
+                .testTag(TabsTrayTestTag.BOTTOM_SHEET_SHARE_BUTTON),
+        ) {
+            Icon(
+                painter = painterResource(id = iconsR.drawable.mozac_ic_share_android_24),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         }
 
@@ -184,31 +194,6 @@ private fun ViewTabGroupHeader(
             onDeleteTabGroupClick = onDeleteTabGroupClick,
             onEditTabGroupClick = onEditTabGroupClick,
             onCloseTabGroupClick = onCloseTabGroupClick,
-        )
-    }
-}
-
-@Composable
-private fun ShareTabGroupButton(
-    title: String,
-    groupTabsSize: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    IconButton(
-        onClick = onClick,
-        contentDescription = pluralStringResource(
-            id = R.plurals.share_tab_group_button_content_description,
-            count = groupTabsSize,
-            title,
-            groupTabsSize,
-        ),
-        modifier = modifier.testTag(TabsTrayTestTag.BOTTOM_SHEET_SHARE_BUTTON),
-    ) {
-        Icon(
-            painter = painterResource(id = iconsR.drawable.mozac_ic_share_android_24),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
