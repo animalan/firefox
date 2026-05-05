@@ -108,7 +108,7 @@
     /* compile predicate  */ WASM_JSPI_ENABLED,                         \
     /* compiler predicate */ IonPlatformSupport(),                      \
     /* flag predicate     */ true,                                      \
-    /* flag force enable  */ WasmJSPromiseIntegrationFlag(cx),          \
+    /* flag force enable  */ false,                                     \
     /* flag fuzz enable   */ true,                                      \
     /* preference name    */ stack_switching)                           \
   FEATURE(                                                              \

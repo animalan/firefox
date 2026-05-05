@@ -63,7 +63,7 @@ let features = {
     test: () => check(`(func unreachable memory.discard unreachable)`)
   },
   "jsPromiseIntegration": {
-    status: DISABLED,
+    status: NIGHTLY,
     test: () => WebAssembly.promising !== undefined
   },
   "wideArithmetic": {

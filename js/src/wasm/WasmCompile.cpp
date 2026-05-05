@@ -231,12 +231,26 @@ FeatureArgs FeatureArgs::build(JSContext* cx, const FeatureOptions& options) {
 
   features.simd = jit::JitSupportsWasmSimd();
   features.isBuiltinModule = options.isBuiltinModule;
-  features.builtinModules.jsString = options.jsStringBuiltins;
-  features.builtinModules.jsStringConstants = options.jsStringConstants;
-  features.builtinModules.jsStringConstantsNamespace =
-      options.jsStringConstantsNamespace;
-  features.builtinModules.intGemm =
-      MozIntGemmAvailable(cx) && options.mozIntGemm;
+  if (features.isBuiltinModule) {
+    // Builtin modules can use stack switching if it's available. JS-PI needs
+    // this.
+    features.stackSwitching = wasm::IonPlatformSupport();
+    // No builtin modules are available to use within a builtin module. We
+    // theoretically could allow a builtin module to import another builtin
+    // module, but we'd need to find a way to prevent cycles. For now just
+    // disable this.
+    MOZ_ASSERT(!options.jsStringBuiltins);
+    MOZ_ASSERT(!options.jsStringConstants);
+    MOZ_ASSERT(!options.mozIntGemm);
+  } else {
+    // Enable builtin modules that have been selected by the user.
+    features.builtinModules.jsString = options.jsStringBuiltins;
+    features.builtinModules.jsStringConstants = options.jsStringConstants;
+    features.builtinModules.jsStringConstantsNamespace =
+        options.jsStringConstantsNamespace;
+    features.builtinModules.intGemm =
+        MozIntGemmAvailable(cx) && options.mozIntGemm;
+  }
 
   return features;
 }
