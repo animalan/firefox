@@ -276,7 +276,12 @@ class SettingsSubMenuAutofillRobot(private val composeTestRule: ComposeTestRule)
         saveAndAutofillAddressesOption().click()
         Log.i(TAG, "clickSaveAndAutofillAddressesOption: Clicked the \"Save and fill addresses\" button")
     }
+
+    @OptIn(ExperimentalTestApi::class)
     fun clickAddAddressButton() {
+        Log.i(TAG, "clickAddAddressButton: Waiting for $waitingTime ms for \"Add address\" button to exist")
+        addAddressButton().waitForExists(waitingTime)
+        Log.i(TAG, "clickAddAddressButton: Verified \"Add address\" button exists")
         Log.i(TAG, "clickAddAddressButton: Trying to click the \"Add address\" button")
         addAddressButton().click()
         Log.i(TAG, "clickAddAddressButton: Clicked the \"Add address\" button")

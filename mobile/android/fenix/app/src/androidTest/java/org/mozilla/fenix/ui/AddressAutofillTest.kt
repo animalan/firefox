@@ -141,7 +141,6 @@ class AddressAutofillTest {
         }.openThreeDotMenu {
         }.clickSettingsButton {
         }.openAutofillSubMenu(composeTestRule) {
-            waitForAppWindowToBeUpdated()
             clickAddAddressButton()
             verifyAddAddressView()
         }.goBackToAutofillSettings(composeTestRule) {
