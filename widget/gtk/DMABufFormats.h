@@ -113,6 +113,12 @@ class GlobalDMABufFormats final {
 
   bool SupportsDirectComposition(mozilla::gfx::SurfaceFormat aFormat) const;
 
+  // Query EGL for P010/NV12 modifiers on X11 where no Wayland compositor
+  // feedback is available.  Must be called only when hardware video decoding
+  // is known to be enabled; otherwise the EGL initialisation cost is paid
+  // for nothing at startup.
+  void AppendEGLVideoModifiers();
+
  private:
   void LoadFormatModifiers();
   void SetModifiersToGfxVars();

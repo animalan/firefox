@@ -81,6 +81,7 @@
 #  include "gfxQuartzSurface.h"
 #elif defined(MOZ_WIDGET_GTK)
 #  include "gfxPlatformGtk.h"
+#  include "DMABufFormats.h"
 #elif defined(ANDROID)
 #  include "gfxAndroidPlatform.h"
 #endif
@@ -3096,6 +3097,11 @@ void gfxPlatform::InitHardwareVideoConfig() {
           vulkanDecFailureId, &vulkanDecStatus)) &&
       vulkanDecStatus == nsIGfxInfo::FEATURE_STATUS_OK) {
     canUseVulkanDecode = true;
+#ifdef MOZ_WIDGET_GTK
+    if (!IsWaylandDisplay()) {
+      mozilla::widget::GetGlobalDMABufFormats()->AppendEGLVideoModifiers();
+    }
+#endif
   }
 
   nsCString message;
