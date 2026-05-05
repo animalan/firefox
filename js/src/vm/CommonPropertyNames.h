@@ -204,6 +204,7 @@
   MACRO_(GetBuiltinSymbol, "GetBuiltinSymbol")                                 \
   MACRO_(getCalendars, "getCalendars")                                         \
   MACRO_(getCollations, "getCollations")                                       \
+  MACRO_(getHourCycles, "getHourCycles")                                       \
   MACRO_(GetInternalError, "GetInternalError")                                 \
   MACRO_(GetIterator, "GetIterator")                                           \
   MACRO_(getNumberingSystems, "getNumberingSystems")                           \

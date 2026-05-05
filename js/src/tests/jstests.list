@@ -681,11 +681,6 @@ skip script test262/staging/top-level-await/tla-hang-entry.js
 skip script test262/intl402/DateTimeFormat/prototype/formatToParts/era.js
 
 # See https://bugzilla.mozilla.org/show_bug.cgi?id=1693576
-skip script test262/intl402/Locale/prototype/getHourCycles/branding.js
-skip script test262/intl402/Locale/prototype/getHourCycles/name.js
-skip script test262/intl402/Locale/prototype/getHourCycles/output-array.js
-skip script test262/intl402/Locale/prototype/getHourCycles/output-array-values.js
-skip script test262/intl402/Locale/prototype/getHourCycles/prop-desc.js
 skip script test262/intl402/Locale/prototype/getWeekInfo/branding.js
 skip script test262/intl402/Locale/prototype/getWeekInfo/firstDay-by-id.js
 skip script test262/intl402/Locale/prototype/getWeekInfo/firstDay-by-option.js
