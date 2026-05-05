@@ -180,6 +180,10 @@ class IPPFxaAuthProviderSingleton extends IPPAuthProvider {
     await lazy.IPPEnrollAndEntitleManager.refetchEntitlement();
   }
 
+  async enroll() {
+    return lazy.IPPEnrollAndEntitleManager.maybeEnrollAndEntitle();
+  }
+
   get isReady() {
     // For non authenticated users, we don't know yet their enroll state so the UI
     // is shown and they have to login.

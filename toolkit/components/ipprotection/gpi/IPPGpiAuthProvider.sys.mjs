@@ -122,6 +122,11 @@ class IPPGpiAuthProviderSingleton extends IPPAuthProvider {
   // TODO: implement checkForUpgrade for GPI once the subscription flow is defined.
   async checkForUpgrade() {}
 
+  // TODO: implement enroll() for GPI once the subscription flow is defined.
+  async enroll() {
+    return { isEnrolledAndEntitled: false };
+  }
+
   get isReady() {
     const jwt = Services.prefs.getCharPref(AUTH_JWT_PREF, "");
     if (jwt) {

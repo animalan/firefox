@@ -39,6 +39,15 @@ export class IPPAuthProvider extends EventTarget {
   async checkForUpgrade() {}
 
   /**
+   * Enrolls and entitles the user.
+   *
+   * @returns {Promise<{isEnrolledAndEntitled: boolean, error?: string}>}
+   */
+  async enroll() {
+    throw new Error("enroll() must be implemented by subclasses");
+  }
+
+  /**
    * Called before the proxy starts. Should resolve enrollment and verify
    * entitlement. Returns an error object if the proxy should not start,
    * or null if everything is in order.
