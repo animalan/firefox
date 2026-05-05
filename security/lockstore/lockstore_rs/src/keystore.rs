@@ -195,11 +195,7 @@ impl LockstoreKeystore {
         self.save_metadata(collection_name, &metadata)
     }
 
-    pub fn remove_kek(
-        &self,
-        collection_name: &str,
-        kek_ref: &str,
-    ) -> Result<(), LockstoreError> {
+    pub fn remove_kek(&self, collection_name: &str, kek_ref: &str) -> Result<(), LockstoreError> {
         let mut metadata = self.load_metadata(collection_name)?;
 
         if metadata.wrapped_deks.len() <= 1 {

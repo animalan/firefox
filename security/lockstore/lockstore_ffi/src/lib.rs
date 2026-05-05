@@ -166,10 +166,7 @@ pub extern "C" fn lockstore_keystore_add_kek(
     let coll_str = collection.to_utf8();
     let from_str = from_kek_ref.to_utf8();
     let to_str = to_kek_ref.to_utf8();
-    match handle
-        .keystore
-        .add_kek(&coll_str, &from_str, &to_str)
-    {
+    match handle.keystore.add_kek(&coll_str, &from_str, &to_str) {
         Ok(()) => NS_OK,
         Err(e) => error_to_nsresult(e),
     }
@@ -187,10 +184,7 @@ pub extern "C" fn lockstore_keystore_remove_kek(
     }
     let coll_str = collection.to_utf8();
     let kek_ref_str = kek_ref.to_utf8();
-    match handle
-        .keystore
-        .remove_kek(&coll_str, &kek_ref_str)
-    {
+    match handle.keystore.remove_kek(&coll_str, &kek_ref_str) {
         Ok(()) => NS_OK,
         Err(e) => error_to_nsresult(e),
     }
