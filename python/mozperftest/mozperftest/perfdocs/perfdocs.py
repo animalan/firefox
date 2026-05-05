@@ -41,11 +41,12 @@ def run_perfdocs(config, logger=None, paths=None, generate=True):
         out errors from files outside of these paths.
     :param bool generate: If true, the docs will be (re)generated.
     """
-    from perfdocs.logger import PerfDocLogger
+    from mozperftest.perfdocs.logger import PerfDocLogger
 
     if not os.environ.get("WORKSPACE", None):
-        floc = pathlib.Path(__file__).absolute()
-        top_dir = pathlib.Path(str(floc).split("tools")[0]).resolve()
+        # Navigate up from python/mozperftest/mozperftest/perfdocs/perfdocs.py
+        # to the repo root (4 levels up)
+        top_dir = pathlib.Path(__file__).absolute().parents[4].resolve()
     else:
         top_dir = pathlib.Path(os.environ.get("WORKSPACE")).resolve()
 
@@ -78,8 +79,8 @@ def run_perfdocs(config, logger=None, paths=None, generate=True):
         task_graph = generate_tasks(full=True, disable_target_task_filter=True).tasks
 
     # Late import because logger isn't defined until later
-    from perfdocs.generator import Generator
-    from perfdocs.verifier import Verifier
+    from mozperftest.perfdocs.generator import Generator
+    from mozperftest.perfdocs.verifier import Verifier
 
     # Run the verifier first
     verifier = Verifier(top_dir, task_graph)

@@ -4,15 +4,15 @@
 import os
 import pathlib
 
-from perfdocs.framework_gatherers import (
+from mozperftest.perfdocs.framework_gatherers import (
     AwsyGatherer,
     MozperftestGatherer,
     RaptorGatherer,
     StaticGatherer,
     TalosGatherer,
 )
-from perfdocs.logger import PerfDocLogger
-from perfdocs.utils import read_yaml
+from mozperftest.perfdocs.logger import PerfDocLogger
+from mozperftest.perfdocs.utils import read_yaml
 
 logger = PerfDocLogger()
 
@@ -79,8 +79,8 @@ class Gatherer:
         """
         exclude_dir = [
             str(pathlib.Path(self.workspace_dir, ".hg")),
-            str(pathlib.Path("tools", "lint")),
-            str(pathlib.Path("testing", "perfdocs")),
+            str(pathlib.Path(self.workspace_dir, "python", "mozperftest")),
+            str(pathlib.Path(self.workspace_dir, "testing", "perfdocs")),
         ]
 
         for path in pathlib.Path(self.workspace_dir).rglob("perfdocs"):

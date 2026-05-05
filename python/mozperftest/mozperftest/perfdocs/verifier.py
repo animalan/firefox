@@ -7,9 +7,9 @@ import re
 
 import jsonschema
 
-from perfdocs.gatherer import Gatherer
-from perfdocs.logger import PerfDocLogger
-from perfdocs.utils import read_file, read_yaml
+from mozperftest.perfdocs.gatherer import Gatherer
+from mozperftest.perfdocs.logger import PerfDocLogger
+from mozperftest.perfdocs.utils import read_file, read_yaml
 
 logger = PerfDocLogger()
 

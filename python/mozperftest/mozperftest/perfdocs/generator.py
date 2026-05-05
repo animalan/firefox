@@ -6,8 +6,8 @@ import re
 import shutil
 import tempfile
 
-from perfdocs.logger import PerfDocLogger
-from perfdocs.utils import (
+from mozperftest.perfdocs.logger import PerfDocLogger
+from mozperftest.perfdocs.utils import (
     ON_TRY,
     are_dirs_equal,
     get_changed_files,
@@ -39,10 +39,7 @@ class Generator:
         self._workspace = workspace
         if not self._workspace:
             raise Exception("PerfDocs Generator requires a workspace directory.")
-        # Template documents without added information reside here
-        self.templates_path = pathlib.Path(
-            self._workspace, "tools", "lint", "perfdocs", "templates"
-        )
+        self.templates_path = pathlib.Path(__file__).parent / "templates"
         self.perfdocs_path = pathlib.Path(
             self._workspace, "testing", "perfdocs", "generated"
         )

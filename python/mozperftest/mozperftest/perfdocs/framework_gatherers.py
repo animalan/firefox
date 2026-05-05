@@ -8,11 +8,11 @@ import re
 
 from gecko_taskgraph.util.attributes import match_run_on_projects
 from manifestparser import TestManifest
-from mozperftest.script import ScriptInfo
 
-from perfdocs.doc_helpers import TableBuilder
-from perfdocs.logger import PerfDocLogger
-from perfdocs.utils import read_yaml
+from mozperftest.perfdocs.doc_helpers import TableBuilder
+from mozperftest.perfdocs.logger import PerfDocLogger
+from mozperftest.perfdocs.utils import read_yaml
+from mozperftest.script import ScriptInfo
 
 logger = PerfDocLogger()
 
