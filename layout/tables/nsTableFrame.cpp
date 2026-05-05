@@ -250,10 +250,15 @@ void nsTableFrame::PositionedTablePartMaybeChanged(nsContainerFrame* aFrame,
   MOZ_ASSERT(tableFrame, "Should have a table frame here");
   tableFrame = static_cast<nsTableFrame*>(tableFrame->FirstContinuation());
 
-  // Retrieve the positioned parts array for this table (lazily creating it
-  // if it doesn't exist yet).
+  // Retrieve the positioned parts array for this table.
   TablePartsArray* positionedParts =
-      tableFrame->GetOrCreateDeletableProperty(PositionedTablePartsProperty());
+      tableFrame->GetProperty(PositionedTablePartsProperty());
+
+  // Lazily create the array if it doesn't exist yet.
+  if (!positionedParts) {
+    positionedParts = new TablePartsArray;
+    tableFrame->SetProperty(PositionedTablePartsProperty(), positionedParts);
+  }
 
   if (isPositioned) {
     // Add this frame to the list.
@@ -2130,6 +2135,17 @@ TableBCData* nsTableFrame::GetTableBCData() const {
   return GetProperty(TableBCDataProperty());
 }
 
+TableBCData* nsTableFrame::GetOrCreateTableBCData() {
+  TableBCData* value = GetProperty(TableBCDataProperty());
+  if (!value) {
+    value = new TableBCData();
+    SetProperty(TableBCDataProperty(), value);
+  }
+
+  MOZ_ASSERT(value, "TableBCData must exist!");
+  return value;
+}
+
 static void DivideBCBorderSize(nscoord aPixelSize, nscoord& aSmallHalf,
                                nscoord& aLargeHalf) {
   aSmallHalf = aPixelSize / 2;
@@ -3415,7 +3431,7 @@ void nsTableFrame::AddBCDamageArea(const TableArea& aValue) {
   SetNeedToCalcBCBorders(true);
   SetNeedToCalcHasBCBorders(true);
   // Get the property
-  TableBCData* value = GetOrCreateDeletableProperty(TableBCDataProperty());
+  TableBCData* value = GetOrCreateTableBCData();
 
 #ifdef DEBUG
   VerifyNonNegativeDamageRect(value->mDamageArea);
@@ -3451,7 +3467,7 @@ void nsTableFrame::SetFullBCDamageArea() {
   SetNeedToCalcBCBorders(true);
   SetNeedToCalcHasBCBorders(true);
 
-  TableBCData* value = GetOrCreateDeletableProperty(TableBCDataProperty());
+  TableBCData* value = GetOrCreateTableBCData();
   value->mDamageArea = TableArea(0, 0, GetColCount(), GetRowCount());
 }
 

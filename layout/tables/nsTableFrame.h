@@ -703,6 +703,7 @@ class nsTableFrame : public nsContainerFrame {
  protected:
   void SetBorderCollapse(bool aValue);
 
+  mozilla::TableBCData* GetOrCreateTableBCData();
   void SetFullBCDamageArea();
   void CalcBCBorders();
 
