@@ -2040,9 +2040,10 @@ class MWasmCallBase {
   static AliasSet wasmCallAliasSet() {
     // This is ok because:
     // - numElements is immutable
-    // - the GC will rewrite any array data pointers on move
+    // - the GC will rewrite any array or struct data pointers on move
     AliasSet exclude = AliasSet(AliasSet::WasmArrayNumElements) |
-                       AliasSet(AliasSet::WasmArrayDataPointer);
+                       AliasSet(AliasSet::WasmArrayDataPointer) |
+                       AliasSet(AliasSet::WasmStructOutlineDataPointer);
     return AliasSet::Store(AliasSet::Any) & ~exclude;
   }
 };
