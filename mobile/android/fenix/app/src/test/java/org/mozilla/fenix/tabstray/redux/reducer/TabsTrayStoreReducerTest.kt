@@ -9,12 +9,15 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mozilla.fenix.tabstray.data.TabStorageUpdate
+import org.mozilla.fenix.tabstray.data.TabsTrayItem
 import org.mozilla.fenix.tabstray.data.createTab
 import org.mozilla.fenix.tabstray.data.createTabGroup
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination
 import org.mozilla.fenix.tabstray.redux.action.TabsTrayAction
 import org.mozilla.fenix.tabstray.redux.state.TabSearchState
 import org.mozilla.fenix.tabstray.redux.state.TabsTrayState
+import org.mozilla.fenix.tabstray.redux.state.TabsTrayState.Mode
+import org.mozilla.fenix.tabstray.redux.store.TabsTrayStore
 import org.mozilla.fenix.tabstray.syncedtabs.SyncedTabsListItem
 import org.mozilla.fenix.tabstray.syncedtabs.generateFakeTab
 import org.mozilla.fenix.tabstray.syncedtabs.getFakeSyncedTabList
@@ -499,6 +502,52 @@ class TabsTrayStoreReducerTest {
             tabGroupState = TabsTrayState.TabGroupState(groups = expectedTabGroups),
         )
         val resultState = TabsTrayReducer.reduce(state = initialState, action = action)
+
+        assertEquals(expectedState, resultState)
+    }
+
+    @Test
+    fun `WHEN selecting a tab for multiselection THEN the selected tab groups are preserved`() {
+        val selectedTab = createTab(url = "")
+        val initialState = TabsTrayState(
+            mode = Mode.Select(
+                selectedTabs = emptySet(),
+                selectedTabGroups = setOf(createTabGroup()),
+            ),
+        )
+        val resultState = TabsTrayReducer.reduce(
+            state = initialState,
+            action = TabsTrayAction.AddSelectTab(tab = selectedTab),
+        )
+        val expectedState = TabsTrayState(
+            mode = Mode.Select(
+                selectedTabs = setOf(selectedTab),
+                selectedTabGroups = initialState.mode.selectedTabGroups,
+            ),
+        )
+
+        assertEquals(expectedState, resultState)
+    }
+
+    @Test
+    fun `WHEN removing a tab from multiselection THEN the selected tab groups are preserved`() {
+        val selectedTab = createTab(url = "")
+        val initialState = TabsTrayState(
+            mode = Mode.Select(
+                selectedTabs = setOf(selectedTab),
+                selectedTabGroups = setOf(createTabGroup()),
+            ),
+        )
+        val resultState = TabsTrayReducer.reduce(
+            state = initialState,
+            action = TabsTrayAction.RemoveSelectTab(tab = selectedTab),
+        )
+        val expectedState = TabsTrayState(
+            mode = Mode.Select(
+                selectedTabs = setOf(),
+                selectedTabGroups = initialState.mode.selectedTabGroups,
+            ),
+        )
 
         assertEquals(expectedState, resultState)
     }

@@ -95,17 +95,22 @@ internal object TabsTrayReducer {
             is TabsTrayAction.ExitSelectMode ->
                 state.copy(mode = TabsTrayState.Mode.Normal)
 
-            is TabsTrayAction.AddSelectTab ->
-                state.copy(mode = TabsTrayState.Mode.Select(selectedTabs = state.mode.selectedTabs + action.tab))
-
+            is TabsTrayAction.AddSelectTab -> state.copy(
+                mode = TabsTrayState.Mode.Select(
+                    selectedTabs = state.mode.selectedTabs + action.tab,
+                    selectedTabGroups = state.mode.selectedTabGroups,
+                ),
+            )
             is TabsTrayAction.RemoveSelectTab -> {
-                val selectedTabs = state.mode.selectedTabs.toHashSet()
-                selectedTabs.remove(action.tab)
+                val selectedTabs = state.mode.selectedTabs - action.tab
                 state.copy(
-                    mode = if (selectedTabs.isEmpty()) {
+                    mode = if (selectedTabs.isEmpty() && state.mode.selectedTabGroups.isEmpty()) {
                         TabsTrayState.Mode.Normal
                     } else {
-                        TabsTrayState.Mode.Select(selectedTabs = selectedTabs)
+                        TabsTrayState.Mode.Select(
+                            selectedTabs = selectedTabs,
+                            selectedTabGroups = state.mode.selectedTabGroups,
+                        )
                     },
                 )
             }
