@@ -46,9 +46,41 @@ object HomeSelectors {
         groups = listOf("privateBrowsing"),
     )
 
+    val HOME_WORDMARK_LOGO = Selector(
+        strategy = SelectorStrategy.UIAUTOMATOR_WITH_RES_ID,
+        value = "homepage.wordmark.logo",
+        description = "the home screen wordmark logo",
+        groups = listOf("homeScreen"),
+    )
+
+    val COLLECTIONS_HEADER = Selector(
+        strategy = SelectorStrategy.COMPOSE_BY_TEXT,
+        value = getStringResource(R.string.collections_header),
+        description = "the Collections header",
+        groups = listOf("homeScreen"),
+    )
+
+    val NO_COLLECTIONS_TEXT = Selector(
+        strategy = SelectorStrategy.COMPOSE_BY_TEXT,
+        value = getStringResource(R.string.no_collections_description2),
+        description = "the no collections description text",
+        groups = listOf("homeScreen"),
+    )
+
+    val TAB_COUNTER_ZERO = Selector(
+        strategy = SelectorStrategy.COMPOSE_BY_CONTENT_DESCRIPTION,
+        value = "Non-private Tabs Open: 0. Tap to switch tabs.",
+        description = "the tab counter showing zero open tabs",
+        groups = listOf("homeScreen"),
+    )
+
     val all = listOf(
         MAIN_MENU_BUTTON,
         PRIVATE_BROWSING_BUTTON,
         TOP_SITES_LIST,
+        HOME_WORDMARK_LOGO,
+        COLLECTIONS_HEADER,
+        NO_COLLECTIONS_TEXT,
+        TAB_COUNTER_ZERO,
     )
 }
