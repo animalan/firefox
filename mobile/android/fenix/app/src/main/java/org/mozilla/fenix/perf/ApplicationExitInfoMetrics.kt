@@ -122,7 +122,7 @@ object ApplicationExitInfoMetrics {
                         processType = historicalExit.processName.toProcessType(),
                         pss = historicalExit.pss.toValueInMB(),
                         rss = historicalExit.rss.toValueInMB(),
-                        reason = historicalExit.reason.toProcessExitReason(),
+                        reason = historicalExit.toProcessExitReason(),
                     ),
                 )
             }
@@ -188,15 +188,22 @@ object ApplicationExitInfoMetrics {
         return (this / KILOBYTES_TO_MEGABYTES_CONVERSION).toInt()
     }
 
-    private fun Int.toProcessExitReason(): String? {
-        return when (this) {
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun ApplicationExitInfo.toProcessExitReason(): String? {
+        return when (reason) {
             ApplicationExitInfo.REASON_ANR -> "anr"
             ApplicationExitInfo.REASON_CRASH -> "crash"
             ApplicationExitInfo.REASON_CRASH_NATIVE -> "crash_native"
             ApplicationExitInfo.REASON_LOW_MEMORY -> "low_memory"
             ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE -> "excessive_resource"
             ApplicationExitInfo.REASON_SIGNALED -> "signaled"
-            ApplicationExitInfo.REASON_OTHER -> "other"
+            ApplicationExitInfo.REASON_OTHER ->
+                if (description?.contains("MemoryLimiter:AnonSwap") == true) {
+                    "memory_limiter"
+                } else {
+                    "other"
+                }
+
             else -> null
         }
     }
