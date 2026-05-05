@@ -49,6 +49,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import mozilla.components.compose.base.Dropdown
+import mozilla.components.compose.base.LinkText
+import mozilla.components.compose.base.LinkTextState
 import mozilla.components.compose.base.button.FilledButton
 import mozilla.components.compose.base.button.IconButton
 import mozilla.components.compose.base.button.OutlinedButton
@@ -59,8 +61,6 @@ import mozilla.components.compose.base.text.Text.Resource
 import mozilla.components.compose.base.textfield.TextField
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.LinkText
-import org.mozilla.fenix.compose.LinkTextState
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.theme.ThemedValue
 import org.mozilla.fenix.theme.ThemedValueProvider

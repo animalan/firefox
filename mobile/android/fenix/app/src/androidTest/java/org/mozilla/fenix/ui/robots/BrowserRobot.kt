@@ -89,6 +89,7 @@ import org.mozilla.fenix.webcompat.BrokenSiteReporterTestTags.BROKEN_SITE_REPORT
 import java.time.LocalDate
 import mozilla.components.browser.errorpages.R as errorpagesR
 import mozilla.components.browser.toolbar.R as toolbarR
+import mozilla.components.compose.base.R as composeBaseR
 import mozilla.components.feature.app.links.R as applinksR
 import mozilla.components.feature.contextmenu.R as contextmenuR
 import mozilla.components.feature.downloads.R as downloadsR
@@ -1201,7 +1202,7 @@ class BrowserRobot(private val composeTestRule: ComposeTestRule) {
                 R.string.webcompat_reporter_description_3,
                 appName,
                 getStringResource(R.string.webcompat_reporter_learn_more),
-            ) + " " + getStringResource(R.string.a11y_links_available),
+            ) + " " + getStringResource(composeBaseR.string.mozac_compose_base_link_text_links_available),
         ).assertIsDisplayed()
         Log.i(TAG, "verifyWebCompatReporterViewItems: Verified that the report broken site description is displayed")
         Log.i(TAG, "verifyWebCompatReporterViewItems: Trying to verify that the \"URL\" header is displayed")

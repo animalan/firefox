@@ -22,6 +22,7 @@ import androidx.fragment.compose.content
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
+import mozilla.components.compose.base.LinkTextState
 import mozilla.components.concept.engine.webextension.InstallationMethod
 import mozilla.components.lib.state.helpers.StoreProvider.Companion.fragmentStore
 import mozilla.components.service.nimbus.evalJexlSafe
@@ -39,7 +40,6 @@ import org.mozilla.fenix.components.initializeGlean
 import org.mozilla.fenix.components.metrics.Event
 import org.mozilla.fenix.components.metrics.installSourcePackage
 import org.mozilla.fenix.components.startMetricsIfEnabled
-import org.mozilla.fenix.compose.LinkTextState
 import org.mozilla.fenix.ext.application
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.hideToolbar

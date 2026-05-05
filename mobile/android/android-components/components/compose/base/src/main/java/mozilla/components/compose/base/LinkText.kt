@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.fenix.compose
+package mozilla.components.compose.base
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -33,9 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import mozilla.components.compose.base.button.TextButton
+import mozilla.components.compose.base.theme.AcornTheme
 import mozilla.components.support.base.log.logger.Logger
-import org.mozilla.fenix.R
-import org.mozilla.fenix.theme.FirefoxTheme
 
 private val ROUNDED_CORNER_SHAPE = RoundedCornerShape(28.dp)
 
@@ -76,7 +75,7 @@ data class LinkTextState(
 fun LinkText(
     text: String,
     linkTextStates: List<LinkTextState>,
-    style: TextStyle = FirefoxTheme.typography.body2.copy(
+    style: TextStyle = AcornTheme.typography.body2.copy(
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     ),
@@ -93,7 +92,7 @@ fun LinkText(
     )
 
     val showDialog = remember { mutableStateOf(false) }
-    val linksAvailable = stringResource(id = R.string.a11y_links_available)
+    val linksAvailable = stringResource(id = R.string.mozac_compose_base_link_text_links_available)
 
     if (showDialog.value) {
         LinksDialog(linkTextStates) { showDialog.value = false }
@@ -141,9 +140,9 @@ private fun LinksDialog(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = stringResource(id = R.string.a11y_links_title),
+                text = stringResource(id = R.string.mozac_compose_base_link_text_links_title),
                 color = MaterialTheme.colorScheme.onSurface,
-                style = FirefoxTheme.typography.headline5,
+                style = AcornTheme.typography.headline5,
             )
 
             linkTextStates.forEach { linkText ->
@@ -155,7 +154,7 @@ private fun LinksDialog(
             }
 
             TextButton(
-                text = stringResource(id = R.string.standard_snackbar_error_dismiss),
+                text = stringResource(id = R.string.mozac_compose_base_link_text_dismiss),
                 onClick = onDismissRequest,
                 modifier = Modifier.align(Alignment.End),
             )
@@ -216,7 +215,7 @@ private fun LinkTextEndPreview() {
         onClick = {},
     )
 
-    FirefoxTheme {
+    AcornTheme {
         Surface {
             LinkText(text = "This is normal text, click here", linkTextStates = listOf(state))
         }
@@ -232,7 +231,7 @@ private fun LinkTextMiddlePreview() {
         onClick = {},
     )
 
-    FirefoxTheme {
+    AcornTheme {
         Surface {
             LinkText(text = "This is clickable text, followed by normal text", linkTextStates = listOf(state))
         }
@@ -248,12 +247,12 @@ private fun LinkTextStyledPreview() {
         onClick = {},
     )
 
-    FirefoxTheme {
+    AcornTheme {
         Surface {
             LinkText(
                 text = "This is clickable text, in a different style",
                 linkTextStates = listOf(state),
-                style = FirefoxTheme.typography.headline5,
+                style = AcornTheme.typography.headline5,
             )
         }
     }
@@ -268,12 +267,12 @@ private fun LinkTextClickStyledPreview() {
         onClick = {},
     )
 
-    FirefoxTheme {
+    AcornTheme {
         Surface {
             LinkText(
                 text = "This is clickable text, with underlined text",
                 linkTextStates = listOf(state),
-                style = FirefoxTheme.typography.headline5,
+                style = AcornTheme.typography.headline5,
                 linkTextColor = Color.Red,
                 linkTextDecoration = TextDecoration.Underline,
             )
@@ -295,7 +294,7 @@ private fun MultipleLinksPreview() {
         onClick = {},
     )
 
-    FirefoxTheme {
+    AcornTheme {
         Surface {
             LinkText(
                 text = "This is clickable text, followed by normal text, followed by another clickable text",
@@ -320,7 +319,7 @@ private fun LinksDialogPreview() {
     )
     val linkTextStateList = listOf(state1, state2)
 
-    FirefoxTheme {
+    AcornTheme {
         LinksDialog(
             linkTextStates = linkTextStateList,
             onDismissRequest = {},

@@ -81,6 +81,7 @@ import org.mozilla.fenix.ui.util.PositionOnScreenMatcher.Position.BOTTOM
 import org.mozilla.fenix.ui.util.PositionOnScreenMatcher.Position.TOP
 import org.mozilla.fenix.ui.util.isAtPosition
 import mozilla.components.browser.menu.R as menuR
+import mozilla.components.compose.base.R as composeBaseR
 
 /**
  * Implementation of Robot Pattern for the home screen menu.
@@ -418,13 +419,13 @@ class HomeScreenRobot(private val composeTestRule: ComposeTestRule) {
         composeTestRule.onNodeWithText(getStringResource(R.string.nova_onboarding_tou_subtitle)).assertIsDisplayed()
         Log.i(TAG, "verifyTheTermsOfUseOnboardingCard: Verified the \"Terms of use\" subtitle is displayed")
         Log.i(TAG, "verifyTheTermsOfUseOnboardingCard: Trying to verify the \"Terms of use\" first message is displayed")
-        composeTestRule.onNodeWithContentDescription(getStringResource(R.string.nova_onboarding_tou_body_line_1, argument = getStringResource(R.string.nova_onboarding_tou_body_line_1_link_text)) + " " + getStringResource(R.string.a11y_links_available), useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(getStringResource(R.string.nova_onboarding_tou_body_line_1, argument = getStringResource(R.string.nova_onboarding_tou_body_line_1_link_text)) + " " + getStringResource(composeBaseR.string.mozac_compose_base_link_text_links_available), useUnmergedTree = true).assertIsDisplayed()
         Log.i(TAG, "verifyTheTermsOfUseOnboardingCard: Verified the \"Terms of use\" first message is displayed")
         Log.i(TAG, "verifyTheTermsOfUseOnboardingCard: Trying to verify the \"Terms of use\" second message is displayed")
-        composeTestRule.onNodeWithContentDescription(getStringResource(R.string.nova_onboarding_tou_body_line_2, argument = getStringResource(R.string.nova_onboarding_tou_body_line_2_link_text)) + " " + getStringResource(R.string.a11y_links_available), useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(getStringResource(R.string.nova_onboarding_tou_body_line_2, argument = getStringResource(R.string.nova_onboarding_tou_body_line_2_link_text)) + " " + getStringResource(composeBaseR.string.mozac_compose_base_link_text_links_available), useUnmergedTree = true).assertIsDisplayed()
         Log.i(TAG, "verifyTheTermsOfUseOnboardingCard: Verified the \"Terms of use\" second message is displayed")
         Log.i(TAG, "verifyTheTermsOfUseOnboardingCard: Trying to verify the \"Terms of use\" third message is displayed")
-        composeTestRule.onNodeWithContentDescription(getStringResource(R.string.nova_onboarding_tou_body_line_3, argument = getStringResource(R.string.nova_onboarding_tou_body_line_3_link_text)) + " " + getStringResource(R.string.a11y_links_available), useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(getStringResource(R.string.nova_onboarding_tou_body_line_3, argument = getStringResource(R.string.nova_onboarding_tou_body_line_3_link_text)) + " " + getStringResource(composeBaseR.string.mozac_compose_base_link_text_links_available), useUnmergedTree = true).assertIsDisplayed()
         Log.i(TAG, "verifyTheTermsOfUseOnboardingCard: Verified the \"Terms of use\" third message is displayed")
         Log.i(TAG, "verifyTheTermsOfUseOnboardingCard: Trying to verify the \"Terms of use\" \"Continue\" button is displayed")
         composeTestRule.onNodeWithText(getStringResource(R.string.nova_onboarding_continue_button)).assertIsDisplayed()
