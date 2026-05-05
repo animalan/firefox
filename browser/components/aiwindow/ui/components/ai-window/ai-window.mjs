@@ -104,6 +104,7 @@ const TAB_FAVICON_CHAT =
   "chrome://browser/content/aiwindow/assets/ask-icon.svg";
 const PREF_CHAT_INTERACTION_COUNT = "browser.smartwindow.chat.interactionCount";
 const MAX_INTERACTION_COUNT = 1000;
+const MAX_SIDEBAR_STARTER_CACHE_KEYS = 20;
 
 /**
  * A custom element for managing AI Window
@@ -135,6 +136,7 @@ export class AIWindow extends MozLitElement {
   #starterPromptsAbortController = null;
   #smartbarReadyPromise;
   #resolveSmartbarReady;
+  #sidebarStarterCache = new Map();
   #smartbarResizeObserver = null;
   #windowModeObserver = null;
   #swapDocShellsChromeWindow = null;
@@ -815,19 +817,40 @@ export class AIWindow extends MozLitElement {
         // Get memories setting from user preferences
         const memoriesEnabled =
           this.#memoriesToggled ?? this.#memoriesIconShown;
+        const startersKey = JSON.stringify({
+          contextTabs,
+          memoriesEnabled,
+        });
+        let sidebarStarters = this.#sidebarStarterCache.get(startersKey);
 
-        const sidebarStarters = await lazy
-          .generateConversationStartersSidebar(
-            contextTabs,
-            2,
-            memoriesEnabled,
-            this.conversationId,
-            this.#starterPromptsAbortController.signal
-          )
-          .catch(e => {
-            lazy.log.error("[Prompts] Failed to generate sidebar starters:", e);
-            return null;
-          });
+        if (!sidebarStarters) {
+          sidebarStarters = await lazy
+            .generateConversationStartersSidebar(
+              contextTabs,
+              2,
+              memoriesEnabled,
+              this.conversationId,
+              this.#starterPromptsAbortController.signal
+            )
+            .catch(e => {
+              lazy.log.error(
+                "[Prompts] Failed to generate sidebar starters:",
+                e
+              );
+              return null;
+            });
+
+          if (sidebarStarters) {
+            this.#sidebarStarterCache.delete(startersKey);
+            if (
+              this.#sidebarStarterCache.size >= MAX_SIDEBAR_STARTER_CACHE_KEYS
+            ) {
+              const oldestKey = this.#sidebarStarterCache.keys().next().value;
+              this.#sidebarStarterCache.delete(oldestKey);
+            }
+            this.#sidebarStarterCache.set(startersKey, sidebarStarters);
+          }
+        }
 
         // If tab switched while waiting for conversation starters
         // return, do not render the starters meant for selectedTab
