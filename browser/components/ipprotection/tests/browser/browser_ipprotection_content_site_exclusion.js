@@ -72,8 +72,7 @@ add_task(async function test_site_exclusion_feature_pref_disabled() {
  */
 add_task(async function test_site_exclusion_toggle_with_siteData() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   await IPPFxaAuthProvider.checkForUpgrade();
 
@@ -128,8 +127,7 @@ add_task(async function test_site_exclusion_toggle_with_siteData() {
  */
 add_task(async function test_site_exclusion_toggle_no_siteData() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   await IPPFxaAuthProvider.checkForUpgrade();
 
@@ -155,8 +153,7 @@ add_task(async function test_site_exclusion_toggle_no_siteData() {
  */
 add_task(async function test_site_exclusion_VPN_error() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   await IPPFxaAuthProvider.checkForUpgrade();
 
@@ -207,8 +204,7 @@ add_task(async function test_site_exclusion_VPN_error() {
  */
 add_task(async function test_site_exclusion_toggle_pressed_isExclusion() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   await IPPFxaAuthProvider.checkForUpgrade();
 
@@ -275,8 +271,7 @@ add_task(
     Services.perms.removeByType(PERM_NAME);
 
     setupService({
-      isSignedIn: true,
-      isEnrolledAndEntitled: true,
+      isReady: true,
     });
     await IPPFxaAuthProvider.checkForUpgrade();
 
@@ -379,8 +374,7 @@ add_task(
     Services.perms.removeByType(PERM_NAME);
 
     setupService({
-      isSignedIn: true,
-      isEnrolledAndEntitled: true,
+      isReady: true,
     });
     await IPPFxaAuthProvider.checkForUpgrade();
 
@@ -474,8 +468,7 @@ add_task(async function test_site_exclusion_updates_on_navigation_same_tab() {
   Services.perms.removeByType(PERM_NAME);
 
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   await IPPFxaAuthProvider.checkForUpgrade();
 
@@ -563,8 +556,7 @@ add_task(async function test_site_exclusion_updates_on_tab_switch() {
   Services.perms.removeByType(PERM_NAME);
 
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   await IPPFxaAuthProvider.checkForUpgrade();
 
@@ -650,8 +642,7 @@ add_task(async function test_site_exclusion_toggle_privileged_page() {
   const ABOUT_PAGE = "about:about";
 
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   await IPPFxaAuthProvider.checkForUpgrade();
 

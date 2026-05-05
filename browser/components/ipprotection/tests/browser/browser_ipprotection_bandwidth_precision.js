@@ -16,8 +16,7 @@ const mockLocation = {
 async function setupBandwidthPrecisionTest(maxBytes, remaining) {
   let usage = makeUsage(maxBytes, remaining);
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
     canEnroll: true,
     proxyPass: {
       status: 200,

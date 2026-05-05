@@ -269,8 +269,7 @@ let DEFAULT_EXPERIMENT = {
 /* exported SETUP_EXPERIMENT */
 
 let DEFAULT_SERVICE_STATUS = {
-  isSignedIn: false,
-  isEnrolledAndEntitled: undefined,
+  isReady: false,
   canEnroll: true,
   entitlement: {
     status: 200,
@@ -289,7 +288,7 @@ let DEFAULT_SERVICE_STATUS = {
 /* exported DEFAULT_SERVICE_STATUS */
 
 let STUBS = {
-  isEnrolledAndEntitled: undefined,
+  isReady: undefined,
   hasUpgraded: undefined,
   isEnrolling: undefined,
   updateEntitlement: undefined,
@@ -389,11 +388,8 @@ add_setup(async function setupVPN() {
 });
 
 function setupStubs(stubs = STUBS) {
-  stubs.isSignedIn = setupSandbox.stub(IPPSignInWatcher, "isSignedIn");
-  stubs.isEnrolledAndEntitled = setupSandbox.stub(
-    IPPEnrollAndEntitleManager,
-    "isEnrolledAndEntitled"
-  );
+  setupSandbox.stub(IPPFxaAuthProvider, "aboutToStart").resolves(null);
+  stubs.isReady = setupSandbox.stub(IPPFxaAuthProvider, "isReady");
   stubs.hasUpgraded = setupSandbox.stub(IPPFxaAuthProvider, "hasUpgraded");
   // Stub isEnrolling, updateEntitlement, and checkForUpgrade
   // to prevent loading skeleton from rendering unexpectedly during tests.
@@ -431,8 +427,7 @@ function setupStubs(stubs = STUBS) {
 
 function setupService(
   {
-    isSignedIn,
-    isEnrolledAndEntitled,
+    isReady,
     hasUpgraded,
     canEnroll,
     entitlement,
@@ -442,12 +437,8 @@ function setupService(
   } = DEFAULT_SERVICE_STATUS,
   stubs = STUBS
 ) {
-  if (typeof isSignedIn != "undefined") {
-    stubs.isSignedIn.get(() => isSignedIn);
-  }
-
-  if (typeof isEnrolledAndEntitled != "undefined") {
-    stubs.isEnrolledAndEntitled.get(() => isEnrolledAndEntitled);
+  if (typeof isReady != "undefined") {
+    stubs.isReady.get(() => isReady);
   }
 
   if (typeof hasUpgraded != "undefined") {

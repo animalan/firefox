@@ -19,8 +19,7 @@ const mockBandwidthUsage = {
 
 add_task(async function test_paused_content() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
     canEnroll: true,
     proxyPass: {
       status: 200,
@@ -83,8 +82,7 @@ add_task(async function test_paused_content() {
 
 add_task(async function test_paused_content_upgraded() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
     hasUpgraded: true,
     canEnroll: true,
     proxyPass: {

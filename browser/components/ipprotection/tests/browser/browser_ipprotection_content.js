@@ -20,12 +20,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/ipprotection/IPProtectionPanel.sys.mjs",
   IPProtectionService:
     "moz-src:///toolkit/components/ipprotection/IPProtectionService.sys.mjs",
-  IPPSignInWatcher:
-    "moz-src:///toolkit/components/ipprotection/fxa/IPPSignInWatcher.sys.mjs",
+  IPPFxaAuthProvider:
+    "moz-src:///toolkit/components/ipprotection/fxa/IPPFxaAuthProvider.sys.mjs",
   IPPNimbusHelper:
     "moz-src:///toolkit/components/ipprotection/IPPNimbusHelper.sys.mjs",
-  IPPEnrollAndEntitleManager:
-    "moz-src:///toolkit/components/ipprotection/fxa/IPPEnrollAndEntitleManager.sys.mjs",
 });
 
 const PANELSTATES = {
@@ -43,12 +41,9 @@ const PANELSTATES = {
   },
 };
 
-async function setAndUpdateIsAuthenticated(content, isSignedOut, sandbox) {
-  sandbox.stub(lazy.IPPSignInWatcher, "isSignedIn").get(() => !isSignedOut);
+async function setAuthenticated(content, isReady, sandbox) {
+  sandbox.stub(lazy.IPPFxaAuthProvider, "isReady").get(() => isReady);
   sandbox.stub(lazy.IPPNimbusHelper, "isEligible").get(() => true);
-  sandbox
-    .stub(lazy.IPPEnrollAndEntitleManager, "isEnrolledAndEntitled")
-    .get(() => true);
   lazy.IPProtectionService.updateState();
   content.requestUpdate();
   await content.updateComplete;
@@ -81,7 +76,7 @@ add_task(async function test_main_content() {
 
   let originalState = structuredClone(content.state);
 
-  await setAndUpdateIsAuthenticated(content, false, sandbox);
+  await setAuthenticated(content, true, sandbox);
 
   Assert.ok(
     BrowserTestUtils.isVisible(content),
@@ -295,8 +290,7 @@ add_task(async function test_enrolling_overrides_unauthenticated() {
  */
 add_task(async function test_enrolling_transitions_to_ready() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
     canEnroll: true,
     proxyPass: {
       status: 200,

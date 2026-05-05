@@ -56,8 +56,7 @@ add_task(async function user_start_and_stop() {
   Assert.ok(content, "Panel content should be present");
 
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   IPProtectionService.updateState();
   await content.updateComplete;
@@ -123,8 +122,7 @@ add_task(async function start_in_private_browsing() {
   await putServerInRemoteSettings();
 
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   IPProtectionService.updateState();
 
@@ -271,8 +269,7 @@ add_task(async function stop_on_shutdown() {
   Assert.ok(content, "Panel content should be present");
 
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   IPProtectionService.updateState();
   await content.updateComplete;
@@ -469,8 +466,7 @@ add_task(async function test_exclusion_added() {
  */
 add_task(async function test_get_started() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: false,
+    isReady: false,
   });
   IPProtectionService.updateState();
   await openPanel();
@@ -503,8 +499,7 @@ add_task(async function test_get_started() {
  */
 add_task(async function test_enrollment() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: false,
+    isReady: false,
   });
   IPProtectionService.updateState();
 

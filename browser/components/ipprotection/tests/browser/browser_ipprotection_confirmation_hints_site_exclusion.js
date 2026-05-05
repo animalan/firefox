@@ -444,8 +444,7 @@ add_task(async function test_confirmation_hint_exclusions_toggle() {
   Services.perms.removeByType("ipp-vpn");
 
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   await IPPFxaAuthProvider.checkForUpgrade();
 

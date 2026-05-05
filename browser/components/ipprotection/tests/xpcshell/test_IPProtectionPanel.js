@@ -216,10 +216,7 @@ add_task(async function test_updateComponentState() {
  */
 add_task(async function test_IPProtectionPanel_signedIn() {
   let sandbox = sinon.createSandbox();
-  sandbox.stub(IPPSignInWatcher, "isSignedIn").get(() => true);
-  sandbox
-    .stub(IPPEnrollAndEntitleManager, "isEnrolledAndEntitled")
-    .get(() => true);
+  sandbox.stub(IPPFxaAuthProvider, "isReady").get(() => true);
   sandbox
     .stub(IPPFxaAuthProvider, "getEntitlement")
     .resolves({ entitlement: createTestEntitlement() });
@@ -259,7 +256,7 @@ add_task(async function test_IPProtectionPanel_signedIn() {
  */
 add_task(async function test_IPProtectionPanel_signedOut() {
   let sandbox = sinon.createSandbox();
-  sandbox.stub(IPPSignInWatcher, "isSignedIn").get(() => false);
+  sandbox.stub(IPPFxaAuthProvider, "isReady").get(() => false);
 
   let ipProtectionPanel = new IPProtectionPanel();
   let fakeElement = new FakeIPProtectionPanelElement();
@@ -303,10 +300,8 @@ add_task(async function test_IPProtectionPanel_started_stopped() {
   fakeElement.isConnected = true;
 
   let sandbox = sinon.createSandbox();
-  sandbox.stub(IPPSignInWatcher, "isSignedIn").get(() => true);
-  sandbox
-    .stub(IPPEnrollAndEntitleManager, "isEnrolledAndEntitled")
-    .get(() => true);
+  sandbox.stub(IPPFxaAuthProvider, "isReady").get(() => true);
+  sandbox.stub(IPPFxaAuthProvider, "aboutToStart").resolves(null);
   sandbox
     .stub(IPPFxaAuthProvider, "getEntitlement")
     .resolves({ entitlement: createTestEntitlement() });

@@ -239,7 +239,7 @@ add_task(async function test_90_percent_overrides_75_percent() {
 });
 
 add_task(async function test_remove_infobar_after_sign_out() {
-  setupService({ isSignedIn: true, isEnrolledAndEntitled: true });
+  setupService({ isReady: true });
   IPProtectionService.updateState();
 
   IPProtectionInfobarManager.init();
@@ -261,7 +261,7 @@ add_task(async function test_remove_infobar_after_sign_out() {
     "75% notification should be present before sign out"
   );
 
-  setupService({ isSignedIn: false });
+  setupService({ isReady: false });
   IPProtectionService.updateState();
 
   await TestUtils.waitForCondition(
@@ -584,7 +584,7 @@ add_task(async function test_bandwidth_reset_clears_dismissed_state() {
 });
 
 add_task(async function test_dismissed_state_persists_through_sign_out() {
-  setupService({ isSignedIn: true, isEnrolledAndEntitled: true });
+  setupService({ isReady: true });
   IPProtectionService.updateState();
 
   IPProtectionInfobarManager.init();
@@ -611,11 +611,11 @@ add_task(async function test_dismissed_state_persists_through_sign_out() {
     "Wait for 75% notification to be removed after dismiss"
   );
 
-  setupService({ isSignedIn: false });
+  setupService({ isReady: false });
   IPProtectionService.updateState();
   await TestUtils.waitForTick();
 
-  setupService({ isSignedIn: true, isEnrolledAndEntitled: true });
+  setupService({ isReady: true });
   IPProtectionService.updateState();
 
   dispatchUsageEvent(0.2);

@@ -23,7 +23,7 @@ const MOCK_LOCATIONS_LIST = [
  */
 async function openLocationsList(state = {}) {
   await openPanel({
-    isEnrolledAndEntitled: true,
+    isReady: true,
     locationsList: MOCK_LOCATIONS_LIST,
     ...state,
   });

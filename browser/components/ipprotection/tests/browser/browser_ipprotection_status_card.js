@@ -33,8 +33,7 @@ const mockBandwidthUsage = {
 async function setupStatusCardTest(opts = { bandwidthEnabled: true }) {
   const { bandwidthEnabled } = opts;
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
     canEnroll: true,
     proxyPass: {
       status: 200,

@@ -17,8 +17,7 @@ const { IPPNetworkUtils } = ChromeUtils.importESModule(
  */
 add_task(async function test_panel_no_error_when_opened_offline() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
     canEnroll: true,
     proxyPass: {
       status: 200,
@@ -66,8 +65,7 @@ add_task(async function test_panel_no_error_when_opened_offline() {
  */
 add_task(async function test_toolbar_button_icon_on_activation_failure() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   IPProtectionService.updateState();
   await waitForProxyState(IPPProxyStates.READY);
@@ -91,8 +89,7 @@ add_task(async function test_toolbar_button_icon_on_activation_failure() {
 
   // Open panel and try to activate while offline
   let content = await openPanel({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   let turnOnButton = content.statusCardEl?.actionButtonEl;
   Assert.ok(turnOnButton, "Turn on button should be present");
@@ -130,8 +127,7 @@ add_task(async function test_toolbar_button_icon_on_activation_failure() {
  */
 add_task(async function test_network_error_when_activating_offline() {
   setupService({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
   IPProtectionService.updateState();
   await waitForProxyState(IPPProxyStates.READY);
@@ -140,8 +136,7 @@ add_task(async function test_network_error_when_activating_offline() {
   Services.io.offline = true;
 
   let content = await openPanel({
-    isSignedIn: true,
-    isEnrolledAndEntitled: true,
+    isReady: true,
   });
 
   await content.updateComplete;
