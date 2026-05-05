@@ -2,11 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { IPPAuthProvider } from "moz-src:///toolkit/components/ipprotection/IPPAuthProvider.sys.mjs";
-import {
-  GuardianClient,
-  GUARDIAN_EXPERIMENT_TYPE,
-} from "moz-src:///toolkit/components/ipprotection/fxa/GuardianClient.sys.mjs";
+import { IPPFxaBaseAuthProvider } from "moz-src:///toolkit/components/ipprotection/fxa/IPPFxaBaseAuthProvider.sys.mjs";
+import { GUARDIAN_EXPERIMENT_TYPE } from "moz-src:///toolkit/components/ipprotection/fxa/GuardianClient.sys.mjs";
 
 const lazy = {};
 
@@ -18,8 +15,6 @@ ChromeUtils.defineLazyGetter(lazy, "fxAccounts", () =>
 ChromeUtils.defineESModuleGetters(lazy, {
   IPPEnrollAndEntitleManager:
     "moz-src:///toolkit/components/ipprotection/fxa/IPPEnrollAndEntitleManager.sys.mjs",
-  IPPSignInWatcher:
-    "moz-src:///toolkit/components/ipprotection/fxa/IPPSignInWatcher.sys.mjs",
 });
 
 const CLIENT_ID_MAP = {
@@ -36,32 +31,21 @@ const GUARDIAN_ENDPOINT_PREF = "browser.ipProtection.guardian.endpoint";
 const GUARDIAN_ENDPOINT_DEFAULT = "https://vpn.mozilla.com";
 
 /**
- * FxA implementation of IPPAuthProvider. Handles OAuth token retrieval,
- * enrollment via Guardian, and FxA-specific proxy bypass rules.
+ * FxA implementation of IPPAuthProvider. Handles enrollment via Guardian and
+ * FxA-specific proxy bypass rules.
  */
-class IPPFxaAuthProviderSingleton extends IPPAuthProvider {
-  #signInWatcher = null;
+class IPPFxaAuthProviderSingleton extends IPPFxaBaseAuthProvider {
   #enrollAndEntitleFn = null;
-  #guardian = new GuardianClient();
 
   /**
    * @param {object} [signInWatcher] - Custom sign-in watcher. Defaults to IPPSignInWatcher.
    * @param {Function} [enrollAndEntitleFn] - Custom enroll function. Defaults to the FxA hidden-window flow.
    */
   constructor(signInWatcher = null, enrollAndEntitleFn = null) {
-    super();
-    this.#signInWatcher = signInWatcher;
+    super(signInWatcher);
     this.#enrollAndEntitleFn =
       enrollAndEntitleFn ??
       IPPFxaAuthProviderSingleton.#defaultEnrollAndEntitle;
-  }
-
-  get guardian() {
-    return this.#guardian;
-  }
-
-  get signInWatcher() {
-    return this.#signInWatcher ?? lazy.IPPSignInWatcher;
   }
 
   /**
@@ -204,39 +188,6 @@ class IPPFxaAuthProviderSingleton extends IPPAuthProvider {
     return true;
   }
 
-  /**
-   * Retrieves an FxA OAuth token and returns a disposable handle that revokes
-   * it on disposal.
-   *
-   * @param {AbortSignal} [abortSignal]
-   * @returns {Promise<{token: string} & Disposable>}
-   */
-  async getToken(abortSignal = null) {
-    let tasks = [
-      lazy.fxAccounts.getOAuthToken({
-        scope: ["profile", "https://identity.mozilla.com/apps/vpn"],
-      }),
-    ];
-    if (abortSignal) {
-      abortSignal.throwIfAborted();
-      tasks.push(
-        new Promise((_, rej) => {
-          abortSignal?.addEventListener("abort", rej, { once: true });
-        })
-      );
-    }
-    const token = await Promise.race(tasks);
-    if (!token) {
-      return null;
-    }
-    return {
-      token,
-      [Symbol.dispose]: () => {
-        lazy.fxAccounts.removeCachedOAuthToken({ token });
-      },
-    };
-  }
-
   async aboutToStart() {
     let result;
     if (lazy.IPPEnrollAndEntitleManager.isEnrolling) {
@@ -246,23 +197,6 @@ class IPPFxaAuthProviderSingleton extends IPPAuthProvider {
       return { error: result?.error };
     }
     return null;
-  }
-
-  async fetchProxyPass(abortSignal = null) {
-    using tokenHandle = await this.getToken(abortSignal);
-    return await this.#guardian.fetchProxyPass(tokenHandle, abortSignal);
-  }
-
-  async fetchProxyUsage(abortSignal = null) {
-    using tokenHandle = await this.getToken(abortSignal);
-    return await this.#guardian.fetchProxyUsage(tokenHandle, abortSignal);
-  }
-
-  get excludedUrlPrefs() {
-    return [
-      "identity.fxaccounts.remote.profile.uri",
-      "identity.fxaccounts.auth.uri",
-    ];
   }
 }
 
