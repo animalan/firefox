@@ -3742,10 +3742,7 @@ bool nsDisplayTableBackgroundImage::IsInvalid(nsRect& aRect) const {
 nsDisplayThemedBackground::nsDisplayThemedBackground(
     nsDisplayListBuilder* aBuilder, nsIFrame* aFrame,
     const nsRect& aBackgroundRect)
-    : nsPaintedDisplayItem(aBuilder, aFrame),
-      mBackgroundRect(aBackgroundRect),
-      mThemeTransparency(nsITheme::eUnknownTransparency),
-      mAppearance(StyleAppearance::None) {
+    : nsPaintedDisplayItem(aBuilder, aFrame), mBackgroundRect(aBackgroundRect) {
   MOZ_COUNT_CTOR(nsDisplayThemedBackground);
 }
 

@@ -502,40 +502,40 @@ class nsRefreshDriver final : public mozilla::layers::TransactionIdAllocator,
 
   mozilla::UniquePtr<mozilla::ProfileChunkedBuffer> mPaintCause;
 
-  bool mThrottled : 1 = false;
-  bool mNeedToRecomputeVisibility : 1 = false;
-  bool mTestControllingRefreshes : 1 = false;
-  bool mInRefresh : 1 = false;
+  bool mThrottled : 1;
+  bool mNeedToRecomputeVisibility : 1;
+  bool mTestControllingRefreshes : 1;
+  bool mInRefresh : 1;
 
   // True if the refresh driver is suspended waiting for transaction
   // id's to be returned and shouldn't do any work during Tick().
-  bool mWaitingForTransaction : 1 = false;
+  bool mWaitingForTransaction : 1;
   // True if Tick() was skipped because of mWaitingForTransaction and
   // we should schedule a new Tick immediately when resumed instead
   // of waiting until the next interval.
-  bool mSkippedPaints : 1 = false;
+  bool mSkippedPaints : 1;
 
   // True if view managers should delay any resize request until the
   // next tick by the refresh driver. This flag will be reset at the
   // start of every tick.
-  bool mResizeSuppressed : 1 = false;
+  bool mResizeSuppressed : 1;
 
   // True if we may need to run any frame callback.
-  bool mNeedToRunFrameRequestCallbacks : 1 = false;
+  bool mNeedToRunFrameRequestCallbacks : 1;
 
   // True if we're currently within the scope of Tick() handling a normal
   // (timer-driven) tick.
-  bool mInNormalTick : 1 = false;
+  bool mInNormalTick : 1;
 
   // True if we attempted an extra tick (see CanDoExtraTick) since the last
   // vsync and thus shouldn't allow another.
-  bool mAttemptedExtraTickSinceLastVsync : 1 = false;
+  bool mAttemptedExtraTickSinceLastVsync : 1;
 
-  bool mHasExceededAfterLoadTickPeriod : 1 = false;
+  bool mHasExceededAfterLoadTickPeriod : 1;
 
-  bool mHasImageAnimations : 1 = false;
+  bool mHasImageAnimations : 1;
 
-  bool mHasStartedTimerAtLeastOnce : 1 = false;
+  bool mHasStartedTimerAtLeastOnce : 1;
 
   mozilla::TimeStamp mMostRecentRefresh;
   mozilla::TimeStamp mTickStart;

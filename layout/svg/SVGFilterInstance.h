@@ -245,7 +245,7 @@ class SVGFilterInstance {
   /**
    * The 'primitiveUnits' attribute value (objectBoundingBox or userSpaceOnUse).
    */
-  uint16_t mPrimitiveUnits = SVG_UNIT_TYPE_USERSPACEONUSE;
+  uint16_t mPrimitiveUnits;
 
   /**
    * The index of the FilterPrimitiveDescription that this SVG filter should use
