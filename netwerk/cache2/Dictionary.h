@@ -266,7 +266,7 @@ class DictionaryOriginReader final : public nsICacheEntryOpenCallback,
 
   RefPtr<DictionaryOrigin> mOrigin;
   nsCOMPtr<nsIURI> mURI;
-  ExtContentPolicyType mType;
+  ExtContentPolicyType mType = ExtContentPolicyType::TYPE_INVALID;
   std::function<nsresult(bool, DictionaryCacheEntry*)> mCallback;
   RefPtr<DictionaryCache> mCache;
 };

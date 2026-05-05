@@ -86,7 +86,8 @@ class URIData {
   nsCOMPtr<nsIURI> mURI;
   nsCString mURISpec;
   nsTArray<nsCString> mFragments;
-  nsIUrlClassifierFeature::URIType mURIType;
+  nsIUrlClassifierFeature::URIType mURIType =
+      nsIUrlClassifierFeature::blocklistURI;
 };
 
 /* static */
