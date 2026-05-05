@@ -176,7 +176,7 @@ void nsPresContext::ForceReflowForFontInfoUpdateFromStyle() {
   }
 
   mPendingFontInfoUpdateReflowFromStyle = true;
-  nsCOMPtr<nsIRunnable> ev = new WeakRunnableMethod(
+  nsCOMPtr<nsIRunnable> ev = MakeAndAddRef<WeakRunnableMethod>(
       "nsPresContext::DoForceReflowForFontInfoUpdateFromStyle", this,
       &nsPresContext::DoForceReflowForFontInfoUpdateFromStyle);
   RefreshDriver()->AddEarlyRunner(ev);
@@ -2370,7 +2370,7 @@ void nsPresContext::NotifyRevokingDidPaint(TransactionId aTransactionId) {
   // the others are completed.
   // If this is the only transaction, then we can send it immediately.
   if (mTransactions.Length() == 1) {
-    nsCOMPtr<nsIRunnable> ev = new DelayedFireDOMPaintEvent(
+    nsCOMPtr<nsIRunnable> ev = MakeAndAddRef<DelayedFireDOMPaintEvent>(
         this, std::move(transaction->mInvalidations),
         transaction->mTransactionId, mozilla::TimeStamp());
     nsContentUtils::AddScriptRunner(ev);
@@ -2418,7 +2418,7 @@ void nsPresContext::NotifyDidPaintForSubtree(
   while (i < mTransactions.Length()) {
     if (mTransactions[i].mTransactionId <= aTransactionId) {
       if (!mTransactions[i].mInvalidations.IsEmpty()) {
-        nsCOMPtr<nsIRunnable> ev = new DelayedFireDOMPaintEvent(
+        nsCOMPtr<nsIRunnable> ev = MakeAndAddRef<DelayedFireDOMPaintEvent>(
             this, std::move(mTransactions[i].mInvalidations),
             mTransactions[i].mTransactionId, aTimeStamp);
         NS_DispatchToCurrentThreadQueue(ev.forget(),
@@ -2430,7 +2430,7 @@ void nsPresContext::NotifyDidPaintForSubtree(
       // If there are transaction which is waiting for this transaction,
       // we should fire a MozAfterPaint immediately.
       if (sent && mTransactions[i].mIsWaitingForPreviousTransaction) {
-        nsCOMPtr<nsIRunnable> ev = new DelayedFireDOMPaintEvent(
+        nsCOMPtr<nsIRunnable> ev = MakeAndAddRef<DelayedFireDOMPaintEvent>(
             this, std::move(mTransactions[i].mInvalidations),
             mTransactions[i].mTransactionId, aTimeStamp);
         NS_DispatchToCurrentThreadQueue(ev.forget(),
@@ -2445,7 +2445,7 @@ void nsPresContext::NotifyDidPaintForSubtree(
 
   if (!sent) {
     nsTArray<nsRect> dummy;
-    nsCOMPtr<nsIRunnable> ev = new DelayedFireDOMPaintEvent(
+    nsCOMPtr<nsIRunnable> ev = MakeAndAddRef<DelayedFireDOMPaintEvent>(
         this, std::move(dummy), aTransactionId, aTimeStamp);
     NS_DispatchToCurrentThreadQueue(ev.forget(),
                                     EventQueuePriority::MediumHigh);
