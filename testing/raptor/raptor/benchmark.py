@@ -53,8 +53,12 @@ class Benchmark:
         self.start_http_server()
 
     def start_http_server(self):
+        # pick a free port
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(("", 0))
         self.host = self.config["host"]
-        self.port = self.test.get("benchmark_port") or self._pick_free_port()
+        self.port = sock.getsockname()[1]
+        sock.close()
         _webserver = "%s:%d" % (self.host, self.port)
 
         self.httpd = self.setup_webserver(_webserver)
@@ -98,13 +102,6 @@ class Benchmark:
                 self.server_thread.join(5)
         except Exception:
             LOG.warning(f"Failed to stop benchmark server: {traceback.format_exc()}")
-
-    def _pick_free_port(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(("", 0))
-        port = sock.getsockname()[1]
-        sock.close()
-        return port
 
     def _full_clone(self, benchmark_repository, dest):
         subprocess.check_call([
