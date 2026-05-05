@@ -2089,20 +2089,11 @@ void nsFrameLoader::SetOwnerContent(Element* aContent) {
     // SetEmbedderElement above.
     mSessionStoreChild->UpdateEventTargets();
   }
-
-  AutoJSAPI jsapi;
-  jsapi.Init();
-
-  JS::Rooted<JSObject*> wrapper(jsapi.cx(), GetWrapper());
-  if (wrapper) {
-    JSAutoRealm ar(jsapi.cx(), wrapper);
-    IgnoredErrorResult rv;
-    UpdateReflectorGlobal(jsapi.cx(), wrapper, rv);
-    (void)NS_WARN_IF(rv.Failed());
-  }
 }
 
-nsIContent* nsFrameLoader::GetParentObject() const { return mOwnerContent; }
+nsISupports* nsFrameLoader::GetParentObject() const {
+  return xpc::NativeGlobal(xpc::PrivilegedJunkScope());
+}
 
 void nsFrameLoader::AssertSafeToInit() {
   MOZ_DIAGNOSTIC_ASSERT(nsContentUtils::IsSafeToRunScript() ||
