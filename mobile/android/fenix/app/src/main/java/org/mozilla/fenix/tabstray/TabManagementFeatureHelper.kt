@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.tabstray
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.nimbus.FxNimbus
 
@@ -31,6 +32,11 @@ interface TabManagementFeatureHelper {
      * Whether drag and drop is enabled for the Tab Groups feature.
      */
     val tabGroupsDragAndDropEnabled: Boolean
+
+    /**
+     * Determines whether the "Share" button is displayed for tab groups in the tabs tray.
+     */
+    val shareTabGroupEnabled: Boolean
 }
 
 /**
@@ -57,4 +63,11 @@ data object DefaultTabManagementFeatureHelper : TabManagementFeatureHelper {
             Config.channel.isDebug -> true
             else -> FxNimbus.features.tabSearch.value().enabled
         }
+
+    override val shareTabGroupEnabled: Boolean
+        get() = false
+}
+
+val LocalTabManagementFeatureHelper = staticCompositionLocalOf<TabManagementFeatureHelper> {
+    DefaultTabManagementFeatureHelper
 }

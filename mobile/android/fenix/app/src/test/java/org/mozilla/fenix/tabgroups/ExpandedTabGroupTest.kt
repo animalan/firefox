@@ -12,6 +12,8 @@ import mozilla.components.compose.base.utils.LocalUnderTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mozilla.fenix.tabstray.LocalTabManagementFeatureHelper
+import org.mozilla.fenix.tabstray.TabManagementFeatureHelper
 import org.mozilla.fenix.tabstray.TabsTrayTestTag
 import org.mozilla.fenix.tabstray.data.TabsTrayItem
 import org.mozilla.fenix.tabstray.data.createTab
@@ -25,19 +27,29 @@ class ExpandedTabGroupTest {
     val composeTestRule = createComposeRule()
     val testGroupTitle = "Test Tab Group"
 
+    private val tabManagementFeatureHelper = object : TabManagementFeatureHelper {
+        override val openingAnimationEnabled: Boolean = false
+        override val tabSearchEnabled: Boolean = false
+        override val tabGroupsEnabled: Boolean = true
+        override val tabGroupsDragAndDropEnabled: Boolean = false
+        override val shareTabGroupEnabled: Boolean = true
+    }
+
     @Test
     fun verifyVisibleItems() {
         composeTestRule.setContent {
-            FirefoxTheme(theme = Theme.Light) {
-                Surface {
-                    ExpandedTabGroup(
-                        group = fakeTabGroup(),
-                        onItemClick = {},
-                        onTabClose = {},
-                        onDeleteTabGroupClick = {},
-                        onEditTabGroupClick = {},
-                        onCloseTabGroupClick = {},
-                    )
+            CompositionLocalProvider(LocalTabManagementFeatureHelper provides tabManagementFeatureHelper) {
+                FirefoxTheme(theme = Theme.Light) {
+                    Surface {
+                        ExpandedTabGroup(
+                            group = fakeTabGroup(),
+                            onItemClick = {},
+                            onTabClose = {},
+                            onDeleteTabGroupClick = {},
+                            onEditTabGroupClick = {},
+                            onCloseTabGroupClick = {},
+                        )
+                    }
                 }
             }
         }
