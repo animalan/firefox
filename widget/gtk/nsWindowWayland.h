@@ -14,6 +14,10 @@ class nsWindowWayland final : public nsWindow {
   nsWindowWayland* AsWayland() override { return this; }
   nsWindow* GetEffectiveParent() const;
 
+  void GetWorkspaceID(nsAString& workspaceID) override;
+  void MoveToWorkspace(const nsAString& workspaceIDStr) override;
+  void RestoreXdgToplevel();
+
   // Use xdg-activation protocol to transfer focus from gFocusWindow.
   void TransferFocusTo();
   void FocusWaylandWindow(const char* aTokenID);
@@ -40,6 +44,8 @@ class nsWindowWayland final : public nsWindow {
                                             bool aFlippedX, bool aFlippedY);
   void CreateNative() override;
   void DestroyNative() override;
+
+  void ConfigureToplevelWindowNative() override;
 
   bool PIPMove();
   bool PIPResize(GdkWindowEdge aEdge);
@@ -205,6 +211,8 @@ class nsWindowWayland final : public nsWindow {
   void EnableVSyncSource() override;
   void DisableVSyncSource() override;
 
+  bool CreateRestoreSession(bool aRestoreWindow);
+
   // Toplevel window (first element) of linked list of Wayland popups. It's null
   // if we're the toplevel.
   RefPtr<nsWindowWayland> mWaylandToplevel;
@@ -221,6 +229,10 @@ class nsWindowWayland final : public nsWindow {
   RefPtr<mozilla::WaylandVsyncSource> mWaylandVsyncSource;
   RefPtr<mozilla::VsyncDispatcher> mWaylandVsyncDispatcher;
   LayoutDeviceIntPoint mNativePointerLockCenter;
+  xx_toplevel_session_v1* mSessionRestoreToken = nullptr;
+  int mSessionID = 0;
+  gulong mXdgToplevelRealizedID = 0;
+
   zwp_locked_pointer_v1* mLockedPointer = nullptr;
   zwp_relative_pointer_v1* mRelativePointer = nullptr;
   struct {
