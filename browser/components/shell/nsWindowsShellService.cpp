@@ -500,8 +500,10 @@ nsWindowsShellService::LaunchOpenWithDefaultPickerForFileType(
   // Make sure the dialog is foregrounded.
   CoAllowSetForegroundWindow(pOWL, nullptr);
 
-  // The flag is a bit of a mystery. We use 0x84 based on experimentation.
-  hr = pOWL->Launch(nullptr, aFileType.Data(), 0x84);
+  // The flag is a bit of a mystery; on Win11+ 0x84 gives ideal messaging, on
+  // Win10 we use 0x2004.
+  int flag = mozilla::IsWin11OrLater() ? 0x84 : 0x2004;
+  hr = pOWL->Launch(nullptr, aFileType.Data(), flag);
 
   return SUCCEEDED(hr) ? NS_OK : NS_ERROR_FAILURE;
 }
