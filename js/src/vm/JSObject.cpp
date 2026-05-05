@@ -2277,7 +2277,8 @@ JS_PUBLIC_API bool js::ShouldIgnorePropertyDefinition(JSContext* cx,
     if (id == NameToId(cx->names().firstDayOfWeek) ||
         id == NameToId(cx->names().getTextInfo) ||
         id == NameToId(cx->names().getNumberingSystems) ||
-        id == NameToId(cx->names().getCollations)) {
+        id == NameToId(cx->names().getCollations) ||
+        id == NameToId(cx->names().getCalendars)) {
       return true;
     }
   }
