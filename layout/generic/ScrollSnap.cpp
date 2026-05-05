@@ -15,6 +15,10 @@
 #include "nsPresContext.h"
 #include "nsTArray.h"
 
+mozilla::LazyLogModule sApzScrollSnapLog("apz.scrollsnap");
+#define SCROLL_SNAP_LOG(...) \
+  MOZ_LOG(sApzScrollSnapLog, LogLevel::Debug, (__VA_ARGS__))
+
 namespace mozilla {
 
 /**
@@ -574,6 +578,19 @@ Maybe<SnapDestination> ScrollSnapUtils::GetSnapPointForDestination(
   return snapped ? Some(finalPos) : Nothing();
 }
 
+nsAutoString ScrollSnapUtils::StringifySnapTarget(
+    const SnapTarget& aSnapTarget) {
+  nsAutoString string;
+  const nsIContent* content =
+      reinterpret_cast<nsIContent*>(aSnapTarget.mTargetId);
+  if (content->IsElement()) {
+    content->AsElement()->Describe(string);
+  } else {
+    string.AppendPrintf("(not an element)");
+  }
+  return string;
+}
+
 ScrollSnapTargetId ScrollSnapUtils::GetTargetIdFor(const nsIFrame* aFrame) {
   MOZ_ASSERT(aFrame && aFrame->GetContent());
   return ScrollSnapTargetId{reinterpret_cast<uintptr_t>(aFrame->GetContent())};
@@ -630,6 +647,22 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
         return true;
       });
 
+  if (MOZ_LOG_TEST(sApzScrollSnapLog, LogLevel::Debug)) {
+    const nsAutoString allTargets =
+        ScrollSnapUtils::StringifySnapTargetList<SnapTarget>(
+            aSnapInfo.mSnapTargets);
+    const nsAutoString inlineTargets =
+        ScrollSnapUtils::StringifySnapTargetList<const SnapTarget*>(inlineSet);
+    const nsAutoString blockTargets =
+        ScrollSnapUtils::StringifySnapTargetList<const SnapTarget*>(blockSet);
+    SCROLL_SNAP_LOG("All snap targets: %s",
+                    NS_LossyConvertUTF16toASCII(allTargets).get());
+    SCROLL_SNAP_LOG("Inline snap targets: %s",
+                    NS_LossyConvertUTF16toASCII(inlineTargets).get());
+    SCROLL_SNAP_LOG("Block snap targets: %s",
+                    NS_LossyConvertUTF16toASCII(blockTargets).get());
+  }
+
   // Step 4.1: If the focused element is in a set, it's the only candidate.
   if (focusedTarget) {
     if (focusedTarget->mSnapPoint.I(aWM) &&
@@ -676,6 +709,8 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
   // visible at the combined snap position.
   Maybe<nscoord> x, y;
 
+  const ScrollSnapInfo::SnapTarget* inlinePick{nullptr};
+  const ScrollSnapInfo::SnapTarget* blockPick{nullptr};
   auto pickFromInline = [&]() {
     Maybe<nscoord>& inlineCoord = isVertical ? y : x;
     const Maybe<nscoord>& blockCoord = isVertical ? x : y;
@@ -690,6 +725,7 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
                                                : nsPoint(*sp, *blockCoord),
                                     aSnapInfo.mSnapportSize))) {
         inlineCoord = sp;
+        inlinePick = target;
         return;
       }
     }
@@ -709,6 +745,7 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
                                                 : nsPoint(*inlineCoord, *sp),
                                      aSnapInfo.mSnapportSize))) {
         blockCoord = sp;
+        blockPick = target;
         return;
       }
     }
@@ -717,9 +754,21 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
   // Only pick snap positions for axes that have snapping enabled.
   if (aSnapInfo.StrictnessInline(aWM) != StyleScrollSnapStrictness::None) {
     pickFromInline();
+    if (inlinePick && MOZ_LOG_TEST(sApzScrollSnapLog, LogLevel::Debug)) {
+      const nsAutoString inlineString =
+          ScrollSnapUtils::StringifySnapTarget(*inlinePick);
+      SCROLL_SNAP_LOG("Inline snap target pick: %s",
+                      NS_LossyConvertUTF16toASCII(inlineString).get());
+    }
   }
   if (aSnapInfo.StrictnessBlock(aWM) != StyleScrollSnapStrictness::None) {
     pickFromBlock();
+    if (blockPick && MOZ_LOG_TEST(sApzScrollSnapLog, LogLevel::Debug)) {
+      const nsAutoString blockString =
+          ScrollSnapUtils::StringifySnapTarget(*blockPick);
+      SCROLL_SNAP_LOG("Block snap target pick: %s",
+                      NS_LossyConvertUTF16toASCII(blockString).get());
+    }
   }
 
   return {x, y};
