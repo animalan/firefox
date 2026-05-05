@@ -6678,14 +6678,6 @@ nsresult nsDocShell::CreateAboutBlankDocumentViewer(
         rv = Embed(viewer, aActor, true, nullptr, mCurrentURI);
         NS_ENSURE_SUCCESS(rv, rv);
 
-        if (nsIContentSecurityPolicy* csp =
-                PolicyContainer::GetCSP(blankDoc->GetPolicyContainer())) {
-          // We do this here rather than earlier where we inherit
-          // aPolicyContainer so that the client source uses the parent's URI as
-          // self (bug 2021482).
-          MOZ_TRY(csp->SetRequestContextWithDocument(blankDoc));
-        }
-
         SetCurrentURI(blankDoc->GetDocumentURI(), nullptr,
                       /* aFireLocationChange */ true,
                       /* aIsInitialAboutBlank */ aIsInitialDocument,
@@ -10097,6 +10089,13 @@ nsresult nsDocShell::CompleteInitialAboutBlankLoad(
   MOZ_ASSERT(doc->GetReadyStateEnum() == Document::READYSTATE_COMPLETE);
   MOZ_ASSERT(!mIsLoadingDocument);
 
+  if (nsIContentSecurityPolicy* csp =
+          PolicyContainer::GetCSP(doc->GetPolicyContainer())) {
+    // We do this here rather than when inheriting the CSP in
+    // CreateAboutBlankDocumentViewer so that client source and parsed policies
+    // use the parent's URI as self (bug 2021482, 2035423).
+    MOZ_TRY(csp->SetRequestContextWithDocument(doc));
+  }
   doc->ApplyCspFromLoadInfo(aLoadInfo);
   doc->ApplySettingsFromCSP(false);
   doc->RecomputeResistFingerprinting();
