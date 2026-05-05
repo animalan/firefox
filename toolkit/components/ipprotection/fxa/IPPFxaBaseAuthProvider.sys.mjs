@@ -15,14 +15,19 @@ ChromeUtils.defineLazyGetter(lazy, "fxAccounts", () =>
 ChromeUtils.defineESModuleGetters(lazy, {
   IPPSignInWatcher:
     "moz-src:///toolkit/components/ipprotection/fxa/IPPSignInWatcher.sys.mjs",
+  IPProtectionService:
+    "moz-src:///toolkit/components/ipprotection/IPProtectionService.sys.mjs",
+  IPPStartupCache:
+    "moz-src:///toolkit/components/ipprotection/IPPStartupCache.sys.mjs",
 });
 
 /**
  * Base class for FxA-backed IPPAuthProvider implementations.
  * Provides shared OAuth token retrieval, Guardian proxy methods,
- * and sign-in watcher access.
+ * sign-in watcher access, and entitlement lifecycle management.
  */
 export class IPPFxaBaseAuthProvider extends IPPAuthProvider {
+  #entitlement = null;
   #signInWatcher = null;
   #guardian = new GuardianClient();
 
@@ -32,6 +37,7 @@ export class IPPFxaBaseAuthProvider extends IPPAuthProvider {
   constructor(signInWatcher = null) {
     super();
     this.#signInWatcher = signInWatcher;
+    this.handleEvent = this.#handleEvent.bind(this);
   }
 
   get guardian() {
@@ -40,6 +46,76 @@ export class IPPFxaBaseAuthProvider extends IPPAuthProvider {
 
   get signInWatcher() {
     return this.#signInWatcher ?? lazy.IPPSignInWatcher;
+  }
+
+  get entitlement() {
+    return this.#entitlement;
+  }
+
+  /**
+   * Updates the stored entitlement and persists it to the startup cache.
+   *
+   * @param {object|null} entitlement
+   */
+  _setEntitlement(entitlement) {
+    this.#entitlement = entitlement;
+    lazy.IPPStartupCache.storeEntitlement(entitlement);
+  }
+
+  init() {
+    this.#entitlement = lazy.IPPStartupCache.entitlement;
+    this.signInWatcher.addEventListener(
+      "IPPSignInWatcher:StateChanged",
+      this.handleEvent
+    );
+  }
+
+  initOnStartupCompleted() {
+    if (!this.signInWatcher.isSignedIn) {
+      return;
+    }
+    this.updateEntitlement();
+  }
+
+  uninit() {
+    this.signInWatcher.removeEventListener(
+      "IPPSignInWatcher:StateChanged",
+      this.handleEvent
+    );
+    this.#entitlement = null;
+  }
+
+  #handleEvent() {
+    if (!this.signInWatcher.isSignedIn) {
+      this._setEntitlement(null);
+      lazy.IPProtectionService.updateState();
+      return;
+    }
+    this.updateEntitlement();
+  }
+
+  updateEntitlement() {}
+
+  async getEntitlement() {
+    try {
+      using tokenHandle = await this.getToken();
+      const { status, entitlement, error } =
+        await this.guardian.fetchUserInfo(tokenHandle);
+      if (error || !entitlement || status != 200) {
+        return { error: error || `Status: ${status}` };
+      }
+      return { entitlement };
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  get hasUpgraded() {
+    return this.entitlement?.subscribed ?? false;
+  }
+
+  get maxBytes() {
+    return this.entitlement?.maxBytes ?? null;
   }
 
   /**

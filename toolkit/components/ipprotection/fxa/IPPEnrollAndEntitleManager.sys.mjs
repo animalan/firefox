@@ -7,8 +7,6 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   IPPProxyManager:
     "moz-src:///toolkit/components/ipprotection/IPPProxyManager.sys.mjs",
-  IPPStartupCache:
-    "moz-src:///toolkit/components/ipprotection/IPPStartupCache.sys.mjs",
   IPProtectionService:
     "moz-src:///toolkit/components/ipprotection/IPProtectionService.sys.mjs",
 });
@@ -18,66 +16,21 @@ ChromeUtils.defineESModuleGetters(lazy, {
  * Delegates enrollment and entitlement fetching to the active auth provider.
  */
 class IPPEnrollAndEntitleManagerSingleton {
-  #entitlement = null;
-  #signInWatcher = null;
-
   // Promises to queue enrolling and entitling operations.
   #enrollingPromise = null;
   #entitlementPromise = null;
 
-  constructor() {
-    this.handleEvent = this.#handleEvent.bind(this);
-  }
+  #setEntitlement(entitlement) {
+    lazy.IPProtectionService.authProvider._setEntitlement(entitlement);
 
-  get entitlement() {
-    return this.#entitlement;
-  }
+    lazy.IPProtectionService.updateState();
 
-  init() {
-    // We will use data from the cache until we are fully functional. Then we
-    // will recompute the state in `initOnStartupCompleted`.
-    this.#entitlement = lazy.IPPStartupCache.entitlement;
-
-    // Duck typing: signInWatcher is not part of the base IPPAuthProvider contract.
-    // This manager requires the active auth provider to be an IPPFxaAuthProvider.
-    this.#signInWatcher = lazy.IPProtectionService.authProvider.signInWatcher;
-    if (!this.#signInWatcher) {
-      throw new Error(
-        "IPPEnrollAndEntitleManager requires an auth provider with a signInWatcher"
-      );
-    }
-
-    this.#signInWatcher.addEventListener(
-      "IPPSignInWatcher:StateChanged",
-      this.handleEvent
+    lazy.IPProtectionService.authProvider.dispatchEvent(
+      new CustomEvent("IPPAuthProvider:StateChanged", {
+        bubbles: true,
+        composed: true,
+      })
     );
-  }
-
-  initOnStartupCompleted() {
-    if (!this.#signInWatcher.isSignedIn) {
-      return;
-    }
-    // This bit must be async because we want to trigger the updateState at
-    // the end of the rest of the initialization.
-    this.updateEntitlement();
-  }
-
-  uninit() {
-    this.#signInWatcher.removeEventListener(
-      "IPPSignInWatcher:StateChanged",
-      this.handleEvent
-    );
-    this.#signInWatcher = null;
-
-    this.#entitlement = null;
-  }
-
-  #handleEvent(_event) {
-    if (!this.#signInWatcher.isSignedIn) {
-      this.#setEntitlement(null);
-      return;
-    }
-    this.updateEntitlement();
   }
 
   /**
@@ -175,7 +128,7 @@ class IPPEnrollAndEntitleManagerSingleton {
    * @returns {string} [status.error] - Error message if enrollment or entitlement failed.
    */
   async #enrollAndEntitle(abortSignal = null) {
-    if (this.#entitlement) {
+    if (lazy.IPProtectionService.authProvider.entitlement) {
       return { isEnrolledAndEntitled: true };
     }
 
@@ -202,7 +155,7 @@ class IPPEnrollAndEntitleManagerSingleton {
    * @returns {string} [status.error] - Error message if entitlement fetch failed.
    */
   async #entitle(forceRefetch = false) {
-    if (this.#entitlement && !forceRefetch) {
+    if (lazy.IPProtectionService.authProvider.entitlement && !forceRefetch) {
       return { isEntitled: true };
     }
 
@@ -218,43 +171,6 @@ class IPPEnrollAndEntitleManagerSingleton {
 
     this.#setEntitlement(entitlement);
     return { isEntitled: true };
-  }
-
-  /**
-   * Sets the entitlement and updates the cache and IPProtectionService state.
-   *
-   * @param {object | null} entitlement - The entitlement object or null to unset.
-   */
-  #setEntitlement(entitlement) {
-    this.#entitlement = entitlement;
-    lazy.IPPStartupCache.storeEntitlement(this.#entitlement);
-
-    if (!this.#signInWatcher) {
-      return;
-    }
-
-    lazy.IPProtectionService.updateState();
-
-    lazy.IPProtectionService.authProvider.dispatchEvent(
-      new CustomEvent("IPPAuthProvider:StateChanged", {
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
-
-  /**
-   * Checks if we have the entitlement
-   */
-  get isEnrolledAndEntitled() {
-    return !!this.#entitlement;
-  }
-
-  /**
-   * Checks if the entitlement exists and it contains a UUID
-   */
-  get hasEntitlementUid() {
-    return !!this.#entitlement?.uid;
   }
 
   /**
@@ -276,13 +192,6 @@ class IPPEnrollAndEntitleManagerSingleton {
    */
   async waitForEnrollment() {
     return this.#enrollingPromise;
-  }
-
-  /**
-   * Refetches the entitlement even if it is cached.
-   */
-  async refetchEntitlement() {
-    await this.updateEntitlement(true);
   }
 
   /**

@@ -37,8 +37,8 @@ add_setup(async function () {
 add_task(async function test_IPProtectionService_updateState_signedIn() {
   let sandbox = sinon.createSandbox();
   sandbox
-    .stub(IPPEnrollAndEntitleManager, "isEnrolledAndEntitled")
-    .get(() => true);
+    .stub(IPPFxaAuthProvider, "entitlement")
+    .get(() => createTestEntitlement());
 
   await IPProtectionService.init();
 
@@ -67,8 +67,8 @@ add_task(async function test_IPProtectionService_updateState_signedOut() {
   let sandbox = sinon.createSandbox();
   setupStubs(sandbox);
   sandbox
-    .stub(IPPEnrollAndEntitleManager, "isEnrolledAndEntitled")
-    .get(() => true);
+    .stub(IPPFxaAuthProvider, "entitlement")
+    .get(() => createTestEntitlement());
 
   await IPProtectionService.init();
 
@@ -109,7 +109,7 @@ add_task(
     await IPPEnrollAndEntitleManager.updateEntitlement();
 
     Assert.ok(
-      IPPEnrollAndEntitleManager.isEnrolledAndEntitled,
+      IPPFxaAuthProvider.entitlement,
       "Should be entitled after updateEntitlement"
     );
 

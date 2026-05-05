@@ -77,15 +77,19 @@ class IPPFxaAuthProviderSingleton extends IPPFxaBaseAuthProvider {
       return { isEnrolledAndEntitled: false, error: error?.message };
     }
     using tokenHandle = await getToken(abortSignal);
-    const { entitlement, error } =
-      await IPPFxaAuthProviderSingleton.#fetchEntitlement(
-        guardian,
-        tokenHandle
-      );
-    if (error || !entitlement) {
-      return { isEnrolledAndEntitled: false, error };
+    try {
+      const { status, entitlement, error } =
+        await guardian.fetchUserInfo(tokenHandle);
+      if (error || !entitlement || status != 200) {
+        return {
+          isEnrolledAndEntitled: false,
+          error: error || `Status: ${status}`,
+        };
+      }
+      return { isEnrolledAndEntitled: true, entitlement };
+    } catch (error) {
+      return { isEnrolledAndEntitled: false, error: error?.message };
     }
-    return { isEnrolledAndEntitled: true, entitlement };
   }
 
   /**
@@ -97,11 +101,7 @@ class IPPFxaAuthProviderSingleton extends IPPFxaBaseAuthProvider {
     if (!isLinked) {
       return {};
     }
-    using tokenHandle = await this.getToken();
-    return await IPPFxaAuthProviderSingleton.#fetchEntitlement(
-      this.guardian,
-      tokenHandle
-    );
+    return super.getEntitlement();
   }
 
   async #isLinkedToGuardian(useCache = true) {
@@ -128,29 +128,12 @@ class IPPFxaAuthProviderSingleton extends IPPFxaBaseAuthProvider {
     }
   }
 
-  static async #fetchEntitlement(guardian, tokenHandle) {
-    try {
-      const { status, entitlement, error } =
-        await guardian.fetchUserInfo(tokenHandle);
-      if (error || !entitlement || status != 200) {
-        return { error: error || `Status: ${status}` };
-      }
-      return { entitlement };
-    } catch (error) {
-      return { error: error.message };
-    }
-  }
-
   get helpers() {
-    return [this.signInWatcher, lazy.IPPEnrollAndEntitleManager];
+    return [this, this.signInWatcher];
   }
 
-  get hasUpgraded() {
-    return lazy.IPPEnrollAndEntitleManager.entitlement?.subscribed;
-  }
-
-  get maxBytes() {
-    return lazy.IPPEnrollAndEntitleManager.entitlement?.maxBytes ?? null;
+  async updateEntitlement() {
+    await lazy.IPPEnrollAndEntitleManager.updateEntitlement();
   }
 
   get isEnrolling() {
@@ -161,7 +144,7 @@ class IPPFxaAuthProviderSingleton extends IPPFxaBaseAuthProvider {
   }
 
   async checkForUpgrade() {
-    await lazy.IPPEnrollAndEntitleManager.refetchEntitlement();
+    await lazy.IPPEnrollAndEntitleManager.updateEntitlement(true);
   }
 
   async enroll() {
@@ -178,10 +161,7 @@ class IPPFxaAuthProviderSingleton extends IPPFxaBaseAuthProvider {
     // If the current account is not enrolled and entitled, the UI is shown and
     // they have to opt-in.
     // If they are currently enrolling, they have already opted-in.
-    if (
-      !lazy.IPPEnrollAndEntitleManager.isEnrolledAndEntitled &&
-      !lazy.IPPEnrollAndEntitleManager.isEnrolling
-    ) {
+    if (!this.entitlement && !lazy.IPPEnrollAndEntitleManager.isEnrolling) {
       return false;
     }
 
@@ -193,7 +173,7 @@ class IPPFxaAuthProviderSingleton extends IPPFxaBaseAuthProvider {
     if (lazy.IPPEnrollAndEntitleManager.isEnrolling) {
       result = await lazy.IPPEnrollAndEntitleManager.waitForEnrollment();
     }
-    if (!lazy.IPPEnrollAndEntitleManager.isEnrolledAndEntitled) {
+    if (!this.entitlement) {
       return { error: result?.error };
     }
     return null;

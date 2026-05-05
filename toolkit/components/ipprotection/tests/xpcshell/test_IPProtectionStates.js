@@ -95,8 +95,8 @@ add_task(async function test_IPProtectionStates_unauthenticated() {
 
   sandbox.stub(IPPNimbusHelper, "isEligible").get(() => true);
   sandbox
-    .stub(IPPEnrollAndEntitleManager, "isEnrolledAndEntitled")
-    .get(() => true);
+    .stub(IPPFxaAuthProvider, "entitlement")
+    .get(() => createTestEntitlement());
 
   IPProtectionService.updateState();
 
