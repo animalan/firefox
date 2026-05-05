@@ -108,6 +108,8 @@ add_addrsig_flag = depends(c_compiler, when=target_is_android)(
     lambda c: c.type == "clang"
 )
 
+# Make sure that path separators are consistent in cross builds.
+check_and_add_flag("-ffile-reproducible", when=target_is_windows)
 
 @depends(
     c_compiler,

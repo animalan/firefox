@@ -63,7 +63,7 @@ constexpr bool StrEndsWith(const char* name,
   return true;
 }
 
-#if defined(__clang__) && defined(_MSC_VER) && !defined(MOZ_SANDBOX)
+#if defined(__clang__) && defined(_MSC_VER)
 static_assert(StrEndsWith(__FILE__, kStrippedPrefixLength, "base\\location.cc"),
               "The file name does not match the expected prefix format.");
 #else
