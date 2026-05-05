@@ -4064,6 +4064,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, safari-tp, custom-car
+   * **benchmark port**: 62763
    * **browser cycles**: 5
    * **cold**: true
    * **expected**: pass
@@ -4512,6 +4513,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
    * **alert threshold**: 2.0
    * **apps**: fenix, geckoview, refbrow, chrome-m, cstm-car-m
+   * **benchmark port**: 62763
    * **browser cycles**: 5
    * **cold**: true
    * **expected**: pass
