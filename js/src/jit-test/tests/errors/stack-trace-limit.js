@@ -71,6 +71,18 @@ Error.stackTraceLimit = Infinity;
 assertEq(Error.stackTraceLimit, Infinity);
 try { rec(0); } catch (e) { assertEq(countFrames(e), MAX_REPORTED_STACK_DEPTH); }
 
+Error.stackTraceLimit = 3;
+function deep(n) {
+    if (n === 0) {
+        var o = {};
+        Error.captureStackTrace(o, caller);
+        return o;
+    }
+    return deep(n - 1);
+}
+function caller() { return deep(5); }
+assertEq(countFrames(caller()), 1);
+
 delete Error.stackTraceLimit;
 assertEq("stackTraceLimit" in Error, false);
 try { rec(0); } catch (e) { assertEq(countFrames(e), MAX_REPORTED_STACK_DEPTH); }

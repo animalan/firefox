@@ -1482,6 +1482,7 @@ bool SavedStacks::insertFrames(JSContext* cx, MutableHandle<SavedFrame*> frame,
                                        ? &startAtObj->as<JSFunction>()
                                        : nullptr);
   bool seenStartAt = !startAt;
+  bool framePushed = false;
   RootedField<LocationValue, 1> location(roots);
   RootedField<JSAtom*, 2> displayAtom(roots);
   RootedField<JSAtom*, 3> causeAtom(roots);
@@ -1565,6 +1566,7 @@ bool SavedStacks::insertFrames(JSContext* cx, MutableHandle<SavedFrame*> frame,
     // If we haven't yet seen the start, then don't add anything to the stack
     // chain.
     if (seenStartAt) {
+      framePushed = true;
       if (!stackChain.emplaceBack(location.source(), location.sourceId(),
                                   location.line(), location.column(),
                                   displayAtom,
@@ -1667,7 +1669,7 @@ bool SavedStacks::insertFrames(JSContext* cx, MutableHandle<SavedFrame*> frame,
       seenCached = false;
     }
 
-    if (capture.is<JS::MaxFrames>()) {
+    if (framePushed && capture.is<JS::MaxFrames>()) {
       capture.as<JS::MaxFrames>().maxFrames--;
     }
   }
