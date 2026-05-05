@@ -45,7 +45,7 @@
 }
 
 /* Show the right elements for the right connection states. */
-.site-information-popup[customroot=true] [when-customroot=true],
+.site-information-popup[customroot] [when-customroot],
 .site-information-popup[connection=not-secure] [when-connection~=not-secure],
 .site-information-popup[connection=secure-cert-user-overridden] [when-connection~=secure-cert-user-overridden],
 .site-information-popup[connection=secure-ev] [when-connection~=secure-ev],
@@ -236,6 +236,10 @@
 
 .site-information-popup[connection^="secure"] .identity-popup-security-connection {
   list-style-image: url(chrome://global/skin/icons/security.svg);
+}
+
+.site-information-popup[connection^="secure"][customroot] .identity-popup-security-connection {
+  list-style-image: url(chrome://global/skin/icons/security-custom-root.svg);
 }
 
 /* Use [isbroken] to make sure we don't show a warning lock on an http page. See Bug 1192162. */
@@ -911,6 +915,10 @@
     )
     & {
     list-style-image: url(chrome://global/skin/icons/security.svg);
+  }
+
+  #trustpanel-popup[connection^="secure"][customroot] & {
+    list-style-image: url(chrome://global/skin/icons/security-custom-root.svg);
   }
 
   #trustpanel-popup[connection="net-error-page"] & {

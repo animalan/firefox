@@ -392,6 +392,7 @@ class TrustPanel {
       onlyBaseDomain: true,
     });
     this.#popup.setAttribute("connection", this.#connectionState());
+    this.#popup.toggleAttribute("customroot", this.#hasCustomRoot());
     this.#popup.setAttribute(
       "tracking-protection",
       this.#trackingProtectionStatus()
@@ -579,7 +580,6 @@ class TrustPanel {
       { host: this.#host }
     );
 
-    let customRoot = this.#isSecureConnection ? this.#hasCustomRoot() : false;
     let connection = this.#connectionState();
     let mixedcontent = this.#mixedContentState();
     let ciphers = this.#ciphersState();
@@ -597,7 +597,7 @@ class TrustPanel {
       this.#updateAttribute(element, "ciphers", ciphers);
       this.#updateAttribute(element, "mixedcontent", mixedcontent);
       this.#updateAttribute(element, "isbroken", this.#isBrokenConnection);
-      this.#updateAttribute(element, "customroot", customRoot);
+      element.toggleAttribute("customroot", this.#hasCustomRoot());
       this.#updateAttribute(element, "httpsonlystatus", httpsOnlyStatus);
     }
 
@@ -879,9 +879,16 @@ class TrustPanel {
   /**
    * Returns whether the issuer of the current certificate chain is
    * built-in (returns false) or imported (returns true).
+   * Can only be true for secure connections and where there isn't a
+   * user-added error override.
    */
   #hasCustomRoot() {
-    return !this.#secInfo.isBuiltCertChainRootBuiltInRoot;
+    return (
+      this.#isSecureConnection &&
+      !this.#isCertUserOverridden &&
+      this.#secInfo &&
+      !this.#secInfo.isBuiltCertChainRootBuiltInRoot
+    );
   }
 
   /**
