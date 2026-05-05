@@ -326,10 +326,10 @@
   }
 }
 panel#feature-callout {
-  --panel-shadow: none;
-  --panel-shadow-margin: 6px;
-  --panel-arrow-space: calc(var(--panel-shadow-margin) + var(--arrow-visible-height) - 1.5px);
-  --panel-margin-offset: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-corner-distance) + (var(--arrow-width) / 2)));
+  --panel-box-shadow: none;
+  --panel-box-shadow-margin: 6px;
+  --panel-arrow-space: calc(var(--panel-box-shadow-margin) + var(--arrow-visible-height) - 1.5px);
+  --panel-margin-offset: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-corner-distance) + (var(--arrow-width) / 2)));
 }
 
 panel#feature-callout::part(content) {
@@ -337,7 +337,7 @@ panel#feature-callout::part(content) {
   border: 0;
   border-radius: 0;
   padding: 0;
-  margin: var(--panel-shadow-margin);
+  margin: var(--panel-box-shadow-margin);
   background: none;
   color: inherit;
   overflow: visible !important;
@@ -967,7 +967,7 @@ panel#feature-callout[arrow-position=top]::part(content) {
 }
 
 panel#feature-callout[arrow-position=top] {
-  margin-top: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-top: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=bottom] .arrow-box {
@@ -980,7 +980,7 @@ panel#feature-callout[arrow-position=bottom]::part(content) {
 }
 
 panel#feature-callout[arrow-position=bottom] {
-  margin-bottom: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-bottom: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=inline-end] .arrow-box {
@@ -993,7 +993,7 @@ panel#feature-callout[arrow-position=inline-end]::part(content) {
 }
 
 panel#feature-callout[arrow-position=inline-end] {
-  margin-inline-end: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-inline-end: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=inline-start] .arrow-box {
@@ -1006,7 +1006,7 @@ panel#feature-callout[arrow-position=inline-start]::part(content) {
 }
 
 panel#feature-callout[arrow-position=inline-start] {
-  margin-inline-start: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-inline-start: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=top-end] .arrow-box {
@@ -1019,7 +1019,7 @@ panel#feature-callout[arrow-position=top-end]::part(content) {
 }
 
 panel#feature-callout[arrow-position=top-end] {
-  margin-top: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-top: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=top-start] .arrow-box {
@@ -1032,7 +1032,7 @@ panel#feature-callout[arrow-position=top-start]::part(content) {
 }
 
 panel#feature-callout[arrow-position=top-start] {
-  margin-top: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-top: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=bottom-end] .arrow-box {
@@ -1045,7 +1045,7 @@ panel#feature-callout[arrow-position=bottom-end]::part(content) {
 }
 
 panel#feature-callout[arrow-position=bottom-end] {
-  margin-bottom: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-bottom: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=bottom-start] .arrow-box {
@@ -1058,7 +1058,7 @@ panel#feature-callout[arrow-position=bottom-start]::part(content) {
 }
 
 panel#feature-callout[arrow-position=bottom-start] {
-  margin-bottom: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-bottom: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=inline-end-top] .arrow-box {
@@ -1071,7 +1071,7 @@ panel#feature-callout[arrow-position=inline-end-top]::part(content) {
 }
 
 panel#feature-callout[arrow-position=inline-end-top] {
-  margin-inline-end: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-inline-end: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=inline-end-bottom] .arrow-box {
@@ -1084,7 +1084,7 @@ panel#feature-callout[arrow-position=inline-end-bottom]::part(content) {
 }
 
 panel#feature-callout[arrow-position=inline-end-bottom] {
-  margin-inline-end: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-inline-end: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=inline-start-top] .arrow-box {
@@ -1097,7 +1097,7 @@ panel#feature-callout[arrow-position=inline-start-top]::part(content) {
 }
 
 panel#feature-callout[arrow-position=inline-start-top] {
-  margin-inline-start: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-inline-start: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 #feature-callout[arrow-position=inline-start-bottom] .arrow-box {
@@ -1110,7 +1110,7 @@ panel#feature-callout[arrow-position=inline-start-bottom]::part(content) {
 }
 
 panel#feature-callout[arrow-position=inline-start-bottom] {
-  margin-inline-start: calc(-1 * (var(--panel-shadow-margin) + var(--arrow-overlap-magnitude)));
+  margin-inline-start: calc(-1 * (var(--panel-box-shadow-margin) + var(--arrow-overlap-magnitude)));
 }
 
 :root[ai-window] #feature-callout {
