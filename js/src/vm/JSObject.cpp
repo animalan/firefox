@@ -2279,7 +2279,8 @@ JS_PUBLIC_API bool js::ShouldIgnorePropertyDefinition(JSContext* cx,
         id == NameToId(cx->names().getNumberingSystems) ||
         id == NameToId(cx->names().getCollations) ||
         id == NameToId(cx->names().getCalendars) ||
-        id == NameToId(cx->names().getHourCycles)) {
+        id == NameToId(cx->names().getHourCycles) ||
+        id == NameToId(cx->names().getWeekInfo)) {
       return true;
     }
   }

@@ -176,6 +176,7 @@
   MACRO_(findIndex, "findIndex")                                               \
   MACRO_(findLast, "findLast")                                                 \
   MACRO_(findLastIndex, "findLastIndex")                                       \
+  MACRO_(firstDay, "firstDay")                                                 \
   MACRO_(firstDayOfWeek, "firstDayOfWeek")                                     \
   MACRO_(flags, "flags")                                                       \
   MACRO_(flat, "flat")                                                         \
@@ -213,6 +214,7 @@
   MACRO_(getPrototypeOf, "getPrototypeOf")                                     \
   MACRO_(getTextInfo, "getTextInfo")                                           \
   MACRO_(GetTypeError, "GetTypeError")                                         \
+  MACRO_(getWeekInfo, "getWeekInfo")                                           \
   MACRO_(global, "global")                                                     \
   MACRO_(globalThis, "globalThis")                                             \
   MACRO_(granularity, "granularity")                                           \
