@@ -77,3 +77,9 @@ class ResourceHandler(LogHandler):
 
     def crash(self, data):
         self.resources.crash(data)
+
+    def mozleak_object(self, data):
+        self.resources.mozleak_object(data)
+
+    def mozleak_total(self, data):
+        self.resources.mozleak_total(data)

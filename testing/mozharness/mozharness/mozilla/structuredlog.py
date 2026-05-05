@@ -118,6 +118,10 @@ class StructuredOutputParser(OutputParser):
             SystemResourceMonitor.test_status(data)
         elif action == "crash":
             SystemResourceMonitor.crash(data)
+        elif action == "mozleak_object":
+            SystemResourceMonitor.mozleak_object(data)
+        elif action == "mozleak_total":
+            SystemResourceMonitor.mozleak_total(data)
         elif action == "suite_start":
             SystemResourceMonitor.begin_marker("suite", data["source"])
         elif action == "suite_end":
