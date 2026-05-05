@@ -8,6 +8,7 @@
 
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/Assertions.h"
+#include "mozilla/intl/Collator.h"
 #include "mozilla/intl/Locale.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/Span.h"
@@ -1057,6 +1058,73 @@ static ArrayObject* CreateArrayFromValue(JSContext* cx,
 }
 
 /**
+ * CollationsOfLocale ( loc )
+ *
+ * Return the commonly used collations of |locale| in sorted order.
+ */
+static ArrayObject* CollationsOfLocale(JSContext* cx,
+                                       Handle<LocaleObject*> locale) {
+  // Step 1.
+  Rooted<JS::Value> preferred(cx);
+  if (!GetUnicodeExtension(cx, locale, "co", &preferred)) {
+    return nullptr;
+  }
+  MOZ_ASSERT(preferred.isString() || preferred.isUndefined());
+
+  if (preferred.isString()) {
+    return CreateArrayFromValue(cx, preferred);
+  }
+
+  // Steps 2-4.
+  auto langId = LanguageId::und();
+  if (auto parsedLangId = ToLanguageId(cx, locale->getBaseName())) {
+    if (parsedLangId->language() != "und") {
+      mozilla::Maybe<LanguageId> foundLocale;
+      if (!LookupMatcher(cx, AvailableLocaleKind::Collator, *parsedLangId,
+                         &foundLocale)) {
+        return nullptr;
+      }
+
+      if (foundLocale) {
+        langId = *foundLocale;
+      } else {
+        // Fallback to the default locale to match ICU4C:
+        //
+        // See also <https://github.com/tc39/ecma402/issues/1053>.
+        if (!DefaultLocale(cx, &langId)) {
+          return nullptr;
+        }
+      }
+    }
+  } else {
+    MOZ_ASSERT(GetLocaleLanguage(locale).Length() > 3);
+
+    if (!DefaultLocale(cx, &langId)) {
+      return nullptr;
+    }
+  }
+
+  Rooted<StringList> list(cx, StringList(cx));
+
+  auto langIdStr = langId.toString();
+  auto collations = mozilla::intl::Collator::GetBcp47KeywordValues();
+  for (auto collation : collations) {
+    if (mozilla::intl::Collator::IsSupportedCollation(langIdStr, collation)) {
+      auto* string = NewStringCopy<CanGC>(cx, collation);
+      if (!string) {
+        return nullptr;
+      }
+      if (!list.append(string)) {
+        return nullptr;
+      }
+    }
+  }
+
+  // Steps 5-6.
+  return CreateSortedArrayFromList(cx, &list);
+}
+
+/**
  * NumberingSystemsOfLocale ( loc )
  *
  * Return the commonly used numbering systems of |locale| in preference order.
@@ -1503,6 +1571,29 @@ static bool Locale_toSource(JSContext* cx, unsigned argc, Value* vp) {
 }
 
 #ifdef NIGHTLY_BUILD
+// Intl.Locale.prototype.getCollations ( )
+static bool Locale_getCollations(JSContext* cx, const CallArgs& args) {
+  MOZ_ASSERT(IsLocale(args.thisv()));
+
+  Rooted<LocaleObject*> locale(cx, &args.thisv().toObject().as<LocaleObject>());
+
+  // Step 3.
+  auto* result = CollationsOfLocale(cx, locale);
+  if (!result) {
+    return false;
+  }
+
+  args.rval().setObject(*result);
+  return true;
+}
+
+// Intl.Locale.prototype.getCollations ( )
+static bool Locale_getCollations(JSContext* cx, unsigned argc, Value* vp) {
+  // Steps 1-2.
+  CallArgs args = CallArgsFromVp(argc, vp);
+  return CallNonGenericMethod<IsLocale, Locale_getCollations>(cx, args);
+}
+
 // Intl.Locale.prototype.getNumberingSystems ( )
 static bool Locale_getNumberingSystems(JSContext* cx, const CallArgs& args) {
   MOZ_ASSERT(IsLocale(args.thisv()));
@@ -1567,6 +1658,7 @@ static const JSFunctionSpec locale_methods[] = {
     JS_FN("toString", Locale_toString, 0, 0),
     JS_FN("toSource", Locale_toSource, 0, 0),
 #ifdef NIGHTLY_BUILD
+    JS_FN("getCollations", Locale_getCollations, 0, 0),
     JS_FN("getNumberingSystems", Locale_getNumberingSystems, 0, 0),
     JS_FN("getTextInfo", Locale_getTextInfo, 0, 0),
 #endif

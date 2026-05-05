@@ -202,6 +202,7 @@
   MACRO_(GetBuiltinConstructor, "GetBuiltinConstructor")                       \
   MACRO_(GetBuiltinPrototype, "GetBuiltinPrototype")                           \
   MACRO_(GetBuiltinSymbol, "GetBuiltinSymbol")                                 \
+  MACRO_(getCollations, "getCollations")                                       \
   MACRO_(GetInternalError, "GetInternalError")                                 \
   MACRO_(GetIterator, "GetIterator")                                           \
   MACRO_(getNumberingSystems, "getNumberingSystems")                           \
