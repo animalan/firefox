@@ -441,7 +441,12 @@ let JSWINDOWACTORS = {
     },
 
     allFrames: true,
-    messageManagerGroups: ["browsers", "webext-browsers", ""],
+    messageManagerGroups: [
+      "browsers",
+      "webext-browsers",
+      "chatbot-browser",
+      "",
+    ],
   },
 
   ManifestMessages: {
