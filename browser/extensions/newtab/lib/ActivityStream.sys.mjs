@@ -1271,6 +1271,20 @@ export const PREFS_CONFIG = new Map([
     },
   ],
   [
+    "widgets.clocks.enabled",
+    {
+      title: "Enables the clock widget",
+      value: true,
+    },
+  ],
+  [
+    "widgets.system.clocks.enabled",
+    {
+      title: "Enables the clock widget experiment in Nimbus",
+      value: false,
+    },
+  ],
+  [
     "widgets.defaultSize",
     {
       title: "Default size for widgets (medium or large)",
@@ -1325,6 +1339,21 @@ export const PREFS_CONFIG = new Map([
       title:
         "Boolean flag for determining if a user has interacted with the sports widget",
       value: false,
+    },
+  ],
+  [
+    "widgets.clocks.size",
+    {
+      title: "Size of the clock widget (small, medium, or large)",
+      getValue: getDefaultWidgetSize,
+    },
+  ],
+  [
+    "widgets.clocks.hourFormat",
+    {
+      title:
+        "User override for clock widget hour format ('12', '24', or empty string to use locale default)",
+      value: "",
     },
   ],
   [

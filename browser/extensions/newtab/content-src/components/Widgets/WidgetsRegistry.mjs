@@ -89,6 +89,10 @@ export const PREF_WIDGETS_SPORTS_WIDGET_ENABLED =
 export const PREF_SPORTS_WIDGET_SIZE = "widgets.sportsWidget.size";
 export const PREF_WIDGETS_SYSTEM_SPORTS_WIDGET_ENABLED =
   "widgets.system.sportsWidget.enabled";
+export const PREF_WIDGETS_CLOCKS_ENABLED = "widgets.clocks.enabled";
+export const PREF_CLOCKS_SIZE = "widgets.clocks.size";
+export const PREF_WIDGETS_SYSTEM_CLOCKS_ENABLED =
+  "widgets.system.clocks.enabled";
 
 /**
  * @typedef {object} WidgetRegistryEntry
@@ -162,6 +166,20 @@ export const WIDGET_REGISTRY = [
     systemEnabledPref: PREF_WIDGETS_SYSTEM_SPORTS_WIDGET_ENABLED,
     trainhopEnabledKey: "sportsWidgetEnabled",
     trainhopSizeKey: "sportsWidgetSize",
+    trainhopSidebarKey: null,
+  },
+  {
+    id: "clocks",
+    telemetryName: "clocks",
+    order: 4,
+    enabledPref: PREF_WIDGETS_CLOCKS_ENABLED,
+    sizePref: PREF_CLOCKS_SIZE,
+    defaultSize: "medium",
+    validSizes: ["small", "medium", "large"],
+    hasSidebar: false,
+    systemEnabledPref: PREF_WIDGETS_SYSTEM_CLOCKS_ENABLED,
+    trainhopEnabledKey: "clocksEnabled",
+    trainhopSizeKey: "clocksSize",
     trainhopSidebarKey: null,
   },
 ];

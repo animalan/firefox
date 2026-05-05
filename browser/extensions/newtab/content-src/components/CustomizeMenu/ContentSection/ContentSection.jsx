@@ -45,6 +45,9 @@ export class ContentSection extends React.PureComponent {
         case "WIDGET_TIMER":
           widgetName = "focus_timer";
           break;
+        case "WIDGET_CLOCKS":
+          widgetName = "clocks";
+          break;
       }
 
       if (widgetName) {
@@ -168,6 +171,7 @@ export class ContentSection extends React.PureComponent {
       mayHaveTimerWidget,
       mayHaveListsWidget,
       mayHaveSportsWidget,
+      mayHaveClocksWidget,
       mayHaveWeatherForecast,
       openPreferences,
       wallpapersUserEnabled,
@@ -193,7 +197,7 @@ export class ContentSection extends React.PureComponent {
       showInferredPersonalizationEnabled,
       topSitesRowsCount,
     } = enabledSections;
-    const { timerEnabled, listsEnabled } = enabledWidgets;
+    const { timerEnabled, listsEnabled, clocksEnabled } = enabledWidgets;
 
     // @nova-cleanup(remove-conditional): Remove novaEnabled check and newtab-custom-stories-toggle, default to newtab-recommended-stories-toggle
     let pocketToggleL10nId;
@@ -277,6 +281,22 @@ export class ContentSection extends React.PureComponent {
                       data-preference="widgets.focusTimer.enabled"
                       data-event-source="WIDGET_TIMER"
                       data-l10n-id="newtab-custom-widget-timer-toggle"
+                    />
+                  </div>
+                )}
+
+                {/* Clocks */}
+                {mayHaveClocksWidget && (
+                  <div id="clocks-widget-section" className="section">
+                    {/** @backward-compat { version 150 } React 16 (cached page) uses ontoggle; React 19 uses onToggle. Remove onToggle once Firefox 150 reaches Release. */}
+                    <moz-toggle
+                      id="clocks-toggle"
+                      pressed={!!clocksEnabled}
+                      ontoggle={this.onPreferenceSelect}
+                      onToggle={this.onPreferenceSelect}
+                      data-preference="widgets.clocks.enabled"
+                      data-event-source="WIDGET_CLOCKS"
+                      data-l10n-id="newtab-custom-widget-clock-toggle"
                     />
                   </div>
                 )}
@@ -393,6 +413,7 @@ export class ContentSection extends React.PureComponent {
                             mayHaveTimerWidget={mayHaveTimerWidget}
                             mayHaveListsWidget={mayHaveListsWidget}
                             mayHaveSportsWidget={mayHaveSportsWidget}
+                            mayHaveClocksWidget={mayHaveClocksWidget}
                             mayHaveWeatherForecast={mayHaveWeatherForecast}
                             weatherDisplay={weatherDisplay}
                             setPref={setPref}

@@ -170,6 +170,7 @@ export class _CustomizeMenu extends React.PureComponent {
                 mayHaveTimerWidget={this.props.mayHaveTimerWidget}
                 mayHaveListsWidget={this.props.mayHaveListsWidget}
                 mayHaveSportsWidget={this.props.mayHaveSportsWidget}
+                mayHaveClocksWidget={this.props.mayHaveClocksWidget}
                 dispatch={this.props.dispatch}
                 exitEventFired={this.state.exitEventFired}
                 onSubpanelToggle={this.onSubpanelToggle}

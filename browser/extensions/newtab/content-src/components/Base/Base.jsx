@@ -805,11 +805,14 @@ export class BaseContent extends React.PureComponent {
     const nimbusWidgetsEnabled = prefs.widgetsConfig?.enabled;
     const nimbusListsEnabled = prefs.widgetsConfig?.listsEnabled;
     const nimbusTimerEnabled = prefs.widgetsConfig?.timerEnabled;
+    const nimbusClocksEnabled = prefs.widgetsConfig?.clocksEnabled;
     const nimbusWidgetsTrainhopEnabled = prefs.trainhopConfig?.widgets?.enabled;
     const nimbusListsTrainhopEnabled =
       prefs.trainhopConfig?.widgets?.listsEnabled;
     const nimbusTimerTrainhopEnabled =
       prefs.trainhopConfig?.widgets?.timerEnabled;
+    const nimbusClocksTrainhopEnabled =
+      prefs.trainhopConfig?.widgets?.clocksEnabled;
 
     const mayHaveWidgets =
       prefs["widgets.system.enabled"] ||
@@ -823,6 +826,10 @@ export class BaseContent extends React.PureComponent {
       prefs["widgets.system.focusTimer.enabled"] ||
       nimbusTimerEnabled ||
       nimbusTimerTrainhopEnabled;
+    const mayHaveClocksWidget =
+      prefs["widgets.system.clocks.enabled"] ||
+      nimbusClocksEnabled ||
+      nimbusClocksTrainhopEnabled;
 
     const mayHaveWeatherWidget =
       prefs["widgets.system.weather.enabled"] ||
@@ -840,6 +847,7 @@ export class BaseContent extends React.PureComponent {
     const enabledWidgets = {
       listsEnabled: prefs["widgets.lists.enabled"],
       timerEnabled: prefs["widgets.focusTimer.enabled"],
+      clocksEnabled: prefs["widgets.clocks.enabled"],
       weatherEnabled: novaEnabled
         ? prefs["widgets.weather.enabled"]
         : prefs.showWeather,
@@ -936,6 +944,7 @@ export class BaseContent extends React.PureComponent {
       const hasContentWidgets =
         (mayHaveListsWidget && enabledWidgets.listsEnabled) ||
         (mayHaveTimerWidget && enabledWidgets.timerEnabled) ||
+        (mayHaveClocksWidget && enabledWidgets.clocksEnabled) ||
         (mayHaveWeatherWidget &&
           enabledWidgets.weatherEnabled &&
           !weatherGoesToSidebar) ||
@@ -1085,6 +1094,7 @@ export class BaseContent extends React.PureComponent {
               mayHaveTimerWidget={mayHaveTimerWidget}
               mayHaveListsWidget={mayHaveListsWidget}
               mayHaveSportsWidget={mayHaveSportsWidget}
+              mayHaveClocksWidget={mayHaveClocksWidget}
               mayHaveWeatherForecast={
                 prefs["widgets.system.weatherForecast.enabled"]
               }
@@ -1244,6 +1254,7 @@ export class BaseContent extends React.PureComponent {
             mayHaveTimerWidget={mayHaveTimerWidget}
             mayHaveListsWidget={mayHaveListsWidget}
             mayHaveSportsWidget={mayHaveSportsWidget}
+            mayHaveClocksWidget={mayHaveClocksWidget}
             mayHaveWeatherForecast={
               prefs["widgets.system.weatherForecast.enabled"]
             }

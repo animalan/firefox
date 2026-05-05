@@ -21,6 +21,7 @@ function WidgetsManagementPanel({
   mayHaveTimerWidget,
   mayHaveListsWidget,
   mayHaveSportsWidget,
+  mayHaveClocksWidget,
   mayHaveWeatherForecast,
   weatherDisplay,
   setPref,
@@ -74,6 +75,9 @@ function WidgetsManagementPanel({
         case "WIDGET_SPORTS":
           widgetName = "sports_widget";
           break;
+        case "WIDGET_CLOCKS":
+          widgetName = "clocks";
+          break;
       }
 
       if (widgetName) {
@@ -110,7 +114,8 @@ function WidgetsManagementPanel({
   };
 
   const { weatherEnabled } = enabledSections;
-  const { timerEnabled, listsEnabled, sportsWidgetEnabled } = enabledWidgets;
+  const { timerEnabled, listsEnabled, sportsWidgetEnabled, clocksEnabled } =
+    enabledWidgets;
   const isRTL = typeof document !== "undefined" && document.dir === "rtl";
   // @backward-compat { version 151 } Switch to chrome://global/skin/icons/shaft-arrow-${dir}.svg
   // once Firefox 151 reaches Release (icons not available in toolkit until then).
@@ -191,6 +196,20 @@ function WidgetsManagementPanel({
                     data-event-source="WIDGET_SPORTS"
                     //  TODO: add in widget title fluent string when product gets back to us*
                     label="Sports"
+                  />
+                </div>
+              )}
+              {mayHaveClocksWidget && (
+                <div id="clocks-widget-section" className="section">
+                  {/** @backward-compat { version 150 } React 16 (cached page) uses ontoggle; React 19 uses onToggle. Remove onToggle once Firefox 150 reaches Release. */}
+                  <moz-toggle
+                    id="clocks-toggle"
+                    pressed={clocksEnabled || null}
+                    ontoggle={onToggleWidget}
+                    onToggle={onToggleWidget}
+                    data-preference="widgets.clocks.enabled"
+                    data-event-source="WIDGET_CLOCKS"
+                    data-l10n-id="newtab-custom-widget-clock-toggle"
                   />
                 </div>
               )}

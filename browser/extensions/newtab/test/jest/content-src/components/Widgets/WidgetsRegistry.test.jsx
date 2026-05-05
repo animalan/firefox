@@ -25,12 +25,9 @@ describe("getWidgetOrder", () => {
   });
 
   it("respects a fully-specified custom order", () => {
-    expect(getWidgetOrder("focusTimer,lists,weather,sportsWidget")).toEqual([
-      "focusTimer",
-      "lists",
-      "weather",
-      "sportsWidget",
-    ]);
+    expect(
+      getWidgetOrder("focusTimer,lists,weather,sportsWidget,clocks")
+    ).toEqual(["focusTimer", "lists", "weather", "sportsWidget", "clocks"]);
   });
 
   it("appends missing registry IDs after saved ones", () => {
@@ -39,6 +36,7 @@ describe("getWidgetOrder", () => {
       "lists",
       "focusTimer",
       "sportsWidget",
+      "clocks",
     ]);
   });
 
@@ -48,6 +46,7 @@ describe("getWidgetOrder", () => {
       "weather",
       "focusTimer",
       "sportsWidget",
+      "clocks",
     ]);
   });
 
@@ -59,7 +58,13 @@ describe("getWidgetOrder", () => {
 
   it("deduplicates repeated IDs in the saved pref", () => {
     const result = getWidgetOrder("focusTimer,focusTimer,lists");
-    expect(result).toEqual(["focusTimer", "lists", "weather", "sportsWidget"]);
+    expect(result).toEqual([
+      "focusTimer",
+      "lists",
+      "weather",
+      "sportsWidget",
+      "clocks",
+    ]);
     expect(result.length).toBe(registryIds.length);
   });
 });
@@ -74,7 +79,7 @@ describe("resolveWidgetOrder", () => {
   it("uses the user-saved order when set", () => {
     expect(
       resolveWidgetOrder({ [PREF_WIDGETS_ORDER]: "weather,lists,focusTimer" })
-    ).toEqual(["weather", "lists", "focusTimer", "sportsWidget"]);
+    ).toEqual(["weather", "lists", "focusTimer", "sportsWidget", "clocks"]);
   });
 
   it("uses trainhop order when no user order is saved", () => {
@@ -83,7 +88,7 @@ describe("resolveWidgetOrder", () => {
         [PREF_WIDGETS_ORDER]: "",
         trainhopConfig: { widgets: { order: "focusTimer,weather,lists" } },
       })
-    ).toEqual(["focusTimer", "weather", "lists", "sportsWidget"]);
+    ).toEqual(["focusTimer", "weather", "lists", "sportsWidget", "clocks"]);
   });
 
   it("user order takes precedence over trainhop order", () => {
@@ -92,7 +97,7 @@ describe("resolveWidgetOrder", () => {
         [PREF_WIDGETS_ORDER]: "lists,focusTimer,weather",
         trainhopConfig: { widgets: { order: "weather,lists,focusTimer" } },
       })
-    ).toEqual(["lists", "focusTimer", "weather", "sportsWidget"]);
+    ).toEqual(["lists", "focusTimer", "weather", "sportsWidget", "clocks"]);
   });
 });
 

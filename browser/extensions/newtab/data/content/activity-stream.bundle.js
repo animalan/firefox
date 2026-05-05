@@ -12018,6 +12018,10 @@ const PREF_WIDGETS_SPORTS_WIDGET_ENABLED =
 const PREF_SPORTS_WIDGET_SIZE = "widgets.sportsWidget.size";
 const PREF_WIDGETS_SYSTEM_SPORTS_WIDGET_ENABLED =
   "widgets.system.sportsWidget.enabled";
+const PREF_WIDGETS_CLOCKS_ENABLED = "widgets.clocks.enabled";
+const PREF_CLOCKS_SIZE = "widgets.clocks.size";
+const PREF_WIDGETS_SYSTEM_CLOCKS_ENABLED =
+  "widgets.system.clocks.enabled";
 
 /**
  * @typedef {object} WidgetRegistryEntry
@@ -12091,6 +12095,20 @@ const WIDGET_REGISTRY = [
     systemEnabledPref: PREF_WIDGETS_SYSTEM_SPORTS_WIDGET_ENABLED,
     trainhopEnabledKey: "sportsWidgetEnabled",
     trainhopSizeKey: "sportsWidgetSize",
+    trainhopSidebarKey: null,
+  },
+  {
+    id: "clocks",
+    telemetryName: "clocks",
+    order: 4,
+    enabledPref: PREF_WIDGETS_CLOCKS_ENABLED,
+    sizePref: PREF_CLOCKS_SIZE,
+    defaultSize: "medium",
+    validSizes: ["small", "medium", "large"],
+    hasSidebar: false,
+    systemEnabledPref: PREF_WIDGETS_SYSTEM_CLOCKS_ENABLED,
+    trainhopEnabledKey: "clocksEnabled",
+    trainhopSizeKey: "clocksSize",
     trainhopSidebarKey: null,
   },
 ];
@@ -16013,6 +16031,631 @@ function SportsWidget_SportsWidget({
   })));
 }
 
+;// CONCATENATED MODULE: ./content-src/components/Widgets/Clocks/ClocksHelpers.mjs
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// DEV scaffolding for the read-only landing. Delete this and every line
+// tagged `DEV scaffolding` below in the follow-up edit patch, alongside
+// the add/edit/remove flows.
+const DEV_SCAFFOLDING = true;
+
+// DEV scaffolding — "Head office" exercises the 11-char max.
+const DEFAULT_LABELS = ["Home", "Head office", "Label 3", "Label 4"];
+
+// DEV scaffolding — fixed-order palette so decorateDefaultZones assigns
+// distinct tones. Each name needs a matching `.clocks-chip-<name>` in
+// _Clocks.scss; also drives isValidPaletteName's allow-list.
+const LABEL_PALETTE = [
+  "cyan",
+  "green",
+  "yellow",
+  "purple",
+  "red",
+  "orange",
+  "blue",
+  "pink",
+  "violet",
+  "neutral",
+];
+
+/**
+ * Allow-list for `clock.labelColor` before interpolating it into a
+ * `clocks-chip-<name>` class, so a malformed value can't inject classes.
+ */
+function isValidPaletteName(paletteName) {
+  return typeof paletteName === "string" && LABEL_PALETTE.includes(paletteName);
+}
+
+// Read-only landing defaults; the edit patch will swap this for a
+// pref/Redux source (widgets.clocks.zones).
+const FIXED_DEFAULT_ZONES = [
+  "Europe/Berlin",
+  "Australia/Sydney",
+  "America/New_York",
+  "America/Los_Angeles",
+];
+
+// IATA city codes for cities where the code differs from slice(0,3).
+// Cities whose code matches that slice (e.g. Sydney -> SYD, Berlin ->
+// BER) are omitted; getCityAbbreviation falls back to the slice.
+// Both legacy and canonical spellings (Kiev/Kyiv, Calcutta/Kolkata,
+// Saigon/Ho Chi Minh) are present — the user's OS may report either,
+// depending on its tzdata version.
+const CITY_IATA_CODES = {
+  // North America
+  Detroit: "DTW",
+  Halifax: "YHZ",
+  Honolulu: "HNL",
+  "Los Angeles": "LAX",
+  "New York": "NYC",
+  Phoenix: "PHX",
+  "San Francisco": "SFO",
+  Toronto: "YTO",
+  Vancouver: "YVR",
+  // South America
+  Santiago: "SCL",
+  // Europe
+  Copenhagen: "CPH",
+  Geneva: "GVA",
+  Kiev: "IEV",
+  Kyiv: "IEV",
+  Moscow: "MOW",
+  Prague: "PRG",
+  Warsaw: "WAW",
+  Zurich: "ZRH",
+  // Asia
+  Bangkok: "BKK",
+  Beijing: "BJS",
+  Beirut: "BEY",
+  Calcutta: "CCU",
+  Kolkata: "CCU",
+  Colombo: "CMB",
+  Dhaka: "DAC",
+  Dubai: "DXB",
+  "Ho Chi Minh": "SGN",
+  "Hong Kong": "HKG",
+  Jakarta: "JKT",
+  Jerusalem: "JRS",
+  Karachi: "KHI",
+  "Kuala Lumpur": "KUL",
+  Manila: "MNL",
+  Riyadh: "RUH",
+  Saigon: "SGN",
+  Seoul: "SEL",
+  Taipei: "TPE",
+  Tehran: "THR",
+  "Tel Aviv": "TLV",
+  Tokyo: "TYO",
+  // Africa
+  Johannesburg: "JNB",
+  Lagos: "LOS",
+  Nairobi: "NBO",
+  // Australia & Pacific
+  Adelaide: "ADL",
+  Auckland: "AKL",
+  Brisbane: "BNE",
+};
+
+function is12HourLocale(locale) {
+  try {
+    const opts = new Intl.DateTimeFormat(locale, {
+      hour: "numeric",
+    }).resolvedOptions();
+    if (typeof opts.hour12 === "boolean") {
+      return opts.hour12;
+    }
+    // On older platforms `hour12` may be missing; derive it from `hourCycle`.
+    return opts.hourCycle === "h11" || opts.hourCycle === "h12";
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Resolves 12h vs 24h. Pref ("12"/"24") wins over locale default.
+ */
+function shouldUse12HourTimeFormat({ prefValue, locale }) {
+  if (prefValue === "12") {
+    return true;
+  }
+  if (prefValue === "24") {
+    return false;
+  }
+  return is12HourLocale(locale);
+}
+
+/**
+ * Read-only landing zones: local first, then fixed samples, deduped, cap 4.
+ */
+function getDefaultTimeZones() {
+  let localTz = null;
+  try {
+    localTz = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (e) {
+    // Some environments can't resolve the local zone; fall back to the fixed set.
+  }
+  const result = [];
+  const seen = new Set();
+  if (localTz) {
+    result.push(localTz);
+    seen.add(localTz);
+  }
+  for (const tz of FIXED_DEFAULT_ZONES) {
+    if (result.length >= 4) {
+      break;
+    }
+    if (!seen.has(tz)) {
+      result.push(tz);
+      seen.add(tz);
+    }
+  }
+  return result;
+}
+
+/**
+ * DEV scaffolding. Positional placeholder labels/palette; the edit patch
+ * will replace this with per-zone user data and drop DEV_SCAFFOLDING.
+ */
+function decorateDefaultZones(timeZones) {
+  return timeZones.map((timeZone, i) => ({
+    timeZone,
+    label: DEV_SCAFFOLDING ? (DEFAULT_LABELS[i] ?? null) : null,
+    labelColor: DEV_SCAFFOLDING ? (LABEL_PALETTE[i] ?? null) : null,
+  }));
+}
+
+/**
+ * Convenience wrapper returning the decorated default zones ready to render.
+ */
+function buildDefaultZones() {
+  return decorateDefaultZones(getDefaultTimeZones());
+}
+
+/**
+ * Derives a human-readable city from an IANA zone id
+ * (e.g. "America/Los_Angeles" -> "Los Angeles").
+ */
+function getCityFromTimeZone(tz) {
+  if (!tz) {
+    return "";
+  }
+  const segments = tz.split("/");
+  const last = segments[segments.length - 1];
+  return last.replace(/_/g, " ");
+}
+
+/**
+ * IATA code for known cities, else first 3 non-whitespace chars upcased.
+ * Stripping whitespace avoids trailing space on multi-word names.
+ */
+function getCityAbbreviation(cityName) {
+  if (!cityName) {
+    return "";
+  }
+  if (CITY_IATA_CODES[cityName]) {
+    return CITY_IATA_CODES[cityName];
+  }
+  return cityName.replace(/\s/g, "").slice(0, 3).toUpperCase();
+}
+
+/**
+ * Returns the short name for a time zone at a given moment, like "CET"
+ * or "EST". Pass the same `date` you use for formatTime: DST-observing
+ * zones flip between two abbreviations (CET/CEST, EST/EDT) at the
+ * transition boundary, and using a mismatched date can leave the
+ * displayed time and the label out of sync. Falls back to the zone id
+ * (e.g. "Europe/Berlin") if the platform can't produce a short name.
+ */
+function getTimeZoneAbbreviation(tz, locale, date = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat(locale, {
+      timeZone: tz,
+      timeZoneName: "short",
+    }).formatToParts(date);
+    const part = parts.find(p => p.type === "timeZoneName");
+    return part?.value ?? tz;
+  } catch (e) {
+    return tz;
+  }
+}
+
+/**
+ * Formats Date as hh:mm in a zone; "" if the zone can't be formatted.
+ */
+function ClocksHelpers_formatTime(date, tz, locale, hour12) {
+  try {
+    const opts = {
+      timeZone: tz,
+      hour: "numeric",
+      minute: "2-digit",
+    };
+    if (typeof hour12 === "boolean") {
+      opts.hour12 = hour12;
+    }
+    return new Intl.DateTimeFormat(locale, opts).format(date);
+  } catch (e) {
+    return "";
+  }
+}
+
+/**
+ * Screen-reader label. Prepends label when present; omits the time until
+ * it becomes available.
+ */
+function buildClocksRowAriaLabel(city, tzLabel, timeDisplay, label) {
+  const head = label ? `${label}, ${city}, ${tzLabel}` : `${city}, ${tzLabel}`;
+  return timeDisplay ? `${head}, ${timeDisplay}` : head;
+}
+
+;// CONCATENATED MODULE: ./content-src/components/Widgets/Clocks/ClocksRow.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+
+
+
+/**
+ * Single row for the Clocks widget; parent pre-computes per-row flags.
+ *
+ * @param {object} props
+ * @param {{timeZone: string, label: string|null, labelColor: string|null}} props.clock
+ * @param {string} [props.locale]
+ * @param {Date|null} props.now Null before the first tick.
+ * @param {boolean} props.shouldAbbreviate
+ * @param {boolean} props.showLabel
+ * @param {boolean} [props.use12HourFormat] Overrides locale default.
+ */
+function ClocksRow({
+  clock,
+  locale,
+  now,
+  shouldAbbreviate,
+  showLabel,
+  use12HourFormat
+}) {
+  const city = getCityFromTimeZone(clock.timeZone);
+  const cityDisplay = shouldAbbreviate ? getCityAbbreviation(city) : city;
+  // Pass `now` so the TZ label and time resolve from the same instant;
+  // otherwise they can disagree across a DST boundary.
+  const tzLabel = getTimeZoneAbbreviation(clock.timeZone, locale, now ?? undefined);
+  const timeDisplay = now ? ClocksHelpers_formatTime(now, clock.timeZone, locale, use12HourFormat) : "";
+
+  // aria-label uses the full city name even when the UI abbreviates.
+  const ariaLabel = buildClocksRowAriaLabel(city, tzLabel, timeDisplay, clock.label);
+
+  // Allow-list labelColor before interpolating; otherwise a malformed
+  // value could inject unintended classes into the DOM.
+  const chipClassName = isValidPaletteName(clock.labelColor) ? `clocks-label-chip clocks-chip-${clock.labelColor}` : "clocks-label-chip";
+  return /*#__PURE__*/external_React_default().createElement("li", {
+    className: "clocks-row",
+    "data-timezone": clock.timeZone,
+    "aria-label": ariaLabel
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "clocks-meta",
+    "aria-hidden": "true"
+  }, showLabel && !!clock.label && /*#__PURE__*/external_React_default().createElement("span", {
+    className: chipClassName
+  }, clock.label), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "clocks-label"
+  }, /*#__PURE__*/external_React_default().createElement("span", {
+    className: "clocks-city"
+  }, cityDisplay), /*#__PURE__*/external_React_default().createElement("span", {
+    className: "clocks-timezone"
+  }, tzLabel))), /*#__PURE__*/external_React_default().createElement("time", {
+    className: "clocks-time",
+    "aria-hidden": "true",
+    dateTime: now ? now.toISOString() : undefined
+  }, timeDisplay));
+}
+;// CONCATENATED MODULE: ./content-src/components/Widgets/Clocks/Clocks.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+
+
+
+
+
+
+const Clocks_USER_ACTION_TYPES = {
+  CHANGE_SIZE: "change_size",
+  CHANGE_HOUR_FORMAT: "change_hour_format",
+  LEARN_MORE: "learn_more"
+};
+const Clocks_PREF_CLOCKS_SIZE = "widgets.clocks.size";
+const PREF_CLOCKS_HOUR_FORMAT = "widgets.clocks.hourFormat";
+
+/**
+ * Nova-only World Clocks widget. Up to four clocks with a minute-aligned
+ * tick, hover toolbar, and context menu.
+ *
+ * @param {object} props
+ * @param {Function} props.dispatch
+ * @param {"small"|"medium"|"large"} [props.size] Defaults to "medium".
+ */
+function Clocks({
+  dispatch,
+  size
+}) {
+  // The edit patch will add selectors for widgets.clocks.zones.
+  const hourFormatPref = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values[PREF_CLOCKS_HOUR_FORMAT]);
+  const [now, setNow] = (0,external_React_namespaceObject.useState)(null);
+  const impressionFired = (0,external_React_namespaceObject.useRef)(false);
+  const sizeSubmenuRef = (0,external_React_namespaceObject.useRef)(null);
+  const contextMenuRef = (0,external_React_namespaceObject.useRef)(null);
+  // Suppress hover-reveal after a menu action; cleared on mouseleave.
+  const [isDismissed, setIsDismissed] = (0,external_React_namespaceObject.useState)(false);
+  // DEV scaffolding — clock-count switcher state.
+  const [devClockCount, setDevClockCount] = (0,external_React_namespaceObject.useState)(4);
+  const devCountSubmenuRef = (0,external_React_namespaceObject.useRef)(null);
+  // DEV scaffolding — labels on/off state.
+  const [devLabelsOn, setDevLabelsOn] = (0,external_React_namespaceObject.useState)(true);
+
+  // Blur the trigger after hide() returns focus there; otherwise
+  // :focus-within keeps the overlay open.
+  const closeContextMenu = (0,external_React_namespaceObject.useCallback)(() => {
+    contextMenuRef.current?.hide?.();
+    setIsDismissed(true);
+    // Defer a frame so we don't race hide()'s synchronous focus return.
+    requestAnimationFrame(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    });
+  }, []);
+  const currentSize = size || "medium";
+  const locale = typeof navigator !== "undefined" ? navigator.language : undefined;
+  const use12HourFormat = shouldUse12HourTimeFormat({
+    prefValue: hourFormatPref,
+    locale
+  });
+
+  // Each tick realigns to the next minute, so paused tabs or device sleep
+  // can't compound drift. `now` starts null so the first render stays
+  // stable for prerender/hydration.
+  (0,external_React_namespaceObject.useEffect)(() => {
+    let timeoutId;
+    const tick = () => {
+      setNow(new Date());
+      timeoutId = setTimeout(tick, 60_000 - Date.now() % 60_000);
+    };
+    tick();
+    return () => clearTimeout(timeoutId);
+  }, []);
+  const handleIntersection = (0,external_React_namespaceObject.useCallback)(() => {
+    if (impressionFired.current) {
+      return;
+    }
+    impressionFired.current = true;
+    dispatch(actionCreators.AlsoToMain({
+      type: actionTypes.WIDGETS_IMPRESSION,
+      data: {
+        widget_name: "clocks",
+        widget_size: currentSize
+      }
+    }));
+  }, [dispatch, currentSize]);
+  const clocksRef = useIntersectionObserver(handleIntersection);
+  const handleChangeSize = (0,external_React_namespaceObject.useCallback)(newSize => {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.SET_PREF,
+        data: {
+          name: Clocks_PREF_CLOCKS_SIZE,
+          value: newSize
+        }
+      }));
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "clocks",
+          widget_source: "context_menu",
+          user_action: Clocks_USER_ACTION_TYPES.CHANGE_SIZE,
+          action_value: newSize,
+          widget_size: newSize
+        }
+      }));
+    });
+    closeContextMenu();
+  }, [dispatch, closeContextMenu]);
+
+  // moz-panel-list moves the submenu into shadow DOM, so React synthetic
+  // events don't reach inner items. Listen directly and use composedPath.
+  (0,external_React_namespaceObject.useEffect)(() => {
+    const el = sizeSubmenuRef.current;
+    if (!el) {
+      return undefined;
+    }
+    const listener = e => {
+      const item = e.composedPath().find(node => node.dataset?.size);
+      if (item) {
+        handleChangeSize(item.dataset.size);
+      }
+    };
+    el.addEventListener("click", listener);
+    return () => el.removeEventListener("click", listener);
+  }, [handleChangeSize]);
+
+  // DEV scaffolding — clock-count switcher click handler (shadow-DOM trick).
+  (0,external_React_namespaceObject.useEffect)(() => {
+    if (!DEV_SCAFFOLDING) {
+      return undefined;
+    }
+    const el = devCountSubmenuRef.current;
+    if (!el) {
+      return undefined;
+    }
+    const listener = e => {
+      const item = e.composedPath().find(node => node.dataset?.count);
+      if (item) {
+        setDevClockCount(parseInt(item.dataset.count, 10));
+        closeContextMenu();
+      }
+    };
+    el.addEventListener("click", listener);
+    return () => el.removeEventListener("click", listener);
+  }, [closeContextMenu]);
+  function handleToggleHourFormat() {
+    const nextFormat = use12HourFormat ? "24" : "12";
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.SET_PREF,
+        data: {
+          name: PREF_CLOCKS_HOUR_FORMAT,
+          value: nextFormat
+        }
+      }));
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "clocks",
+          widget_source: "context_menu",
+          user_action: Clocks_USER_ACTION_TYPES.CHANGE_HOUR_FORMAT,
+          action_value: nextFormat,
+          widget_size: currentSize
+        }
+      }));
+    });
+    closeContextMenu();
+  }
+  function handleHide() {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.SET_PREF,
+        data: {
+          name: "widgets.clocks.enabled",
+          value: false
+        }
+      }));
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_ENABLED,
+        data: {
+          widget_name: "clocks",
+          widget_source: "context_menu",
+          enabled: false,
+          widget_size: currentSize
+        }
+      }));
+    });
+    closeContextMenu();
+  }
+  function handleLearnMore() {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.OPEN_LINK,
+        data: {
+          url: "https://support.mozilla.org/kb/firefox-new-tab-widgets"
+        }
+      }));
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "clocks",
+          widget_source: "context_menu",
+          user_action: Clocks_USER_ACTION_TYPES.LEARN_MORE,
+          widget_size: currentSize
+        }
+      }));
+    });
+    closeContextMenu();
+  }
+
+  // DEV scaffolding. Production form: `useMemo(() => buildDefaultZones(), [])`.
+  const clocks = (0,external_React_namespaceObject.useMemo)(() => {
+    const zones = buildDefaultZones();
+    return DEV_SCAFFOLDING ? zones.slice(0, devClockCount) : zones;
+  }, [devClockCount]);
+  const isHero = clocks.length === 1;
+  return /*#__PURE__*/external_React_default().createElement("article", {
+    className: `clocks-widget col-4 ${currentSize}-widget${isHero ? " is-hero" : ""}${isDismissed ? " is-dismissed" : ""}`,
+    "data-clock-count": clocks.length,
+    onMouseLeave: () => setIsDismissed(false),
+    ref: el => {
+      clocksRef.current = [el];
+    }
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "widget-toolbar"
+  }, /*#__PURE__*/external_React_default().createElement("moz-button", {
+    className: "clocks-add-button",
+    type: "icon primary",
+    size: "small",
+    iconSrc: "chrome://global/skin/icons/plus.svg",
+    "data-l10n-id": "newtab-clock-widget-button-add",
+    disabled: clocks.length >= 4
+  }), /*#__PURE__*/external_React_default().createElement("moz-button", {
+    className: "clocks-context-menu-button",
+    "data-l10n-id": "newtab-clock-widget-menu-button",
+    iconSrc: "chrome://global/skin/icons/more.svg",
+    menuId: "clocks-widget-context-menu",
+    type: "icon ghost",
+    size: "small"
+  }), /*#__PURE__*/external_React_default().createElement("panel-list", {
+    ref: contextMenuRef,
+    id: "clocks-widget-context-menu"
+  }, /*#__PURE__*/external_React_default().createElement("panel-item", {
+    submenu: "clocks-size-submenu"
+  }, /*#__PURE__*/external_React_default().createElement("span", {
+    "data-l10n-id": "newtab-widget-menu-change-size"
+  }), /*#__PURE__*/external_React_default().createElement("panel-list", {
+    ref: sizeSubmenuRef,
+    slot: "submenu",
+    id: "clocks-size-submenu"
+  }, ["small", "medium", "large"].map(s => /*#__PURE__*/external_React_default().createElement("panel-item", {
+    key: s,
+    type: "checkbox",
+    checked: currentSize === s,
+    "data-size": s,
+    "data-l10n-id": `newtab-widget-size-${s}`
+  })))), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": use12HourFormat ? "newtab-clock-widget-menu-switch-to-24h" : "newtab-clock-widget-menu-switch-to-12h",
+    onClick: handleToggleHourFormat
+  }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": "newtab-clock-widget-menu-hide",
+    onClick: handleHide
+  }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": "newtab-clock-widget-menu-learn-more",
+    onClick: handleLearnMore
+  }), DEV_SCAFFOLDING && /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("panel-item", {
+    submenu: "clocks-dev-count-submenu"
+  }, /*#__PURE__*/external_React_default().createElement("span", null, "DEV: Show N clocks"), /*#__PURE__*/external_React_default().createElement("panel-list", {
+    ref: devCountSubmenuRef,
+    slot: "submenu",
+    id: "clocks-dev-count-submenu"
+  }, [1, 2, 3, 4].map(n => /*#__PURE__*/external_React_default().createElement("panel-item", {
+    key: n,
+    type: "checkbox",
+    checked: devClockCount === n,
+    "data-count": n
+  }, n === 1 ? "1 clock" : `${n} clocks`)))), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    type: "checkbox",
+    checked: devLabelsOn,
+    onClick: () => {
+      setDevLabelsOn(v => !v);
+      closeContextMenu();
+    }
+  }, "DEV: Show labels")))), /*#__PURE__*/external_React_default().createElement("ul", {
+    className: "clocks-list"
+  }, clocks.map(c => {
+    // Medium columns too narrow at 3+ clocks; Small always abbreviates.
+    const shouldAbbreviate = currentSize === "small" || currentSize === "medium" && clocks.length >= 3;
+    const labelsOn = DEV_SCAFFOLDING ? devLabelsOn : true;
+    const showLabel = currentSize === "large" && !!c.label && labelsOn;
+    return /*#__PURE__*/external_React_default().createElement(ClocksRow, {
+      key: c.timeZone,
+      clock: c,
+      locale: locale,
+      now: now,
+      shouldAbbreviate: shouldAbbreviate,
+      showLabel: showLabel,
+      use12HourFormat: use12HourFormat
+    });
+  })));
+}
+
 ;// CONCATENATED MODULE: ./content-src/components/Widgets/WidgetsComponentRegistry.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -16025,7 +16668,9 @@ function SportsWidget_SportsWidget({
 
 
 
+
 const weatherEntry = WIDGET_REGISTRY.find(w => w.id === "weather");
+const clocksEntry = WIDGET_REGISTRY.find(w => w.id === "clocks");
 function WeatherRowWidget({
   dispatch
 }) {
@@ -16048,11 +16693,22 @@ function WeatherSidebarWidget({
     size: "small"
   });
 }
+function ClocksRowWidget({
+  dispatch
+}) {
+  const prefs = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values);
+  const clocksSize = resolveWidgetSize(clocksEntry, prefs);
+  return /*#__PURE__*/external_React_default().createElement(Clocks, {
+    dispatch: dispatch,
+    size: clocksSize
+  });
+}
 const WIDGET_ROW_COMPONENTS = {
   lists: Lists,
   focusTimer: FocusTimer,
   weather: WeatherRowWidget,
-  sportsWidget: SportsWidget_SportsWidget
+  sportsWidget: SportsWidget_SportsWidget,
+  clocks: ClocksRowWidget
 };
 const WIDGET_SIDEBAR_COMPONENTS = {
   weather: WeatherSidebarWidget
@@ -16141,7 +16797,7 @@ function renderWeather({
   });
 }
 
-// eslint-disable-next-line complexity
+// eslint-disable-next-line complexity, max-statements
 function Widgets() {
   const prefs = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values);
   const weatherData = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Weather);
@@ -16202,7 +16858,8 @@ function Widgets() {
     lists: listsEnabled,
     focusTimer: timerEnabled,
     weather: weatherEnabled && !weatherGoesToSidebar,
-    sportsWidget: isWidgetEnabled(WIDGET_REGISTRY.find(w => w.id === "sportsWidget"), prefs, widgetsEnabled)
+    sportsWidget: isWidgetEnabled(WIDGET_REGISTRY.find(w => w.id === "sportsWidget"), prefs, widgetsEnabled),
+    clocks: isWidgetEnabled(WIDGET_REGISTRY.find(w => w.id === "clocks"), prefs, widgetsEnabled)
   };
   const widgetOrder = resolveWidgetOrder(prefs);
   const anyWidgetInRow = WIDGET_REGISTRY.some(w => widgetEnabledMap[w.id]) || !novaEnabled && weatherForecastEnabled;
@@ -18007,6 +18664,7 @@ function WidgetsManagementPanel({
   mayHaveTimerWidget,
   mayHaveListsWidget,
   mayHaveSportsWidget,
+  mayHaveClocksWidget,
   mayHaveWeatherForecast,
   weatherDisplay,
   setPref
@@ -18060,6 +18718,9 @@ function WidgetsManagementPanel({
         case "WIDGET_SPORTS":
           widgetName = "sports_widget";
           break;
+        case "WIDGET_CLOCKS":
+          widgetName = "clocks";
+          break;
       }
       if (widgetName) {
         const {
@@ -18095,7 +18756,8 @@ function WidgetsManagementPanel({
   const {
     timerEnabled,
     listsEnabled,
-    sportsWidgetEnabled
+    sportsWidgetEnabled,
+    clocksEnabled
   } = enabledWidgets;
   const isRTL = typeof document !== "undefined" && document.dir === "rtl";
   // @backward-compat { version 151 } Switch to chrome://global/skin/icons/shaft-arrow-${dir}.svg
@@ -18174,6 +18836,17 @@ function WidgetsManagementPanel({
     //  TODO: add in widget title fluent string when product gets back to us*
     ,
     label: "Sports"
+  })), mayHaveClocksWidget && /*#__PURE__*/external_React_default().createElement("div", {
+    id: "clocks-widget-section",
+    className: "section"
+  }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
+    id: "clocks-toggle",
+    pressed: clocksEnabled || null,
+    ontoggle: onToggleWidget,
+    onToggle: onToggleWidget,
+    "data-preference": "widgets.clocks.enabled",
+    "data-event-source": "WIDGET_CLOCKS",
+    "data-l10n-id": "newtab-custom-widget-clock-toggle"
   })))))));
 }
 
@@ -18224,6 +18897,9 @@ class ContentSection extends (external_React_default()).PureComponent {
           break;
         case "WIDGET_TIMER":
           widgetName = "focus_timer";
+          break;
+        case "WIDGET_CLOCKS":
+          widgetName = "clocks";
           break;
       }
       if (widgetName) {
@@ -18325,6 +19001,7 @@ class ContentSection extends (external_React_default()).PureComponent {
       mayHaveTimerWidget,
       mayHaveListsWidget,
       mayHaveSportsWidget,
+      mayHaveClocksWidget,
       mayHaveWeatherForecast,
       openPreferences,
       wallpapersUserEnabled,
@@ -18352,7 +19029,8 @@ class ContentSection extends (external_React_default()).PureComponent {
     } = enabledSections;
     const {
       timerEnabled,
-      listsEnabled
+      listsEnabled,
+      clocksEnabled
     } = enabledWidgets;
 
     // @nova-cleanup(remove-conditional): Remove novaEnabled check and newtab-custom-stories-toggle, default to newtab-recommended-stories-toggle
@@ -18420,6 +19098,17 @@ class ContentSection extends (external_React_default()).PureComponent {
       "data-preference": "widgets.focusTimer.enabled",
       "data-event-source": "WIDGET_TIMER",
       "data-l10n-id": "newtab-custom-widget-timer-toggle"
+    })), mayHaveClocksWidget && /*#__PURE__*/external_React_default().createElement("div", {
+      id: "clocks-widget-section",
+      className: "section"
+    }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
+      id: "clocks-toggle",
+      pressed: !!clocksEnabled,
+      ontoggle: this.onPreferenceSelect,
+      onToggle: this.onPreferenceSelect,
+      "data-preference": "widgets.clocks.enabled",
+      "data-event-source": "WIDGET_CLOCKS",
+      "data-l10n-id": "newtab-custom-widget-clock-toggle"
     })))), /*#__PURE__*/external_React_default().createElement("div", {
       className: "settings-toggles"
     },
@@ -18508,6 +19197,7 @@ class ContentSection extends (external_React_default()).PureComponent {
       mayHaveTimerWidget: mayHaveTimerWidget,
       mayHaveListsWidget: mayHaveListsWidget,
       mayHaveSportsWidget: mayHaveSportsWidget,
+      mayHaveClocksWidget: mayHaveClocksWidget,
       mayHaveWeatherForecast: mayHaveWeatherForecast,
       weatherDisplay: weatherDisplay,
       setPref: setPref,
@@ -18732,6 +19422,7 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
       mayHaveTimerWidget: this.props.mayHaveTimerWidget,
       mayHaveListsWidget: this.props.mayHaveListsWidget,
       mayHaveSportsWidget: this.props.mayHaveSportsWidget,
+      mayHaveClocksWidget: this.props.mayHaveClocksWidget,
       dispatch: this.props.dispatch,
       exitEventFired: this.state.exitEventFired,
       onSubpanelToggle: this.onSubpanelToggle,
@@ -20887,12 +21578,15 @@ class BaseContent extends (external_React_default()).PureComponent {
     const nimbusWidgetsEnabled = prefs.widgetsConfig?.enabled;
     const nimbusListsEnabled = prefs.widgetsConfig?.listsEnabled;
     const nimbusTimerEnabled = prefs.widgetsConfig?.timerEnabled;
+    const nimbusClocksEnabled = prefs.widgetsConfig?.clocksEnabled;
     const nimbusWidgetsTrainhopEnabled = prefs.trainhopConfig?.widgets?.enabled;
     const nimbusListsTrainhopEnabled = prefs.trainhopConfig?.widgets?.listsEnabled;
     const nimbusTimerTrainhopEnabled = prefs.trainhopConfig?.widgets?.timerEnabled;
+    const nimbusClocksTrainhopEnabled = prefs.trainhopConfig?.widgets?.clocksEnabled;
     const mayHaveWidgets = prefs["widgets.system.enabled"] || nimbusWidgetsEnabled || nimbusWidgetsTrainhopEnabled;
     const mayHaveListsWidget = prefs["widgets.system.lists.enabled"] || nimbusListsEnabled || nimbusListsTrainhopEnabled;
     const mayHaveTimerWidget = prefs["widgets.system.focusTimer.enabled"] || nimbusTimerEnabled || nimbusTimerTrainhopEnabled;
+    const mayHaveClocksWidget = prefs["widgets.system.clocks.enabled"] || nimbusClocksEnabled || nimbusClocksTrainhopEnabled;
     const mayHaveWeatherWidget = prefs["widgets.system.weather.enabled"] || prefs.trainhopConfig?.widgets?.weatherEnabled;
     const nimbusSportsWidgetEnabled = prefs.widgetsConfig?.sportsWidgetEnabled;
     const nimbusSportsWidgetTrainhopEnabled = prefs.trainhopConfig?.widgets?.sportsWidgetEnabled;
@@ -20902,6 +21596,7 @@ class BaseContent extends (external_React_default()).PureComponent {
     const enabledWidgets = {
       listsEnabled: prefs["widgets.lists.enabled"],
       timerEnabled: prefs["widgets.focusTimer.enabled"],
+      clocksEnabled: prefs["widgets.clocks.enabled"],
       weatherEnabled: novaEnabled ? prefs["widgets.weather.enabled"] : prefs.showWeather,
       sportsWidgetEnabled: prefs["widgets.sportsWidget.enabled"],
       widgetsMaximized: prefs["widgets.maximized"],
@@ -20948,7 +21643,7 @@ class BaseContent extends (external_React_default()).PureComponent {
       // the sidebar provides a better visual anchor.
       const weatherWidget = WIDGET_REGISTRY.find(w => w.id === "weather");
       const weatherGoesToSidebar = resolveWidgetHasSidebar(weatherWidget, prefs) && resolveWidgetSize(weatherWidget, prefs) === "small";
-      const hasContentWidgets = mayHaveListsWidget && enabledWidgets.listsEnabled || mayHaveTimerWidget && enabledWidgets.timerEnabled || mayHaveWeatherWidget && enabledWidgets.weatherEnabled && !weatherGoesToSidebar || mayHaveSportsWidget && enabledWidgets.sportsWidgetEnabled;
+      const hasContentWidgets = mayHaveListsWidget && enabledWidgets.listsEnabled || mayHaveTimerWidget && enabledWidgets.timerEnabled || mayHaveClocksWidget && enabledWidgets.clocksEnabled || mayHaveWeatherWidget && enabledWidgets.weatherEnabled && !weatherGoesToSidebar || mayHaveSportsWidget && enabledWidgets.sportsWidgetEnabled;
       const logoShouldBeCentered = !pocketEnabled && !hasContentWidgets;
       return /*#__PURE__*/external_React_default().createElement("div", {
         className: "nova-outer-wrapper"
@@ -21012,6 +21707,7 @@ class BaseContent extends (external_React_default()).PureComponent {
         mayHaveTimerWidget: mayHaveTimerWidget,
         mayHaveListsWidget: mayHaveListsWidget,
         mayHaveSportsWidget: mayHaveSportsWidget,
+        mayHaveClocksWidget: mayHaveClocksWidget,
         mayHaveWeatherForecast: prefs["widgets.system.weatherForecast.enabled"],
         weatherDisplay: prefs["weather.display"],
         showing: customizeMenuVisible,
@@ -21099,6 +21795,7 @@ class BaseContent extends (external_React_default()).PureComponent {
       mayHaveTimerWidget: mayHaveTimerWidget,
       mayHaveListsWidget: mayHaveListsWidget,
       mayHaveSportsWidget: mayHaveSportsWidget,
+      mayHaveClocksWidget: mayHaveClocksWidget,
       mayHaveWeatherForecast: prefs["widgets.system.weatherForecast.enabled"],
       weatherDisplay: prefs["weather.display"],
       showing: customizeMenuVisible,

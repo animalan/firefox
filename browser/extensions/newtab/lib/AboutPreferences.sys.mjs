@@ -245,6 +245,14 @@ export class AboutPreferences {
         type: "bool",
       },
       {
+        id: "browser.newtabpage.activity-stream.widgets.system.clocks.enabled",
+        type: "bool",
+      },
+      {
+        id: "browser.newtabpage.activity-stream.widgets.clocks.enabled",
+        type: "bool",
+      },
+      {
         id: "browser.newtabpage.activity-stream.feeds.topsites",
         type: "bool",
       },
@@ -889,6 +897,18 @@ export class AboutPreferences {
       visible: ({ sportsWidgetEnabled }) => sportsWidgetEnabled.value,
     });
 
+    Preferences.addSetting({
+      id: "clocksEnabled",
+      pref: "browser.newtabpage.activity-stream.widgets.system.clocks.enabled",
+    });
+
+    Preferences.addSetting({
+      id: "clocks",
+      pref: "browser.newtabpage.activity-stream.widgets.clocks.enabled",
+      deps: ["clocksEnabled"],
+      visible: ({ clocksEnabled }) => clocksEnabled.value,
+    });
+
     // Shortcuts
     Preferences.addSetting({
       id: "shortcuts",
@@ -1063,6 +1083,10 @@ export class AboutPreferences {
             {
               id: "sportsWidget",
               l10nId: "home-prefs-sports-widget-header",
+            },
+            {
+              id: "clocks",
+              l10nId: "home-prefs-clocks-header",
             },
           ],
         },
