@@ -2724,10 +2724,11 @@ static bool BubbleRelativeDuration(
                            TemporalOverflow::Constrain, &end)) {
         return false;
       }
+      MOZ_ASSERT(ISODateWithinLimits(end));
 
       // Steps 6.b.v.
       auto endDateTime = ISODateTime{end, isoDateTime.time};
-      MOZ_ASSERT(ISODateTimeWithinLimits(endDateTime));
+      MOZ_ASSERT(IsValidISODateTime(endDateTime));
 
       // Steps 6.b.vi-vii.
       EpochNanoseconds endEpochNs;
