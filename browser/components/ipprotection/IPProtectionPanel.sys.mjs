@@ -975,14 +975,12 @@ export class IPProtectionPanel {
       };
     } else if (
       lazy.BANDWIDTH_USAGE_ENABLED &&
-      lazy.IPPEnrollAndEntitleManager.entitlement?.maxBytes != null
+      lazy.IPProtectionService.authProvider.maxBytes != null
     ) {
       // Usage info doesn't exist yet. Check the entitlement
       return {
-        max: Number(lazy.IPPEnrollAndEntitleManager.entitlement?.maxBytes),
-        remaining: Number(
-          lazy.IPPEnrollAndEntitleManager.entitlement?.maxBytes
-        ),
+        max: Number(lazy.IPProtectionService.authProvider.maxBytes),
+        remaining: Number(lazy.IPProtectionService.authProvider.maxBytes),
         reset: null,
       };
     }

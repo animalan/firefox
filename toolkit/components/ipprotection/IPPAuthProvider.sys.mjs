@@ -20,6 +20,11 @@ export class IPPAuthProvider extends EventTarget {
     return false;
   }
 
+  /** Returns the maximum bytes allowed for the current entitlement, or null if unknown. */
+  get maxBytes() {
+    return null;
+  }
+
   /**
    * Called before the proxy starts. Should resolve enrollment and verify
    * entitlement. Returns an error object if the proxy should not start,
