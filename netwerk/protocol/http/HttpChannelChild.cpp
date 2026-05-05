@@ -358,7 +358,7 @@ void HttpChannelChild::ProcessOnStartRequest(
   mAltDataInputStream = DeserializeIPCStream(aAltData.altDataInputStream());
 
   mEventQ->RunOrEnqueue(new NeckoTargetChannelFunctionEvent(
-      this, [self = RefPtr<HttpChannelChild>(this), aResponseHead,
+      this, [self = UnsafePtr<HttpChannelChild>(this), aResponseHead,
              aUseResponseHead, aRequestHeaders, aArgs]() {
         self->OnStartRequest(aResponseHead, aUseResponseHead, aRequestHeaders,
                              aArgs);
@@ -889,15 +889,15 @@ void HttpChannelChild::ProcessOnStopRequest(
 
   if (StaticPrefs::network_send_OnDataFinished()) {
     mEventQ->RunOrEnqueue(new ChannelFunctionEvent(
-        [self = RefPtr<HttpChannelChild>(this)]() {
+        [self = UnsafePtr<HttpChannelChild>(this)]() {
           return self->GetODATarget();
         },
-        [self = RefPtr<HttpChannelChild>(this), status = aChannelStatus]() {
+        [self = UnsafePtr<HttpChannelChild>(this), status = aChannelStatus]() {
           self->SendOnDataFinished(status);
         }));
   }
   mEventQ->RunOrEnqueue(new NeckoTargetChannelFunctionEvent(
-      this, [self = RefPtr<HttpChannelChild>(this), aChannelStatus, aTiming,
+      this, [self = UnsafePtr<HttpChannelChild>(this), aChannelStatus, aTiming,
              aResponseTrailers,
              consoleReports = CopyableTArray{aConsoleReports.Clone()},
              aFromSocketProcess]() mutable {
