@@ -96,6 +96,16 @@ FFmpegLibWrapper::LinkResult FFmpegLibWrapper::Link() {
                           AV_FUNC_61 | AV_FUNC_62,
     AV_FUNC_AVUTIL_ALL = AV_FUNC_AVCODEC_ALL | AV_FUNC_AVUTIL_MASK
   };
+  // AV_FUNC_N = 1 << (N - 53), so these two checks enforce that
+  // FFMPEG_MAX_MAJOR_VERSION matches AV_FUNC_AVCODEC_ALL exactly.
+  static_assert(
+      (AV_FUNC_AVCODEC_ALL & (1 << (FFMPEG_MAX_MAJOR_VERSION - 53))) != 0,
+      "FFMPEG_MAX_MAJOR_VERSION has no AV_FUNC entry; add bindings or lower "
+      "the version");
+  static_assert(
+      (AV_FUNC_AVCODEC_ALL & (1 << (FFMPEG_MAX_MAJOR_VERSION - 53 + 1))) == 0,
+      "New FFmpeg version added to AV_FUNC_AVCODEC_ALL; bump "
+      "FFMPEG_MAX_MAJOR_VERSION");
 
   switch (macro) {
     case 53:
