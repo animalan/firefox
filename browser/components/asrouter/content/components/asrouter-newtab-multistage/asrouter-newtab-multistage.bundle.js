@@ -970,12 +970,13 @@ const AddonsPicker = props => {
   const {
     content,
     installedAddons,
-    layout
+    layout,
+    handleAction
   } = props;
   if (!content) {
     return null;
   }
-  function handleAction(event) {
+  function handleInstallClick(event) {
     const {
       message_id,
       writeInMicrosurvey
@@ -984,19 +985,12 @@ const AddonsPicker = props => {
       action,
       source_id
     } = content.tiles.data[event.currentTarget.value];
-    let {
-      type,
-      data
-    } = action;
-    if (type === "INSTALL_ADDON_FROM_URL") {
-      if (!data) {
+    if (action.type === "INSTALL_ADDON_FROM_URL") {
+      if (!action.data) {
         return;
       }
     }
-    MultiStageUtils.handleUserAction({
-      type,
-      data
-    });
+    handleAction(event, action);
     MultiStageUtils.sendActionTelemetry(message_id, source_id, "CLICK_BUTTON", {
       writeInMicrosurvey
     });
@@ -1057,7 +1051,7 @@ const AddonsPicker = props => {
   }, /*#__PURE__*/external_React_default().createElement("span", null, author.name)))), /*#__PURE__*/external_React_default().createElement(InstallButton, {
     key: id,
     addonId: id,
-    handleAction: handleAction,
+    handleAction: handleInstallClick,
     index: index,
     installedAddons: installedAddons,
     install_label: install_label,
@@ -1081,7 +1075,7 @@ const AddonsPicker = props => {
   }))), /*#__PURE__*/external_React_default().createElement(InstallButton, {
     key: id,
     addonId: id,
-    handleAction: handleAction,
+    handleAction: handleInstallClick,
     index: index,
     installedAddons: installedAddons,
     install_label: install_label,
@@ -1541,7 +1535,11 @@ const MultiSelect = ({
     text: description
   }, /*#__PURE__*/external_React_default().createElement("p", {
     id: `${id}-description`
-  })) : null)));
+  })) : null)), content.tiles.footer ? /*#__PURE__*/external_React_default().createElement(Localized, {
+    text: items.some(i => activeMultiSelect?.includes(i.id)) ? content.tiles.footer.checkedLabel : content.tiles.footer.unCheckAllLabel
+  }, /*#__PURE__*/external_React_default().createElement("h2", {
+    id: "multi-stage-multi-select-footer-label"
+  })) : null);
 };
 ;// ./content-src/components/TextAreaTile.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -2449,10 +2447,16 @@ const DEFAULT_AUTO_ADVANCE_MS = 20000;
 const MultiStageProtonScreen = props => {
   const {
     autoAdvance,
+    advanceOnExperimentLoad,
     handleAction,
+    messageId,
+    navigate,
     order
   } = props;
   (0,external_React_namespaceObject.useEffect)(() => {
+    if (!autoAdvance && !advanceOnExperimentLoad) {
+      return () => {};
+    }
     if (autoAdvance) {
       const value = autoAdvance?.actionEl ?? autoAdvance;
       const timeout = autoAdvance?.actionTimeMS ?? DEFAULT_AUTO_ADVANCE_MS;
@@ -2466,8 +2470,80 @@ const MultiStageProtonScreen = props => {
       }, timeout);
       return () => clearTimeout(timer);
     }
-    return () => {};
-  }, [autoAdvance, handleAction, order]);
+
+    // If not doing a standard auto advance, handle auto advancing when experiments load.
+
+    // Defaults for when advance_on_experiment_load is true.
+    const minMsDefault = 3000;
+    const maxMsDefault = 8000;
+    let minMs = advanceOnExperimentLoad?.minDisplayMs ?? minMsDefault;
+    let maxMs = advanceOnExperimentLoad?.maxDisplayMs ?? maxMsDefault;
+
+    // Ensure max >= min.
+    if (maxMs < minMs) {
+      maxMs = minMs;
+    }
+    const startTime = performance.now();
+    let cancelled = false;
+    let advanced = false;
+    let minDone = false;
+    let experimentsDone = false;
+    let nimbusResult = null;
+    let maxTimeoutFired = false;
+    const doAdvance = () => {
+      if (cancelled || advanced) {
+        return;
+      }
+      advanced = true;
+      const screen_duration = Math.round(performance.now() - startTime);
+      let reason;
+      if (maxTimeoutFired) {
+        reason = "max_display_timeout";
+      } else if (nimbusResult === "error") {
+        reason = "nimbus_error";
+      } else if (nimbusResult === "timeout") {
+        reason = "nimbus_timeout";
+      } else {
+        reason = "nimbus_ready";
+      }
+      MultiStageUtils.sendActionTelemetry(messageId, "advance_on_experiment_load", "SPLASH_DISMISSED", {
+        reason,
+        screen_duration
+      });
+      navigate(false);
+    };
+    const maybeAdvance = () => {
+      if (minDone && experimentsDone) {
+        doAdvance();
+      }
+    };
+    const minTimerId = window.setTimeout(() => {
+      minDone = true;
+      maybeAdvance();
+    }, minMs);
+    const maxTimerId = window.setTimeout(() => {
+      maxTimeoutFired = true;
+      doAdvance();
+    }, maxMs);
+
+    // Use an IIFE to keep the effect itself synchronous
+    (async () => {
+      try {
+        if (typeof window.AWWaitForNimbus === "function") {
+          nimbusResult = await window.AWWaitForNimbus();
+        }
+        // If AWWaitForNimbus is missing, treat as "done" immediately.
+      } catch (e) {} finally {
+        experimentsDone = true;
+        maybeAdvance();
+      }
+    })();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(minTimerId);
+      window.clearTimeout(maxTimerId);
+    };
+  }, [autoAdvance, advanceOnExperimentLoad, handleAction, messageId, order, navigate]);
 
   // Set narrow on an outer element to allow for use of SCSS outer selector and
   // consolidation of styles for small screen widths with those for messages
@@ -2510,6 +2586,8 @@ const MultiStageProtonScreen = props => {
     isSingleScreen: props.isSingleScreen,
     previousOrder: props.previousOrder,
     autoAdvance: props.autoAdvance,
+    advanceOnExperimentLoad: props.advanceOnExperimentLoad,
+    navigate: props.navigate,
     isRtamo: props.isRtamo,
     addonId: props.addonId,
     addonType: props.addonType,
@@ -2536,6 +2614,7 @@ const ProtonScreenActionButtons = props => {
     addonType,
     addonName,
     activeMultiSelect,
+    activeSingleSelectSelections,
     textInputs,
     installedAddons
   } = props;
@@ -2570,6 +2649,14 @@ const ProtonScreenActionButtons = props => {
         }
       }
       return true;
+    }
+    // Only disables the primary button until at least one single-select
+    // option is chosen.
+    if (disabledValue === "hasActiveSingleSelect") {
+      if (!activeSingleSelectSelections) {
+        return true;
+      }
+      return !Object.values(activeSingleSelectSelections).some(val => val && val !== "none");
     }
     if (disabledValue === "hasTextInput") {
       // For text input, we check if the user has entered any text in the
@@ -2708,6 +2795,7 @@ class ProtonScreen extends (external_React_default()).PureComponent {
     height,
     marginBlock,
     marginInline,
+    style,
     className = "logo-container"
   }) {
     function getLoadingStrategy() {
@@ -2718,20 +2806,22 @@ class ProtonScreen extends (external_React_default()).PureComponent {
       }
       return "eager";
     }
+    const pictureStyle = {
+      marginInline,
+      marginBlock,
+      ...style
+    };
     return /*#__PURE__*/external_React_default().createElement("picture", {
       className: className,
-      style: {
-        marginInline,
-        marginBlock
-      }
+      style: pictureStyle
     }, darkModeReducedMotionImageURL ? /*#__PURE__*/external_React_default().createElement("source", {
-      srcset: darkModeReducedMotionImageURL,
+      srcSet: darkModeReducedMotionImageURL,
       media: "(prefers-color-scheme: dark) and (prefers-reduced-motion: reduce)"
     }) : null, darkModeImageURL ? /*#__PURE__*/external_React_default().createElement("source", {
-      srcset: darkModeImageURL,
+      srcSet: darkModeImageURL,
       media: "(prefers-color-scheme: dark)"
     }) : null, reducedMotionImageURL ? /*#__PURE__*/external_React_default().createElement("source", {
-      srcset: reducedMotionImageURL,
+      srcSet: reducedMotionImageURL,
       media: "(prefers-reduced-motion: reduce)"
     }) : null, /*#__PURE__*/external_React_default().createElement(Localized, {
       text: alt
@@ -2947,6 +3037,7 @@ class ProtonScreen extends (external_React_default()).PureComponent {
       addonType: this.props.addonType,
       handleAction: this.props.handleAction,
       activeMultiSelect: this.props.activeMultiSelect,
+      activeSingleSelectSelections: this.props.activeSingleSelectSelections,
       textInputs: this.props.textInputs
     }) : null;
   }
@@ -3377,6 +3468,7 @@ const MultiStageAboutWelcome = props => {
       content: currentScreen.content,
       navigate: handleTransition,
       autoAdvance: currentScreen.auto_advance,
+      advanceOnExperimentLoad: currentScreen.advance_on_experiment_load,
       messageId: `${props.message_id}_${order}_${currentScreen.id}`,
       writeInMicrosurvey: props.writeInMicrosurvey,
       UTMTerm: props.utm_term,
@@ -3730,6 +3822,14 @@ class WelcomeScreen extends (external_React_default()).PureComponent {
     let actionResult;
     if (["OPEN_URL", "SHOW_FIREFOX_ACCOUNTS"].includes(action.type)) {
       this.handleOpenURL(action, props.flowParams, props.UTMTerm);
+    } else if (action.type === "INSTALL_ADDON_FROM_URL") {
+      const url = props.addonURL && props.isRtamo ? props.addonURL : action.data?.url;
+      // Set add-on url in action.data.url property from JSON
+      action.data = {
+        ...action.data,
+        url
+      };
+      MultiStageUtils.handleUserAction(action);
     } else if (action.type) {
       let actionPromise = MultiStageUtils.handleUserAction(action);
       if (action.needsAwait) {
@@ -3739,18 +3839,6 @@ class WelcomeScreen extends (external_React_default()).PureComponent {
         MultiStageUtils.sendActionTelemetry(props.messageId, actionResult ? "sign_in" : "sign_in_cancel", "FXA_SIGNIN_FLOW", {
           writeInMicrosurvey: props.writeInMicrosurvey
         });
-      }
-      if (action.type === "INSTALL_ADDON_FROM_URL") {
-        const url = props.addonURL;
-        if (!action.data) {
-          return;
-        }
-        // Set add-on url in action.data.url property from JSON
-        action.data = {
-          ...action.data,
-          url
-        };
-        MultiStageUtils.handleUserAction(action);
       }
       // Wait until migration closes to complete the action
       await this.handleMigrationIfNeeded(action, props);
@@ -3949,6 +4037,8 @@ class WelcomeScreen extends (external_React_default()).PureComponent {
       isSingleScreen: this.props.isSingleScreen,
       startsWithCorner: this.props.startsWithCorner,
       autoAdvance: this.props.autoAdvance,
+      advanceOnExperimentLoad: this.props.advanceOnExperimentLoad,
+      navigate: this.props.navigate,
       forceHideStepsIndicator: this.props.forceHideStepsIndicator,
       ariaRole: this.props.ariaRole,
       requireAction: this.props.requireAction,
@@ -3971,10 +4061,37 @@ class WelcomeScreen extends (external_React_default()).PureComponent {
 
 
 
+function MultistageWithDismiss({
+  config,
+  handleDismiss,
+  handleBlock
+}) {
+  function onDismiss() {
+    handleBlock?.();
+    handleDismiss?.();
+  }
+  return /*#__PURE__*/external_React_default().createElement("div", {
+    className: "multistage-newtab-wrapper"
+  }, /*#__PURE__*/external_React_default().createElement("moz-button", {
+    type: "icon ghost",
+    size: "small",
+    iconsrc: "chrome://global/skin/icons/close.svg",
+    "data-l10n-id": "newtab-activation-window-message-dismiss-button",
+    onClick: onDismiss
+  }), /*#__PURE__*/external_React_default().createElement(MultiStageAboutWelcome, {
+    defaultScreens: config.screens,
+    message_id: config.id,
+    transitions: config.transitions ?? false,
+    backdrop: config.backdrop,
+    startScreen: 0,
+    updateHistory: false
+  }));
+}
 window.mountMultistageMessage = function mountMultistageMessage(container, props) {
   const {
     messageData,
     handleDismiss,
+    handleBlock,
     handleClick
   } = props;
   const config = messageData.content;
@@ -3985,32 +4102,37 @@ window.mountMultistageMessage = function mountMultistageMessage(container, props
     }),
     AWGetFeatureConfig: () => config,
     AWFinish: () => handleDismiss(),
-    AWSendToParent: (name, data) => window.ASRouterMessage({
+    AWSendToParent: (handlerName, data) => window.ASRouterMessage({
       type: "USER_ACTION",
-      data: {
-        type: name,
-        data
-      }
+      data
     }),
-    AWAddScreenImpression: screen => handleClick(`screen-impression-${screen.id}`),
-    AWSendEventTelemetry: data => handleClick(data.event)
+    AWAddScreenImpression: screenObj => {
+      window.ASRouterMessage({
+        type: "AW_ADD_SCREEN_IMPRESSION",
+        data: screenObj
+      });
+    },
+    AWSendEventTelemetry: data => {
+      if (data.event !== "IMPRESSION") {
+        handleClick(data.event);
+      }
+    },
+    AWGetSelectedTheme: () => Promise.resolve(),
+    AWGetInstalledAddons: () => Promise.resolve()
   };
-  for (const [name, fn] of Object.entries(awHandlers)) {
-    window[name] = fn;
+  for (const [handlerName, fn] of Object.entries(awHandlers)) {
+    window[handlerName] = fn;
   }
   const root = (0,external_ReactDOM_namespaceObject.createRoot)(container);
-  root.render(/*#__PURE__*/external_React_default().createElement(MultiStageAboutWelcome, {
-    defaultScreens: config.screens,
-    message_id: config.id,
-    transitions: config.transitions ?? false,
-    backdrop: config.backdrop,
-    startScreen: 0,
-    updateHistory: false
+  root.render(/*#__PURE__*/external_React_default().createElement(MultistageWithDismiss, {
+    config: config,
+    handleDismiss: handleDismiss,
+    handleBlock: handleBlock
   }));
   return function cleanup() {
     root.unmount();
-    for (const name of Object.keys(awHandlers)) {
-      delete window[name];
+    for (const handlerName of Object.keys(awHandlers)) {
+      delete window[handlerName];
     }
   };
 };

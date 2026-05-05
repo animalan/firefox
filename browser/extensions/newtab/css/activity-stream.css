@@ -762,6 +762,10 @@ main.newtab-main section {
   padding-block-start: var(--space-xlarge);
 }
 
+.asrouter-multistage-message-wrapper {
+  margin-block: var(--space-xlarge);
+}
+
 /**
  * Nova Grid System
  *
