@@ -17,6 +17,7 @@ kind-dependencies:
 
 task-defaults:
     run-on-repo-type: [hg]
+    run-on-projects: []
     attributes:
         build_platform: android
         build-type: debug
@@ -26,8 +27,6 @@ task-defaults:
             - android-sdk-linux
             - linux64-embedded-uniffi-bindgen
             - linux64-nimbus-fml
-    optimization:
-        skip-unless-backstop: null
     worker-type: b-linux-medium
     worker:
         docker-image: {in-tree: android-ui-tests}
