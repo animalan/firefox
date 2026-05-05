@@ -1374,7 +1374,8 @@ BackgroundParentImpl::RecvEnsureUtilityProcessAndCreateBridge(
   }
   NS_DispatchToMainThread(NS_NewRunnableFunction(
       "BackgroundParentImpl::RecvEnsureUtilityProcessAndCreateBridge()",
-      [aResolver, managerThread, otherProcInfo, childId, aLocation]() {
+      [aResolver = std::move(aResolver), managerThread, otherProcInfo, childId,
+       aLocation]() {
         RefPtr<UtilityProcessManager> upm =
             UtilityProcessManager::GetSingleton();
         using Type = std::tuple<const nsresult&,
