@@ -479,9 +479,6 @@ inline bool IsInterfacePrototype(DOMObjectType type) {
   return type == eInterfacePrototype || type == eGlobalInterfacePrototype;
 }
 
-typedef JSObject* (*AssociatedGlobalGetter)(JSContext* aCx,
-                                            JS::Handle<JSObject*> aObj);
-
 typedef JSObject* (*ProtoGetter)(JSContext* aCx);
 
 /**
@@ -531,10 +528,6 @@ struct DOMJSClass {
 
   const NativePropertyHooks* mNativeHooks;
 
-  // A callback to find the associated global for our C++ object.  Note that
-  // this is used in cases when that global is _changing_, so it will not match
-  // the global of the JSObject* passed in to this function!
-  AssociatedGlobalGetter mGetAssociatedGlobal;
   ProtoHandleGetter mGetProto;
 
   // This stores the CC participant for the native, null if this class does not

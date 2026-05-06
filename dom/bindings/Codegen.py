@@ -630,7 +630,6 @@ def DOMClass(descriptor):
           { ${protoChain} },
           std::is_base_of_v<nsISupports, ${nativeType}>,
           ${hooks},
-          FindAssociatedGlobalForNative<${nativeType}>::Get,
           ${getProto},
           GetCCParticipant<${nativeType}>::Get(),
           ${serializer},
