@@ -92,6 +92,11 @@ class MediaCapabilities final : public nsISupports, public nsWrapperCache {
       const MediaDecodingConfiguration& aConfiguration, ErrorResult& aRv,
       Promise* aPromise);
 
+  void CreateNonWebRTCDecodingInfo(
+      const MediaDecodingConfiguration& aConfiguration, Promise* aPromise,
+      Maybe<MediaContainerType> aVideoContainer,
+      Maybe<MediaContainerType> aAudioContainer);
+
   RefPtr<MediaKeySystemAccessManager::MediaKeySystemAccessPromise>
   CheckEncryptedDecodingSupport(
       const MediaDecodingConfiguration& aConfiguration);
