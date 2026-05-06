@@ -11921,7 +11921,7 @@
 # fails to be created.
 - name: media.eme.video.prefer-platform-decoder
   type: RelaxedAtomicBool
-  value: true
+  value: false
   mirror: always
 
 - name: media.eme.chromium-api.video-shmems
