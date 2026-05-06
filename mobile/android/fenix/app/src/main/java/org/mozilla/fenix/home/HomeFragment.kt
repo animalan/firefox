@@ -418,8 +418,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
 
         initComposeHomepage()
 
-        FxNimbus.features.homescreen.recordExposure()
-
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
         requireComponents.core.engine.profiler?.addMarker(
             MarkersFragmentLifecycleCallbacks.MARKER_NAME,
@@ -1391,6 +1389,8 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         if (!browsingModeManager.mode.isPrivate) {
             HomeScreen.standardHomepageViewCount.add()
         }
+
+        FxNimbus.features.homescreen.recordExposure()
     }
 
     companion object {
