@@ -92,6 +92,7 @@ import org.mozilla.fenix.reviewprompt.ReviewPromptMiddleware
 import org.mozilla.fenix.search.VoiceSearchAIControlFeature
 import org.mozilla.fenix.settings.ai.AIControlsSearchProvider
 import org.mozilla.fenix.settings.datachoices.DataChoicesSearchProvider
+import org.mozilla.fenix.settings.labs.FirefoxLabsSettingsSearchProvider
 import org.mozilla.fenix.settings.pagesummaries.PageSummariesSettingsSearchProvider
 import org.mozilla.fenix.settings.settingssearch.DefaultFenixSettingsIndexer
 import org.mozilla.fenix.termsofuse.TermsOfUseManager
@@ -420,6 +421,9 @@ class Components(private val context: Context) {
                 AIControlsSearchProvider,
                 PageSummariesSettingsSearchProvider(
                     summarizationFeatureConfiguration = core.summarizeFeatureSettings,
+                ),
+                FirefoxLabsSettingsSearchProvider(
+                    isLabsEnabled = { context.settings().enableFirefoxLabs },
                 ),
             ),
         )
