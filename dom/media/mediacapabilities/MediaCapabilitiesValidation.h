@@ -7,6 +7,7 @@
 #include "mozilla/DefineEnum.h"
 #include "mozilla/Result.h"
 #include "mozilla/Variant.h"
+#include "nsStringFwd.h"
 // Media Capabilities API spec validation check functions.
 // These functions are used as a first pass to filter out non-compliant
 // configurations according to the spec. Lower-level SW/HW compability checks
@@ -17,6 +18,9 @@
 // commit: b9d2f30c00c534ac44179f546bc60f421ce78070
 namespace mozilla {
 class ErrorResult;
+class MediaExtendedMIMEType;
+template <typename T>
+class Maybe;
 
 namespace dom {
 class Promise;
@@ -41,6 +45,12 @@ MOZ_DEFINE_ENUM_CLASS_WITH_TOSTRING(
 // Variant to consolidate encoding/decoding checks into the same functions
 using MediaType = Variant<dom::MediaEncodingType, dom::MediaDecodingType>;
 using ValidationResult = mozilla::Result<mozilla::Ok, ValidationError>;
+
+ValidationResult CheckMIMETypeSupport(
+    const MediaExtendedMIMEType& aMime,
+    const MediaType& aEncodingOrDecodingType,
+    const Maybe<dom::ColorGamut>& aColorGamut,
+    const Maybe<dom::TransferFunction>& aTransferFunction);
 
 // https://w3c.github.io/media-capabilities/#mediaconfiguration
 ValidationResult IsValidMediaDecodingConfiguration(

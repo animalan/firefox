@@ -63,18 +63,69 @@ static const std::array kContainerTypes = {
     "audio/ogg"_ns, "audio/mp4"_ns, "audio/webm"_ns, "audio/mpeg"_ns};
 
 // https://w3c.github.io/media-capabilities/#check-mime-type-support
-ValidationResult CheckMIMETypeSupport(const MediaExtendedMIMEType& aMime,
-                                      const AVType& aAVType,
-                                      const MediaType& aMediaType) {
+ValidationResult CheckMIMETypeSupport(
+    const MediaExtendedMIMEType& aMime,
+    const MediaType& aEncodingOrDecodingType,
+    const Maybe<dom::ColorGamut>& aColorGamut,
+    const Maybe<dom::TransferFunction>& aTransferFunction) {
   // Step 1: If encodingOrDecodingType is webrtc (MediaEncodingType) or
   // webrtc (MediaDecodingType) and mimeType is not one that is used with
   // RTP (as defined in the specifications of the corresponding RTP payload
   // formats [IANA-MEDIA-TYPES] [RFC6838]), return unsupported.
-  // TODO bug 1825286
+  if (IsMediaTypeWebRTC(aEncodingOrDecodingType) && !IsSingleCodecType(aMime)) {
+    ValidationResult err = Err(ValidationError::InvalidMIMEType);
+    LOG(
+        ("[CheckMIMETypeSupport (encodingOrDecodingType is webrtc, "
+         "but MIME type is not one used with RTP, %s) #1] Rejecting '%s'\n",
+         EnumValueToString(err.unwrapErr()), aMime.OriginalString().get()));
+    return err;
+  }
 
   // Step 2: If colorGamut is present and is not valid for mimeType, return
   // unsupported.
-  // TODO bug 1825286
+  // Step 3: If transferFunction is present and is not valid for
+  // mimeType, return unsupported.
+  if (aColorGamut || aTransferFunction) {
+    // colorGamut and transferFunction are video-only properties
+    MOZ_ASSERT_IF(aMime.Type().HasAudioMajorType(), !aColorGamut);
+    MOZ_ASSERT_IF(aMime.Type().HasAudioMajorType(), !aTransferFunction);
+    // colorGamut and transferFunction are only applicable for decoding
+    if (!aEncodingOrDecodingType.is<MediaDecodingType>()) {
+      ValidationResult err = Err(ValidationError::InapplicableMember);
+      LOG(
+          ("[CheckMIMETypeSupport (colorGamut/transferFunction are decode "
+           "only, %s), #2, #3] Rejecting '%s'\n",
+           EnumValueToString(err.unwrapErr()), aMime.OriginalString().get()));
+      return err;
+    }
+    const MediaDecodingType& dType =
+        aEncodingOrDecodingType.as<MediaDecodingType>();
+    // colorGamut and transferFunction only applicable for media-source, file
+    if (dType != MediaDecodingType::Media_source &&
+        dType != MediaDecodingType::File) {
+      ValidationResult err = Err(ValidationError::InapplicableMember);
+      LOG(
+          ("[CheckMIMETypeSupport #3 (colorGamut/transferFunction only for "
+           "media-source, file; got %s, %s), #2, #3] Rejecting '%s'\n",
+           GetEnumString(dType).get(), EnumValueToString(err.unwrapErr()),
+           aMime.OriginalString().get()));
+      return err;
+    }
+    if (!ValidateMatchingCodecColorSpace(aMime, aColorGamut,
+                                         aTransferFunction)) {
+      ValidationResult err = Err(ValidationError::InvalidVideoType);
+      LOG(
+          ("[CheckMIMETypeSupport #3 (color coding space does not match, %s), "
+           "#2, #3] Rejecting '%s'\n",
+           EnumValueToString(err.unwrapErr()), aMime.OriginalString().get()));
+      return err;
+    }
+  }
+  // Step 4: If mimeType is not supported by the user agent, return
+  // unsupported. (Handled in MediaCapabilities.cpp when executing support
+  // promises, added later in this stack.)
+
+  // Step 5: Return supported
   return Ok();
 }
 
@@ -282,6 +333,24 @@ ValidationResult IsValidVideoConfiguration(const VideoConfiguration& aConfig,
            NS_ConvertUTF16toUTF8(aConfig.mContentType).get()));
       return err;
     }
+    // colorGamut is only applicable to MediaDecodingConfiguration
+    if (aConfig.mColorGamut.WasPassed()) {
+      ValidationResult err = Err(ValidationError::InapplicableMember);
+      LOG(("[Invalid VideoConfiguration (Color Gamut, %s) #2] Rejecting '%s'\n",
+           EnumValueToString(err.unwrapErr()),
+           NS_ConvertUTF16toUTF8(aConfig.mContentType).get()));
+      return err;
+    }
+    // transferFunction is only applicable to MediaDecodingConfiguration
+    if (aConfig.mTransferFunction.WasPassed()) {
+      ValidationResult err = Err(ValidationError::InapplicableMember);
+      LOG(
+          ("[Invalid VideoConfiguration (Transfer Function, %s) #2] Rejecting "
+           "'%s'\n",
+           EnumValueToString(err.unwrapErr()),
+           NS_ConvertUTF16toUTF8(aConfig.mContentType).get()));
+      return err;
+    }
   }
 
   // Step 3: Let mimeType be the result of running parse a MIME type with
@@ -430,7 +499,6 @@ ValidationResult IsValidMediaDecodingConfiguration(
 //   default, returning true regardless of color parameters provided.
 // This is a fundamental limitation of the H.264/H.265 codec string formats,
 // not a Firefox implementation gap.
-[[maybe_unused]]
 static bool ValidateMatchingCodecColorSpace(
     const MediaExtendedMIMEType& aMime, const Maybe<dom::ColorGamut>& aGamut,
     const Maybe<dom::TransferFunction>& aTransfer) {
