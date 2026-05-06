@@ -419,6 +419,8 @@ void AppleVTDecoder::OutputFrame(CVPixelBufferRef aImage,
   // Bounds.
   VideoInfo info;
   info.mDisplay = gfx::IntSize(mDisplayWidth, mDisplayHeight);
+  info.mTransferFunction = Some(mTransferFunction);
+  info.mHDRMetadata = mHDRMetadata;
 
   if (useNullSample) {
     data = new NullData(aFrameRef.byte_offset, aFrameRef.composition_timestamp,
