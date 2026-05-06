@@ -923,58 +923,15 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         voiceSearchFeature = VoiceSearchFeature.register(this, voiceSearchLauncher)
         lensFeature = LensFeature.register(this, lensLauncher, lensCameraPermissionLauncher)
 
-        showReviewPromptBinding.set(
-            feature = ShowReviewPromptBinding(
-                appStore = requireComponents.appStore,
-                promptController = requireComponents.playStoreReviewPromptController,
-                activityRef = WeakReference(activity),
-                uiScope = viewLifecycleOwner.lifecycleScope,
-                navigationDirection = { findNavController().navigate(it) },
-            ),
-            owner = viewLifecycleOwner,
-            view = view,
-        )
+        initReviewPromptBinding(view = view)
 
         continuousOnboardingFeature.maybeRunContinuousOnboarding(
             activity = requireActivity(),
             launcher = continuousOnboardingDefaultBrowserLauncher,
         )
 
-        tabsCleanupFeature.set(
-            feature = TabsCleanupFeature(
-                context = requireContext(),
-                viewModel = homeViewModel,
-                browserStore = requireComponents.core.store,
-                browsingModeManager = browsingModeManager,
-                navController = findNavController(),
-                tabsUseCases = requireComponents.useCases.tabsUseCases,
-                fenixBrowserUseCases = requireComponents.useCases.fenixBrowserUseCases,
-                settings = requireComponents.settings,
-                snackbarHostState = snackbarHostState,
-                viewLifecycleScope = viewLifecycleOwner.lifecycleScope,
-            ),
-            owner = viewLifecycleOwner,
-            view = view,
-        )
-
-        snackbarBinding.set(
-            feature = SnackbarBinding(
-                context = requireContext(),
-                browserStore = requireContext().components.core.store,
-                appStore = requireContext().components.appStore,
-                snackbarDelegate = FenixSnackbarDelegate(
-                    snackbarHostState = snackbarHostState,
-                    scope = viewLifecycleOwner.lifecycleScope,
-                    context = requireContext(),
-                ),
-                navController = findNavController(),
-                tabsUseCases = requireContext().components.useCases.tabsUseCases,
-                sendTabUseCases = SendTabUseCases(requireComponents.backgroundServices.accountManager),
-                customTabSessionId = null,
-            ),
-            owner = this,
-            view = view,
-        )
+        initTabsCleanupFeature(view = view)
+        initSnackbarBinding(view = view)
 
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
         requireComponents.core.engine.profiler?.addMarker(
@@ -1339,6 +1296,60 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         ).also {
             awesomeBarComposable = it
         }
+    }
+
+    private fun initReviewPromptBinding(view: View) {
+        showReviewPromptBinding.set(
+            feature = ShowReviewPromptBinding(
+                appStore = requireComponents.appStore,
+                promptController = requireComponents.playStoreReviewPromptController,
+                activityRef = WeakReference(activity),
+                uiScope = viewLifecycleOwner.lifecycleScope,
+                navigationDirection = { findNavController().navigate(it) },
+            ),
+            owner = viewLifecycleOwner,
+            view = view,
+        )
+    }
+
+    private fun initTabsCleanupFeature(view: View) {
+        tabsCleanupFeature.set(
+            feature = TabsCleanupFeature(
+                context = requireContext(),
+                viewModel = homeViewModel,
+                browserStore = requireComponents.core.store,
+                browsingModeManager = browsingModeManager,
+                navController = findNavController(),
+                tabsUseCases = requireComponents.useCases.tabsUseCases,
+                fenixBrowserUseCases = requireComponents.useCases.fenixBrowserUseCases,
+                settings = requireComponents.settings,
+                snackbarHostState = snackbarHostState,
+                viewLifecycleScope = viewLifecycleOwner.lifecycleScope,
+            ),
+            owner = viewLifecycleOwner,
+            view = view,
+        )
+    }
+
+    private fun initSnackbarBinding(view: View) {
+        snackbarBinding.set(
+            feature = SnackbarBinding(
+                context = requireContext(),
+                browserStore = requireComponents.core.store,
+                appStore = requireComponents.appStore,
+                snackbarDelegate = FenixSnackbarDelegate(
+                    snackbarHostState = snackbarHostState,
+                    scope = viewLifecycleOwner.lifecycleScope,
+                    context = requireContext(),
+                ),
+                navController = findNavController(),
+                tabsUseCases = requireComponents.useCases.tabsUseCases,
+                sendTabUseCases = SendTabUseCases(requireComponents.backgroundServices.accountManager),
+                customTabSessionId = null,
+            ),
+            owner = this,
+            view = view,
+        )
     }
 
     companion object {
