@@ -14,27 +14,28 @@ add_setup(async function () {
 add_task(async function () {
   await enableApplicationPanel();
 
-  const {
-    panel,
-    tab,
-    commands: { resourceCommand },
-  } = await openNewTabAndApplicationPanel(TAB_URL);
-  const onAvailable = () => {};
-  let updated = 0;
-  const onUpdated = () => {
-    updated++;
-  };
-
-  resourceCommand.watchResources([resourceCommand.TYPES.SESSION_HISTORY], {
-    onAvailable,
-    onUpdated,
-  });
-
-  selectPage(panel, "session-history");
+  const { panel, tab } = await openNewTabAndApplicationPanel(TAB_URL);
+  await selectPage(panel, "session-history");
 
   const doc = panel.panelWin.document;
 
   const { sessionHistory } = tab.linkedBrowser.browsingContext;
+  const { promise: onHistoryCommittedPromise, resolve: onHistoryCommitted } =
+    Promise.withResolvers();
+  let count = 0;
+  const sessionHistoryListener = {
+    QueryInterface: ChromeUtils.generateQI([
+      "nsISHistoryListener",
+      "nsISupportsWeakReference",
+    ]),
+    OnHistoryCommit: () => {
+      if (++count == 2) {
+        onHistoryCommitted();
+      }
+    },
+  };
+
+  sessionHistory.addSHistoryListener(sessionHistoryListener);
 
   info("Navigate the frames.");
   await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
@@ -48,8 +49,9 @@ add_task(async function () {
     }
   });
 
-  // Wait for the updates for the frames to arrive
-  await waitFor(() => updated == 2);
+  info("Await history commits.");
+  await onHistoryCommittedPromise;
+  sessionHistory.removeSHistoryListener(sessionHistoryListener);
 
   // We're navigating to a very specific session history setup, which should in
   // diagram form look like this:
@@ -195,8 +197,6 @@ add_task(async function () {
   // It should also be noted that column three has a borderless cell below its
   // entry.
 
-  await waitFor(() => tBodyRows[0].cells.length == 3);
-
   Assert.equal(3, tBodyRows[0].cells.length);
   Assert.equal(uri.pathname, tBodyRows[0].cells[2].innerText);
   Assert.ok(tBodyRows[0].cells[1].getAttribute("aria-hidden"));
@@ -241,12 +241,9 @@ add_task(async function () {
   );
 
   info("Navigate to a fragment");
-  updated = 0;
   await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
     content.location.hash = "#1";
   });
-
-  await waitFor(() => updated == 1);
 
   table = doc.querySelector("table");
   tBodyRows = table.tBodies[0].rows;
@@ -255,11 +252,6 @@ add_task(async function () {
     tBodyRows[0].cells[3].getAttribute("class"),
     "same-document-nav"
   );
-
-  resourceCommand.unwatchResources([resourceCommand.TYPES.SESSION_HISTORY], {
-    onAvailable,
-    onUpdated,
-  });
 
   info("Closing the tab.");
   await BrowserTestUtils.removeTab(tab);

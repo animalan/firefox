@@ -10,6 +10,7 @@ const {
   PureComponent,
 } = require("resource://devtools/client/shared/vendor/react.mjs");
 const {
+  div,
   section,
 } = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const {
@@ -17,7 +18,6 @@ const {
 } = require("resource://devtools/client/shared/vendor/react-redux.js");
 
 const SessionHistoryDiagram = require("resource://devtools/client/application/src/components/session-history/SessionHistory.js");
-const SessionHistoryUnavailable = require("resource://devtools/client/application/src/components/session-history/SessionHistoryUnavailable.js");
 
 class SessionHistoryPage extends PureComponent {
   static get propTypes() {
@@ -25,25 +25,23 @@ class SessionHistoryPage extends PureComponent {
       current: PropTypes.number.isRequired,
       diagrams: PropTypes.arrayOf(PropTypes.object).isRequired,
       entriesByKey: PropTypes.object.isRequired,
-      disabled: PropTypes.bool,
     };
   }
 
   render() {
-    const { current, diagrams, entriesByKey, disabled } = this.props;
+    const { current, diagrams, entriesByKey } = this.props;
     return section(
       {
-        className: `app-page js-session-history-page ${
-          disabled ? "app-page--empty" : ""
-        }`,
+        className: `app-page js-session-history-page`,
       },
-      disabled
-        ? createElement(SessionHistoryUnavailable, {})
-        : createElement(SessionHistoryDiagram, {
-            current,
-            diagrams,
-            entriesByKey,
-          })
+      div(
+        { id: "diagram-container" },
+        createElement(SessionHistoryDiagram, {
+          current,
+          diagrams,
+          entriesByKey,
+        })
+      )
     );
   }
 }
