@@ -83,10 +83,6 @@ class MediaCapabilities final : public nsISupports, public nsWrapperCache {
 
  private:
   virtual ~MediaCapabilities() = default;
-  Maybe<MediaContainerType> CheckVideoConfiguration(
-      const VideoConfiguration& aConfig) const;
-  Maybe<MediaContainerType> CheckAudioConfiguration(
-      const AudioConfiguration& aConfig) const;
   already_AddRefed<layers::KnowsCompositor> GetCompositor();
   void CreateMediaCapabilitiesDecodingInfo(
       const MediaDecodingConfiguration& aConfiguration, ErrorResult& aRv,
