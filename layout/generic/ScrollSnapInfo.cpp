@@ -117,4 +117,9 @@ std::ostream& operator<<(std::ostream& aStream,
   return aStream << NS_LossyConvertUTF16toASCII(string).get();
 }
 
+std::ostream& operator<<(std::ostream& aStream,
+                         const ScrollSnapInfo::SnapTarget* aTarget) {
+  return aStream << *aTarget;
+}
+
 }  // namespace mozilla

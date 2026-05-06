@@ -5,8 +5,6 @@
 #ifndef mozilla_layout_ScrollSnap_h_
 #define mozilla_layout_ScrollSnap_h_
 
-#include <type_traits>
-
 #include "mozilla/Maybe.h"
 #include "mozilla/ScrollSnapInfo.h"
 #include "mozilla/ScrollSnapTargetId.h"
@@ -100,11 +98,7 @@ struct ScrollSnapUtils {
         string.AppendASCII(", ");
       }
       first = false;
-      if constexpr (std::is_pointer_v<std::remove_cvref_t<decltype(target)>>) {
-        string.Append(ToString(*target).c_str());
-      } else {
-        string.Append(ToString(target).c_str());
-      }
+      string.Append(ToString(target).c_str());
     }
     string.AppendPrintf(" ]");
     return string;

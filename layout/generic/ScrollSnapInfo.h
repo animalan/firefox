@@ -155,6 +155,12 @@ struct ScrollSnapInfo {
 std::ostream& operator<<(std::ostream& aStream,
                          const ScrollSnapInfo::SnapTarget& aTarget);
 
+// For convenience, allow printing a pointer to a SnapTarget without
+// explicitly dereferencing it. This makes it easier to print an
+// array of pointers.
+std::ostream& operator<<(std::ostream& aStream,
+                         const ScrollSnapInfo::SnapTarget* aTarget);
+
 }  // namespace mozilla
 
 #endif  // mozilla_layout_ScrollSnapInfo_h_
