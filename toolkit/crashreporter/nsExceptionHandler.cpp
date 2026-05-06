@@ -3325,11 +3325,13 @@ void SetCrashHelperPipes(FileHandle breakpadFd, FileHandle crashHelperFd) {
 }
 #endif  // defined(MOZ_WIDGET_ANDROID)
 
-CrashPipeType GetChildNotificationPipe() {
-  if (!GetEnabled()) {
-    return nullptr;
-  }
+#if defined(XP_WIN) || defined(XP_MACOSX) || defined(XP_IOS)
+using CrashPipeType = const char*;
+#else
+using CrashPipeType = mozilla::UniqueFileHandle;
+#endif
 
+static CrashPipeType GetChildNotificationPipe() {
 #if defined(XP_WIN) || defined(XP_MACOSX)
   return childCrashNotifyPipe.get();
 #elif defined(XP_LINUX)
@@ -3337,11 +3339,23 @@ CrashPipeType GetChildNotificationPipe() {
 #endif
 }
 
-bool RegisterChildIPCChannel(mozilla::geckoargs::ChildProcessArgs& aArgs) {
+bool RegisterChildIPCChannel(mozilla::geckoargs::ChildProcessArgs& aArgs,
+                             GeckoChildID aID) {
   StaticMutexAutoLock lock(gCrashHelperClientMutex);
   if (gCrashHelperClient) {
+    auto childNotificationPipe = CrashReporter::GetChildNotificationPipe();
+#if defined(XP_WIN) || defined(XP_MACOSX) || defined(XP_IOS)
+    geckoargs::sCrashReporter.Put(childNotificationPipe, aArgs);
+#else
+    if (!childNotificationPipe) {
+      NS_WARNING("Could not create the child crash notification pipe");
+      return false;
+    }
+    geckoargs::sCrashReporter.Put(std::move(childNotificationPipe), aArgs);
+#endif  // defined(XP_MACOSX) || defined(XP_IOS) || defined(XP_WIN)
+
     RawIPCConnector connector = {};
-    if (!register_child_ipc_channel(gCrashHelperClient, &connector)) {
+    if (!register_child_ipc_channel(gCrashHelperClient, aID, &connector)) {
       return false;
     }
 
