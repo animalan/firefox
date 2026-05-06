@@ -10,5 +10,5 @@ edition = "2021"
 license = "MPL-2.0"
 
 [dependencies]
-jxl = { version = "0.4.1", features = ["all-simd"] }
+jxl = { git = "https://github.com/libjxl/jxl-rs", rev = "c41cbfaf34c2c8ebc3fb6655c885fe427ab9542a"}
 log = "0.4"
