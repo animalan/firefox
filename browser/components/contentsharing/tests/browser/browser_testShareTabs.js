@@ -5,16 +5,18 @@
 
 add_task(async function test_handleShareTabs() {
   await withContentSharingMockServer(async server => {
-    const tab1 = await BrowserTestUtils.openNewForegroundTab(
-      gBrowser,
-      "https://example.com"
-    );
-    const tab2 = await BrowserTestUtils.openNewForegroundTab(
-      gBrowser,
-      "https://example.com/1"
+    let tabs = [
+      BrowserTestUtils.addTab(gBrowser, "https://example.com"),
+      BrowserTestUtils.addTab(gBrowser, "https://example.com?1"),
+    ];
+
+    await Promise.all(
+      tabs.map(async t => {
+        await BrowserTestUtils.browserLoaded(t.linkedBrowser);
+      })
     );
 
-    await ContentSharingUtils.handleShareTabs([tab1, tab2]);
+    await ContentSharingUtils.handleShareTabs(tabs);
 
     Assert.equal(
       server.requests.length,
@@ -27,6 +29,7 @@ add_task(async function test_handleShareTabs() {
     await assertContentSharingModal(window, {
       share: body,
       url: server.mockResponse.url,
+      isSignedIn: false,
     });
 
     Assert.equal(body.type, "tabs", "Share type is 'tabs'");
@@ -38,15 +41,15 @@ add_task(async function test_handleShareTabs() {
     Assert.equal(body.links.length, 2, "Share contains 2 links");
     Assert.equal(
       body.links[0].url,
-      tab1.linkedBrowser.currentURI.displaySpec,
+      tabs[0].linkedBrowser.currentURI.displaySpec,
       "First link URL matches tab 1"
     );
     Assert.equal(
       body.links[1].url,
-      tab2.linkedBrowser.currentURI.displaySpec,
+      tabs[1].linkedBrowser.currentURI.displaySpec,
       "Second link URL matches tab 2"
     );
 
-    gBrowser.removeTabs([tab1, tab2]);
+    gBrowser.removeTabs(tabs);
   });
 });

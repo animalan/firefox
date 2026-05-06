@@ -33,12 +33,18 @@ async function assertContentSharingModal(window, expected) {
     "The window has the expected arguments"
   );
 
+  // Wait for the modal to be fully rendered
   const modalEl = await TestUtils.waitForCondition(() =>
     window.gDialogBox.dialog.frameContentWindow.document.querySelector(
       "content-sharing-modal"
     )
   );
-  await modalEl.updateComplete;
+  await TestUtils.waitForCondition(() => BrowserTestUtils.isVisible(modalEl));
+  await TestUtils.waitForCondition(() => modalEl.getUpdateComplete);
+  await modalEl.getUpdateComplete();
+  await TestUtils.waitForCondition(
+    () => modalEl.links?.length === Math.min(expected.share.links.length, 3)
+  );
 
   Assert.equal(
     modalEl.title.innerText,
@@ -58,6 +64,11 @@ async function assertContentSharingModal(window, expected) {
     "Modal has the expected number of links. Max of 3 links"
   );
   if (expected.share.links.length > 3) {
+    await TestUtils.waitForCondition(() =>
+      modalEl.moreLinks.innerText.startsWith(
+        `+${expected.share.links.length - 3}`
+      )
+    );
     Assert.ok(
       modalEl.moreLinks.innerText.startsWith(
         `+${expected.share.links.length - 3}`
