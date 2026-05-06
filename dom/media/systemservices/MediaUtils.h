@@ -348,8 +348,8 @@ void AwaitAll(
       TaskQueue::Create(do_AddRef(pool), "MozPromiseAwaitAll");
   RefPtr<typename Promise::AllPromiseType> p =
       Promise::All(taskQueue, aPromises);
-  Await(pool.forget(), p, std::move(aResolveFunction),
-        std::move(aRejectFunction));
+  Await(pool.forget(), p, std::forward<ResolveFunction>(aResolveFunction),
+        std::forward<RejectFunction>(aRejectFunction));
 }
 
 // Note: only works with exclusive MozPromise, as Promise::All would attempt

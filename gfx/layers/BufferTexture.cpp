@@ -285,7 +285,7 @@ gfx::SurfaceFormat BufferTextureData::GetFormat() const {
 struct ShmemHolderUserData {
   explicit ShmemHolderUserData(ShmemTextureData::ShmemHolder* aShmemHolder)
       : mShmemHolder(aShmemHolder) {}
-  ~ShmemHolderUserData() {}
+  ~ShmemHolderUserData() = default;
   RefPtr<ShmemTextureData::ShmemHolder> mShmemHolder;
 };
 
