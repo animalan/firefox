@@ -381,36 +381,8 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         val profilerStartTime = requireComponents.core.engine.profiler?.getProfilerTime()
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val activity = activity as HomeActivity
-        val components = requireComponents
 
-        lifecycleScope.launch(IO) {
-            val settings = requireContext().settings()
-
-            val showStories =
-                settings.showPocketRecommendationsFeature ||
-                    settings.privateModeAndStoriesEntryPointEnabled
-
-            val showSponsoredStories = showStories && settings.showPocketSponsoredStories
-
-            if (showStories) {
-                components.appStore.dispatch(
-                    ContentRecommendationsAction.ContentRecommendationsFetched(
-                        recommendations = components.core.pocketStoriesService.getContentRecommendations(),
-                    ),
-                )
-            } else {
-                components.appStore.dispatch(ContentRecommendationsAction.PocketStoriesClean)
-            }
-
-            if (showSponsoredStories) {
-                components.appStore.dispatch(
-                    ContentRecommendationsAction.SponsoredContentsChange(
-                        sponsoredContents = components.core.pocketStoriesService.getSponsoredContents(),
-                    ),
-                )
-            }
-        }
-
+        initStoriesState()
         initMessagingFeature()
         initTopSitesBinding()
         initRecentTabsListFeature()
@@ -966,6 +938,36 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
     internal fun removeCollection(tabCollection: TabCollection) {
         lifecycleScope.launch(IO) {
             requireComponents.core.tabCollectionStorage.removeCollection(tabCollection)
+        }
+    }
+
+    private fun initStoriesState() {
+        lifecycleScope.launch(IO) {
+            val settings = requireContext().settings()
+
+            val showStories =
+                settings.showPocketRecommendationsFeature ||
+                    settings.privateModeAndStoriesEntryPointEnabled
+
+            val showSponsoredStories = showStories && settings.showPocketSponsoredStories
+
+            if (showStories) {
+                requireComponents.appStore.dispatch(
+                    ContentRecommendationsAction.ContentRecommendationsFetched(
+                        recommendations = requireComponents.core.pocketStoriesService.getContentRecommendations(),
+                    ),
+                )
+            } else {
+                requireComponents.appStore.dispatch(ContentRecommendationsAction.PocketStoriesClean)
+            }
+
+            if (showSponsoredStories) {
+                requireComponents.appStore.dispatch(
+                    ContentRecommendationsAction.SponsoredContentsChange(
+                        sponsoredContents = requireComponents.core.pocketStoriesService.getSponsoredContents(),
+                    ),
+                )
+            }
         }
     }
 
