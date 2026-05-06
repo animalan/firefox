@@ -147,7 +147,7 @@
 #if defined(MOZ_SANDBOX)
 #  include "mozilla/SandboxSettings.h"
 #  if defined(XP_WIN)
-#    include "mozilla/ProcInfo.h"
+#    include "mozilla/CpuInfo.h"
 #    include "mozilla/sandboxTarget.h"
 #  elif defined(XP_LINUX)
 #    include "CubebUtils.h"
