@@ -160,12 +160,16 @@ impl JxlApiDecoder {
                     JxlOutputBuffer::new(output_buffer, height, bytes_per_row),
                     JxlOutputBuffer::new(k, height, width),
                 ];
-                self.inner.flush_pixels(&mut bufs).map_err(Error::from)
+                self.inner
+                    .flush_pixels(&mut bufs)
+                    .map(|_| ())
+                    .map_err(Error::from)
             }
             _ => {
                 let mut buf = JxlOutputBuffer::new(output_buffer, height, bytes_per_row);
                 self.inner
                     .flush_pixels(std::slice::from_mut(&mut buf))
+                    .map(|_| ())
                     .map_err(Error::from)
             }
         }
