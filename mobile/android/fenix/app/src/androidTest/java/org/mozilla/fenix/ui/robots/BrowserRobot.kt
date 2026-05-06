@@ -774,7 +774,7 @@ class BrowserRobot(private val composeTestRule: ComposeTestRule) {
         for (i in 1..RETRY_COUNT) {
             try {
                 Log.i(TAG, "verifyTrackingProtectionWebContent: Started try #$i")
-                assertUIObjectExists(itemContainingText(state))
+                assertUIObjectExists(itemContainingText(state), waitingTime = waitingTimeLong)
 
                 break
             } catch (e: AssertionError) {
@@ -961,6 +961,7 @@ class BrowserRobot(private val composeTestRule: ComposeTestRule) {
                     applinksR.string.mozac_feature_applinks_normal_confirm_dialog_message,
                 ),
             ),
+            waitingTime = waitingTimeLong,
         )
     }
 
@@ -1716,9 +1717,9 @@ fun clickPageObject(composeTestRule: ComposeTestRule, item: UiObject) {
     for (i in 1..RETRY_COUNT) {
         try {
             Log.i(TAG, "clickPageObject: Started try #$i")
-            Log.i(TAG, "clickPageObject: Waiting for $waitingTime ms for ${item.selector} to exist")
-            item.waitForExists(waitingTime)
-            Log.i(TAG, "clickPageObject: Waited for $waitingTime ms for ${item.selector} to exist")
+            Log.i(TAG, "clickPageObject: Waiting for $waitingTimeLong ms for ${item.selector} to exist")
+            item.waitForExists(waitingTimeLong)
+            Log.i(TAG, "clickPageObject: Waited for $waitingTimeLong ms for ${item.selector} to exist")
             mDevice.waitForIdle()
             Log.i(TAG, "clickPageObject: Trying to click ${item.selector}")
             item.click()

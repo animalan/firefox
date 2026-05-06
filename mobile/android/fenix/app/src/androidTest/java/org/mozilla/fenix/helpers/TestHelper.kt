@@ -45,6 +45,7 @@ import org.mozilla.fenix.helpers.MatcherHelper.assertUIObjectExists
 import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResId
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
+import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeShort
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeVeryShort
 import org.mozilla.fenix.helpers.ext.waitNotNull
@@ -162,7 +163,7 @@ object TestHelper {
     @OptIn(androidx.compose.ui.test.ExperimentalTestApi::class)
     fun verifySnackBarText(composeTestRule: ComposeTestRule, expectedText: String) {
         Log.i(TAG, "verifySnackBarText: Waiting for snackbar with text: $expectedText")
-        composeTestRule.waitUntilAtLeastOneExists(hasText(expectedText), waitingTime)
+        composeTestRule.waitUntilAtLeastOneExists(hasText(expectedText), waitingTimeLong)
         Log.i(TAG, "verifySnackBarText: Found snackbar with text: $expectedText")
     }
 

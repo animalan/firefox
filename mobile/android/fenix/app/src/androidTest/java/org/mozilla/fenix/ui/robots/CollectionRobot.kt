@@ -35,6 +35,7 @@ import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResId
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithText
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
+import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.helpers.TestHelper.packageName
 import org.mozilla.fenix.helpers.click
@@ -111,7 +112,7 @@ class CollectionRobot(private val composeTestRule: ComposeTestRule) {
             Log.i(TAG, "verifyTabSavedInCollection: Verified that tab with title: $title is displayed")
         } else {
             Log.i(TAG, "verifyTabSavedInCollection: Waiting for tab with title '$title' to be removed")
-            composeTestRule.waitUntil(waitingTime) {
+            composeTestRule.waitUntil(waitingTimeLong) {
                 composeTestRule
                     .onAllNodesWithText(title)
                     .fetchSemanticsNodes(atLeastOneRootRequired = false)

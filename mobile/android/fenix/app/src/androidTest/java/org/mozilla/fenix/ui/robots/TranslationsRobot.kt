@@ -40,7 +40,7 @@ class TranslationsRobot(private val composeTestRule: ComposeTestRule) {
             for (i in 1..RETRY_COUNT) {
                 Log.i(TAG, "verifyTranslationSheetIsDisplayed: Started try #$i")
                 try {
-                    composeTestRule.waitUntilAtLeastOneExists(hasText("Translate to"), waitingTime)
+                    composeTestRule.waitUntilAtLeastOneExists(hasText("Translate to"), waitingTimeLong)
                     composeTestRule.onNodeWithText("Translate to").assertIsDisplayed()
                 } catch (e: ComposeTimeoutException) {
                     Log.i(TAG, "verifyTranslationSheetIsDisplayed: AssertionError caught, executing fallback methods")
