@@ -36,7 +36,7 @@ moz-button.footer-action-button::part(button) {
       --button-background-color-ghost: transparent;
       --button-text-color-ghost: var(--smartwindow-icon-color-accent-primary-desaturated);
       /* Active state is using a different text color for a11y contrast */
-      --button-text-color-ghost-active: light-dark(var(--color-violet-90), var(--color-neutral-0, #f6f8ff));
+      --button-text-color-ghost-active: light-dark(var(--color-violet-90), var(--color-gray-0, #f6f8ff));
       --button-text-color-ghost-hover: var(--smartwindow-icon-color-accent-primary-desaturated);
       --button-background-color-ghost-active: light-dark(
         color-mix(in srgb, var(--color-violet-60) 30%, transparent),
