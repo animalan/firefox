@@ -36,6 +36,7 @@ EXPORTS += [
 ]
 
 SOURCES += [
+    "CodecInfo.cpp",
     "CubebDeviceEnumerator.cpp",
 ]
 
@@ -115,6 +116,9 @@ EXPORTS.mozilla += [
 ]
 EXPORTS.mozilla.dom += [
     "RTCCertificate.h",
+]
+EXPORTS.mozilla.media.webrtc += [
+    "CodecInfo.h",
 ]
 
 include("/ipc/chromium/chromium-config.mozbuild")
