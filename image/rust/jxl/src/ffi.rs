@@ -311,8 +311,13 @@ pub unsafe extern "C" fn jxl_decoder_flush_pixels(
         // SAFETY: Caller guarantees k_buffer is non-null and valid for k_buffer_len bytes.
         Some(unsafe { slice::from_raw_parts_mut(k_buffer, k_buffer_len) })
     };
+    // Ok(true) means new pixels were rendered and written to the buffer since
+    // the last flush_pixels call.
+    // Ok(false) means nothing new was rendered since the last flush_pixels
+    // call.
     match decoder.flush_pixels(buf, k_slice) {
-        Ok(()) => JxlDecoderStatus::Ok,
+        Ok(true) => JxlDecoderStatus::Ok,
+        Ok(false) => JxlDecoderStatus::NeedMoreData,
         Err(_) => JxlDecoderStatus::Error,
     }
 }

@@ -138,13 +138,15 @@ impl JxlApiDecoder {
         &self.icc_profile_cache
     }
 
-    /// Flush partially-decoded pixels into `output_buffer`.
+    /// Flush partially-decoded pixels into `output_buffer`. Returns true if any new
+    /// pixels were written since the previous call; false if nothing new was
+    /// rendered and the buffer is unchanged.
     /// `k_buffer` receives the K (Black) channel (1 byte/pixel) for CMYK images.
     pub fn flush_pixels(
         &mut self,
         output_buffer: &mut [u8],
         k_buffer: Option<&mut [u8]>,
-    ) -> Result<(), Error> {
+    ) -> Result<bool, Error> {
         let (width, height) = self
             .inner
             .basic_info()
@@ -160,16 +162,12 @@ impl JxlApiDecoder {
                     JxlOutputBuffer::new(output_buffer, height, bytes_per_row),
                     JxlOutputBuffer::new(k, height, width),
                 ];
-                self.inner
-                    .flush_pixels(&mut bufs)
-                    .map(|_| ())
-                    .map_err(Error::from)
+                self.inner.flush_pixels(&mut bufs).map_err(Error::from)
             }
             _ => {
                 let mut buf = JxlOutputBuffer::new(output_buffer, height, bytes_per_row);
                 self.inner
                     .flush_pixels(std::slice::from_mut(&mut buf))
-                    .map(|_| ())
                     .map_err(Error::from)
             }
         }

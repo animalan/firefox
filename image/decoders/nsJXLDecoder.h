@@ -23,6 +23,12 @@ class nsJXLDecoder final : public Decoder {
 
   DecoderType GetType() const override { return DecoderType::JXL; }
 
+#ifdef DEBUG
+  // Debug-only (for tests): number of times WritePixelRowsToPipe has run on
+  // this decoder. Counts both partial flushes and the final frame write.
+  uint32_t GetWritePixelRowsCount() const { return mWritePixelRowsCount; }
+#endif
+
  protected:
   nsresult InitInternal() override;
   LexerResult DoDecode(SourceBufferIterator& aIterator,
@@ -132,6 +138,10 @@ class nsJXLDecoder final : public Decoder {
   Maybe<SurfacePipe> mCurrentPipe;
 
   bool mIteratorComplete = false;
+
+#ifdef DEBUG
+  uint32_t mWritePixelRowsCount = 0;
+#endif
 };
 
 }  // namespace mozilla::image
