@@ -27,6 +27,7 @@ class nsIGlobalObject;
 namespace mozilla {
 class ErrorResult;
 class MediaContainerType;
+class MediaExtendedMIMEType;
 class TaskQueue;
 class TrackInfo;
 
@@ -83,9 +84,9 @@ class MediaCapabilities final : public nsISupports, public nsWrapperCache {
       const VideoConfiguration& aConfig) const;
   Maybe<MediaContainerType> CheckAudioConfiguration(
       const AudioConfiguration& aConfig) const;
-  bool CheckTypeForMediaSource(const nsAString& aType);
-  bool CheckTypeForFile(const nsAString& aType);
-  bool CheckTypeForEncoder(const nsAString& aType);
+  bool CheckTypeForMediaSource(const MediaExtendedMIMEType& aType) const;
+  bool CheckTypeForFile(const MediaExtendedMIMEType& aType) const;
+  bool CheckTypeForEncoder(const MediaExtendedMIMEType& aType) const;
   already_AddRefed<layers::KnowsCompositor> GetCompositor();
   void CreateMediaCapabilitiesDecodingInfo(
       const MediaDecodingConfiguration& aConfiguration, ErrorResult& aRv,

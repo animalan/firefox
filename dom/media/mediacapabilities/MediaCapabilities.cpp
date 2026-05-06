@@ -346,11 +346,11 @@ void MediaCapabilities::CreateMediaCapabilitiesDecodingInfo(
     }
 
     // We have a video configuration and it is valid. Check if it is supported.
-    supported &=
-        aConfiguration.mType == MediaDecodingType::File
-            ? CheckTypeForFile(aConfiguration.mVideo.Value().mContentType)
-            : CheckTypeForMediaSource(
-                  aConfiguration.mVideo.Value().mContentType);
+    Maybe<MediaExtendedMIMEType> mime =
+        MakeMediaExtendedMIMEType(aConfiguration.mVideo.Value().mContentType);
+    supported &= mime && (aConfiguration.mType == MediaDecodingType::File
+                              ? CheckTypeForFile(*mime)
+                              : CheckTypeForMediaSource(*mime));
   }
   if (aConfiguration.mAudio.WasPassed()) {
     audioContainer = CheckAudioConfiguration(aConfiguration.mAudio.Value());
@@ -359,11 +359,11 @@ void MediaCapabilities::CreateMediaCapabilitiesDecodingInfo(
       return;
     }
     // We have an audio configuration and it is valid. Check if it is supported.
-    supported &=
-        aConfiguration.mType == MediaDecodingType::File
-            ? CheckTypeForFile(aConfiguration.mAudio.Value().mContentType)
-            : CheckTypeForMediaSource(
-                  aConfiguration.mAudio.Value().mContentType);
+    Maybe<MediaExtendedMIMEType> mime =
+        MakeMediaExtendedMIMEType(aConfiguration.mAudio.Value().mContentType);
+    supported &= mime && (aConfiguration.mType == MediaDecodingType::File
+                              ? CheckTypeForFile(*mime)
+                              : CheckTypeForMediaSource(*mime));
   }
 
   if (!supported) {
@@ -818,8 +818,9 @@ already_AddRefed<Promise> MediaCapabilities::EncodingInfo(
       return nullptr;
     }
     // We have a video configuration and it is valid. Check if it is supported.
-    supported &=
-        CheckTypeForEncoder(aConfiguration.mVideo.Value().mContentType);
+    Maybe<MediaExtendedMIMEType> mime =
+        MakeMediaExtendedMIMEType(aConfiguration.mVideo.Value().mContentType);
+    supported &= mime && CheckTypeForEncoder(*mime);
   }
   if (aConfiguration.mAudio.WasPassed()) {
     if (!CheckAudioConfiguration(aConfiguration.mAudio.Value())) {
@@ -827,8 +828,9 @@ already_AddRefed<Promise> MediaCapabilities::EncodingInfo(
       return nullptr;
     }
     // We have an audio configuration and it is valid. Check if it is supported.
-    supported &=
-        CheckTypeForEncoder(aConfiguration.mAudio.Value().mContentType);
+    Maybe<MediaExtendedMIMEType> mime =
+        MakeMediaExtendedMIMEType(aConfiguration.mAudio.Value().mContentType);
+    supported &= mime && CheckTypeForEncoder(*mime);
   }
 
   MediaCapabilitiesInfo info;
@@ -884,28 +886,30 @@ Maybe<MediaContainerType> MediaCapabilities::CheckAudioConfiguration(
   return Some(MediaContainerType(std::move(*container)));
 }
 
-bool MediaCapabilities::CheckTypeForMediaSource(const nsAString& aType) {
+bool MediaCapabilities::CheckTypeForMediaSource(
+    const MediaExtendedMIMEType& aType) const {
   IgnoredErrorResult rv;
   MediaSource::IsTypeSupported(
-      aType, nullptr /* DecoderDoctorDiagnostics */, rv,
+      NS_ConvertUTF8toUTF16(aType.OriginalString()),
+      nullptr /* DecoderDoctorDiagnostics */, rv,
       Some(mParent->ShouldResistFingerprinting(RFPTarget::MediaCapabilities)));
 
   return !rv.Failed();
 }
 
-bool MediaCapabilities::CheckTypeForFile(const nsAString& aType) {
-  Maybe<MediaContainerType> containerType = MakeMediaContainerType(aType);
-  if (!containerType) {
-    return false;
-  }
+bool MediaCapabilities::CheckTypeForFile(
+    const MediaExtendedMIMEType& aType) const {
+  MediaContainerType containerType(aType);
 
   return DecoderTraits::CanHandleContainerType(
-             *containerType, nullptr /* DecoderDoctorDiagnostics */) !=
+             containerType, nullptr /* DecoderDoctorDiagnostics */) !=
          CANPLAY_NO;
 }
 
-bool MediaCapabilities::CheckTypeForEncoder(const nsAString& aType) {
-  return MediaRecorder::IsTypeSupported(aType);
+bool MediaCapabilities::CheckTypeForEncoder(
+    const MediaExtendedMIMEType& aType) const {
+  return MediaRecorder::IsTypeSupported(
+      NS_ConvertUTF8toUTF16(aType.OriginalString()));
 }
 
 already_AddRefed<layers::KnowsCompositor> MediaCapabilities::GetCompositor() {
