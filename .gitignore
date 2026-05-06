@@ -270,6 +270,8 @@ mobile/ios/GeckoTestBrowser/GeckoTestBrowser.xcodeproj/xcuserdata
 /dom/base/rust/target/
 /servo/components/style/target/
 /dom/webgpu/tests/cts/vendor/target/
+/third_party/application-services/**/target/
+/third_party/application-services/**/Cargo.lock
 /tools/update-verify/marannon/target/
 
 # Ignore mozharness execution files
