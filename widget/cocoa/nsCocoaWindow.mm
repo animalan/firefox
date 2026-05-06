@@ -5111,7 +5111,7 @@ void nsCocoaWindow::Destroy() {
 
   nsCOMPtr<nsIWidget> kungFuDeathGrip(this);
 
-  // Deal with the possiblity that we're being destroyed while running modal.
+  // Deal with the possibility that we're being destroyed while running modal.
   if (mModal) {
     SetModal(false);
   }
@@ -6603,7 +6603,7 @@ nsresult nsCocoaWindow::SetTitle(const nsAString& aTitle) {
 // The drag manager has let us know that something related to a drag has
 // occurred in this window. It could be any number of things, ranging from
 // a drop, to a drag enter/leave, or a drag over event. The actual event
-// is passed in |aMessage| and is passed along to our event hanlder so Gecko
+// is passed in |aMessage| and is passed along to our event handler so Gecko
 // knows about it.
 bool nsCocoaWindow::DragEvent(unsigned int aMessage,
                               mozilla::gfx::Point aMouseGlobal,
