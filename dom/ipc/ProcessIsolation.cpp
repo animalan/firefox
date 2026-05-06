@@ -558,10 +558,10 @@ static bool ShouldIsolateSite(nsIPrincipal* aPrincipal,
 
 static Result<nsCString, nsresult> SpecialBehaviorRemoteType(
     IsolationBehavior aBehavior, const nsACString& aCurrentRemoteType,
-    WindowGlobalParent* aParentWindow) {
+    WindowGlobalParent* aParentWindow, const OriginAttributes& aAttrs) {
   switch (aBehavior) {
     case IsolationBehavior::ForceWebRemoteType:
-      return {WEB_REMOTE_TYPE};
+      return {SharedWebRemoteType(aAttrs)};
     case IsolationBehavior::PrivilegedAbout:
       // The privileged about: content process cannot be disabled, as it
       // causes various actors to break.
@@ -575,7 +575,7 @@ static Result<nsCString, nsresult> SpecialBehaviorRemoteType(
       if (StaticPrefs::browser_tabs_remote_separateFileUriProcess()) {
         return {FILE_REMOTE_TYPE};
       }
-      return {WEB_REMOTE_TYPE};
+      return {SharedWebRemoteType(aAttrs)};
     case IsolationBehavior::PrivilegedMozilla:
       return {PRIVILEGEDMOZILLA_REMOTE_TYPE};
     case IsolationBehavior::Parent:
@@ -602,6 +602,15 @@ enum class WebProcessType {
 };
 
 }  // namespace
+
+nsCString SharedWebRemoteType(const OriginAttributes& aAttrs,
+                              bool aDisableJit) {
+  nsAutoCString suffix = OriginSuffixForRemoteType(aAttrs, aDisableJit);
+  if (suffix.IsEmpty()) {
+    return WEB_REMOTE_TYPE;
+  }
+  return WEB_REMOTE_TYPE "="_ns + suffix;
+}
 
 Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
     CanonicalBrowsingContext* aTopBC, WindowGlobalParent* aParentWindow,
@@ -833,7 +842,8 @@ Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
   // If the load has any special remote type handling, do so at this point.
   if (behavior != IsolationBehavior::WebContent) {
     options.mRemoteType = MOZ_TRY(
-        SpecialBehaviorRemoteType(behavior, aCurrentRemoteType, aParentWindow));
+        SpecialBehaviorRemoteType(behavior, aCurrentRemoteType, aParentWindow,
+                                  aTopBC->OriginAttributesRef()));
 
     if (options.mRemoteType != aCurrentRemoteType &&
         (options.mRemoteType.IsEmpty() || aCurrentRemoteType.IsEmpty())) {
@@ -951,7 +961,8 @@ Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
 
   switch (webProcessType) {
     case WebProcessType::Web:
-      options.mRemoteType = WEB_REMOTE_TYPE;
+      options.mRemoteType =
+          SharedWebRemoteType(aTopBC->OriginAttributesRef(), !isJitAllowed);
       break;
     case WebProcessType::WebIsolated:
       options.mRemoteType =
@@ -1001,7 +1012,8 @@ Result<WorkerIsolationOptions, nsresult> IsolationOptionsForWorker(
   // processes. Currently process selection for workers occurs before response
   // headers are available, so we will never select to load a shared worker in a
   // COOP+COEP content process.
-  nsCString preferredRemoteType = DEFAULT_REMOTE_TYPE;
+  nsCString preferredRemoteType =
+      SharedWebRemoteType(aPrincipal->OriginAttributesRef());
   if (aWorkerKind == WorkerKind::WorkerKindShared &&
       !StringBeginsWith(aCurrentRemoteType,
                         WITH_COOP_COEP_REMOTE_TYPE_PREFIX)) {
@@ -1077,7 +1089,8 @@ Result<WorkerIsolationOptions, nsresult> IsolationOptionsForWorker(
 
   if (behavior != IsolationBehavior::WebContent) {
     options.mRemoteType = MOZ_TRY(
-        SpecialBehaviorRemoteType(behavior, preferredRemoteType, nullptr));
+        SpecialBehaviorRemoteType(behavior, preferredRemoteType, nullptr,
+                                  resultOrPrecursor->OriginAttributesRef()));
 
     MOZ_LOG(
         gProcessIsolationLog, LogLevel::Debug,
@@ -1088,13 +1101,14 @@ Result<WorkerIsolationOptions, nsresult> IsolationOptionsForWorker(
     return options;
   }
 
+  nsAutoCString siteOriginNoSuffix;
+  MOZ_TRY(resultOrPrecursor->GetSiteOriginNoSuffix(siteOriginNoSuffix));
+
+  bool isJitAllowed = AllowJITForSiteOrigin(siteOriginNoSuffix, nullptr);
+
   // If we should be isolating this site, we can determine the correct fission
   // remote type from the principal's site-origin.
   if (ShouldIsolateSite(resultOrPrecursor, aUseRemoteSubframes)) {
-    nsAutoCString siteOriginNoSuffix;
-    MOZ_TRY(resultOrPrecursor->GetSiteOriginNoSuffix(siteOriginNoSuffix));
-
-    bool isJitAllowed = AllowJITForSiteOrigin(siteOriginNoSuffix, nullptr);
     nsAutoCString originSuffix = OriginSuffixForRemoteType(
         resultOrPrecursor->OriginAttributesRef(), !isJitAllowed);
 
@@ -1107,7 +1121,8 @@ Result<WorkerIsolationOptions, nsresult> IsolationOptionsForWorker(
             ("Isolating web content %s worker in remote type (%s)",
              WorkerKindName(aWorkerKind), options.mRemoteType.get()));
   } else {
-    options.mRemoteType = WEB_REMOTE_TYPE;
+    options.mRemoteType = SharedWebRemoteType(
+        resultOrPrecursor->OriginAttributesRef(), !isJitAllowed);
 
     MOZ_LOG(gProcessIsolationLog, LogLevel::Debug,
             ("Loading web content %s worker in shared web remote type",
@@ -1279,8 +1294,8 @@ Result<nsCString, nsresult> PredictRemoteTypeForURI(
 
   // If we have a special behaviour RemoteType, return it.
   if (behavior != IsolationBehavior::WebContent) {
-    nsCString remoteType = MOZ_TRY(
-        SpecialBehaviorRemoteType(behavior, aPreferredRemoteType, nullptr));
+    nsCString remoteType = MOZ_TRY(SpecialBehaviorRemoteType(
+        behavior, aPreferredRemoteType, nullptr, aOriginAttributes));
 
     MOZ_LOG(gProcessIsolationLog, LogLevel::Debug,
             ("Predicting specific remote type (%s) due to a special case "
@@ -1318,7 +1333,7 @@ Result<nsCString, nsresult> PredictRemoteTypeForURI(
     remoteType =
         FISSION_WEB_REMOTE_TYPE "="_ns + siteOriginNoSuffix + originSuffix;
   } else {
-    remoteType = WEB_REMOTE_TYPE;
+    remoteType = SharedWebRemoteType(aOriginAttributes, !isJitAllowed);
   }
 
   MOZ_LOG(gProcessIsolationLog, LogLevel::Verbose,
