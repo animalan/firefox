@@ -25,9 +25,8 @@ nsJXLDecoder::nsJXLDecoder(RasterImage* aImage) : Decoder(aImage) {
 }
 
 nsresult nsJXLDecoder::InitInternal() {
-  bool premultiply = !(GetSurfaceFlags() & SurfaceFlags::NO_PREMULTIPLY_ALPHA);
   bool hasCMS = GetCMSOutputProfile() && mCMSMode != CMSMode::Off;
-  mDecoder.reset(jxl_decoder_new(IsMetadataDecode(), premultiply, hasCMS));
+  mDecoder.reset(jxl_decoder_new(IsMetadataDecode(), hasCMS));
   if (WantsFrameCount()) {
     mScanner.reset(jxl_scanner_new());
   }
@@ -429,7 +428,6 @@ nsJXLDecoder::FrameOutputResult nsJXLDecoder::BeginFrame() {
             ? SurfaceFormat::OS_RGBA
             : SurfaceFormat::OS_RGBX;
   }
-  SurfacePipeFlags pipeFlags = SurfacePipeFlags();
 
   // mTransform usage: for Rgba8 it is passed to SurfacePipe for inline CMS;
   // for all other formats it is applied per-row in WritePixelRowsToPipe
@@ -438,6 +436,15 @@ nsJXLDecoder::FrameOutputResult nsJXLDecoder::BeginFrame() {
   // missing/invalid, or the profile color space doesn't match mPixelFormat.
   bool usePipeTransform = mPixelFormat.value() == PixelFormat::Rgba8;
   qcms_transform* pipeTransform = usePipeTransform ? mTransform : nullptr;
+
+  // jxl-rs always outputs straight alpha; the pipe handles premultiplication
+  // for all formats. CMYK is excluded as its pipe input has no alpha channel.
+  const bool wantPremultiply =
+      !(GetSurfaceFlags() & SurfaceFlags::NO_PREMULTIPLY_ALPHA);
+  SurfacePipeFlags pipeFlags = SurfacePipeFlags();
+  if (wantPremultiply && mPixelFormat.value() != PixelFormat::Cmyk8) {
+    pipeFlags |= SurfacePipeFlags::PREMULTIPLY_ALPHA;
+  }
 
   mCurrentPipe = SurfacePipeFactory::CreateSurfacePipe(
       this, size, OutputSize(), FullFrame(), inFormat, outFormat, animParams,
@@ -532,7 +539,7 @@ bool nsJXLDecoder::WritePixelRowsToPipe() {
             mTransform, reinterpret_cast<const uint16_t*>(currentRow),
             mU8RowBuf.begin(), size.width);
       } else {
-        // No CMS transform: clamp f16 to u8 without color management.
+        // No CMS: clip f16 to [0,1].
         const uint16_t* src = reinterpret_cast<const uint16_t*>(currentRow);
         for (int32_t i = 0; i < size.width * 4; ++i) {
           float v = F16ToF32(src[i]);

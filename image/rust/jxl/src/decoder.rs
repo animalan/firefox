@@ -66,10 +66,8 @@ enum BufMode<'a> {
 }
 
 impl JxlApiDecoder {
-    pub fn new(metadata_only: bool, premultiply: bool, has_cms: bool) -> Self {
-        let mut options = JxlDecoderOptions::default();
-        options.premultiply_output = premultiply;
-
+    pub fn new(metadata_only: bool, has_cms: bool) -> Self {
+        let options = JxlDecoderOptions::default();
         let inner = JxlDecoderInner::new(options);
 
         Self {
