@@ -15,6 +15,7 @@
 #include "mozilla/ErrorResult.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Result.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/Variant.h"
 #include "mozilla/dom/MediaCapabilitiesBinding.h"
 #include "mozilla/dom/Promise.h"
@@ -85,7 +86,8 @@ ValidationResult CheckMIMETypeSupport(
   // unsupported.
   // Step 3: If transferFunction is present and is not valid for
   // mimeType, return unsupported.
-  if (aColorGamut || aTransferFunction) {
+  if ((aColorGamut || aTransferFunction) &&
+      StaticPrefs::media_mediacapabilities_color_space_validation_enabled()) {
     // colorGamut and transferFunction are video-only properties
     MOZ_ASSERT_IF(aMime.Type().HasAudioMajorType(), !aColorGamut);
     MOZ_ASSERT_IF(aMime.Type().HasAudioMajorType(), !aTransferFunction);
@@ -324,7 +326,9 @@ ValidationResult IsValidVideoConfiguration(const VideoConfiguration& aConfig,
     // ScalabilityMode is only applicable to MediaEncodingConfiguration
     // for type webrtc.
     if (aConfig.mScalabilityMode.WasPassed() &&
-        aType != MediaEncodingType::Webrtc) {
+        aType != MediaEncodingType::Webrtc &&
+        StaticPrefs::
+            media_mediacapabilities_scalability_mode_validation_enabled()) {
       ValidationResult err = Err(ValidationError::InapplicableMember);
       LOG(
           ("[Invalid VideoConfiguration (Scalability Mode, %s) #2] Rejecting "
@@ -334,7 +338,8 @@ ValidationResult IsValidVideoConfiguration(const VideoConfiguration& aConfig,
       return err;
     }
     // colorGamut is only applicable to MediaDecodingConfiguration
-    if (aConfig.mColorGamut.WasPassed()) {
+    if (aConfig.mColorGamut.WasPassed() &&
+        StaticPrefs::media_mediacapabilities_color_space_validation_enabled()) {
       ValidationResult err = Err(ValidationError::InapplicableMember);
       LOG(("[Invalid VideoConfiguration (Color Gamut, %s) #2] Rejecting '%s'\n",
            EnumValueToString(err.unwrapErr()),
@@ -342,7 +347,8 @@ ValidationResult IsValidVideoConfiguration(const VideoConfiguration& aConfig,
       return err;
     }
     // transferFunction is only applicable to MediaDecodingConfiguration
-    if (aConfig.mTransferFunction.WasPassed()) {
+    if (aConfig.mTransferFunction.WasPassed() &&
+        StaticPrefs::media_mediacapabilities_color_space_validation_enabled()) {
       ValidationResult err = Err(ValidationError::InapplicableMember);
       LOG(
           ("[Invalid VideoConfiguration (Transfer Function, %s) #2] Rejecting "
