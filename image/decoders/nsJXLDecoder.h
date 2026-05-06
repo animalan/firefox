@@ -35,6 +35,16 @@ class nsJXLDecoder final : public Decoder {
 
   enum class DecoderState { Initial, HaveBasicInfo };
 
+  // jxl-rs output pixel format. Determines buffer stride, the conversion path
+  // in WritePixelRowsToPipe, and the SurfacePipe input format.
+  enum class PixelFormat {
+    Rgba8,       // u8 R,G,B,A (A=255 when no alpha channel)
+    Gray8,       // u8 G
+    GrayAlpha8,  // u8 G,A
+    Cmyk8,       // u8 C,M,Y,_ (4th byte unused); u8 K in mKBuffer
+    Rgba16f,     // f16 R,G,B,A, native-endian; only when has_cms=true
+  };
+
   enum class FrameOutputResult {
     BufferAllocated,
     FrameAdvanced,
@@ -54,11 +64,32 @@ class nsJXLDecoder final : public Decoder {
   LexerResult ScanForFrameCount(SourceBufferIterator& aIterator,
                                 IResumable* aOnResume);
 
+  static PixelFormat DetectPixelFormat(JxlApiDecoder* aDecoder,
+                                       const JxlBasicInfo& aBasicInfo);
   FrameOutputResult BeginFrame();
+  void BuildCMSTransform();
   nsresult FinishFrame();
   void FlushPartialFrame();
+  bool WritePixelRowsToPipe();
 
   LexerResult DrainFrames();
+
+  size_t BytesPerPixel() const {
+    switch (mPixelFormat.value()) {
+      case PixelFormat::Rgba8:
+        return 4;
+      case PixelFormat::Gray8:
+        return 1;
+      case PixelFormat::GrayAlpha8:
+        return 2;
+      case PixelFormat::Cmyk8:
+        return 4;
+      case PixelFormat::Rgba16f:
+        return 8;
+    }
+    MOZ_ASSERT_UNREACHABLE("unhandled PixelFormat");
+    return 4;
+  }
 
   std::unique_ptr<JxlApiDecoder, JxlDecoderDeleter> mDecoder;
   std::unique_ptr<JxlApiDecoder, JxlDecoderDeleter> mScanner;
@@ -67,7 +98,35 @@ class nsJXLDecoder final : public Decoder {
 
   uint32_t mFrameIndex = 0;
 
+  // Field wrapper that asserts on read before first write and asserts on any
+  // write after the first.
+  template <typename T>
+  class WriteOnce {
+   public:
+    T value() const {
+      MOZ_ASSERT(mIsSet);
+      return mValue;
+    }
+    void set(T aVal) {
+      MOZ_ASSERT(!mIsSet);
+      mIsSet = true;
+      mValue = aVal;
+    }
+
+   private:
+    bool mIsSet = false;
+    T mValue{};
+  };
+
+  WriteOnce<PixelFormat> mPixelFormat;
+
+  // Per-row u8 output buffer for manual CMS paths (HDR, gray, CMYK).
+  Vector<uint8_t> mU8RowBuf;
+
+  // Full-frame decoded pixel buffer; allocated in BeginFrame, sized
+  // width * height * BytesPerPixel(). Passed to jxl-rs as the output buffer.
   Vector<uint8_t> mPixelBuffer;
+  Vector<uint8_t> mKBuffer;  // K (Black) channel, 1 byte/pixel, for CMYK images
   Maybe<SurfacePipe> mCurrentPipe;
 
   bool mIteratorComplete = false;
