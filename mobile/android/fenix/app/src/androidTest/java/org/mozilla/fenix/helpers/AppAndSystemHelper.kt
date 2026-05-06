@@ -555,12 +555,16 @@ object AppAndSystemHelper {
     }
 
     fun clickAddToHomeScreenButton() {
-        Log.i(TAG, "clickAddToHomeScreenButton: Waiting for $waitingTimeLong ms for the \"Add to home screen\" system dialog button to exist")
-        itemContainingText("Add to home screen").waitForExists(waitingTimeLong)
-        Log.i(TAG, "clickAddToHomeScreenButton: Waited for $waitingTimeLong ms for the \"Add to home screen\" system dialog button to exist")
+        Log.i(TAG, "clickAddToHomeScreenButton: Waiting for $waitingTimeLong ms for the \"Add to home screen\" system dialog button to appear")
+        val button = mDevice.wait(
+            Until.findObject(By.textContains("Add to home screen")),
+            waitingTimeLong,
+        ) ?: throw AssertionError(
+            "clickAddToHomeScreenButton: \"Add to home screen\" system dialog button did not appear after $waitingTimeLong ms",
+        )
         Log.i(TAG, "clickAddToHomeScreenButton: Trying to click the \"Add to home screen\" system dialog button and wait for $waitingTimeShort ms for a new window")
-        itemContainingText("Add to home screen").clickAndWaitForNewWindow(waitingTimeShort)
-        Log.i(TAG, "clickAddToHomeScreenButton: Clicked the \"Add to home screen\" system dialog button and wait for $waitingTimeShort ms for a new window")
+        button.clickAndWait(Until.newWindow(), waitingTimeShort)
+        Log.i(TAG, "clickAddToHomeScreenButton: Clicked the \"Add to home screen\" system dialog button")
     }
 
     fun isTestLab(): Boolean {

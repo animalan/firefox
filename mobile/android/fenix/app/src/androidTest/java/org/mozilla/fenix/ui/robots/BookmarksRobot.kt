@@ -217,8 +217,17 @@ class BookmarksRobot(private val composeTestRule: ComposeTestRule) {
         Log.i(TAG, "clickParentFolderSelector: Waited for the Bookmarks folder to exist")
     }
 
+    @OptIn(ExperimentalTestApi::class)
     fun expandSelectableFolder(title: String) {
         Log.i(TAG, "expandSelectableFolder: Trying to click expand select folder selector")
+        composeTestRule.waitUntil(waitingTime) {
+            composeTestRule.onAllNodes(
+                hasContentDescription(
+                    getStringResource(R.string.bookmark_select_folder_expand_folder_content_description, title),
+                ),
+                useUnmergedTree = true,
+            ).fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
+        }
         composeTestRule.expandBookmarkFolderSelector(title).performClick()
         Log.i(TAG, "expandSelectableFolder: Clicked expand select folder selector")
     }
