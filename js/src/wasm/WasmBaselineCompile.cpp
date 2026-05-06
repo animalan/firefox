@@ -7408,10 +7408,10 @@ void BaseCompiler::emitPreBarrier(RegPtr valueAddr) {
 #endif
 #ifdef JS_CODEGEN_ARM64
   // The prebarrier stub assumes the PseudoStackPointer is set up.  It is OK
-  // to just move the sp to x28 here because x28 is not being used by the
+  // to just move the sp to x20 here because x20 is not being used by the
   // baseline compiler and need not be saved or restored.
-  MOZ_ASSERT(!GeneralRegisterSet::All().hasRegisterIndex(x28.asUnsized()));
-  masm.Mov(x28, sp);
+  MOZ_ASSERT(!GeneralRegisterSet::All().hasRegisterIndex(x20.asUnsized()));
+  masm.Mov(x20, sp);
 #endif
   // The prebarrier call preserves all volatile registers
   EmitWasmPreBarrierCallImmediate(masm, instance, scratch, valueAddr,
