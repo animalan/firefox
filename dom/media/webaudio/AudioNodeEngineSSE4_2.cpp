@@ -5,5 +5,5 @@
 #include "AudioNodeEngineGenericImpl.h"
 
 namespace mozilla {
-template struct Engine<xsimd::fma3<xsimd::sse4_2>>;
+template struct Engine<xsimd::sse4_2>;
 }  // namespace mozilla
