@@ -54,6 +54,7 @@ impl CrashHelperClient {
         Ok(CrashHelperClient {
             connector: client_endpoint,
             spawner_thread: Some(spawner_thread),
+            pid: 0, // Unused on Windows
         })
     }
 

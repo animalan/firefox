@@ -50,7 +50,11 @@ pub unsafe extern "C" fn crash_generator_logic_desktop(
     #[cfg(any(target_os = "ios", target_os = "macos"))]
     const BOOTSTRAP_UNKNOWN_SERVICE: std::ffi::c_int = 1102;
 
-    platform::daemonize();
+    // SAFETY: We have not spawned any other threads at this point.
+    unsafe {
+        platform::daemonize();
+    }
+
     logging::init();
 
     let breakpad_data = BreakpadData::new(breakpad_data);

@@ -4,4 +4,4 @@
 
 // This is just a no-op, the crash helper process is spawned as a detached
 // process in the first place.
-pub(crate) fn daemonize() {}
+pub(crate) unsafe fn daemonize() {}

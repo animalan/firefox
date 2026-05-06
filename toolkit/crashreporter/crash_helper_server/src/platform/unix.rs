@@ -2,7 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use nix::unistd::{fork, setsid, ForkResult};
+use nix::{
+    libc::_exit,
+    unistd::{fork, getpid, setsid, write, ForkResult},
+};
+use std::{io::stdout, os::fd::AsFd};
 
 // Daemonize the current process by forking it and then immediately returning
 // in the parent. This should have been done via a double fork() in the
@@ -14,7 +18,14 @@ use nix::unistd::{fork, setsid, ForkResult};
 //
 // Note that if this fails for some reason, the crash helper will still launch,
 // but not as a daemon. Not ideal but still better to have a fallback.
-pub(crate) fn daemonize() {
+//
+// # Safety
+//
+// This calls fork() which can only be done safely in a non-multi-threaded
+// environment. This is something that the caller must guarantee. If we have
+// spawned any other threads before calling this function then things might
+// break in unexpected ways.
+pub(crate) unsafe fn daemonize() {
     // Create a new process group and a new session, this guarantees
     // that the crash helper process will be disconnected from the
     // signals of Firefox main process' controlling terminal. Killing
@@ -25,16 +36,22 @@ pub(crate) fn daemonize() {
     // handle one in this context.
     let _ = setsid();
 
-    let res = unsafe { fork() };
-    let Ok(res) = res else {
-        return;
+    let pid = if let Ok(res) = fork() {
+        match res {
+            ForkResult::Child => {
+                return;
+            }
+            ForkResult::Parent { child } => child,
+        }
+    } else {
+        getpid()
     };
 
-    match res {
-        ForkResult::Child => {}
-        ForkResult::Parent { child: _ } => unsafe {
-            // We're done, exit cleanly
-            nix::libc::_exit(0);
-        },
-    }
+    // We're done, write the daemonized process pid to standard output if
+    // forking succeeded, or write the current process pid if it failed.
+    let raw_pid = pid.as_raw();
+    let raw_pid_bytes: [u8; 4] = raw_pid.to_ne_bytes();
+    let rv = write(stdout().as_fd(), &raw_pid_bytes);
+
+    _exit(if rv.is_ok_and(|rv| rv == 4) { 0 } else { 1 });
 }

@@ -35,6 +35,8 @@ mod platform;
 pub struct CrashHelperClient {
     connector: IPCConnector,
     spawner_thread: Option<JoinHandle<Result<ProcessHandle>>>,
+    #[allow(unused)]
+    pid: Pid,
 }
 
 impl CrashHelperClient {
