@@ -1185,9 +1185,10 @@ class Element : public FragmentOrElement {
   /**
    * Append to aOutDescription a string describing the element and its
    * attributes.
-   * If aShort is true, only the id and class attributes will be listed.
    */
-  void Describe(nsAString& aOutDescription, bool aShort = false) const;
+  enum class DescriptionKind { IdOnly, IdAndClass, AllAttributes };
+  void Describe(nsAString& aOutDescription,
+                DescriptionKind aKind = DescriptionKind::AllAttributes) const;
 
   /*
    * Attribute Mapping Helpers

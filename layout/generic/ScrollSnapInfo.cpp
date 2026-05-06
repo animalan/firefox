@@ -110,7 +110,8 @@ std::ostream& operator<<(std::ostream& aStream,
   nsAutoString string;
   const nsIContent* content = reinterpret_cast<nsIContent*>(aTarget.mTargetId);
   if (content->IsElement()) {
-    content->AsElement()->Describe(string);
+    content->AsElement()->Describe(string,
+                                   dom::Element::DescriptionKind::IdOnly);
   } else {
     string.AppendPrintf("(not an element)");
   }
