@@ -736,8 +736,7 @@ pub fn for_each_test_file(input: TokenStream) -> TokenStream {
                     "{}_{}",
                     fn_name,
                     relative_path.strip_suffix(".jxl").unwrap()
-                )
-                .replace(|c: char| !c.is_alphanumeric() && c != '_', "_");
+                );
                 let test_name = Ident::new(&test_name, fn_name.span());
                 tests.push(quote! {
                     #[test]

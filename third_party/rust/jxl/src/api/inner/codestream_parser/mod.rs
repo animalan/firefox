@@ -88,10 +88,6 @@ pub(super) struct CodestreamParser {
     // group indices that *might* have new renderable data.
     candidate_hf_sections: HashSet<usize>,
 
-    /// Set when `decode_and_render_hf_groups` actually writes to the output
-    /// buffer (i.e. `regions` is non-empty). Cleared by `flush_pixels`.
-    pub(super) pixels_dirty: bool,
-
     pub(super) has_more_frames: bool,
 
     header_needed_bytes: Option<u64>,
@@ -158,7 +154,6 @@ impl CodestreamParser {
             hf_global_section: None,
             hf_sections: vec![],
             candidate_hf_sections: HashSet::new(),
-            pixels_dirty: false,
             has_more_frames: true,
             header_needed_bytes: None,
             scanned_frames: Vec::new(),
@@ -259,7 +254,7 @@ impl CodestreamParser {
 
             let decode_start = self.frame_starts[decode_start_frame_index];
             let seek_target = VisibleFrameSeekTarget {
-                decode_start_file_offset: decode_start.file_offset as u64,
+                decode_start_file_offset: decode_start.file_offset,
                 remaining_in_box: decode_start.remaining_in_box,
                 visible_frames_to_skip: self
                     .visible_frame_index
@@ -489,9 +484,6 @@ impl CodestreamParser {
                             self.decoder_state = Some(decoder_state);
                         } else {
                             self.has_more_frames = false;
-                            // Return immediately so we don't re-enter the outer loop and hit the
-                            // API-misuse assertion below inside the same call.
-                            return Ok(());
                         }
                         self.skip_sections = false;
                     }
