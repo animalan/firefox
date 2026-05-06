@@ -26,7 +26,6 @@ import mozilla.components.concept.sync.OAuthAccount
 import mozilla.components.feature.tabs.TabsUseCases
 import mozilla.components.lib.state.ext.flow
 import mozilla.components.service.fxa.manager.FxaAccountManager
-import mozilla.components.support.base.feature.LifecycleAwareFeature
 import mozilla.components.support.base.log.logger.Logger
 
 private val logger = Logger("DefaultIPProtectionFeature")
@@ -38,6 +37,7 @@ private const val TOKEN_SCOPE = "https://identity.mozilla.com/apps/vpn"
  * @param engine [Engine] used to register the IP protection delegate and obtain the handler.
  * @param lazyAccountManager [Lazy] wrapper around [FxaAccountManager] that is used to supply
  * FxA tokens to the proxy Guardian.
+ * @param storage [IPProtectionAvailabilityStorage] exposes the availability of the feature.
  * @param store [IPProtectionStore] holds the feature state.
  * @param browserStore [BrowserStore] to observe enrollment tab URL changes.
  * @param tabsUseCases [TabsUseCases] to open/remove the enrollment tab.
@@ -46,10 +46,11 @@ private const val TOKEN_SCOPE = "https://identity.mozilla.com/apps/vpn"
 class DefaultIPProtectionFeature(
     private val engine: Engine,
     private val lazyAccountManager: Lazy<FxaAccountManager>,
+    private val storage: IPProtectionAvailabilityStorage,
     private val store: IPProtectionStore,
     private val browserStore: BrowserStore,
     private val tabsUseCases: TabsUseCases,
-) : IPProtectionFeature, LifecycleAwareFeature {
+) : IPProtectionFeature {
     private val scope = CoroutineScope(Dispatchers.Main)
     private var handler: IPProtectionHandler? = null
     private var enrollmentTabId: String? = null
@@ -69,7 +70,26 @@ class DefaultIPProtectionFeature(
         }
     }
 
-    override fun start() {
+    /**
+     * Starts listening for feature availability changes.
+     */
+    fun start() {
+        scope.launch {
+            storage.isFeatureAvailable
+                .distinctUntilChanged()
+                .collect { isAvailable ->
+                    if (isAvailable) {
+                        setUp()
+                    } else {
+                        tearDown()
+                    }
+                    store.dispatch(IPProtectionAction.AvailabilityChanged(isAvailable))
+                }
+        }
+        storage.init()
+    }
+
+    private fun setUp() {
         handler = engine.registerIPProtectionDelegate(object : IPProtectionDelegate {
             override fun onStateChanged(info: IPProtectionHandler.StateInfo) {
                 val state = info.toState()
@@ -95,7 +115,7 @@ class DefaultIPProtectionFeature(
         }
     }
 
-    override fun stop() {
+    private fun tearDown() {
         lazyAccountManager.value.unregister(accountObserver)
         engine.unregisterIPProtectionDelegate()
         handler?.setTokenProvider(null)

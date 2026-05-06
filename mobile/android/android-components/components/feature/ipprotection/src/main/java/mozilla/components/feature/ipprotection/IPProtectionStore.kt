@@ -9,16 +9,26 @@ import mozilla.components.lib.state.Middleware
 import mozilla.components.lib.state.Reducer
 import mozilla.components.lib.state.Store
 
-/** Actions that can be dispatched to [IPProtectionStore]. */
-sealed interface IPProtectionAction : Action {
-    /** Replaces the full IP protection state with a new snapshot from the GeckoView proxy. */
-    data class UpdateState(val state: IPProtectionState) : IPProtectionAction
+/**
+ * Actions that can be dispatched to [IPProtectionStore].
+ */
+sealed class IPProtectionAction : Action {
+    /**
+     * Reports a change in whether the IP protection feature is available to the user.
+     */
+    data class AvailabilityChanged(val isAvailable: Boolean) : IPProtectionAction()
+
+    /**
+    * Replaces the full IP protection state with a new snapshot from the GeckoView proxy.
+     */
+    data class UpdateState(val state: IPProtectionState) : IPProtectionAction()
 }
 
 internal fun iPProtectionReducer(
     state: IPProtectionState,
     action: IPProtectionAction,
 ): IPProtectionState = when (action) {
+    is IPProtectionAction.AvailabilityChanged -> state.copy(isAvailable = action.isAvailable)
     is IPProtectionAction.UpdateState -> state.copy(
         status = action.state.status,
         dataRemainingBytes = action.state.dataRemainingBytes,
@@ -29,8 +39,7 @@ internal fun iPProtectionReducer(
 }
 
 /**
- * Dedicated [Store] for IP protection state. Instantiated in the app's component graph and passed
- * into [DefaultIPProtectionFeature] and any UI consumers that need to observe IP protection state.
+ * [Store] for IP protection feature state.
  */
 class IPProtectionStore(
     initialState: IPProtectionState = IPProtectionState(),

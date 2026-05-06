@@ -107,7 +107,7 @@ import org.mozilla.fenix.components.Components
 import org.mozilla.fenix.components.Core
 import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.initializeGlean
-import org.mozilla.fenix.components.ipprotection.IPProtectionFeatureIntegration
+import org.mozilla.fenix.components.ipprotection.FenixIPProtectionAvailabilityStorage
 import org.mozilla.fenix.components.metrics.MozillaProductDetector
 import org.mozilla.fenix.components.startMetricsIfEnabled
 import org.mozilla.fenix.experiments.maybeFetchExperiments
@@ -661,17 +661,18 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
     }
 
     private fun maybeSetupIPProtection() {
-        IPProtectionFeatureIntegration(
-            feature = DefaultIPProtectionFeature(
-                engine = components.core.engine,
-                lazyAccountManager = lazy { components.backgroundServices.accountManager },
-                store = components.ipProtectionStore,
+        DefaultIPProtectionFeature(
+            engine = components.core.engine,
+            lazyAccountManager = lazy { components.backgroundServices.accountManager },
+            storage = FenixIPProtectionAvailabilityStorage(
                 browserStore = components.core.store,
-                tabsUseCases = components.useCases.tabsUseCases,
+                sharedPref = components.settings.preferences,
+                prefKey = this.getString(R.string.pref_key_enable_ip_protection),
+                lifecycleOwner = ProcessLifecycleOwner.get(),
             ),
-            pref = settings().preferences,
-            prefKey = getString(R.string.pref_key_enable_ip_protection),
-            lifecycleOwner = ProcessLifecycleOwner.get(),
+            store = components.ipProtectionStore,
+            browserStore = components.core.store,
+            tabsUseCases = components.useCases.tabsUseCases,
         ).start()
     }
 

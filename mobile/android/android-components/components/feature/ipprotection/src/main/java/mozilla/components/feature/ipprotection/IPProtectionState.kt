@@ -9,6 +9,7 @@ import mozilla.components.lib.state.State
 /**
  * Holds all IPProtection-related state surfaced by the GeckoView VPN proxy.
  *
+ * @property isAvailable Whether the IP protection feature is available to the user.
  * @property status Current connection state of the IP protection proxy.
  * @property dataRemainingBytes Remaining monthly data allowance in bytes, or -1 if unavailable.
  * @property dataMaxBytes Maximum monthly data allowance in bytes, or -1 if unavailable.
@@ -17,6 +18,7 @@ import mozilla.components.lib.state.State
  * has not yet enrolled.
  */
 data class IPProtectionState(
+    val isAvailable: Boolean = false,
     val status: IPProtectionStatus = IPProtectionStatus.NotAvailable,
     val dataRemainingBytes: Long = -1L,
     val dataMaxBytes: Long = -1L,

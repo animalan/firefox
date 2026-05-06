@@ -1143,6 +1143,10 @@ features:
         description: Specifies the VPN data limit for unpaid users in GB (e.g. 50 GB).
         type: Int
         default: 50
+      allowed-regions:
+        description: Country codes whose users are eligible for IP Protection.
+        type: List<String>
+        default: ["US", "CA", "DE", "FR", "GB"]
 
   native-share-sheet:
     description: Feature to enable the Native Share Sheet for users on Firefox on Android.
