@@ -77,6 +77,9 @@ class MediaCapabilities final : public nsISupports, public nsWrapperCache {
   nsIGlobalObject* GetParentObject() const { return mParent; }
   JSObject* WrapObject(JSContext* aCx,
                        JS::Handle<JSObject*> aGivenProto) override;
+  bool CheckTypeForMediaSource(const MediaExtendedMIMEType& aType) const;
+  bool CheckTypeForFile(const MediaExtendedMIMEType& aType) const;
+  bool CheckTypeForEncoder(const MediaExtendedMIMEType& aType) const;
 
  private:
   virtual ~MediaCapabilities() = default;
@@ -84,9 +87,6 @@ class MediaCapabilities final : public nsISupports, public nsWrapperCache {
       const VideoConfiguration& aConfig) const;
   Maybe<MediaContainerType> CheckAudioConfiguration(
       const AudioConfiguration& aConfig) const;
-  bool CheckTypeForMediaSource(const MediaExtendedMIMEType& aType) const;
-  bool CheckTypeForFile(const MediaExtendedMIMEType& aType) const;
-  bool CheckTypeForEncoder(const MediaExtendedMIMEType& aType) const;
   already_AddRefed<layers::KnowsCompositor> GetCompositor();
   void CreateMediaCapabilitiesDecodingInfo(
       const MediaDecodingConfiguration& aConfiguration, ErrorResult& aRv,

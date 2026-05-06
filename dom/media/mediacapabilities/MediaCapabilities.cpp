@@ -33,15 +33,33 @@
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/layers/KnowsCompositor.h"
+#include "mozilla/media/webrtc/CodecInfo.h"
 #include "nsContentUtils.h"
 
 namespace mozilla::dom {
+enum class CodecSupport : uint8_t { Supported, Unsupported, Unknown };
+static const char* EnumValueToString(const CodecSupport& aEnum) {
+  static constexpr const char* kStrings[] = {"Supported", "Unsupported",
+                                             "Unknown"};
+  return kStrings[static_cast<size_t>(aEnum)];
+}
+using CodecSupportPromise =
+    MozPromise<CodecSupport, nsresult, /* IsExclusive = */ true>;
 struct VideoConfiguration;
 struct AudioConfiguration;
 bool MediaCapabilitiesKeySystemConfigurationToMediaKeySystemConfiguration(
     const MediaDecodingConfiguration& aInConfig,
     MediaKeySystemConfiguration& aOutConfig);
 }  // namespace mozilla::dom
+
+template <>
+struct fmt::formatter<mozilla::dom::CodecSupport>
+    : fmt::formatter<std::string_view> {
+  auto format(mozilla::dom::CodecSupport aSupport,
+              fmt::format_context& aCtx) const {
+    return fmt::format_to(aCtx.out(), "{}", EnumValueToString(aSupport));
+  }
+};
 
 template <>
 struct fmt::formatter<mozilla::dom::VideoConfiguration>
@@ -189,6 +207,146 @@ mozilla::LazyLogModule sMediaCapabilitiesLog("MediaCapabilities");
 namespace mozilla::dom {
 using mediacaps::IsValidMediaDecodingConfiguration;
 using mediacaps::IsValidMediaEncodingConfiguration;
+
+// Caches codec support state (e.g., webrtc::CodecInfo) for reuse across
+// audio and video support queries within a single MediaCapabilities request.
+class MOZ_STACK_CLASS CodecSupportState final {
+ public:
+  // The MediaCapabilities pointer is held as a raw pointer to avoid
+  // refcount-thread-mismatch: MediaCapabilities uses main-thread-only
+  // refcounting, while CodecSupportState is thread-safe-refcounted and may
+  // be released on a non-main thread by an InvokeAsync continuation.
+  // The caller (a MediaCapabilities member function) keeps itself alive
+  // via the outer promise chain's `self` capture for the full duration
+  // of any synchronous CheckTypeFor* calls below.
+  explicit CodecSupportState(const MediaCapabilities& aCaps) : mCaps(aCaps) {}
+
+  const mozilla::WebrtcCodecInfo& WebrtcCodecInfo() const {
+    if (!mWebrtcCodecInfo) {
+      mWebrtcCodecInfo = mozilla::WebrtcCodecInfo::Create();
+    }
+    return *mWebrtcCodecInfo;
+  }
+
+ private:
+  const MediaCapabilities& mCaps;
+  mutable std::unique_ptr<mozilla::WebrtcCodecInfo> mWebrtcCodecInfo;
+
+  [[nodiscard]] RefPtr<CodecSupportPromise> CreateDecodeSupportPromise(
+      const MediaExtendedMIMEType& aMime, MediaDecodingType aType,
+      const Maybe<ColorGamut>& aColorGamut,
+      const Maybe<TransferFunction>& aTransferFunction) const {
+    if (mediacaps::CheckMIMETypeSupport(aMime, AsVariant(aType), aColorGamut,
+                                        aTransferFunction)
+            .isErr()) {
+      return CodecSupportPromise::CreateAndResolve(CodecSupport::Unsupported,
+                                                   __func__);
+    }
+    switch (aType) {
+      case MediaDecodingType::File:
+        return CodecSupportPromise::CreateAndResolve(
+            mCaps.CheckTypeForFile(aMime) ? CodecSupport::Supported
+                                          : CodecSupport::Unsupported,
+            __func__);
+      case MediaDecodingType::Media_source:
+        return CodecSupportPromise::CreateAndResolve(
+            mCaps.CheckTypeForMediaSource(aMime) ? CodecSupport::Supported
+                                                 : CodecSupport::Unsupported,
+            __func__);
+      case MediaDecodingType::Webrtc:
+        return CodecSupportPromise::CreateAndResolve(
+            WebrtcCodecInfo().SupportsMimeDecode(aMime)
+                ? CodecSupport::Supported
+                : CodecSupport::Unsupported,
+            __func__);
+      default:
+        MOZ_ASSERT_UNREACHABLE("Unhandled MediaDecodingType");
+        return CodecSupportPromise::CreateAndResolve(CodecSupport::Unsupported,
+                                                     __func__);
+    }
+  }
+
+  [[nodiscard]] RefPtr<CodecSupportPromise> CreateEncodeSupportPromise(
+      const MediaExtendedMIMEType& aMime, MediaEncodingType aType,
+      const Maybe<ColorGamut>& aColorGamut,
+      const Maybe<TransferFunction>& aTransferFunction) const {
+    if (mediacaps::CheckMIMETypeSupport(aMime, AsVariant(aType), aColorGamut,
+                                        aTransferFunction)
+            .isErr()) {
+      return CodecSupportPromise::CreateAndResolve(CodecSupport::Unsupported,
+                                                   __func__);
+    }
+    switch (aType) {
+      case MediaEncodingType::Record:
+        return CodecSupportPromise::CreateAndResolve(
+            mCaps.CheckTypeForEncoder(aMime) ? CodecSupport::Supported
+                                             : CodecSupport::Unsupported,
+            __func__);
+      case MediaEncodingType::Webrtc:
+        return CodecSupportPromise::CreateAndResolve(
+            WebrtcCodecInfo().SupportsMimeEncode(aMime)
+                ? CodecSupport::Supported
+                : CodecSupport::Unsupported,
+            __func__);
+      default:
+        MOZ_ASSERT_UNREACHABLE("Unhandled MediaEncodingType");
+        return CodecSupportPromise::CreateAndResolve(CodecSupport::Unsupported,
+                                                     __func__);
+    }
+  }
+
+  // Returns a promise for a single audio or video codec support query.
+  // Handles both encoding and decoding, and both WebRTC and non-WebRTC types.
+  // Returns CodecSupport::Unknown if no configuration provided for the
+  // requested AVType.
+  template <typename ConfigType>
+  [[nodiscard]] RefPtr<CodecSupportPromise> GetSingleSupportPromise(
+      const ConfigType& aConfig, mediacaps::AVType aType,
+      const MediaExtendedMIMEType& aMime) const {
+    static_assert(std::is_same_v<ConfigType, MediaEncodingConfiguration> ||
+                      std::is_same_v<ConfigType, MediaDecodingConfiguration>,
+                  "ConfigType must be MediaEncodingConfiguration or "
+                  "MediaDecodingConfiguration");
+    constexpr bool isDecode =
+        std::is_same_v<ConfigType, MediaDecodingConfiguration>;
+    const bool audioPassed = aConfig.mAudio.WasPassed();
+    const bool videoPassed = aConfig.mVideo.WasPassed();
+    if (!audioPassed && !videoPassed) {
+      return CodecSupportPromise::CreateAndResolve(CodecSupport::Unknown,
+                                                   __func__);
+    }
+    if ((aType == mediacaps::AVType::VIDEO) && videoPassed) {
+      const VideoConfiguration& videoConfig = aConfig.mVideo.Value();
+      Maybe<ColorGamut> gamut = videoConfig.mColorGamut.WasPassed()
+                                    ? Some(videoConfig.mColorGamut.Value())
+                                    : Nothing();
+      Maybe<TransferFunction> transfer =
+          videoConfig.mTransferFunction.WasPassed()
+              ? Some(videoConfig.mTransferFunction.Value())
+              : Nothing();
+      if constexpr (isDecode) {
+        return CreateDecodeSupportPromise(aMime, aConfig.mType, gamut,
+                                          transfer);
+      } else {
+        return CreateEncodeSupportPromise(aMime, aConfig.mType, gamut,
+                                          transfer);
+      }
+    }
+
+    if ((aType == mediacaps::AVType::AUDIO) && audioPassed) {
+      if constexpr (isDecode) {
+        return CreateDecodeSupportPromise(aMime, aConfig.mType, Nothing(),
+                                          Nothing());
+      } else {
+        return CreateEncodeSupportPromise(aMime, aConfig.mType, Nothing(),
+                                          Nothing());
+      }
+    }
+
+    return CodecSupportPromise::CreateAndResolve(CodecSupport::Unknown,
+                                                 __func__);
+  }
+};
 
 // Gets the global's event target and creates a new DOMMozPromiseRequestHolder
 // for that target. Must be called on the global's event target. On workers,
@@ -471,13 +629,12 @@ void MediaCapabilities::CreateMediaCapabilitiesDecodingInfo(
     CheckEncryptedDecodingSupport(aConfiguration)
         ->Then(
             mainThread, __func__,
-            [promise = RefPtr<Promise>{aPromise},
-             self = RefPtr<MediaCapabilities>{this}, aConfiguration,
+            [promise = RefPtr<Promise>{aPromise}, aConfiguration,
              mainThread = RefPtr<nsISerialEventTarget>{mainThread}, taskQueue,
              compositor, shouldResistFingerprinting, frameRate,
-             videoInfo = std::move(videoInfo),
-             this](MediaKeySystemAccessManager::MediaKeySystemAccessPromise::
-                       ResolveOrRejectValue&& aValue) mutable {
+             videoInfo = std::move(videoInfo)](
+                MediaKeySystemAccessManager::MediaKeySystemAccessPromise::
+                    ResolveOrRejectValue&& aValue) mutable {
               if (aValue.IsReject()) {
                 MediaCapabilitiesDecodingInfo info;
                 info.mSupported = false;
@@ -526,9 +683,9 @@ void MediaCapabilities::CreateMediaCapabilitiesDecodingInfo(
                                      std::move(videoInfo))
                   ->Then(
                       mainThread, __func__,
-                      [promise, drmInfo = std::move(drmInfo), aConfiguration,
-                       self, this](CapabilitiesPromise::ResolveOrRejectValue&&
-                                       aDecoderResult) mutable {
+                      [promise, drmInfo = std::move(drmInfo), aConfiguration](
+                          CapabilitiesPromise::ResolveOrRejectValue&&
+                              aDecoderResult) mutable {
                         if (aDecoderResult.IsResolve()) {
                           drmInfo.mPowerEfficient =
                               aDecoderResult.ResolveValue().mPowerEfficient;
