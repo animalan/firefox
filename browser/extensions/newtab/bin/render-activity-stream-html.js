@@ -135,6 +135,16 @@ function templateHTML(options) {
       type="module"
       src="chrome://global/content/elements/moz-support-link.mjs"
     ></script>
+    <script
+      async
+      type="module"
+      src="chrome://global/content/elements/moz-checkbox.mjs"
+    ></script>
+    <script
+      async
+      type="module"
+      src="chrome://global/content/elements/moz-input-search.mjs"
+    ></script>
   </body>
 </html>
 `.trimLeft();

@@ -738,12 +738,20 @@ newtab-sports-widget-view-schedule =
     .label = View schedule
 newtab-sports-widget-follow-teams =
     .label = Follow teams
+
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title =
+    { $number ->
+        *[other] Follow up to { $number } teams
+    }
 newtab-sports-widget-choose-wallpaper =
     .label = Choose a wallpaper
 newtab-sports-widget-skip = Skip
-newtab-sports-widget-search-teams =
-    .placeholder = Search teams
-    .aria-label = Search teams
+newtab-sports-widget-search-country =
+    .placeholder = Search country
+    .aria-label = Search country
+newtab-sports-widget-cancel = Cancel
 newtab-sports-widget-done-button =
     .label = Done
 
