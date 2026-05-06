@@ -458,7 +458,7 @@ FontFaceSetImpl::FindOrCreateUserFontEntryFromFontFace(
           face->mSourceType = gfxFontFaceSrc::eSourceType_URL;
           const StyleCssUrl* url = component.AsUrl();
           nsIURI* uri = url->GetURI();
-          face->mURI = uri ? new gfxFontSrcURI(uri) : nullptr;
+          face->mURI = uri ? MakeRefPtr<gfxFontSrcURI>(uri) : nullptr;
           const URLExtraData& extraData = url->ExtraData();
           face->mReferrerInfo = extraData.ReferrerInfo();
 
@@ -469,7 +469,7 @@ FontFaceSetImpl::FindOrCreateUserFontEntryFromFontFace(
           if (aOrigin == StyleOrigin::User ||
               aOrigin == StyleOrigin::UserAgent) {
             face->mUseOriginPrincipal = true;
-            face->mOriginPrincipal = new gfxFontSrcPrincipal(
+            face->mOriginPrincipal = MakeRefPtr<gfxFontSrcPrincipal>(
                 extraData.Principal(), extraData.Principal());
           }
 
