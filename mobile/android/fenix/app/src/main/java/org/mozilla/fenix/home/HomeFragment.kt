@@ -362,6 +362,9 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         if (savedInstanceState != null) {
             bundleArgs.putBoolean(FOCUS_ON_ADDRESS_BAR, false)
         }
+        bundleArgs.getString(SESSION_TO_DELETE)?.let {
+            homeViewModel.sessionToDelete = it
+        }
 
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
         requireComponents.core.engine.profiler?.addMarker(
@@ -389,10 +392,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         initBookmarksFeature()
         initHistoryMetadataFeature()
         initThumbnailsFeature()
-
-        bundleArgs.getString(SESSION_TO_DELETE)?.let {
-            homeViewModel.sessionToDelete = it
-        }
 
         privacyNoticeBannerStore = PrivacyNoticeBannerStore(
             initialState = PrivacyNoticeBannerState(
