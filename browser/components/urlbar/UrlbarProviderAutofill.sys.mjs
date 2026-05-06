@@ -137,7 +137,7 @@ function originQuery(where, { preferHttps = false } = {}) {
       WHERE prefix NOT IN ('about:', 'place:')
         AND ((host BETWEEN :searchString AND :searchString || X'FFFF')
           OR (host BETWEEN 'www.' || :searchString AND 'www.' || :searchString || X'FFFF'))
-        AND (:blockingEnabled = 0 OR o.block_until_ms IS NULL OR o.block_until_ms <= :nowMs)
+        AND (:adaptiveAutofillEnabled = 0 OR o.block_until_ms IS NULL OR o.block_until_ms <= :nowMs)
     ),
     matched_origin(host_fixed, url) AS (
       SELECT iif(instr(host, :searchString) = 1, host, fixed) || '/',
@@ -233,13 +233,15 @@ function urlQuery(where1, where2, isBookmarkContained) {
 
 // Queries
 const QUERY_ORIGIN_HISTORY_BOOKMARK = originQuery(
-  `WHERE n_bookmarks > 0 OR (any_recent_typed AND ${SQL_AUTOFILL_FRECENCY_THRESHOLD})`,
+  `WHERE (:adaptiveAutofillEnabled = 0 AND n_bookmarks > 0)
+     OR (any_recent_typed AND ${SQL_AUTOFILL_FRECENCY_THRESHOLD})`,
   { preferHttps: true }
 );
 
 const QUERY_ORIGIN_PREFIX_HISTORY_BOOKMARK = originQuery(
   `WHERE prefix BETWEEN :prefix AND :prefix || X'FFFF'
-     AND (n_bookmarks > 0 OR (any_recent_typed AND ${SQL_AUTOFILL_FRECENCY_THRESHOLD}))`,
+     AND ((:adaptiveAutofillEnabled = 0 AND n_bookmarks > 0)
+       OR (any_recent_typed AND ${SQL_AUTOFILL_FRECENCY_THRESHOLD}))`,
   { preferHttps: true }
 );
 
@@ -261,20 +263,24 @@ const QUERY_ORIGIN_PREFIX_BOOKMARK = originQuery(
 );
 
 const QUERY_URL_HISTORY_BOOKMARK = urlQuery(
-  `AND (n_bookmarks > 0 OR frecency > :pageFrecencyThreshold)
+  `AND ((:adaptiveAutofillEnabled = 0 AND n_bookmarks > 0)
+        OR frecency > :pageFrecencyThreshold)
      AND stripped_url COLLATE NOCASE
        BETWEEN :strippedURL AND :strippedURL || X'FFFF'`,
-  `AND (n_bookmarks > 0 OR frecency > :pageFrecencyThreshold)
+  `AND ((:adaptiveAutofillEnabled = 0 AND n_bookmarks > 0)
+        OR frecency > :pageFrecencyThreshold)
      AND stripped_url COLLATE NOCASE
        BETWEEN 'www.' || :strippedURL AND 'www.' || :strippedURL || X'FFFF'`,
   true
 );
 
 const QUERY_URL_PREFIX_HISTORY_BOOKMARK = urlQuery(
-  `AND (n_bookmarks > 0 OR frecency > :pageFrecencyThreshold)
+  `AND ((:adaptiveAutofillEnabled = 0 AND n_bookmarks > 0)
+        OR frecency > :pageFrecencyThreshold)
      AND url COLLATE NOCASE
        BETWEEN :prefix || :strippedURL AND :prefix || :strippedURL || X'FFFF'`,
-  `AND (n_bookmarks > 0 OR frecency > :pageFrecencyThreshold)
+  `AND ((:adaptiveAutofillEnabled = 0 AND n_bookmarks > 0)
+        OR frecency > :pageFrecencyThreshold)
      AND url COLLATE NOCASE
        BETWEEN :prefix || 'www.' || :strippedURL AND :prefix || 'www.' || :strippedURL || X'FFFF'`,
   true
@@ -645,7 +651,9 @@ export class UrlbarProviderAutofill extends UrlbarProvider {
       query_type: QUERYTYPE.AUTOFILL_ORIGIN,
       searchString: searchStr.toLowerCase(),
       nowMs: Date.now(),
-      blockingEnabled: lazy.UrlbarPrefs.get("autoFillAdaptiveHistoryEnabled")
+      adaptiveAutofillEnabled: lazy.UrlbarPrefs.get(
+        "autoFillAdaptiveHistoryEnabled"
+      )
         ? 1
         : 0,
     };
@@ -730,6 +738,11 @@ export class UrlbarProviderAutofill extends UrlbarProvider {
       queryContext.sources.includes(UrlbarUtils.RESULT_SOURCE.BOOKMARKS)
     ) {
       opts.pageFrecencyThreshold = lazy.pageFrecencyThreshold;
+      opts.adaptiveAutofillEnabled = lazy.UrlbarPrefs.get(
+        "autoFillAdaptiveHistoryEnabled"
+      )
+        ? 1
+        : 0;
       return [
         this._strippedPrefix
           ? QUERY_URL_PREFIX_HISTORY_BOOKMARK
@@ -761,7 +774,7 @@ export class UrlbarProviderAutofill extends UrlbarProvider {
       queryContext.sources.includes(UrlbarUtils.RESULT_SOURCE.BOOKMARKS)
     ) {
       sourceCondition =
-        "(h.foreign_count > 0 OR h.frecency > :pageFrecencyThreshold)";
+        "((:adaptiveAutofillEnabled = 0 AND h.foreign_count > 0) OR h.frecency > :pageFrecencyThreshold)";
       params.pageFrecencyThreshold = lazy.pageFrecencyThreshold;
     } else if (
       queryContext.sources.includes(UrlbarUtils.RESULT_SOURCE.HISTORY)
@@ -798,7 +811,9 @@ export class UrlbarProviderAutofill extends UrlbarProvider {
         "autoFillAdaptiveHistoryUseCountThreshold"
       ),
       nowMs: Date.now(),
-      blockingEnabled: lazy.UrlbarPrefs.get("autoFillAdaptiveHistoryEnabled")
+      adaptiveAutofillEnabled: lazy.UrlbarPrefs.get(
+        "autoFillAdaptiveHistoryEnabled"
+      )
         ? 1
         : 0,
     });
@@ -825,9 +840,9 @@ export class UrlbarProviderAutofill extends UrlbarProvider {
             starts_with OR
             (stripped_url COLLATE NOCASE BETWEEN 'www.' || :searchString AND 'www.' || :searchString || X'FFFF')
           )
-          AND (:blockingEnabled = 0 OR o.block_until_ms IS NULL OR o.block_until_ms <= :nowMs
+          AND (:adaptiveAutofillEnabled = 0 OR o.block_until_ms IS NULL OR o.block_until_ms <= :nowMs
             OR fixup_url(h.url) != fixup_url(o.host) || '/')
-          AND (:blockingEnabled = 0 OR o.block_pages_until_ms IS NULL OR o.block_pages_until_ms <= :nowMs
+          AND (:adaptiveAutofillEnabled = 0 OR o.block_pages_until_ms IS NULL OR o.block_pages_until_ms <= :nowMs
             OR fixup_url(h.url) = fixup_url(o.host) || '/')
         ORDER BY is_exact_match DESC, i.use_count DESC, h.frecency DESC, h.id DESC
         LIMIT 1
