@@ -109,6 +109,7 @@ if CONFIG["MOZ_WEBRTC"] and CONFIG["OS_TARGET"] != "Android":
         "TestAudioDeviceEnumerator.cpp",
         "TestPacer.cpp",
         "TestVideoFrameConverter.cpp",
+        "TestWebRTCCodecInfo.cpp",
         "TestWebrtcGmpCodec.cpp",
     ]
 
