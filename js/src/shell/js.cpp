@@ -13469,7 +13469,7 @@ bool SetGlobalOptionsPreJSInit(const OptionParser& op) {
     JS::Prefs::setAtStartup_experimental_import_bytes(true);
   }
   if (op.getBoolOption("enable-import-text")) {
-    JS::Prefs::setAtStartup_experimental_import_text(true);
+    JS::Prefs::set_experimental_import_text(true);
   }
   if (op.getBoolOption("enable-promise-allkeyed")) {
     JS::Prefs::setAtStartup_experimental_promise_allkeyed(true);
