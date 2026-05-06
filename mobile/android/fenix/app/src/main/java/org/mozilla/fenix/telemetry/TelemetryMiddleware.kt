@@ -19,6 +19,7 @@ import mozilla.components.browser.state.selector.normalTabs
 import mozilla.components.browser.state.selector.privateTabs
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.SessionState
+import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.concept.engine.translate.TranslationOperation
 import mozilla.components.lib.state.Middleware
@@ -183,6 +184,12 @@ class TelemetryMiddleware(
         )
     }
 
+    private fun computeDurationSinceLastVisible(tab: SessionState): Int {
+        val lastVisibleAt = (tab as? TabSessionState)?.lastVisibleAt?.takeIf { it != 0L } ?: return -1
+        val elapsed = System.currentTimeMillis() - lastVisibleAt
+        return (elapsed / 1000L).coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()
+    }
+
     /**
      * Collecting some engine-specific (GeckoView) telemetry.
      */
@@ -194,7 +201,11 @@ class TelemetryMiddleware(
 
         // Record telemetry if the created tab was recently killed
         if (state.recentlyKilledTabs.contains(tab.id)) {
-            EngineMetrics.reloaded.record()
+            EngineMetrics.reloaded.record(
+                EngineMetrics.ReloadedExtra(
+                    durationSinceLastVisibleSeconds = computeDurationSinceLastVisible(tab),
+                ),
+            )
         }
     }
 }

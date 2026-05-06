@@ -11266,8 +11266,17 @@ engine_tab:
     type: event
     description: |
       A tab was reloaded by the engine.
+    extra_keys:
+      duration_since_last_visible_seconds:
+        description: |
+          Seconds since the tab was last visible to the user at the time the engine
+          session was recreated. Stamped when the tab's engine view is released
+          (tab switched away or app backgrounded). -1 if unavailable (tab was never
+          rendered, or is not a regular tab).
+        type: quantity
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1938133
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1966918
     data_reviews:
       - https://phabricator.services.mozilla.com/D240795
     notification_emails:
