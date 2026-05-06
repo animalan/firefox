@@ -3300,8 +3300,6 @@
     <string name="a11y_state_label_expanded">expanded</string>
     <!-- Action label for links to a website containing documentation about a wallpaper collection. Talkback will append this to say "Double tap to open link to learn more about this collection". -->
     <string name="a11y_action_label_wallpaper_collection_learn_more">open link to learn more about this collection</string>
-    <!-- Content description for headings announced by accessibility service. %s is the text of the heading. Talkback will announce the text and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
-    <string name="a11y_heading">%s, Heading</string>
 
     <!-- Translations feature-->
 

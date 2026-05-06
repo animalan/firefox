@@ -27,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
@@ -40,7 +39,6 @@ import mozilla.components.compose.base.theme.informationContainer
 import mozilla.components.compose.base.theme.onInformationContainer
 import mozilla.components.compose.base.theme.onWarningContainer
 import mozilla.components.compose.base.theme.warningContainer
-import org.mozilla.fenix.shopping.ui.ext.headingResource
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.theme.ThemedValue
 import org.mozilla.fenix.theme.ThemedValueProvider
@@ -94,14 +92,10 @@ fun InfoCard(
 
                 Column {
                     title?.let { titleText ->
-                        val titleContentDescription = headingResource(titleText)
                         Text(
                             text = titleText,
                             style = FirefoxTheme.typography.headline8,
-                            modifier = Modifier.semantics {
-                                heading()
-                                contentDescription = titleContentDescription
-                            },
+                            modifier = Modifier.semantics { heading() },
                         )
 
                         Spacer(modifier = Modifier.height(FirefoxTheme.layout.space.static50))
