@@ -9619,7 +9619,8 @@
       "PING",
       "BEACON",
       "WEB_TRANSPORT",
-      "EXCLUDED"
+      "EXCLUDED",
+      "TEXT"
     ],
     "bug_numbers": [1833216],
     "description": "The initiator of this ORB blocked request."
