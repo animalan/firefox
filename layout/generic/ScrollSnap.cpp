@@ -13,6 +13,7 @@
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsPresContext.h"
+#include "nsString.h"
 #include "nsTArray.h"
 
 mozilla::LazyLogModule sApzScrollSnapLog("apz.scrollsnap");
@@ -578,7 +579,7 @@ Maybe<SnapDestination> ScrollSnapUtils::GetSnapPointForDestination(
   return snapped ? Some(finalPos) : Nothing();
 }
 
-nsAutoString ScrollSnapUtils::StringifySnapTarget(
+nsAutoCString ScrollSnapUtils::StringifySnapTarget(
     const SnapTarget& aSnapTarget) {
   nsAutoString string;
   const nsIContent* content =
@@ -588,7 +589,7 @@ nsAutoString ScrollSnapUtils::StringifySnapTarget(
   } else {
     string.AppendPrintf("(not an element)");
   }
-  return string;
+  return NS_LossyConvertUTF16toASCII(string);
 }
 
 ScrollSnapTargetId ScrollSnapUtils::GetTargetIdFor(const nsIFrame* aFrame) {
@@ -648,19 +649,16 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
       });
 
   if (MOZ_LOG_TEST(sApzScrollSnapLog, LogLevel::Debug)) {
-    const nsAutoString allTargets =
+    const nsAutoCString allTargets =
         ScrollSnapUtils::StringifySnapTargetList<SnapTarget>(
             aSnapInfo.mSnapTargets);
-    const nsAutoString inlineTargets =
+    const nsAutoCString inlineTargets =
         ScrollSnapUtils::StringifySnapTargetList<const SnapTarget*>(inlineSet);
-    const nsAutoString blockTargets =
+    const nsAutoCString blockTargets =
         ScrollSnapUtils::StringifySnapTargetList<const SnapTarget*>(blockSet);
-    SCROLL_SNAP_LOG("All snap targets: %s",
-                    NS_LossyConvertUTF16toASCII(allTargets).get());
-    SCROLL_SNAP_LOG("Inline snap targets: %s",
-                    NS_LossyConvertUTF16toASCII(inlineTargets).get());
-    SCROLL_SNAP_LOG("Block snap targets: %s",
-                    NS_LossyConvertUTF16toASCII(blockTargets).get());
+    SCROLL_SNAP_LOG("All snap targets: %s", allTargets.get());
+    SCROLL_SNAP_LOG("Inline snap targets: %s", inlineTargets.get());
+    SCROLL_SNAP_LOG("Block snap targets: %s", blockTargets.get());
   }
 
   // Step 4.1: If the focused element is in a set, it's the only candidate.
@@ -755,19 +753,17 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
   if (aSnapInfo.StrictnessInline(aWM) != StyleScrollSnapStrictness::None) {
     pickFromInline();
     if (inlinePick && MOZ_LOG_TEST(sApzScrollSnapLog, LogLevel::Debug)) {
-      const nsAutoString inlineString =
+      const nsAutoCString inlineString =
           ScrollSnapUtils::StringifySnapTarget(*inlinePick);
-      SCROLL_SNAP_LOG("Inline snap target pick: %s",
-                      NS_LossyConvertUTF16toASCII(inlineString).get());
+      SCROLL_SNAP_LOG("Inline snap target pick: %s", inlineString.get());
     }
   }
   if (aSnapInfo.StrictnessBlock(aWM) != StyleScrollSnapStrictness::None) {
     pickFromBlock();
     if (blockPick && MOZ_LOG_TEST(sApzScrollSnapLog, LogLevel::Debug)) {
-      const nsAutoString blockString =
+      const nsAutoCString blockString =
           ScrollSnapUtils::StringifySnapTarget(*blockPick);
-      SCROLL_SNAP_LOG("Block snap target pick: %s",
-                      NS_LossyConvertUTF16toASCII(blockString).get());
+      SCROLL_SNAP_LOG("Block snap target pick: %s", blockString.get());
     }
   }
 

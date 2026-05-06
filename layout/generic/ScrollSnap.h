@@ -87,15 +87,16 @@ struct ScrollSnapUtils {
                                const nsIFrame* aScrolledFrame,
                                const nsRect& aScrolledRect);
 
-  // Returns an |nsAutoString| representation of a |ScrollSnapInfo::SnapTarget|
-  static nsAutoString StringifySnapTarget(
+  // Returns an |nsAutoCString| representation of a |ScrollSnapInfo::SnapTarget|
+  static nsAutoCString StringifySnapTarget(
       const ScrollSnapInfo::SnapTarget& aSnapTarget);
 
-  // Returns an |nsAutoString| representation of an |nsTArray| that
+  // Returns an |nsAutoCString| representation of an |nsTArray| that
   // contains |ScrollInfo::SnapTarget|s.
   template <typename T>
-  static nsAutoString StringifySnapTargetList(const nsTArray<T>& aSnapTargets) {
-    nsAutoString string;
+  static nsAutoCString StringifySnapTargetList(
+      const nsTArray<T>& aSnapTargets) {
+    nsAutoCString string;
     string.AppendPrintf("[ ");
     bool first{true};
     for (const auto& target : aSnapTargets) {
