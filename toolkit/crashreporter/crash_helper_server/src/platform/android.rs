@@ -2,8 +2,4 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-pub(crate) const PROXY_RENDEZ_VOUS: bool = true;
-
-// This is just a no-op, the crash helper process is spawned as a detached
-// process in the first place.
-pub(crate) unsafe fn daemonize() {}
+pub(crate) const PROXY_RENDEZ_VOUS: bool = false;

@@ -266,6 +266,9 @@ void SetCrashHelperPipes(FileHandle breakpadFd, FileHandle crashHelperFd);
 #endif
 bool RegisterChildIPCChannel(mozilla::geckoargs::ChildProcessArgs& aArgs,
                              GeckoChildID aID);
+#if defined(XP_WIN)
+bool ChildProcessProxyRendezvous(GeckoChildID aID, DWORD aPid, HANDLE aHandle);
+#endif  // defined(XP_WIN)
 
 // Child-side API
 MOZ_EXPORT bool SetRemoteExceptionHandler(int& aArgc, char** aArgv);

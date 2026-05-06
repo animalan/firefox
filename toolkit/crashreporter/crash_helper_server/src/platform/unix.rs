@@ -8,6 +8,8 @@ use nix::{
 };
 use std::{io::stdout, os::fd::AsFd};
 
+pub(crate) const PROXY_RENDEZ_VOUS: bool = false;
+
 // Daemonize the current process by forking it and then immediately returning
 // in the parent. This should have been done via a double fork() in the
 // crash_helper_client crate, however the first fork() call causes issues to

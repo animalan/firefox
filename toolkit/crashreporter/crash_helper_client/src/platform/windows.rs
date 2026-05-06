@@ -4,8 +4,8 @@
 
 use anyhow::{bail, Result};
 use crash_helper_common::{
-    messages::ChildProcessRendezVousReply, BreakpadChar, BreakpadData, BreakpadString,
-    GeckoChildId, IPCChannel, IPCConnector, IPCListener, Pid, ProcessHandle,
+    messages::ProcessRendezVous, BreakpadChar, BreakpadData, BreakpadString, GeckoChildId,
+    IPCChannel, IPCConnector, IPCListener, Pid, ProcessHandle,
 };
 use std::{
     ffi::{OsStr, OsString},
@@ -14,7 +14,6 @@ use std::{
         ffi::{OsStrExt, OsStringExt},
         io::{FromRawHandle, OwnedHandle, RawHandle},
     },
-    process,
     ptr::{null, null_mut},
 };
 use windows_sys::Win32::{
@@ -121,10 +120,10 @@ impl CrashHelperClient {
     }
 
     pub(crate) fn prepare_for_minidump(
-        _crash_helper_pid: Pid,
-        id: GeckoChildId,
-    ) -> ChildProcessRendezVousReply {
-        ChildProcessRendezVousReply::new(/* dumpable */ true, process::id() as Pid, id, [])
+        _crash_helper_pid: Option<Pid>,
+        _id: GeckoChildId,
+    ) -> Option<ProcessRendezVous> {
+        None
     }
 }
 

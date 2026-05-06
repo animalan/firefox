@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use crash_helper_common::{
-    messages::ChildProcessRendezVousReply, GeckoChildId, IPCConnector, Pid, RawIPCConnector,
+    messages::ProcessRendezVous, GeckoChildId, IPCConnector, Pid, RawIPCConnector,
 };
 use std::process;
 
@@ -23,9 +23,14 @@ impl CrashHelperClient {
     }
 
     pub(crate) fn prepare_for_minidump(
-        _crash_helper_pid: Pid,
+        _crash_helper_pid: Option<Pid>,
         id: GeckoChildId,
-    ) -> ChildProcessRendezVousReply {
-        ChildProcessRendezVousReply::new(/* dumpable */ true, process::id() as Pid, id, [])
+    ) -> Option<ProcessRendezVous> {
+        Some(ProcessRendezVous::new(
+            /* dumpable */ true,
+            process::id() as Pid,
+            id,
+            [],
+        ))
     }
 }

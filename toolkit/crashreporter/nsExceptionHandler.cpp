@@ -3359,6 +3359,8 @@ bool RegisterChildIPCChannel(mozilla::geckoargs::ChildProcessArgs& aArgs,
       return false;
     }
 
+    geckoargs::sCrashHelperPid.Put(crash_helper_pid(gCrashHelperClient), aArgs);
+
 #if defined(XP_DARWIN)
     UniqueMachSendRight send_right{connector.send};
     UniqueMachReceiveRight recv_right{connector.recv};
@@ -3387,6 +3389,18 @@ bool RegisterChildIPCChannel(mozilla::geckoargs::ChildProcessArgs& aArgs,
 
   return false;
 }
+
+#if defined(XP_WIN)
+bool ChildProcessProxyRendezvous(GeckoChildID aID, DWORD aPid, HANDLE aHandle) {
+  StaticMutexAutoLock lock(gCrashHelperClientMutex);
+  if (gCrashHelperClient) {
+    return child_process_proxy_rendezvous(gCrashHelperClient, aID, aPid,
+                                          aHandle);
+  }
+
+  return false;
+}
+#endif  // defined(XP_WIN)
 
 bool SetRemoteExceptionHandler(int& aArgc, char** aArgv) {
   MOZ_ASSERT(!gExceptionHandler, "crash client already init'd");
@@ -3422,7 +3436,11 @@ bool SetRemoteExceptionHandler(int& aArgc, char** aArgv) {
 #  endif  // defined(XP_WIN)
 #endif    // defined(XP_DARWIN)
 
-  crash_helper_rendezvous(raw_connector, GetGeckoChildID());
+  auto pid_arg = geckoargs::sCrashHelperPid.Get(aArgc, aArgv);
+  Pid pid = static_cast<Pid>(pid_arg.valueOr(0));
+
+  crash_helper_rendezvous(raw_connector, GetGeckoChildID(),
+                          pid_arg.isSome() ? &pid : nullptr);
   RegisterRuntimeExceptionModule();
   InitializeAppNotes();
   RegisterAnnotations();

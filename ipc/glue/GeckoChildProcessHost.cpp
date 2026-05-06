@@ -1732,10 +1732,18 @@ RefPtr<ProcessLaunchPromise> WindowsProcessLauncher::DoLaunch() {
         mLaunchOptions->env_map, mProcessType, mEnableSandboxLogging,
         cachedNtdllThunk, &mResults.mHandle);
     if (err.isOk()) {
-      EnvironmentLog("MOZ_PROCESS_LOG")
-          .print("==> process %d launched child process %d (%S)\n",
-                 base::GetCurrentProcId(), base::GetProcId(mResults.mHandle),
-                 mCmdLine->command_line_string().c_str());
+      base::ProcessId childPid = base::GetProcId(mResults.mHandle);
+      EnvironmentLog logger = EnvironmentLog("MOZ_PROCESS_LOG");
+      logger.print("==> process %d launched child process %d (%S)\n",
+                   base::GetCurrentProcId(), childPid,
+                   mCmdLine->command_line_string().c_str());
+      if (!CrashReporter::ChildProcessProxyRendezvous(mChildID, childPid,
+                                                      mResults.mHandle)) {
+        logger.print(
+            "==> process %d could not rendez-vous with the crash helper\n",
+            childPid);
+      }
+
       return ProcessLaunchPromise::CreateAndResolve(std::move(mResults),
                                                     __func__);
     }
@@ -1749,6 +1757,17 @@ RefPtr<ProcessLaunchPromise> WindowsProcessLauncher::DoLaunch() {
     return ProcessLaunchPromise::CreateAndReject(launchErr.unwrapErr(),
                                                  __func__);
   }
+
+  base::ProcessId childPid = base::GetProcId(mResults.mHandle);
+  if (!CrashReporter::ChildProcessProxyRendezvous(mChildID, childPid,
+                                                  mResults.mHandle)) {
+    NS_WARNING(
+        nsPrintfCString(
+            "Could not rendez-vous with crash helper on behalf of process %d",
+            mChildID)
+            .get());
+  }
+
   return ProcessLaunchPromise::CreateAndResolve(std::move(mResults), __func__);
 }
 #endif  // XP_WIN

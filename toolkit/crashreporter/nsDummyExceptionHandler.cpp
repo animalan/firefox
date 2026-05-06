@@ -218,6 +218,12 @@ void SetCrashHelperPipes(FileHandle breakpadFd, FileHandle crashHelperFd) {}
 
 bool GetLastRunCrashID(nsAString& id) { return false; }
 
+#if defined(XP_WIN)
+bool ChildProcessProxyRendezvous(GeckoChildID aID, DWORD aPid, HANDLE aHandle) {
+  return false;
+}
+#endif  // defined(XP_WIN)
+
 bool SetRemoteExceptionHandler(int& aArgc, char** aArgv) { return false; }
 
 bool TakeMinidumpForChild(GeckoChildID aChildId, nsIFile** aDump,

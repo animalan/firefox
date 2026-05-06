@@ -26,7 +26,7 @@ use windows_sys::Win32::{
     },
 };
 
-pub(crate) const CHILD_RENDEZVOUS_ANCILLARY_DATA_LEN: usize = 0;
+pub(crate) const PROCESS_RENDEZVOUS_ANCILLARY_DATA_LEN: usize = 1;
 
 #[repr(transparent)]
 pub struct ProcessHandle(pub OwnedHandle);
