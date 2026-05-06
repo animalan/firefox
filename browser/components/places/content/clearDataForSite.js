@@ -10,7 +10,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
 });
 
 let retVals = window.arguments[0];
-const { onAccept, onCancel } = retVals;
 
 document.addEventListener("dialogaccept", e => {
   e.preventDefault();
@@ -18,17 +17,11 @@ document.addEventListener("dialogaccept", e => {
     console.error
   );
   window.close();
-  if (typeof onAccept === "function") {
-    onAccept();
-  }
 });
 
 document.addEventListener("dialogcancel", e => {
   e.preventDefault();
   window.close();
-  if (typeof onCancel === "function") {
-    onCancel();
-  }
 });
 
 window.addEventListener("load", () => {
