@@ -3072,7 +3072,7 @@ pref("network.tcp.keepalive.idle_time", 600); // seconds; 10 mins
 
 // All the Geolocation preferences are here.
 //
-#if !defined(ANDROID) && !defined(XP_WIN)
+#ifndef ANDROID
   pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%&solution_channel=%OS%");
 
   // Timeout to wait before sending the location request.
