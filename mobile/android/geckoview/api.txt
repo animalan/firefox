@@ -735,6 +735,9 @@ package org.mozilla.geckoview {
   @AnyThread public class ContentBlockingController {
     ctor public ContentBlockingController();
     method @NonNull @UiThread public GeckoResult<List<ContentBlockingController.LogEntry>> getLog(@NonNull GeckoSession);
+    method @HandlerThread @NonNull public GeckoResult<Long> getTrackingDbEarliestRecordedDate();
+    method @HandlerThread @NonNull public GeckoResult<List<ContentBlockingController.TrackingDbEvent>> getTrackingDbEventsByDateRange(long, long);
+    method @HandlerThread @NonNull public GeckoResult<Integer> sumAllTrackingDbEvents();
   }
 
   public static class ContentBlockingController.Event {
@@ -782,6 +785,21 @@ package org.mozilla.geckoview {
   }
 
   @Retention(value=RetentionPolicy.SOURCE) public static interface ContentBlockingController.LogEntry.BlockingData.LogEvent {
+  }
+
+  @AnyThread public static class ContentBlockingController.TrackingDbEvent {
+    ctor protected TrackingDbEvent();
+    field public static final int BOUNCETRACKERS_ID = 7;
+    field public static final int CRYPTOMINERS_ID = 3;
+    field public static final int FINGERPRINTERS_ID = 4;
+    field public static final int OTHER_COOKIES_BLOCKED_ID = 0;
+    field public static final int SOCIAL_ID = 5;
+    field public static final int SUSPICIOUS_FINGERPRINTERS_ID = 6;
+    field public static final int TRACKERS_ID = 1;
+    field public static final int TRACKING_COOKIES_ID = 2;
+    field public final int count;
+    field @Nullable public final String date;
+    field public final int type;
   }
 
   @FunctionalInterface public class CrashHandler implements Thread.UncaughtExceptionHandler {

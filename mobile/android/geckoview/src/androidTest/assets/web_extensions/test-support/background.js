@@ -104,6 +104,12 @@ const APIS = {
   NotifyUserGestureActivation({ tab }) {
     return browser.test.notifyUserGestureActivation(tab.id);
   },
+  SaveTrackingDBEvents({ log }) {
+    return browser.test.saveTrackingDBEvents(log);
+  },
+  ClearTrackingDB() {
+    return browser.test.clearTrackingDB();
+  },
 };
 
 port.onMessage.addListener(async message => {

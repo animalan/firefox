@@ -2760,6 +2760,25 @@ public class GeckoSessionTestRule implements TestRule {
     webExtensionApiCall("RemoveAllCertOverrides", null);
   }
 
+  /**
+   * Seeds the tracking protection database with the given content blocking log.
+   *
+   * @param logJson JSON-serialized ContentBlockingLog (origin keys mapped to arrays of [state,
+   *     blocked, count] tuples).
+   */
+  public void saveTrackingDBEvents(final @NonNull String logJson) {
+    webExtensionApiCall(
+        "SaveTrackingDBEvents",
+        args -> {
+          args.put("log", logJson);
+        });
+  }
+
+  /** Removes all entries from the tracking protection database. */
+  public void clearTrackingDB() {
+    webExtensionApiCall("ClearTrackingDB", null);
+  }
+
   private interface SetArgs {
     void setArgs(JSONObject object) throws JSONException;
   }

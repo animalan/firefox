@@ -284,6 +284,22 @@ this.test = class extends ExtensionAPI {
             "NotifyUserGestureActivation"
           );
         },
+
+        /* Seeds the tracking protection database with the given content blocking log. */
+        async saveTrackingDBEvents(logJson) {
+          const trackingDBService = Cc[
+            "@mozilla.org/tracking-db-service;1"
+          ].getService(Ci.nsITrackingDBService);
+          await trackingDBService.saveEvents(logJson);
+        },
+
+        /* Removes all entries from the tracking protection database. */
+        async clearTrackingDB() {
+          const trackingDBService = Cc[
+            "@mozilla.org/tracking-db-service;1"
+          ].getService(Ci.nsITrackingDBService);
+          await trackingDBService.clearAll();
+        },
       },
     };
   }
