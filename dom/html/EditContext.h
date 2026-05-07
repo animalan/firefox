@@ -30,13 +30,27 @@ class EditContext final : public DOMEventTargetHelper {
   void UpdateCharacterBounds(
       uint32_t aRangeStart,
       const Sequence<OwningNonNull<DOMRect>>& aCharacterBounds) {}
-  void AttachedElements(nsTArray<RefPtr<nsGenericHTMLElement>>& aRetVal) {}
+  void AttachedElements(nsTArray<RefPtr<nsGenericHTMLElement>>& aRetVal) {
+    if (mAssociatedElement) {
+      aRetVal.AppendElement(mAssociatedElement);
+    }
+  }
 
   void GetText(nsAString& aText) const {}
   uint32_t SelectionStart() const { return 0; }
   uint32_t SelectionEnd() const { return 0; }
   uint32_t CharacterBoundsRangeStart() const { return 0; }
   void CharacterBounds(nsTArray<RefPtr<DOMRect>>& aRetVal) {}
+
+  nsGenericHTMLElement* GetAssociatedElement() const {
+    return mAssociatedElement;
+  }
+  void SetAssociatedElement(nsGenericHTMLElement* aElement) {
+    mAssociatedElement = aElement;
+  }
+
+  // https://w3c.github.io/edit-context/#dfn-deactivate-an-editcontext
+  MOZ_CAN_RUN_SCRIPT void Deactivate();
 
   IMPL_EVENT_HANDLER(characterboundsupdate);
   IMPL_EVENT_HANDLER(compositionstart);
@@ -46,12 +60,20 @@ class EditContext final : public DOMEventTargetHelper {
 
   static EditContext* GetForElement(const Element& aElement);
   static void SetForElement(const Element& aElement, EditContext* aEditContext);
+  /*
+   * Returns whether there is any EditContext attached to any element
+   * in this process.
+   */
+  static bool IsAnyAttached();
 
  private:
   explicit EditContext(nsIGlobalObject* aGlobalObject,
                        const EditContextInit& aInit)
       : DOMEventTargetHelper(aGlobalObject) {}
   ~EditContext() = default;
+
+  RefPtr<nsGenericHTMLElement> mAssociatedElement;
+  bool mIsComposing = false;
 };
 
 }  // namespace mozilla::dom
