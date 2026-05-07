@@ -1034,7 +1034,7 @@ void gfxPlatform::Init() {
 
   RegisterStrongMemoryReporter(MakeAndAddRef<GfxMemoryImageReporter>());
   if (XRE_IsParentProcess()) {
-    RegisterStrongAsyncMemoryReporter(new WebRenderMemoryReporter());
+    RegisterStrongAsyncMemoryReporter(MakeAndAddRef<WebRenderMemoryReporter>());
   }
 
   RegisterStrongMemoryReporter(MakeAndAddRef<SkMemoryReporter>());
