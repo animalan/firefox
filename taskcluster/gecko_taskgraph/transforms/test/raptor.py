@@ -492,7 +492,6 @@ def setup_lull_schedule(config, tasks):
 
 @task_transforms.add
 def setup_autoland_retriggers(config, tasks):
-
     def _allow_task_duplicates(label):
         if "android" in label:
             return False
@@ -579,7 +578,7 @@ def select_tasks_to_lambda(config, tasks):
 
 @transforms.add
 def add_simpleperf(config, tests):
-    is_simpleperf = config.params.get("try_task_config", {}).get(
+    is_native_profiling = config.params.get("try_task_config", {}).get(
         "native-profiling", False
     )
     app_packages = {
@@ -589,36 +588,70 @@ def add_simpleperf(config, tests):
     for test in tests:
         test_name = test.get("test-name", None)
         app = test.get("app")
-        if is_simpleperf and app in app_packages and "speedometer3-mobile" in test_name:
-            extra_options = test.setdefault("mozharness", {}).setdefault(
-                "extra-options", []
+
+        if app in app_packages and "speedometer3-mobile" in test_name:
+            is_shippable = test["attributes"].get("shippable", False)
+            is_no_fission = "no-fission" in (
+                test.get("attributes", {}).get("unittest_variant") or ""
             )
-            extra_options.extend([
-                "--add-option=--simpleperf",
-                "--browsertime-arg=androidSimpleperf=$MOZ_FETCHES_DIR/android-simpleperf",
-            ])
+            is_in_autoland = config.params["project"] == "autoland"
 
-            app_data_dir = f"/storage/emulated/0/Android/data/{app_packages[app]}/files"
-            extra_options.extend([
-                "--setenv MOZ_USE_PERFORMANCE_MARKER_FILE=1",
-                f"--setenv MOZ_PERFORMANCE_MARKER_DIR={app_data_dir}",
-                f"--setenv PERF_SPEW_DIR={app_data_dir}",
-                "--setenv IONPERF=func",
-                "--setenv JIT_OPTION_onlyInlineSelfHosted=true",
-            ])
+            # On autoland run a version of
+            # test-android-hw-a55-14-0-aarch64-shippable/opt-browsertime-benchmark-speedometer3-mobile-fenix
+            # with native (Simpleperf) profiling
 
-            fetches = test.setdefault("fetches", {})
-            fetches.setdefault("build", []).append({
-                "artifact": "target.crashreporter-symbols.zip",
-                "extract": False,
-            })
+            is_autoland_job = (
+                is_in_autoland
+                and test.get("app") == "fenix"
+                and "a55" in test.get("test-platform", "")
+                and is_shippable
+                and not is_no_fission
+            )
 
-            toolchains = [
-                "linux64-android-simpleperf-linux-repack",
-                "linux64-samply",
-            ]
-            by_app = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
-            by_app.setdefault("default", []).extend(toolchains)
+            if is_autoland_job:
+                # Modify a duplicate test
+                test_np = deepcopy(test)
+                test_np["run-on-projects"] = ["autoland-only"]
+                test_np["test-name"] += "-native-profiling"
+                test_np["try-name"] += "-native-profiling"
+            elif is_native_profiling:
+                # Modify the original test
+                test_np = test
+
+            if is_native_profiling or is_autoland_job:
+                extra_options = test_np.setdefault("mozharness", {}).setdefault(
+                    "extra-options", []
+                )
+                extra_options.extend([
+                    "--add-option=--simpleperf",
+                    "--browsertime-arg=androidSimpleperf=$MOZ_FETCHES_DIR/android-simpleperf",
+                ])
+                app_data_dir = (
+                    f"/storage/emulated/0/Android/data/{app_packages[app]}/files"
+                )
+                extra_options.extend([
+                    "--setenv MOZ_USE_PERFORMANCE_MARKER_FILE=1",
+                    f"--setenv MOZ_PERFORMANCE_MARKER_DIR={app_data_dir}",
+                    f"--setenv PERF_SPEW_DIR={app_data_dir}",
+                    "--setenv IONPERF=func",
+                    "--setenv JIT_OPTION_onlyInlineSelfHosted=true",
+                ])
+
+                fetches = test_np.setdefault("fetches", {})
+                fetches.setdefault("build", []).append({
+                    "artifact": "target.crashreporter-symbols.zip",
+                    "extract": False,
+                })
+                toolchains = [
+                    "linux64-android-simpleperf-linux-repack",
+                    "linux64-samply",
+                ]
+                by_app = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
+                by_app.setdefault("default", []).extend(toolchains)
+
+                if is_in_autoland:
+                    yield test_np
+
         yield test
 
 
@@ -628,5 +661,5 @@ def handle_simpleperf_symbol(config, tests):
         extra_options = test.get("mozharness", {}).get("extra-options", [])
         if "--add-option=--simpleperf" in extra_options:
             group, symbol = split_symbol(test["treeherder-symbol"])
-            test["treeherder-symbol"] = join_symbol(group, f"{symbol}-simpleperf")
+            test["treeherder-symbol"] = join_symbol(group, f"{symbol}-profiling")
         yield test
