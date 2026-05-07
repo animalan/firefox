@@ -10,7 +10,7 @@ import org.junit.Test
 
 class IPProtectionManagerTest {
     @Test
-    fun `WHEN all conditions satisfied AND we ignore the first check THEN shouldShowIPProtectionPrompt returns true`() {
+    fun `WHEN canShowIPProtectionPrompt returns true THEN shouldShowIPProtectionPrompt returns true`() {
         val repository = FakeIPProtectionPromptRepository()
 
         val ipProtectionManager = IPProtectionManager(repository)
@@ -19,30 +19,11 @@ class IPProtectionManagerTest {
     }
 
     @Test
-    fun `GIVEN other conditions satisfied WHEN canShowIPProtectionPrompt returns false THEN shouldShowIPProtectionPrompt returns false`() {
+    fun `WHEN canShowIPProtectionPrompt returns false THEN shouldShowIPProtectionPrompt returns false`() {
         val repository = FakeIPProtectionPromptRepository(canShowIPProtectionPrompt = false)
 
         val ipProtectionManager = IPProtectionManager(repository)
 
         assertFalse(ipProtectionManager.shouldShowIPProtectionPrompt())
-    }
-
-    @Test
-    fun `GIVEN other conditions satisfied WHEN this is first check of the session and don't ignore first check THEN shouldShowIPProtectionPrompt returns true`() {
-        val repository = FakeIPProtectionPromptRepository()
-
-        val ipProtectionManager = IPProtectionManager(repository)
-
-        assertTrue(ipProtectionManager.shouldShowIPProtectionPrompt())
-    }
-
-    @Test
-    fun `GIVEN other conditions satisfied WHEN this is not the first check of the session and we ignore the first check THEN shouldShowIPProtectionPrompt returns true`() {
-        val repository = FakeIPProtectionPromptRepository()
-
-        val ipProtectionManager = IPProtectionManager(repository)
-        ipProtectionManager.shouldShowIPProtectionPrompt()
-
-        assertTrue(ipProtectionManager.shouldShowIPProtectionPrompt())
     }
 }

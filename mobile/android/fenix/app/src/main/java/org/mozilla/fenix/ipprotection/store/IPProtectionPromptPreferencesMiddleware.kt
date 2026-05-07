@@ -23,18 +23,23 @@ class IPProtectionPromptPreferencesMiddleware(
         when (action) {
             is IPProtectionPromptAction.OnPromptCreated -> {
                 repository.isShowingPrompt = true
+                repository.hasShownPrompt = true
             }
 
             is IPProtectionPromptAction.OnPromptDismissed -> {
                 repository.isShowingPrompt = false
+                repository.hasShownPrompt = true
             }
 
-            // no-ops
-            is IPProtectionPromptAction.OnImpression,
             is IPProtectionPromptAction.OnGetStartedClicked,
             is IPProtectionPromptAction.OnNotNowClicked,
-            is IPProtectionPromptAction.OnBrowseWithExtraProtectionClicked,
             is IPProtectionPromptAction.OnPromptManuallyDismissed,
+                -> {
+                repository.hasShownPrompt = true
+            }
+            // no-ops
+            is IPProtectionPromptAction.OnImpression,
+            is IPProtectionPromptAction.OnBrowseWithExtraProtectionClicked,
                 -> {
             }
         }

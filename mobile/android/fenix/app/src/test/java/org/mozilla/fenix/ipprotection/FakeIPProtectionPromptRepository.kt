@@ -8,6 +8,7 @@ import org.mozilla.fenix.ipprotection.store.IPProtectionPromptRepository
 
 class FakeIPProtectionPromptRepository(
     private val canShowIPProtectionPrompt: Boolean = true,
+    override var hasShownPrompt: Boolean = false,
 ) : IPProtectionPromptRepository {
     override var isShowingPrompt = false
 

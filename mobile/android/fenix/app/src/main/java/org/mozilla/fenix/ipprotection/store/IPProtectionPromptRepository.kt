@@ -30,6 +30,15 @@ interface IPProtectionPromptRepository {
      * it if it is already showing.
      */
     var isShowingPrompt: Boolean
+
+    /**
+     * A boolean that indicates if the IPProtection onboarding bottom sheet has been already shown to the user.
+     *
+     * `true` makes the IPProtection bottom sheet appear, while `false` ensures the user does not see
+     * the bottom sheet again. This is only shown to the user once and
+     * if they dismiss it in anyway (e.g. tap on "Not now" or "Get started") then they will never see it again.
+     */
+    var hasShownPrompt: Boolean
 }
 
 /**
@@ -45,12 +54,17 @@ class DefaultIPProtectionPromptRepository(
 
     override var isShowingPrompt = false
 
+    override var hasShownPrompt: Boolean
+        get() = settings.hasShownIPProtectionPrompt
+        set(value) {
+            settings.hasShownIPProtectionPrompt = value
+        }
+
     // This logic is incomplete. We do not show the onboarding card to a user who has used the VPN feature before
     // This will be implemented in https://bugzilla.mozilla.org/show_bug.cgi?id=2035408
     override fun canShowIPProtectionPrompt(currentTimeMillis: Long): Boolean =
-        settings.isIPProtectionAvailable &&
-            isInstalledAtLeastAWeekAgo(currentTimeMillis) &&
-            !isShowingPrompt
+        settings.isIPProtectionAvailable && isInstalledAtLeastAWeekAgo(currentTimeMillis) &&
+            !isShowingPrompt && !hasShownPrompt
 
     private fun isInstalledAtLeastAWeekAgo(currentTimeMillis: Long): Boolean =
         currentTimeMillis - installedTimeMillis() >= ONE_WEEK_MS
