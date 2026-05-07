@@ -1446,6 +1446,19 @@ void nsHttpTransaction::Close(nsresult reason) {
       mOrigConnInfo && AllowedErrorForTransactionRetry(reason) &&
       !mDoNotRemoveAltSvc;
 
+  // On a TLS resumption error over an HTTPS-RR-routed connection, only the
+  // cached resumption material is bad — the route is fine. Stay on the
+  // alt-route: MaybeRemoveSSLToken has already evicted the PSK, so a fresh
+  // handshake on the same route should succeed. Setting
+  // mDontRetryWithDirectRoute keeps Restart() from stripping the route. If
+  // that retry also fails, mResumptionAttempted will have been reset and
+  // the standard HTTPS-RR retry path takes over.
+  if (shouldRestartTransactionForHTTPSRR &&
+      ShouldRestartOnResumptionError(reason)) {
+    shouldRestartTransactionForHTTPSRR = false;
+    mDontRetryWithDirectRoute = true;
+  }
+
   //
   // if the connection was reset or closed before we wrote any part of the
   // request or if we wrote the request but didn't receive any part of the
