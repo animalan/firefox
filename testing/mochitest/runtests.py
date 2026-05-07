@@ -2899,12 +2899,12 @@ toolbar#nav-bar {
 
             # Log if slow events are used from chrome.
             env["MOZ_LOG"] = (
-                env["MOZ_LOG"] + "," if env["MOZ_LOG"] else ""
+                env["MOZ_LOG"] + "," if env.get("MOZ_LOG") else ""
             ) + "SlowChromeEvent:3"
 
             if detectShutdownLeaks:
                 env["MOZ_LOG"] = (
-                    env["MOZ_LOG"] + "," if env["MOZ_LOG"] else ""
+                    env["MOZ_LOG"] + "," if env.get("MOZ_LOG") else ""
                 ) + "DocShellAndDOMWindowLeak:3"
                 shutdownLeaks = ShutdownLeaks(self.log)
             else:
