@@ -59,7 +59,7 @@ class ApplicationSearchMiddleware(
                 id = BOOKMARKS_SEARCH_ENGINE_ID,
                 name = stringProvider(R.string.library_bookmarks),
                 url = "",
-                icon = bitmapProvider(R.drawable.ic_bookmarks_search),
+                icon = bitmapProvider(iconsR.drawable.mozac_ic_bookmark_tray_fill_24),
             ),
             createApplicationSearchEngine(
                 id = TABS_SEARCH_ENGINE_ID,
