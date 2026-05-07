@@ -529,6 +529,7 @@ class ThreeDotMenuMainRobot(private val composeTestRule: ComposeTestRule) {
             Log.i(TAG, "clickBookmarksButton: Trying to click the Bookmarks button from the new main menu design.")
             itemWithDescription(getStringResource(R.string.library_bookmarks)).click()
             Log.i(TAG, "clickBookmarksButton: Clicked the Bookmarks button from the new main menu design.")
+            composeTestRule.waitForIdle()
 
             BookmarksRobot(composeTestRule).interact()
             return BookmarksRobot.Transition(composeTestRule)
