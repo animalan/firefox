@@ -1446,15 +1446,22 @@ void nsHttpTransaction::Close(nsresult reason) {
       mOrigConnInfo && AllowedErrorForTransactionRetry(reason) &&
       !mDoNotRemoveAltSvc;
 
-  // On a TLS resumption error over an HTTPS-RR-routed connection, only the
-  // cached resumption material is bad — the route is fine. Stay on the
-  // alt-route: MaybeRemoveSSLToken has already evicted the PSK, so a fresh
-  // handshake on the same route should succeed. Setting
+  // When a PSK resumption attempt fails over an HTTPS-RR-routed connection,
+  // only the cached resumption material is bad — the route is fine. Stay on
+  // the alt-route: MaybeRemoveSSLToken has already evicted the PSK, so a
+  // fresh handshake on the same route should succeed. Setting
   // mDontRetryWithDirectRoute keeps Restart() from stripping the route. If
   // that retry also fails, mResumptionAttempted will have been reset and
   // the standard HTTPS-RR retry path takes over.
-  if (shouldRestartTransactionForHTTPSRR &&
-      ShouldRestartOnResumptionError(reason)) {
+  //
+  // We gate on mResumptionAttempted rather than ShouldRestartOnResumptionError
+  // because the failing connection's error can surface either as a TLS alert
+  // (NSS module) or as a network-level error (e.g. NS_ERROR_NET_RESET) when
+  // the socket transport's teardown wins the race against NSS error
+  // propagation. Both cases mean the same thing: the resumption attempt
+  // didn't make it past the handshake, so reuse the alt-route with a fresh
+  // handshake.
+  if (shouldRestartTransactionForHTTPSRR && mResumptionAttempted) {
     shouldRestartTransactionForHTTPSRR = false;
     mDontRetryWithDirectRoute = true;
   }
