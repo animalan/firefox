@@ -5,75 +5,51 @@
 #ifndef HappyEyeballsTransaction_h_
 #define HappyEyeballsTransaction_h_
 
-#include "nsAHttpConnection.h"
+#include <functional>
+
+#include "SpeculativeTransaction.h"
 
 namespace mozilla {
 namespace net {
 
-class nsHttpTransaction;
-
-// Proxy transaction that wraps a real nsHttpTransaction for use during
-// Happy Eyeballs connection racing. When the connection fails and Close()
-// is called, the proxy re-queues the real transaction instead of closing it.
-class HappyEyeballsTransaction final : public nsAHttpTransaction {
+// One HappyEyeballsTransaction exists per ConnectionEstablisher during a
+// Happy Eyeballs race. It behaves like SpeculativeTransaction (drives the
+// TLS handshake on its connection without consuming real request data)
+// and additionally:
+//
+//   - Collects TCP/TLS timings locally (inherited from NullHttpTransaction
+//     via OnTransportStatus). When the race resolves, the owning
+//     HappyEyeballsConnectionAttempt grabs the winner's Timings() and
+//     bootstraps the real nsHttpTransaction.
+//
+//   - Forwards each OnTransportStatus event to the owning
+//     HappyEyeballsConnectionAttempt via a caller-supplied callback so the
+//     HET can dedup and propagate a single copy of each status to the
+//     real transaction.
+class HappyEyeballsTransaction final : public SpeculativeTransaction {
  public:
-  NS_DECL_THREADSAFE_ISUPPORTS
-  NS_DECL_NSAHTTPTRANSACTION
+  using StatusForwarder = std::function<void(nsITransport*, nsresult, int64_t)>;
 
-  explicit HappyEyeballsTransaction(nsHttpTransaction* aTrans);
+  HappyEyeballsTransaction(nsHttpConnectionInfo* aConnInfo,
+                           nsIInterfaceRequestor* aCallbacks, uint32_t aCaps,
+                           StatusForwarder&& aStatusForwarder);
 
-  nsHttpTransaction* QueryHttpTransaction() override {
-    return mTransaction.get();
+  // The connected callback fires when this attempt's handshake completes
+  // (success or failure). Set by the ConnectionEstablisher right before
+  // activation. Delivered with SpeculativeTransaction semantics: if
+  // ReadSegments was reached (handshake ran to completion), the callback
+  // fires with the Close reason; otherwise with NS_ERROR_FAILURE.
+  void SetConnectedCallback(std::function<void(nsresult)>&& aCallback) {
+    mCloseCallback = std::move(aCallback);
   }
 
-  void OnActivated() override;
-  bool Do0RTT(bool aCanSendEarlyData) override;
-  nsresult Finish0RTT(bool aRestart, bool aAlpnChanged) override;
-  uint64_t BrowserId() override;
-  nsIRequestContext* RequestContext() override;
-  void DisableSpdy() override;
-  void DisableHttp2ForProxy() override;
-  void DisableHttp3(bool aAllowRetryHTTPSRR) override;
-  void MakeNonSticky() override;
-  void MakeRestartable() override;
-  void ReuseConnectionOnRestartOK(bool reuseOk) override;
-  void SetIsHttp2Websocket(bool h2ws) override;
-  bool IsHttp2Websocket() override;
-  void SetTRRInfo(nsIRequest::TRRMode aMode,
-                  TRRSkippedReason aSkipReason) override;
-  void DoNotRemoveAltSvc() override;
-  void DoNotResetIPFamilyPreference() override;
-  void OnProxyConnectComplete(int32_t aResponseCode) override;
-  nsresult OnHTTPSRRAvailable(nsIDNSHTTPSSVCRecord* aHTTPSSVCRecord,
-                              nsISVCBRecord* aHighestPriorityRecord,
-                              const nsACString& aCname) override;
-  bool IsForWebTransport() override;
-  bool IsResettingForTunnelConn() override;
-  void SetResettingForTunnelConn(bool aValue) override;
-  bool AllowedToConnectToIpAddressSpace(
-      nsILoadInfo::IPAddressSpace aTargetIpAddressSpace) override;
-
-  void SetConnectedCallback(std::function<void(nsresult)>&& aCallback);
-
-  // Detach the wrapped transaction so Close() becomes a no-op.
-  void Detach();
-  bool IsDetached() const { return !mTransaction; }
-
-  void Cancel(nsresult aReason) override {
-    mCancelled = true;
-    mCancelReason = aReason;
-  }
+  void OnTransportStatus(nsITransport* aTransport, nsresult aStatus,
+                         int64_t aProgress) override;
 
  private:
-  ~HappyEyeballsTransaction();
+  ~HappyEyeballsTransaction() override = default;
 
-  void MaybeInvokeConnectedCallback(nsresult aStatus);
-
-  RefPtr<nsHttpTransaction> mTransaction;
-  std::function<void(nsresult)> mConnectedCallback;
-  bool mConnectedCallbackInvoked = false;
-  bool mCancelled = false;
-  nsresult mCancelReason = NS_OK;
+  StatusForwarder mStatusForwarder;
 };
 
 }  // namespace net

@@ -9,7 +9,6 @@
 #include "nsAHttpConnection.h"
 #include "nsICancelable.h"
 #include "nsIDNSListener.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/Result.h"
 #include "nsTHashSet.h"
 #include "happy_eyeballs_glue/HappyEyeballs.h"
@@ -64,11 +63,15 @@ class HappyEyeballsConnectionAttempt final : public ConnectionAttempt,
                                  bool speculative, bool urgentStart);
 
   nsresult Init(ConnectionEntry* ent) override;
-  void Abandon(bool aReenqueueTransaction = false) override;
+  void Abandon() override;
   double Duration(TimeStamp epoch) override;
   void OnTimeout() override;
   void PrintDiagnostics(nsCString& log) override;
   bool Claim(nsHttpTransaction* newTransaction = nullptr) override;
+  // No-op: HE attempts are 1:1 owned by their creator transaction. See
+  // ConnectionAttempt::Unclaim's comment for the failure mode this
+  // override prevents.
+  void Unclaim() override {}
   uint32_t UnconnectedUDPConnsLength() const override;
 
  private:
@@ -96,8 +99,12 @@ class HappyEyeballsConnectionAttempt final : public ConnectionAttempt,
   nsresult OnHTTPSRecord(nsIDNSRecord* aRecord, nsresult status, uint64_t aId);
 
   // Connection Attempt
-  void MaybePassHttpTransToEstablisher(ConnectionEstablisher* aEstablisher,
-                                       uint64_t aId);
+  // Build a per-establisher HappyEyeballsTransaction wired up to forward
+  // its OnTransportStatus events back through MaybeSendTransportStatus
+  // for dedup + propagation to the real transaction.
+  already_AddRefed<HappyEyeballsTransaction> CreateAttemptTransaction(
+      nsHttpConnectionInfo* aInfo);
+
   nsresult EstablishTCPConnection(NetAddr aAddr, uint16_t aPort,
                                   nsTArray<uint8_t>&& aEchConfig, uint64_t aId);
   void HandleTCPConnectionResult(
@@ -132,6 +139,9 @@ class HappyEyeballsConnectionAttempt final : public ConnectionAttempt,
   nsRefPtrHashtable<nsUint64HashKey, ConnectionEstablisher>
       mConnectionEstablisherTable;
   RefPtr<HttpConnectionBase> mOutputConn;
+  // Winning establisher's per-attempt transaction; used to read its
+  // collected handshake timings before we dispatch the real transaction.
+  RefPtr<HappyEyeballsTransaction> mOutputTrans;
   uint64_t mOutputConnId{0};
   uint16_t mAddrFamily{0};
 
@@ -140,12 +150,10 @@ class HappyEyeballsConnectionAttempt final : public ConnectionAttempt,
   bool mDone = false;
   nsresult mLastConnectionError = NS_OK;
   nsresult mLastDnsError = NS_OK;
-  bool mFirstAttempt = true;
-  Maybe<uint64_t> mHttpTransEstablisherId;
-  RefPtr<HappyEyeballsTransaction> mProxyTransaction;
   nsTHashSet<uint32_t> mSentTransportStatuses;
 
   DnsMetadata mDnsMetadata;
+  bool mTRRInfoForwarded = false;
 
   TimeStamp mDomainLookupStart;
   TimeStamp mDomainLookupEnd;

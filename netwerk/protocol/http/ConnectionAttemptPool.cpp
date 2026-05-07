@@ -122,10 +122,9 @@ void ConnectionAttemptPool::OnConnectionAttemptConnected() {
   --mUnconnectedCount;
 }
 
-void ConnectionAttemptPool::CloseAllConnectionAttempts(
-    bool aReenqueueTransaction) {
+void ConnectionAttemptPool::CloseAllConnectionAttempts() {
   for (const auto& sock : mAttempts) {
-    sock->Abandon(aReenqueueTransaction);
+    sock->Abandon();
     gHttpHandler->ConnMgr()->DecreaseNumDnsAndConnectSockets();
   }
 
