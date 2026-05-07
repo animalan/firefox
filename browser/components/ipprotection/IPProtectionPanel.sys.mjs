@@ -159,7 +159,6 @@ export class IPProtectionPanel {
     }
 
     const backButton = view.querySelector(".subviewbutton-back");
-    const infoButton = view.querySelector(".panel-info-button");
     const locationsList = view.querySelector("locations-list");
     const listItems = locationsList
       ? Array.from(
@@ -193,12 +192,9 @@ export class IPProtectionPanel {
     }
 
     // Tab key handling
-    const tabOnlyElements = [
-      backButton,
-      infoButton,
-      listItems[0],
-      promoButton,
-    ].filter(el => el != null);
+    const tabOnlyElements = [backButton, listItems[0], promoButton].filter(
+      el => el != null
+    );
 
     e.preventDefault();
     e.stopPropagation();
@@ -206,7 +202,7 @@ export class IPProtectionPanel {
     // Force focus out of locations list if on a list item
     if (isOnListItem) {
       if (e.shiftKey) {
-        infoButton?.focus();
+        backButton?.focus();
       } else {
         (promoButton ?? backButton)?.focus();
       }
@@ -587,11 +583,16 @@ export class IPProtectionPanel {
     }
 
     let headerButton = panelView.querySelector(".panel-info-button");
-    headerButton.addEventListener("click", IPProtectionPanel.showHelpPage);
-    headerButton.addEventListener("keypress", this.#handleHeaderButtonKeypress);
-    // Reset the tab index to ensure it is focusable.
-    headerButton.setAttribute("tabindex", "0");
-    this.#headerButtons.push(headerButton);
+    if (headerButton) {
+      headerButton.addEventListener("click", IPProtectionPanel.showHelpPage);
+      headerButton.addEventListener(
+        "keypress",
+        this.#handleHeaderButtonKeypress
+      );
+      // Reset the tab index to ensure it is focusable.
+      headerButton.setAttribute("tabindex", "0");
+      this.#headerButtons.push(headerButton);
+    }
 
     let contentEl = ownerDocument.createElement(contentTagName);
     contentArea.appendChild(contentEl);
