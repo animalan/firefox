@@ -1321,6 +1321,8 @@ containers-remove-button =
 account-sync-section =
     .heading = Account and sync
 
+pane-account-sync-title = Account and sync
+
 sync-group-label =
     .label = Sync
 

@@ -486,17 +486,24 @@ function init_all() {
   }
 
   // The Sync category needs to be the last of the "real" categories
-  // registered and inititalized since many tests wait for the
+  // registered and initialized since many tests wait for the
   // "sync-pane-loaded" observer notification before starting the test.
-  if (Services.prefs.getBoolPref("identity.fxaccounts.enabled")) {
-    document.getElementById("category-sync").hidden = false;
-    register_module("paneSync", gSyncPane);
-  }
-  register_module("paneSearchResults", gSearchResultsPane);
-
   let redesignEnabled = Services.prefs.getBoolPref(
     "browser.settings-redesign.enabled"
   );
+  let accountsEnabled = Services.prefs.getBoolPref(
+    "identity.fxaccounts.enabled"
+  );
+  let categorySync = document.getElementById("category-sync");
+  if (redesignEnabled) {
+    categorySync.setAttribute("data-l10n-id", "pane-account-sync-title");
+    categorySync.iconSrc = "chrome://browser/skin/fxa/avatar-empty.svg";
+    categorySync.hidden = false;
+  } else if (accountsEnabled) {
+    categorySync.hidden = false;
+    register_module("paneSync", gSyncPane);
+  }
+  register_module("paneSearchResults", gSearchResultsPane);
   for (let [id, config] of Object.entries(CONFIG_PANES)) {
     if (!redesignEnabled && config.replaces) {
       continue;

@@ -764,6 +764,8 @@ Preferences.addSetting({
   },
 });
 
+let accountsEnabled = Services.prefs.getBoolPref("identity.fxaccounts.enabled");
+
 SettingGroupManager.registerGroups({
   defaultBrowserSync: window.createDefaultBrowserConfig({
     includeIsDefaultPane: false,
@@ -775,6 +777,7 @@ SettingGroupManager.registerGroups({
     l10nId: "account-group-label2",
     headingLevel: 2,
     iconSrc: "chrome://browser/skin/preferences/mozilla-logo.svg",
+    hidden: !accountsEnabled,
     items: [
       {
         id: "noFxaAccountGroup",
@@ -872,6 +875,7 @@ SettingGroupManager.registerGroups({
     l10nId: "sync-group-label",
     headingLevel: 2,
     iconSrc: "chrome://browser/skin/sync.svg",
+    hidden: !accountsEnabled,
     items: [
       {
         id: "syncNoFxaSignIn",
