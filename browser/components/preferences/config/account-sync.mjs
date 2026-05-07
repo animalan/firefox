@@ -244,10 +244,36 @@ export var SyncHelpers = new (class SyncHelpers {
       showConfirm,
     });
   }
+
+  // Check if the user is coming from a call to action
+  // and show them the correct additional panel
+  maybeShowSyncAction() {
+    if (
+      location.hash == "#sync" &&
+      window.UIState.get().status == window.UIState.STATUS_SIGNED_IN
+    ) {
+      if (location.href.includes("action=pair")) {
+        window.gSubDialog.open(
+          "chrome://browser/content/preferences/fxaPairDevice.xhtml",
+
+          { features: "resizable=no" }
+        );
+      } else if (location.href.includes("action=choose-what-to-sync")) {
+        this._chooseWhatToSync(false, "callToAction");
+      }
+    }
+  }
 })();
 
 // Expose SyncHelpers on the window object for tests and other code.
 window.SyncHelpers = SyncHelpers;
+
+// Listen for when sync pane is loaded to check for actions
+window.addEventListener("paneshown", e => {
+  if (e.detail.category == "paneSync") {
+    SyncHelpers.maybeShowSyncAction();
+  }
+});
 
 Preferences.addSetting({
   id: "uiStateUpdate",
