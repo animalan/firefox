@@ -16,62 +16,105 @@ smartwindow-nl-undo-button =
   },
   argTypes: {
     label: { control: "text" },
-    itemsLabel: { control: "text" },
     summary: { control: "text" },
     canUndo: { control: "boolean" },
     isExpanded: { control: "boolean" },
-    items: { control: "object" },
+    rows: { control: "object" },
   },
 };
 
-const Template = ({
-  label,
-  itemsLabel,
-  summary,
-  canUndo,
-  isExpanded,
-  items,
-}) => html`
+const Template = ({ label, summary, canUndo, isExpanded, rows }) => html`
   <ai-action-result
     label=${label}
-    items-label=${itemsLabel || ""}
     summary=${summary}
     ?can-undo=${canUndo}
     ?is-expanded=${isExpanded}
-    .items=${items}
+    .rows=${rows}
   ></ai-action-result>
 `;
 
 export const Collapsed = Template.bind({});
 Collapsed.args = {
   label: "Closed tab",
-  itemsLabel: "Closed tab",
   summary: "I closed any open tabs about NYC hotels.",
   canUndo: true,
   isExpanded: false,
-  items: [{ url: "https://nychotels.com", label: "NYC Hotels - Queens" }],
+  rows: [
+    {
+      label: "Closed tab",
+      items: [{ url: "https://nychotels.com", label: "NYC Hotels - Queens" }],
+    },
+  ],
 };
 
 export const Expanded = Template.bind({});
 Expanded.args = {
   label: "Closed tab",
-  itemsLabel: "Closed tab",
   summary: "I closed any open tabs about NYC hotels.",
   canUndo: true,
   isExpanded: true,
-  items: [{ url: "https://nychotels.com", label: "NYC Hotels - Queens" }],
+  rows: [
+    {
+      label: "Closed tab",
+      items: [{ url: "https://nychotels.com", label: "NYC Hotels - Queens" }],
+    },
+  ],
 };
 
 export const ExpandedBulk = Template.bind({});
 ExpandedBulk.args = {
   label: "Closed 3 tabs",
-  itemsLabel: "Closed tabs",
   summary: "I closed any open tabs about NYC hotels.",
   canUndo: true,
   isExpanded: true,
-  items: [
-    { url: "https://nychotels.com", label: "NYC Hotels - Queens" },
-    { url: "https://besthotels.com", label: "Best Hotels in New York" },
-    { url: "https://brooklyn-stay.com", label: "Brooklyn New York Stay" },
+  rows: [
+    {
+      label: "Closed tabs",
+      items: [
+        { url: "https://nychotels.com", label: "NYC Hotels - Queens" },
+        { url: "https://besthotels.com", label: "Best Hotels in New York" },
+        { url: "https://brooklyn-stay.com", label: "Brooklyn New York Stay" },
+      ],
+    },
+  ],
+};
+
+export const ExpandedAfterUndo = Template.bind({});
+ExpandedAfterUndo.args = {
+  label: "Closed tab",
+  summary: "I closed any open tabs about NYC hotels.",
+  canUndo: false,
+  isExpanded: true,
+  rows: [
+    {
+      label: "Closed tab",
+      items: [{ url: "https://nychotels.com", label: "NYC Hotels - Queens" }],
+    },
+    {
+      label: "Undo – reopened tab",
+      items: [],
+    },
+  ],
+};
+
+export const ExpandedBulkAfterUndo = Template.bind({});
+ExpandedBulkAfterUndo.args = {
+  label: "Closed 3 tabs",
+  summary: "I closed any open tabs about NYC hotels.",
+  canUndo: false,
+  isExpanded: true,
+  rows: [
+    {
+      label: "Closed tabs",
+      items: [
+        { url: "https://nychotels.com", label: "NYC Hotels - Queens" },
+        { url: "https://besthotels.com", label: "Best Hotels in New York" },
+        { url: "https://brooklyn-stay.com", label: "Brooklyn New York Stay" },
+      ],
+    },
+    {
+      label: "Restored tabs",
+      items: [],
+    },
   ],
 };

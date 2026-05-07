@@ -13,35 +13,36 @@ import "chrome://browser/content/aiwindow/components/website-chip-container.mjs"
  * Renders the result of a natural language action performed by the assistant
  * (e.g. "Closed tabs"). Shows the action label, summary, and an undo button
  * when available. Clicking the header toggles the expanded state, which
- * reveals a list of affected items (website chips).
+ * reveals a list of stacked rows, each with its own label and optional
+ * affected items (website chips).
+ *
+ * Dispatches a CustomEvent named action-result-undo when the user clicks undo.
+ * The parent is responsible for performing the actual reversal and updating
+ * the action state.
  *
  * @attribute {string} label - Header label (e.g. "Closed tab", "Closed 3 tabs")
- * @attribute {string} itemsLabel - Label above the items list when expanded
- *   Falls back to `label` if not set, but typically differs for multi item
- *   actions (e.g. label="Closed 3 tabs", itemsLabel="Closed tabs")
  * @attribute {string} summary - Descriptive text for the action
  * @attribute {boolean} canUndo - Whether the undo button should be shown
  * @attribute {boolean} isExpanded - Whether the detail section is visible
- * @property {Array} items - List of affected items ({ url, label, iconSrc? })
+ * @property {Array} rows - List of stacked dot rows each shaped:
+ *  { label: string, items: Array<{ url: string, label: string }> }
  */
 export class AIActionResult extends MozLitElement {
   static properties = {
     label: { type: String },
-    itemsLabel: { type: String, attribute: "items-label" },
+    rows: { type: Array },
     summary: { type: String },
     canUndo: { type: Boolean, attribute: "can-undo", reflect: true },
     isExpanded: { type: Boolean, attribute: "is-expanded", reflect: true },
-    items: { type: Array },
   };
 
   constructor() {
     super();
     this.label = "";
-    this.itemsLabel = "";
+    this.rows = [];
     this.summary = "";
     this.canUndo = false;
     this.isExpanded = false;
-    this.items = [];
   }
 
   #handleUndo() {
@@ -73,22 +74,35 @@ export class AIActionResult extends MozLitElement {
         ${this.isExpanded
           ? html`
               <div class="action-result-expanded">
-                <div class="action-result-expanded-row">
-                  <div class="action-result-expanded-row-header">
-                    <span class="action-result-dot" aria-hidden="true"></span>
-                    <span class="action-result-expanded-row-label">
-                      ${this.itemsLabel || this.label}
-                    </span>
-                  </div>
-                  <website-chip-container
-                    class="action-result-chips"
-                    .websites=${this.items}
-                  ></website-chip-container>
-                </div>
+                ${this.rows.map(
+                  row => html`
+                    <div class="action-result-expanded-row">
+                      <div class="action-result-expanded-row-header">
+                        <span
+                          class="action-result-dot"
+                          aria-hidden="true"
+                        ></span>
+                        <span class="action-result-expanded-row-label">
+                          ${row.label}
+                        </span>
+                      </div>
+                      ${row.items?.length
+                        ? html`
+                            <website-chip-container
+                              class="action-result-chips"
+                              .websites=${row.items}
+                            ></website-chip-container>
+                          `
+                        : nothing}
+                    </div>
+                  `
+                )}
               </div>
             `
           : nothing}
-        <p class="action-result-summary">${this.summary}</p>
+        ${this.summary
+          ? html`<p class="action-result-summary">${this.summary}</p>`
+          : nothing}
         ${this.canUndo
           ? html`
               <moz-button
