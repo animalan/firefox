@@ -23,9 +23,12 @@ class LSANLeaks:
         self.inReport = False
         self.fatalError = False
         self.symbolizerError = False
-        self.foundFrames = set()
+        self.foundLeaks = []
         self.recordMoreFrames = None
         self.currStack = None
+        self.currBytes = None
+        self.currObjects = None
+        self.currKind = None
         self.maxNumRecordedFrames = maxNumRecordedFrames if maxNumRecordedFrames else 4
         self.summaryData = None
         self.scope = scope
@@ -71,6 +74,9 @@ class LSANLeaks:
         self.sysLibStackFrameRegExp = re.compile(
             r"    #\d+ 0x[0-9a-f]+ \(([^+]+)\+0x[0-9a-f]+\)"
         )
+        self.leakHeaderRegexp = re.compile(
+            r"^(Direct|Indirect) leak of (\d+) byte\(s\) in (\d+) object\(s\) allocated from"
+        )
         self.summaryRegexp = re.compile(
             r"SUMMARY: AddressSanitizer: (\d+) byte\(s\) leaked in (\d+) allocation\(s\)."
         )
@@ -103,10 +109,14 @@ class LSANLeaks:
         if not self.inReport:
             return line
 
-        if line.startswith("Direct leak") or line.startswith("Indirect leak"):
+        leakHeader = self.leakHeaderRegexp.match(line)
+        if leakHeader:
             self._finishStack()
             self.recordMoreFrames = True
             self.currStack = []
+            self.currKind = leakHeader.group(1)
+            self.currBytes = int(leakHeader.group(2))
+            self.currObjects = int(leakHeader.group(3))
             return line
 
         summaryData = self.summaryRegexp.match(line)
@@ -148,7 +158,7 @@ class LSANLeaks:
             return
 
         if self.summaryData:
-            allowed = all(allowed for _, allowed in self.foundFrames)
+            allowed = all(allowed for _, allowed, _, _, _ in self.foundLeaks)
             self.logger.lsan_summary(*self.summaryData, allowed=allowed)
             self.summaryData = None
 
@@ -166,7 +176,7 @@ class LSANLeaks:
             )
             failures += 1
 
-        if self.foundFrames:
+        if self.foundLeaks:
             self.logger.info(
                 "LeakSanitizer | To show the "
                 "addresses of leaked objects add report_objects=1 to LSAN_OPTIONS\n"
@@ -174,14 +184,21 @@ class LSANLeaks:
             )
             self.logger.info("Allowed depth was %d" % self.maxNumRecordedFrames)
 
-            for frames, allowed in self.foundFrames:
-                self.logger.lsan_leak(frames, scope=self.scope, allowed_match=allowed)
+            for frames, allowed, kind, nbytes, nobjects in self.foundLeaks:
+                self.logger.lsan_leak(
+                    frames,
+                    kind,
+                    nbytes,
+                    nobjects,
+                    scope=self.scope,
+                    allowed_match=allowed,
+                )
                 if not allowed:
                     failures += 1
 
         if self.sawError and not (
             self.summaryData
-            or self.foundFrames
+            or self.foundLeaks
             or self.fatalError
             or self.symbolizerError
         ):
@@ -195,11 +212,20 @@ class LSANLeaks:
 
     def _finishStack(self):
         if self.recordMoreFrames and len(self.currStack) == 0:
-            self.currStack = {"unknown stack"}
+            self.currStack = ["unknown stack"]
         if self.currStack:
-            self.foundFrames.add((tuple(self.currStack), self.allowedMatch))
+            self.foundLeaks.append((
+                tuple(self.currStack),
+                self.allowedMatch,
+                self.currKind,
+                self.currBytes,
+                self.currObjects,
+            ))
             self.currStack = None
             self.allowedMatch = None
+            self.currKind = None
+            self.currBytes = None
+            self.currObjects = None
         self.recordMoreFrames = False
         self.numRecordedFrames = 0
 

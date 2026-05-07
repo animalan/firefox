@@ -91,6 +91,9 @@ Allowed actions, and subfields:
 
   lsan_leak
       frames - List of stack frames from the leak report
+      kind - Leak kind ("Direct" or "Indirect")
+      bytes - Bytes leaked at this allocation site
+      objects - Number of objects leaked at this allocation site
       scope - An identifier for the set of tests run during the browser session
               (e.g. a directory name)
       allowed_match - A stack frame in the list that matched a rule meaning the
@@ -661,6 +664,9 @@ class StructuredLogger:
 
     @log_action(
         List(Unicode, "frames"),
+        Unicode("kind"),
+        Int("bytes"),
+        Int("objects"),
         Unicode("scope", optional=True, default=None),
         Unicode("allowed_match", optional=True, default=None),
         Unicode("subsuite", default=None, optional=True),
