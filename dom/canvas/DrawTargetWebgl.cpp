@@ -80,8 +80,7 @@ class AcceleratedCanvas2DMemoryReporter final : public nsIMemoryReporter {
     static bool registered = false;
     if (!registered) {
       registered = true;
-      RegisterStrongMemoryReporter(
-          MakeAndAddRef<AcceleratedCanvas2DMemoryReporter>());
+      RegisterStrongMemoryReporter(new AcceleratedCanvas2DMemoryReporter);
     }
   }
 };

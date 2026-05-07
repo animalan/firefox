@@ -17,7 +17,7 @@ MOZ_DEFINE_MALLOC_SIZE_OF(MallocSizeOf)
 
 void WebGLMemoryTracker::EnsureRegistered() {
   static bool sIsRegistered = []() {
-    RegisterStrongMemoryReporter(MakeAndAddRef<WebGLMemoryTracker>());
+    RegisterStrongMemoryReporter(new WebGLMemoryTracker);
     return true;
   }();
   (void)sIsRegistered;

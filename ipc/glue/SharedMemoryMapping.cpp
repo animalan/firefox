@@ -46,7 +46,7 @@ NS_IMPL_ISUPPORTS(MappingReporter, nsIMemoryReporter)
 static void RegisterMappingMemoryReporter() {
   static Atomic<bool> registered;
   if (registered.compareExchange(false, true)) {
-    RegisterStrongMemoryReporter(MakeAndAddRef<MappingReporter>());
+    RegisterStrongMemoryReporter(new MappingReporter());
   }
 }
 

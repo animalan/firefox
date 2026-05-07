@@ -243,8 +243,8 @@ gfxWindowsPlatform::gfxWindowsPlatform() {
      */
     CoInitialize(nullptr);
 
-    RegisterStrongMemoryReporter(MakeAndAddRef<GPUAdapterReporter>());
-    RegisterStrongMemoryReporter(MakeAndAddRef<D3DSharedTexturesReporter>());
+    RegisterStrongMemoryReporter(new GPUAdapterReporter());
+    RegisterStrongMemoryReporter(new D3DSharedTexturesReporter());
   }
 }
 
@@ -264,8 +264,8 @@ gfxWindowsPlatform::~gfxWindowsPlatform() {
 void gfxWindowsPlatform::InitMemoryReportersForGPUProcess() {
   MOZ_RELEASE_ASSERT(XRE_IsGPUProcess());
 
-  RegisterStrongMemoryReporter(MakeAndAddRef<GPUAdapterReporter>());
-  RegisterStrongMemoryReporter(MakeAndAddRef<D3DSharedTexturesReporter>());
+  RegisterStrongMemoryReporter(new GPUAdapterReporter());
+  RegisterStrongMemoryReporter(new D3DSharedTexturesReporter());
 }
 
 /* static */

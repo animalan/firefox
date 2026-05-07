@@ -93,7 +93,7 @@ void nsWindowMemoryReporter::Init() {
   MOZ_ASSERT(!sWindowReporter);
   sWindowReporter = new nsWindowMemoryReporter();
   ClearOnShutdown(&sWindowReporter);
-  RegisterStrongMemoryReporter(do_AddRef(sWindowReporter));
+  RegisterStrongMemoryReporter(sWindowReporter);
   RegisterNonJSSizeOfTab(NonJSSizeOfTab);
 
   nsCOMPtr<nsIObserverService> os = services::GetObserverService();

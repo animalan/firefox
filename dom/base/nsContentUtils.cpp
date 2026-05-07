@@ -1064,8 +1064,7 @@ nsresult nsContentUtils::Init() {
     sEventListenerManagersHash =
         new nsTHashMap<const nsINode*, RefPtr<EventListenerManager>>();
 
-    RegisterStrongMemoryReporter(
-        MakeAndAddRef<DOMEventListenerManagersHashReporter>());
+    RegisterStrongMemoryReporter(new DOMEventListenerManagersHashReporter());
   }
 
   sBlockedScriptRunners = new AutoTArray<nsCOMPtr<nsIRunnable>, 8>;

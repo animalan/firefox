@@ -1908,7 +1908,7 @@ void CanvasRenderingContext2D::RegisterAllocation() {
   // FIXME: Disable the reporter for now, see bug 1241865
   if (!registered && false) {
     registered = true;
-    RegisterStrongMemoryReporter(MakeAndAddRef<Canvas2dPixelsReporter>());
+    RegisterStrongMemoryReporter(new Canvas2dPixelsReporter());
   }
 }
 

@@ -1794,7 +1794,7 @@ void GLContext::InitExtensions() {
 }
 
 void GLContext::PlatformStartup() {
-  RegisterStrongMemoryReporter(MakeAndAddRef<GfxTexturesReporter>());
+  RegisterStrongMemoryReporter(new GfxTexturesReporter());
 }
 
 // Common code for checking for both GL extensions and GLX extensions.

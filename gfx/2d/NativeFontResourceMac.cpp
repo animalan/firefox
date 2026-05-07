@@ -74,7 +74,7 @@ class NativeFontResourceMacReporter final : public nsIMemoryReporter {
 NS_IMPL_ISUPPORTS(NativeFontResourceMacReporter, nsIMemoryReporter)
 
 void NativeFontResourceMac::RegisterMemoryReporter() {
-  RegisterStrongMemoryReporter(MakeAndAddRef<NativeFontResourceMacReporter>());
+  RegisterStrongMemoryReporter(new NativeFontResourceMacReporter);
 }
 
 /* static */

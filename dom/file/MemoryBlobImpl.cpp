@@ -159,8 +159,7 @@ void MemoryBlobImpl::DataOwner::EnsureMemoryReporterRegistered() {
     return;
   }
 
-  RegisterStrongMemoryReporter(
-      MakeAndAddRef<MemoryBlobImplDataOwnerMemoryReporter>());
+  RegisterStrongMemoryReporter(new MemoryBlobImplDataOwnerMemoryReporter());
 
   sMemoryReporterRegistered = true;
 }

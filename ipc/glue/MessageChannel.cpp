@@ -394,7 +394,8 @@ template <class Reporter>
 static void TryRegisterStrongMemoryReporter() {
   static Atomic<bool> registered;
   if (registered.compareExchange(false, true)) {
-    if (NS_FAILED(RegisterStrongMemoryReporter(MakeAndAddRef<Reporter>()))) {
+    RefPtr<Reporter> reporter = new Reporter();
+    if (NS_FAILED(RegisterStrongMemoryReporter(reporter))) {
       registered = false;
     }
   }

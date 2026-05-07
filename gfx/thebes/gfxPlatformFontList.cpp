@@ -336,7 +336,7 @@ gfxPlatformFontList::gfxPlatformFontList(bool aNeedFullnamePostscriptNames)
                                   kFontSystemWhitelistPref);
   }
 
-  RegisterStrongMemoryReporter(MakeAndAddRef<MemoryReporter>());
+  RegisterStrongMemoryReporter(new MemoryReporter());
 
   // initialize lang group pref font defaults (i.e. serif/sans-serif)
   mDefaultGenericsLangGroup.AppendElements(std::size(gPrefLangNames));
