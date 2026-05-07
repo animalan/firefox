@@ -2,50 +2,117 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+:host {
+  --ai-action-connector-background-color: color-mix(in srgb, var(--color-violet-20) 50%, transparent);
+  --ai-action-connector-width: var(--dimension-2);
+  --ai-action-icon-fill-color: var(--color-violet-20);
+}
+
 .action-result-wrapper {
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   gap: var(--space-small);
   padding: var(--space-small);
-  color: var(--text-color);
 }
 
+/* Header (sparkle row) */
 .action-result-header {
-  align-self: flex-start;
-  display: flex;
   align-items: center;
-  gap: var(--space-xsmall);
+  align-self: flex-start;
   background: transparent;
   border: none;
-  padding: 0;
-  font: inherit;
   color: inherit;
   cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: var(--space-small);
+  padding: var(--space-medium) 0;
   text-align: start;
 }
 
 .action-result-indicator {
-  width: var(--icon-size);
-  height: var(--icon-size);
-  flex-shrink: 0;
   background-image: url("chrome://browser/skin/smart-window-filled.svg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
+  flex-shrink: 0;
+  height: var(--icon-size);
+  width: var(--icon-size);
 }
 
+/* Chevron */
 .action-result-header::after {
-  content: "";
-  display: block;
-  width: var(--icon-size);
-  height: var(--icon-size);
   background-image: url("chrome://global/skin/icons/arrow-right.svg");
   background-size: var(--icon-size);
   background-repeat: no-repeat;
   background-position: center;
-  -moz-context-properties: fill, fill-opacity;
+  content: "";
+  display: block;
   fill: currentColor;
   flex-shrink: 0;
+  height: var(--icon-size);
+  width: var(--icon-size);
+  -moz-context-properties: fill;
+}
+
+:host([is-expanded]) .action-result-header::after {
+  transform: rotate(90deg);
+}
+
+:host(:dir(rtl)) .action-result-header::after {
+  background-image: url("chrome://global/skin/icons/arrow-left.svg");
+}
+
+:host(:dir(rtl)[is-expanded]) .action-result-header::after {
+  transform: rotate(-90deg);
+}
+
+/* Expanded section (dot icon row + chips) */
+.action-result-expanded {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xsmall);
+}
+
+.action-result-expanded-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xsmall);
+  position: relative;
+}
+
+/* Vertical connector line between sparkle row and dot row */
+.action-result-expanded-row::before {
+  background: var(--ai-action-connector-background-color);
+  bottom: 100%;
+  content: "";
+  height: var(--icon-size);
+  inset-inline-start: calc(var(--icon-size) / 2 - 1px);
+  position: absolute;
+  width: var(--ai-action-connector-width);
+}
+
+.action-result-expanded-row-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-small);
+}
+
+.action-result-chips {
+  padding-inline-start: calc(var(--icon-size) + var(--space-small));
+}
+
+.action-result-dot {
+  background-image: url("chrome://browser/skin/smart-window-dot.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: var(--space-small) var(--space-small);
+  fill: var(--ai-action-icon-fill-color);
+  flex-shrink: 0;
+  height: var(--icon-size);
+  width: var(--icon-size);
+  -moz-context-properties: fill;
 }
 
 .action-result-summary {
@@ -61,5 +128,11 @@
   @media not (forced-colors) {
     --button-background-color: var(--smartwindow-prompt-button-background-color);
     --button-text-color: var(--smartwindow-text-color-accent-deemphasized);
+  }
+}
+
+@media (forced-colors: active) {
+  :host {
+    --ai-action-connector-background-color: CanvasText;
   }
 }

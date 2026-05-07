@@ -10,28 +10,68 @@ export default {
   component: "ai-action-result",
   parameters: {
     fluent: `
-smartwindow-nl-undo-button = Undo
-    `,
+smartwindow-nl-undo-button =
+    .label = Undo
+  `,
   },
   argTypes: {
     label: { control: "text" },
+    itemsLabel: { control: "text" },
     summary: { control: "text" },
     canUndo: { control: "boolean" },
     isExpanded: { control: "boolean" },
+    items: { control: "object" },
   },
 };
 
-export const Collapsed = ({ label, summary, canUndo, isExpanded }) => html`
+const Template = ({
+  label,
+  itemsLabel,
+  summary,
+  canUndo,
+  isExpanded,
+  items,
+}) => html`
   <ai-action-result
     label=${label}
+    items-label=${itemsLabel || ""}
     summary=${summary}
     ?can-undo=${canUndo}
     ?is-expanded=${isExpanded}
+    .items=${items}
   ></ai-action-result>
 `;
+
+export const Collapsed = Template.bind({});
 Collapsed.args = {
-  label: "Closed tabs",
+  label: "Closed tab",
+  itemsLabel: "Closed tab",
   summary: "I closed any open tabs about NYC hotels.",
   canUndo: true,
   isExpanded: false,
+  items: [{ url: "https://nychotels.com", label: "NYC Hotels - Queens" }],
+};
+
+export const Expanded = Template.bind({});
+Expanded.args = {
+  label: "Closed tab",
+  itemsLabel: "Closed tab",
+  summary: "I closed any open tabs about NYC hotels.",
+  canUndo: true,
+  isExpanded: true,
+  items: [{ url: "https://nychotels.com", label: "NYC Hotels - Queens" }],
+};
+
+export const ExpandedBulk = Template.bind({});
+ExpandedBulk.args = {
+  label: "Closed 3 tabs",
+  itemsLabel: "Closed tabs",
+  summary: "I closed any open tabs about NYC hotels.",
+  canUndo: true,
+  isExpanded: true,
+  items: [
+    { url: "https://nychotels.com", label: "NYC Hotels - Queens" },
+    { url: "https://besthotels.com", label: "Best Hotels in New York" },
+    { url: "https://brooklyn-stay.com", label: "Brooklyn New York Stay" },
+  ],
 };

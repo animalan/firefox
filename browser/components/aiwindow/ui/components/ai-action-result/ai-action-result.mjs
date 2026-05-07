@@ -6,33 +6,42 @@ import { html, nothing } from "chrome://global/content/vendor/lit.all.mjs";
 import { MozLitElement } from "chrome://global/content/lit-utils.mjs";
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://global/content/elements/moz-button.mjs";
+// eslint-disable-next-line import/no-unassigned-import
+import "chrome://browser/content/aiwindow/components/website-chip-container.mjs";
 
 /**
  * Renders the result of a natural language action performed by the assistant
  * (e.g. "Closed tabs"). Shows the action label, summary, and an undo button
  * when available. Clicking the header toggles the expanded state, which
- * reveals additional detail injected via the "details" slot.
+ * reveals a list of affected items (website chips).
  *
- * @attribute {string} label - Short action label (e.g. "Closed tabs").
- * @attribute {string} summary - Descriptive text for the action.
- * @attribute {boolean} canUndo - Whether the undo button should be shown.
- * @attribute {boolean} isExpanded - Whether the detail section is visible.
- * @slot details - Additional content shown when expanded.
+ * @attribute {string} label - Header label (e.g. "Closed tab", "Closed 3 tabs")
+ * @attribute {string} itemsLabel - Label above the items list when expanded
+ *   Falls back to `label` if not set, but typically differs for multi item
+ *   actions (e.g. label="Closed 3 tabs", itemsLabel="Closed tabs")
+ * @attribute {string} summary - Descriptive text for the action
+ * @attribute {boolean} canUndo - Whether the undo button should be shown
+ * @attribute {boolean} isExpanded - Whether the detail section is visible
+ * @property {Array} items - List of affected items ({ url, label, iconSrc? })
  */
-export default class AIActionResult extends MozLitElement {
+export class AIActionResult extends MozLitElement {
   static properties = {
     label: { type: String },
+    itemsLabel: { type: String, attribute: "items-label" },
     summary: { type: String },
     canUndo: { type: Boolean, attribute: "can-undo", reflect: true },
     isExpanded: { type: Boolean, attribute: "is-expanded", reflect: true },
+    items: { type: Array },
   };
 
   constructor() {
     super();
     this.label = "";
+    this.itemsLabel = "";
     this.summary = "";
-    this.canUndo = true;
+    this.canUndo = false;
     this.isExpanded = false;
+    this.items = [];
   }
 
   #handleUndo() {
@@ -42,31 +51,7 @@ export default class AIActionResult extends MozLitElement {
   }
 
   #handleToggle() {
-    // TODO: Bug 2031508 - Add expand details
-  }
-
-  #renderUndoButton() {
-    if (!this.canUndo) {
-      return nothing;
-    }
-    return html`
-      <moz-button
-        class="action-result-undo"
-        @click=${this.#handleUndo}
-        data-l10n-id="smartwindow-nl-undo-button"
-      ></moz-button>
-    `;
-  }
-
-  #renderExpandedDetails() {
-    if (!this.isExpanded) {
-      return nothing;
-    }
-    return html`
-      <div class="action-result-expanded">
-        <slot name="details"></slot>
-      </div>
-    `;
+    this.isExpanded = !this.isExpanded;
   }
 
   render() {
@@ -79,14 +64,40 @@ export default class AIActionResult extends MozLitElement {
         <button
           type="button"
           class="action-result-header"
+          aria-expanded=${this.isExpanded}
           @click=${this.#handleToggle}
         >
           <span class="action-result-indicator" aria-hidden="true"></span>
           <span class="action-result-label">${this.label}</span>
         </button>
-        ${this.#renderExpandedDetails()}
+        ${this.isExpanded
+          ? html`
+              <div class="action-result-expanded">
+                <div class="action-result-expanded-row">
+                  <div class="action-result-expanded-row-header">
+                    <span class="action-result-dot" aria-hidden="true"></span>
+                    <span class="action-result-expanded-row-label">
+                      ${this.itemsLabel || this.label}
+                    </span>
+                  </div>
+                  <website-chip-container
+                    class="action-result-chips"
+                    .websites=${this.items}
+                  ></website-chip-container>
+                </div>
+              </div>
+            `
+          : nothing}
         <p class="action-result-summary">${this.summary}</p>
-        ${this.#renderUndoButton()}
+        ${this.canUndo
+          ? html`
+              <moz-button
+                class="action-result-undo"
+                @click=${this.#handleUndo}
+                data-l10n-id="smartwindow-nl-undo-button"
+              ></moz-button>
+            `
+          : nothing}
       </div>
     `;
   }
