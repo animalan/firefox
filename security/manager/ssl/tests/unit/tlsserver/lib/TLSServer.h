@@ -86,8 +86,7 @@ using ConnectionHandlerFunc = void (*)(PRFileDesc* aSocket,
 // invoked for each accepted connection; if null, the default 1-byte-
 // echo behavior is used.
 int StartServer(int argc, char* argv[], SSLSNISocketConfig sniSocketConfig,
-                void* sniSocketConfigArg,
-                ServerConfigFunc configFunc = nullptr,
+                void* sniSocketConfigArg, ServerConfigFunc configFunc = nullptr,
                 ConnectionHandlerFunc connectionHandler = nullptr);
 
 template <typename Host>

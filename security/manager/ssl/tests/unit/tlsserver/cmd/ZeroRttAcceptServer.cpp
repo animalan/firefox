@@ -80,7 +80,9 @@ static const unsigned char kAlpnH1Only[] = {
     0x08, 'h', 't', 't', 'p', '/', '1', '.', '1',
 };
 static const unsigned char kAlpnH2Only[] = {
-    0x02, 'h', '2',
+    0x02,
+    'h',
+    '2',
 };
 
 MOZ_RUNINIT const ZeroRttAcceptHost sHosts[]{
@@ -173,8 +175,8 @@ void HandleH1Session(Connection& conn) {
   buffer.reserve(4096);
   while (true) {
     char chunk[1024];
-    int32_t n = PR_Recv(conn.mSocket, chunk, sizeof(chunk), 0,
-                        PR_INTERVAL_NO_TIMEOUT);
+    int32_t n =
+        PR_Recv(conn.mSocket, chunk, sizeof(chunk), 0, PR_INTERVAL_NO_TIMEOUT);
     if (n <= 0) {
       return;
     }
@@ -227,8 +229,8 @@ static const ZeroRttAcceptHost* PeekSniAndPickHost(PRFileDesc* aSocket) {
   size_t need = 5;  // record header
   const int kMaxPeekIters = 100;
   for (int i = 0; i < kMaxPeekIters; ++i) {
-    int32_t got = PR_Recv(aSocket, buf, sizeof(buf), PR_MSG_PEEK,
-                          PR_INTERVAL_NO_TIMEOUT);
+    int32_t got =
+        PR_Recv(aSocket, buf, sizeof(buf), PR_MSG_PEEK, PR_INTERVAL_NO_TIMEOUT);
     if (got <= 0) {
       return nullptr;
     }
@@ -330,8 +332,8 @@ static const ZeroRttAcceptHost* PeekSniAndPickHost(PRFileDesc* aSocket) {
 static bool ReadExact(PRFileDesc* aSocket, uint8_t* aBuf, size_t aCount) {
   size_t got = 0;
   while (got < aCount) {
-    int32_t n = PR_Recv(aSocket, aBuf + got, aCount - got, 0,
-                        PR_INTERVAL_NO_TIMEOUT);
+    int32_t n =
+        PR_Recv(aSocket, aBuf + got, aCount - got, 0, PR_INTERVAL_NO_TIMEOUT);
     if (n <= 0) {
       return false;
     }
@@ -392,8 +394,8 @@ void HandleH2Session(Connection& conn) {
     std::string payload;
     payload.resize(length);
     if (length > 0 &&
-        !ReadExact(conn.mSocket,
-                   reinterpret_cast<uint8_t*>(payload.data()), length)) {
+        !ReadExact(conn.mSocket, reinterpret_cast<uint8_t*>(payload.data()),
+                   length)) {
       return;
     }
 
@@ -420,17 +422,18 @@ void HandleH2Session(Connection& conn) {
         DoCallback(RequestCallbackPath(conn.mSocket));
         // HPACK: :status 200 = static table entry 8 → 0x88.
         uint8_t resp[9 + 1] = {
-            0x00, 0x00, 0x01,  // length = 1
-            0x01,              // type = HEADERS
-            0x05,              // flags = END_HEADERS | END_STREAM
+            0x00,
+            0x00,
+            0x01,  // length = 1
+            0x01,  // type = HEADERS
+            0x05,  // flags = END_HEADERS | END_STREAM
             uint8_t((streamId >> 24) & 0x7F),
             uint8_t((streamId >> 16) & 0xFF),
             uint8_t((streamId >> 8) & 0xFF),
             uint8_t(streamId & 0xFF),
             0x88,
         };
-        if (NS_FAILED(SendAll(conn.mSocket,
-                              reinterpret_cast<const char*>(resp),
+        if (NS_FAILED(SendAll(conn.mSocket, reinterpret_cast<const char*>(resp),
                               sizeof(resp)))) {
           return;
         }
