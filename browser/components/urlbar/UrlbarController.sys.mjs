@@ -1402,13 +1402,9 @@ class TelemetryEvent {
   #getAvailableSemanticSources() {
     let sources = [];
     try {
-      const semanticManager =
-        lazy.UrlbarProviderSemanticHistorySearch.semanticManager;
-      const isSmartbar = this._controller.input.sapName === "smartbar";
       if (
-        isSmartbar
-          ? semanticManager.isEnabledForSmartWindow
-          : semanticManager.canUseSemanticSearch
+        lazy.UrlbarProviderSemanticHistorySearch.semanticManager
+          .canUseSemanticSearch
       ) {
         sources.push("history");
       }

@@ -991,20 +991,6 @@ export let ProfileDataUpgrader = {
       Services.prefs.clearUserPref("widget.macos.native-anchored-select");
     }
 
-    if (existingDataVersion < 171) {
-      if (
-        Services.prefs.getBoolPref("browser.smartwindow.enabled", false) &&
-        !Services.prefs.prefHasUserValue(
-          "places.semanticHistory.smartwindow.featureGate"
-        )
-      ) {
-        Services.prefs.setBoolPref(
-          "places.semanticHistory.smartwindow.featureGate",
-          true
-        );
-      }
-    }
-
     // Update the migration version.
     Services.prefs.setIntPref("browser.migration.version", newVersion);
   },
