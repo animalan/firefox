@@ -19,6 +19,7 @@ import mozilla.components.feature.search.ext.createApplicationSearchEngine
 import mozilla.components.lib.state.Middleware
 import mozilla.components.lib.state.Store
 import org.mozilla.fenix.R
+import mozilla.components.ui.icons.R as iconsR
 
 const val HISTORY_SEARCH_ENGINE_ID = "history_search_engine_id"
 const val BOOKMARKS_SEARCH_ENGINE_ID = "bookmarks_search_engine_id"
@@ -70,7 +71,7 @@ class ApplicationSearchMiddleware(
                 id = HISTORY_SEARCH_ENGINE_ID,
                 name = stringProvider(R.string.library_history),
                 url = "",
-                icon = bitmapProvider(R.drawable.ic_history_search),
+                icon = bitmapProvider(iconsR.drawable.mozac_ic_history_24),
             ),
         )
 
