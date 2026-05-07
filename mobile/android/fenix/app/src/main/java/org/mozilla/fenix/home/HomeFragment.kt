@@ -1304,7 +1304,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
             ),
             sportsController = DefaultSportsController(
                 appStore = requireComponents.appStore,
-                browserStore = requireComponents.core.store,
                 settings = requireComponents.settings,
                 navController = findNavController(),
                 fenixBrowserUseCases = requireComponents.useCases.fenixBrowserUseCases,
