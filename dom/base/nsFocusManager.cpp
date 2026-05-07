@@ -3034,7 +3034,7 @@ void nsFocusManager::FireFocusInOrOutEvent(
   NS_ASSERTION(aEventMessage == eFocusIn || aEventMessage == eFocusOut,
                "Wrong event type for FireFocusInOrOutEvent");
 
-  nsContentUtils::AddScriptRunner(new FocusInOutEvent(
+  nsContentUtils::AddScriptRunner(MakeAndAddRef<FocusInOutEvent>(
       aTarget, aEventMessage, aPresShell->GetPresContext(),
       aCurrentFocusedWindow, aCurrentFocusedContent, aRelatedTarget));
 }
@@ -3105,9 +3105,9 @@ void nsFocusManager::FireFocusOrBlurEvent(EventMessage aEventMessage,
   aPresShell->ScheduleContentRelevancyUpdate(
       ContentRelevancyReason::FocusInSubtree);
 
-  nsContentUtils::AddScriptRunner(
-      new FocusBlurEvent(aTarget, aEventMessage, aPresShell->GetPresContext(),
-                         aWindowRaised, aIsRefocus, aRelatedTarget));
+  nsContentUtils::AddScriptRunner(MakeAndAddRef<FocusBlurEvent>(
+      aTarget, aEventMessage, aPresShell->GetPresContext(), aWindowRaised,
+      aIsRefocus, aRelatedTarget));
 
   // Check that the target is not a window or document before firing
   // focusin/focusout. Other browsers do not fire focusin/focusout on window,

@@ -130,7 +130,7 @@ void SVGOuterSVGFrame::Init(nsIContent* aContent, nsContainerFrame* aParent,
   // We need to do this async in order to get the right ordering with
   // respect to `Destroy()` when reframed.
   nsContentUtils::AddScriptRunner(
-      new AsyncSendIntrinsicSizeAndRatioToEmbedder(this));
+      MakeAndAddRef<AsyncSendIntrinsicSizeAndRatioToEmbedder>(this));
 }
 
 //----------------------------------------------------------------------

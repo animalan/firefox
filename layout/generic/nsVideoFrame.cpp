@@ -221,7 +221,8 @@ bool nsVideoFrame::ReflowFinished() {
   }
 
   if (resizedControls) {
-    nsContentUtils::AddScriptRunner(new DispatchControlsResizeEvent(controls));
+    nsContentUtils::AddScriptRunner(
+        MakeAndAddRef<DispatchControlsResizeEvent>(controls));
   }
   return false;
 }
