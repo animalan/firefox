@@ -191,7 +191,7 @@ interface mixin ElementCSSInlineStyle {
 };
 
 // https://drafts.csswg.org/cssom-view/
-enum ScrollLogicalPosition { "start", "center", "end", "nearest" };
+enum ScrollLogicalPosition { "start", "center", "end", "nearest", "auto" };
 dictionary ScrollIntoViewOptions : ScrollOptions {
   ScrollLogicalPosition block = "start";
   ScrollLogicalPosition inline = "nearest";

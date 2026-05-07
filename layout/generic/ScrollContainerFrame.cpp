@@ -7905,11 +7905,6 @@ ScrollContainerFrame::GetScrollSnapAlignFor(const nsIFrame* aFrame) const {
     return {alignForX, alignForY};
   }
 
-  if (styleFrame->StyleDisplay()->mScrollSnapType.strictness ==
-      StyleScrollSnapStrictness::None) {
-    return {alignForX, alignForY};
-  }
-
   const nsStyleDisplay* styleDisplay = aFrame->StyleDisplay();
   if (styleDisplay->mScrollSnapAlign.inline_ ==
           StyleScrollSnapAlignKeyword::None &&
