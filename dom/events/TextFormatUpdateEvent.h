@@ -22,13 +22,12 @@ class TextFormatUpdateEvent final : public Event {
   JSObject* WrapObjectInternal(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;
 
-  void GetTextFormats(nsTArray<RefPtr<TextFormat>>& aRetVal);
+  void GetTextFormats(nsTArray<RefPtr<TextFormat>>& aRetVal) {}
 
  private:
-  TextFormatUpdateEvent(EventTarget* aOwner,
-                        const TextFormatUpdateEventInit& aOptions);
+  explicit TextFormatUpdateEvent(EventTarget* aOwner)
+      : Event(aOwner, nullptr, nullptr) {}
   ~TextFormatUpdateEvent() = default;
-  nsTArray<RefPtr<TextFormat>> mTextFormats;
 };
 
 }  // namespace mozilla::dom

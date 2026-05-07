@@ -301,8 +301,8 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
   }
 
   mozilla::dom::EditContext* GetEditContext() const;
-  MOZ_CAN_RUN_SCRIPT void SetEditContext(mozilla::dom::EditContext* aContext,
-                                         mozilla::ErrorResult& aRv);
+  void SetEditContext(mozilla::dom::EditContext* aContext,
+                      mozilla::ErrorResult& aRv);
 
   /**
    * Determine whether an attribute is an event (onclick, etc.)

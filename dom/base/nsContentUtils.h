@@ -1057,13 +1057,6 @@ class nsContentUtils {
    */
   static bool IsCustomElementName(nsAtom* aName, uint32_t aNameSpaceID);
 
-  /**
-   * Returns true if |aName| is a valid shadow host name, per
-   * https://dom.spec.whatwg.org/#valid-shadow-host-name
-   */
-  static bool IsValidShadowHostName(nsAtom* aName,
-                                    uint32_t aNameSpaceID = kNameSpaceID_XHTML);
-
   static nsresult CheckQName(const nsAString& aQualifiedName,
                              bool aNamespaceAware = true,
                              const char16_t** aColon = nullptr);
