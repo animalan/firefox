@@ -2989,7 +2989,7 @@ void ChromeUtils::PredictRemoteTypeForURI(
 
   nsCString preferredRemoteType = aOptions.mPreferredRemoteType.WasPassed()
                                       ? aOptions.mPreferredRemoteType.Value()
-                                      : SharedWebRemoteType(attrs);
+                                      : DEFAULT_REMOTE_TYPE;
 
   // If we got nullptr as our argument URI argument, treat it like an
   // about:blank document, and load it into our preferred remote type.

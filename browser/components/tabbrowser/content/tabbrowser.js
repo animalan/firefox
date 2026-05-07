@@ -668,27 +668,14 @@
         userContextId = parseInt(tabArgument.getAttribute("usercontextid"), 10);
       }
 
-      if (openWindowInfo) {
-        userContextId = openWindowInfo.originAttributes.userContextId;
-      }
-
-      let remoteTypeOptions = { window, userContextId };
-      if (triggeringRemoteType) {
-        // NOTE: We intentionally don't allow setting preferredRemoteType to
-        // NOT_REMOTE (null), as we don't want to choose the parent process.
-        remoteTypeOptions.preferredRemoteType = triggeringRemoteType;
-      }
-
       if (tabArgument && tabArgument.linkedBrowser) {
         remoteType = tabArgument.linkedBrowser.remoteType;
         initialBrowsingContextGroupId =
           tabArgument.linkedBrowser.browsingContext?.group.id;
       } else if (openWindowInfo) {
+        userContextId = openWindowInfo.originAttributes.userContextId;
         if (openWindowInfo.isRemote) {
-          remoteType = ChromeUtils.predictRemoteTypeForURI(
-            null,
-            remoteTypeOptions
-          );
+          remoteType = triggeringRemoteType ?? E10SUtils.DEFAULT_REMOTE_TYPE;
         } else {
           remoteType = E10SUtils.NOT_REMOTE;
         }
@@ -699,10 +686,13 @@
         }
 
         if (uriToLoad && typeof uriToLoad == "string") {
-          remoteType = ChromeUtils.predictRemoteTypeForURI(
-            uriToLoad,
-            remoteTypeOptions
-          );
+          let opts = { window, userContextId };
+          if (triggeringRemoteType) {
+            // NOTE: We intentionally don't allow setting preferredRemoteType to
+            // NOT_REMOTE (null), as we don't want to choose the parent process.
+            opts.preferredRemoteType = triggeringRemoteType;
+          }
+          remoteType = ChromeUtils.predictRemoteTypeForURI(uriToLoad, opts);
         } else {
           // If we reach here, we don't have the url to load. This means that
           // `uriToLoad` is most likely a promise which is waiting on SessionStore
