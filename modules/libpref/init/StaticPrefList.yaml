@@ -11812,6 +11812,14 @@
   value: false
   mirror: always
 
+# Comma-separated hostnames (with optional `*.` wildcard prefix). Hosts in
+# this list get WebRTC Media Capabilities support even when the global pref
+# above is false.
+- name: media.mediacapabilities.webrtc.enabled.allowlist
+  type: DataMutexString
+  value: ""
+  mirror: always
+
 # When true (or when the page host is in legacy.allowlist), Media Capabilities
 # skips the colorGamut, transferFunction, and scalabilityMode validation paths
 # that would otherwise reject "inapplicable member" or "color space mismatch".
