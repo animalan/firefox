@@ -149,7 +149,7 @@ nsresult gfxFontCache::Init() {
   if (!gGlobalCache) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
-  RegisterStrongMemoryReporter(new MemoryReporter());
+  RegisterStrongMemoryReporter(MakeAndAddRef<MemoryReporter>());
   return NS_OK;
 }
 
