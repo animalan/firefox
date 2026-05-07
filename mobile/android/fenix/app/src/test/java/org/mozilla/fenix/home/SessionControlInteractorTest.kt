@@ -157,6 +157,12 @@ class SessionControlInteractorTest {
     }
 
     @Test
+    fun onRemoveCollectionsPlaceholder() {
+        interactor.onRemoveCollectionsPlaceholder()
+        verify { controller.handleRemoveCollectionsPlaceholder() }
+    }
+
+    @Test
     fun onRecentTabClicked() {
         val tabId = "tabId"
         interactor.onRecentTabClicked(tabId)

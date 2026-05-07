@@ -53,6 +53,7 @@ import org.mozilla.fenix.wallpapers.WallpaperState
  * @property mode Whether the app is in private browsing mode.
  * @property orientation Current orientation of the application.
  * @property topSites The list of [TopSite] in the [HomeFragment].
+ * @property showCollectionPlaceholder If true, shows a placeholder when there are no collections.
  * @property recentTabs The list of recent [RecentTab] in the [HomeFragment].
  * @property recentSyncedTabState The [RecentSyncedTabState] in the [HomeFragment].
  * @property bookmarks The list of recently saved [BookmarkNode]s to show on the [HomeFragment].
@@ -96,6 +97,7 @@ data class AppState(
     val mode: BrowsingMode = BrowsingMode.Normal,
     val orientation: OrientationMode = OrientationMode.Undefined,
     val topSites: List<TopSite> = emptyList(),
+    val showCollectionPlaceholder: Boolean = false,
     val recentTabs: List<RecentTab> = emptyList(),
     val recentSyncedTabState: RecentSyncedTabState = RecentSyncedTabState.None,
     val bookmarks: List<Bookmark> = emptyList(),

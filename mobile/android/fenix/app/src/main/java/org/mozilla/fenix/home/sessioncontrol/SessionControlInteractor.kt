@@ -123,6 +123,11 @@ interface CollectionInteractor {
      * Opens the collection creator
      */
     fun onAddTabsToCollectionTapped()
+
+    /**
+     * User has removed the collections placeholder from home.
+     */
+    fun onRemoveCollectionsPlaceholder()
 }
 
 interface MessageCardInteractor {
@@ -306,6 +311,10 @@ class SessionControlInteractor(
 
     override fun onHomeContentFocusedWhileSearchIsActive() {
         homeSearchController.handleHomeContentFocusedWhileSearchIsActive()
+    }
+
+    override fun onRemoveCollectionsPlaceholder() {
+        controller.handleRemoveCollectionsPlaceholder()
     }
 
     override fun onRecentTabClicked(tabId: String) {
