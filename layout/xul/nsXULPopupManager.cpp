@@ -301,7 +301,9 @@ nsXULPopupManager::~nsXULPopupManager() {
   }
 }
 
-void nsXULPopupManager::Init() { sInstance = MakeRefPtr<nsXULPopupManager>(); }
+void nsXULPopupManager::Init() {
+  sInstance = do_AddRef(new nsXULPopupManager());
+}
 
 void nsXULPopupManager::Shutdown() { sInstance = nullptr; }
 
