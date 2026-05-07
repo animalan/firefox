@@ -65,7 +65,7 @@ class ApplicationSearchMiddleware(
                 id = TABS_SEARCH_ENGINE_ID,
                 name = stringProvider(R.string.preferences_tabs),
                 url = "",
-                icon = bitmapProvider(R.drawable.ic_tabs_search),
+                icon = bitmapProvider(iconsR.drawable.mozac_ic_tab_tray_24),
             ),
             createApplicationSearchEngine(
                 id = HISTORY_SEARCH_ENGINE_ID,
