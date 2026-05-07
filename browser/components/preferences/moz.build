@@ -7,6 +7,7 @@ DIRS += ["dialogs"]
 BROWSER_CHROME_MANIFESTS += [
     "tests/aiFeatures/browser.toml",
     "tests/applications/browser.toml",
+    "tests/browser-srd.toml",
     "tests/browser.toml",
     "tests/credentials/browser.toml",
     "tests/downloads/browser.toml",
