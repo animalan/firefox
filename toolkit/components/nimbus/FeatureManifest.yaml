@@ -1745,6 +1745,10 @@ newtabWidgets:
       type: boolean
       description: >-
         Enable Clocks widget
+    sportsWidgetEnabled:
+      type: boolean
+      description: >-
+        Enable Sports widget
     listsBadgeEnabled:
       type: boolean
       description: >-
