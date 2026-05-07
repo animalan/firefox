@@ -114,11 +114,6 @@ git = "https://github.com/mozilla/neqo"
 tag = "v0.26.1"
 replace-with = "vendored-sources"
 
-[source."git+https://github.com/mozilla/nss-rs?rev=c54949bbff92795b8b2e837ec84decc9b468081a"]
-git = "https://github.com/mozilla/nss-rs"
-rev = "c54949bbff92795b8b2e837ec84decc9b468081a"
-replace-with = "vendored-sources"
-
 [source."git+https://github.com/rust-lang/rust-bindgen?rev=9366e0af8da529c958b4cd4fcbe492d951c86f5c"]
 git = "https://github.com/rust-lang/rust-bindgen"
 rev = "9366e0af8da529c958b4cd4fcbe492d951c86f5c"
