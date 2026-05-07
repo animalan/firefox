@@ -27,7 +27,7 @@
             android:gravity="start|center_vertical"
             android:padding="16dp"
             android:text="@string/mozac_extension_install_progress_caption"
-            app:drawableStartCompat="@drawable/mozac_ic_extensions_black" />
+            app:drawableStartCompat="@drawable/mozac_ic_extension_24" />
 
         <Button
             android:id="@+id/cancel_button"
