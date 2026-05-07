@@ -1345,9 +1345,9 @@ void nsXULPopupManager::HidePopup(Element* aPopup, HidePopupOptions aOptions,
 
   // For menus, popupToHide is always the frontmost item in the list to hide.
   if (aOptions.contains(HidePopupOption::Async)) {
-    nsCOMPtr<nsIRunnable> event =
-        new nsXULPopupHidingEvent(popupToHide, nextPopup, lastPopup,
-                                  popupFrame->GetPopupType(), aOptions);
+    nsCOMPtr<nsIRunnable> event = MakeAndAddRef<nsXULPopupHidingEvent>(
+        popupToHide, nextPopup, lastPopup, popupFrame->GetPopupType(),
+        aOptions);
     aPopup->OwnerDoc()->Dispatch(event.forget());
   } else {
     RefPtr<nsPresContext> presContext = popupFrame->PresContext();
@@ -2887,7 +2887,8 @@ bool nsXULPopupPositionedEvent::DispatchIfNeeded(Element* aPopup) {
   // The popuppositioned event only fires on arrow panels for now.
   if (aPopup->AttrValueIs(kNameSpaceID_None, nsGkAtoms::type, nsGkAtoms::arrow,
                           eCaseMatters)) {
-    nsCOMPtr<nsIRunnable> event = new nsXULPopupPositionedEvent(aPopup);
+    nsCOMPtr<nsIRunnable> event =
+        MakeAndAddRef<nsXULPopupPositionedEvent>(aPopup);
     aPopup->OwnerDoc()->Dispatch(event.forget());
     return true;
   }
