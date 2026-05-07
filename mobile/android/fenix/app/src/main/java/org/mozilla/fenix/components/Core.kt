@@ -748,6 +748,7 @@ class Core(
             context = context,
             name = KEY_STORAGE_NAME,
             forceInsecure = !Config.channel.isNightlyOrDebug,
+            crashReporting = crashReporter,
         )
 
     // Temporary. See https://github.com/mozilla-mobile/fenix/issues/19155
