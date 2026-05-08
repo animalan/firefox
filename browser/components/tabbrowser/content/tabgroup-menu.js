@@ -740,9 +740,7 @@
         label.htmlFor = input.id;
         label.style.setProperty(
           "--tabgroup-swatch-color",
-          Services.prefs.getBoolPref("browser.nova.enabled")
-            ? `var(--tab-group-${colorCode})`
-            : `var(--tab-group-color-${colorCode})`
+          `var(--tab-group-color-${colorCode})`
         );
         label.style.setProperty(
           "--tabgroup-swatch-color-invert",
