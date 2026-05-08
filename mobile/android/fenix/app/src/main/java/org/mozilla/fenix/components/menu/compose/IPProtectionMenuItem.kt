@@ -15,11 +15,13 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,6 +110,14 @@ internal fun IPProtectionMenuItem(
                 state = badgeState(state.status),
             )
         }
+
+        VerticalDivider(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(vertical = FirefoxTheme.layout.space.static100)
+                .width(1.dp),
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
 
         Box(
             modifier = Modifier
