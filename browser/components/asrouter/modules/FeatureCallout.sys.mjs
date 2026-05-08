@@ -1056,7 +1056,6 @@ export class FeatureCallout {
             type="arrow"
             consumeoutsideclicks="never"
             norolluponanchor="true"
-            nonnative=""
             position="${panel_position.panel_position_string}"
             ${hide_arrow ? "" : 'show-arrow=""'}
             ${autohide ? "" : 'noautohide="true"'}
