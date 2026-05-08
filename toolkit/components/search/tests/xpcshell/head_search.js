@@ -483,7 +483,7 @@ async function assertGleanDefaultEngine(expected) {
 }
 
 /**
- * Loads a new enterprise policy, and re-initialise the search service
+ * Loads a new enterprise policy, and re-initialises the search service
  * with the new policy. Also waits for the search service to write the settings
  * file to disk.
  *
@@ -491,15 +491,7 @@ async function assertGleanDefaultEngine(expected) {
  *   The enterprise policy to use.
  */
 async function setupPolicyEngineWithJson(policy) {
-  SearchService.reset();
-
-  await this.EnterprisePolicyTesting.setupPolicyEngineWithJson(policy);
-
-  let settingsWritten = SearchTestUtils.promiseSearchNotification(
-    "write-settings-to-disk-complete"
-  );
-  await SearchService.init();
-  await settingsWritten;
+  await this.EnterprisePolicyTesting.setupPolicyEngineWithJsonForSearch(policy);
 }
 
 /**
