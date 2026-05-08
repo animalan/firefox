@@ -915,6 +915,16 @@ export const AIWindow = {
   },
 
   /**
+   * Returns whether Smart Window exposes a distinct "Enabled" AI Controls state.
+   *
+   * @returns {boolean}
+   */
+  get hasDistinctEnabledState() {
+    // Smart Window requires the user to log in, in order to enable the experience.
+    return true;
+  },
+
+  /**
    * Check if the feature is blocked by AI controls
    *
    * @returns {boolean}
@@ -949,6 +959,16 @@ export const AIWindow = {
    */
   get isAllowed() {
     return this.AIWindowEnabledPref;
+  },
+
+  /**
+   * Returns whether the current device can run Smart Window.
+   *
+   * @returns {boolean}
+   */
+  get canRunOnDevice() {
+    // There are no known hardware restrictions for smart window.
+    return true;
   },
 
   /**

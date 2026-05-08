@@ -44,6 +44,16 @@ export class SidebarPage extends MozLitElement {
     return this.topWindow.SidebarController;
   }
 
+  getRowsInOrder() {
+    const rows = [];
+    for (const list of this.lists) {
+      for (const item of list.tabItems) {
+        rows.push({ list, item });
+      }
+    }
+    return rows;
+  }
+
   addContextMenuListeners() {
     this.addEventListener("contextmenu", this);
     this._contextMenu.addEventListener("command", this);
@@ -135,7 +145,11 @@ export class SidebarPage extends MozLitElement {
     let promise;
     switch (e.target.id) {
       case "sidebar-history-context-open-in-tab":
-        this.topWindow.openTrustedLinkIn(this.triggerNode.url, "tab");
+        this.topWindow.openTrustedLinkIn(this.triggerNode.url, "tab", {
+          inBackground: Services.prefs.getBoolPref(
+            "browser.tabs.loadInBackground"
+          ),
+        });
         break;
       case "sidebar-history-context-open-in-window":
       case "sidebar-synced-tabs-context-open-in-window":
