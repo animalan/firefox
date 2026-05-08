@@ -1095,7 +1095,7 @@
     "dark": "{Colors$color/blue/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/blue/text": {
+  "tab/group/blue/content": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/blue/60}",
     "forcedColors": "transparent"
@@ -1115,14 +1115,9 @@
     "dark": "{Colors$color/purple/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/purple/text": {
+  "tab/group/purple/content": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/purple/60}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/purple/text/invert": {
-    "light": "{Colors$color/purple/60}",
-    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/purple/hover": {
@@ -1140,14 +1135,9 @@
     "dark": "{Colors$color/cyan/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/cyan/text": {
+  "tab/group/cyan/content": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/cyan/60}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/cyan/text/invert": {
-    "light": "{Colors$color/cyan/60}",
-    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/cyan/hover": {
@@ -1165,14 +1155,9 @@
     "dark": "{Colors$color/orange/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/orange/text": {
+  "tab/group/orange/content": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/orange/60}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/orange/text/invert": {
-    "light": "{Colors$color/orange/60}",
-    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/orange/hover": {
@@ -1190,14 +1175,9 @@
     "dark": "{Colors$color/yellow/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/yellow/text": {
+  "tab/group/yellow/content": {
     "light": "{Colors$color/white}",
-    "dark": "{Colors$color/yellow/60}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/yellow/text/invert": {
-    "light": "{Colors$color/yellow/60}",
-    "dark": "{Colors$color/white}",
+    "dark": "#181923",
     "forcedColors": "transparent"
   },
   "tab/group/yellow/hover": {
@@ -1215,14 +1195,9 @@
     "dark": "{Colors$color/pink/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/pink/text": {
+  "tab/group/pink/content": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/pink/60}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/pink/text/invert": {
-    "light": "{Colors$color/pink/60}",
-    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/pink/hover": {
@@ -1240,14 +1215,9 @@
     "dark": "{Colors$color/green/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/green/text": {
+  "tab/group/green/content": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/green/60}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/green/text/invert": {
-    "light": "{Colors$color/green/60}",
-    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/green/hover": {
@@ -1265,14 +1235,9 @@
     "dark": "{Colors$color/red/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/red/text": {
+  "tab/group/red/content": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/red/60}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/red/text/invert": {
-    "light": "{Colors$color/red/60}",
-    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/red/hover": {
@@ -1286,28 +1251,23 @@
     "forcedColors": "transparent"
   },
   "tab/group/gray": {
-    "light": "{Colors$color/gray/55}",
-    "dark": "{Colors$color/gray/05}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/gray/text": {
-    "light": "{Colors$color/white}",
-    "dark": "{Colors$color/gray/65}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/gray/text/invert": {
-    "light": "{Colors$color/gray/65}",
-    "dark": "{Colors$color/white}",
-    "forcedColors": "transparent"
-  },
-  "tab/group/gray/hover": {
-    "light": "{Colors$color/gray/65}",
+    "light": "{Colors$color/gray/50}",
     "dark": "{Colors$color/gray/10}",
     "forcedColors": "transparent"
   },
+  "tab/group/gray/content": {
+    "light": "{Colors$color/white}",
+    "dark": "{Colors$color/gray/60}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/gray/hover": {
+    "light": "{Colors$color/gray/60}",
+    "dark": "{Colors$color/gray/20}",
+    "forcedColors": "transparent"
+  },
   "tab/group/gray/invert": {
-    "light": "{Colors$color/gray/05}",
-    "dark": "{Colors$color/gray/55}",
+    "light": "{Colors$color/gray/10}",
+    "dark": "{Colors$color/gray/50}",
     "forcedColors": "transparent"
   }
 }

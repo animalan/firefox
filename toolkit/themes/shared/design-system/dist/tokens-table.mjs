@@ -1964,7 +1964,7 @@ export const tokensTable = {
         dark: "var(--color-blue-60)",
         default: "light-dark(var(--color-white), var(--color-blue-60))",
       },
-      name: "--tab-group-blue-text",
+      name: "--tab-group-blue-content",
     },
     {
       value: {
@@ -1996,15 +1996,7 @@ export const tokensTable = {
         dark: "var(--color-purple-60)",
         default: "light-dark(var(--color-white), var(--color-purple-60))",
       },
-      name: "--tab-group-purple-text",
-    },
-    {
-      value: {
-        dark: "var(--color-white)",
-        light: "var(--color-purple-60)",
-        default: "light-dark(var(--color-purple-60), var(--color-white))",
-      },
-      name: "--tab-group-purple-text-invert",
+      name: "--tab-group-purple-content",
     },
     {
       value: {
@@ -2036,15 +2028,7 @@ export const tokensTable = {
         dark: "var(--color-cyan-60)",
         default: "light-dark(var(--color-white), var(--color-cyan-60))",
       },
-      name: "--tab-group-cyan-text",
-    },
-    {
-      value: {
-        dark: "var(--color-white)",
-        light: "var(--color-cyan-60)",
-        default: "light-dark(var(--color-cyan-60), var(--color-white))",
-      },
-      name: "--tab-group-cyan-text-invert",
+      name: "--tab-group-cyan-content",
     },
     {
       value: {
@@ -2076,15 +2060,7 @@ export const tokensTable = {
         dark: "var(--color-orange-60)",
         default: "light-dark(var(--color-white), var(--color-orange-60))",
       },
-      name: "--tab-group-orange-text",
-    },
-    {
-      value: {
-        dark: "var(--color-white)",
-        light: "var(--color-orange-60)",
-        default: "light-dark(var(--color-orange-60), var(--color-white))",
-      },
-      name: "--tab-group-orange-text-invert",
+      name: "--tab-group-orange-content",
     },
     {
       value: {
@@ -2113,18 +2089,10 @@ export const tokensTable = {
     {
       value: {
         light: "var(--color-white)",
-        dark: "var(--color-yellow-60)",
-        default: "light-dark(var(--color-white), var(--color-yellow-60))",
+        dark: "#181923",
+        default: "light-dark(var(--color-white), #181923)",
       },
-      name: "--tab-group-yellow-text",
-    },
-    {
-      value: {
-        dark: "var(--color-white)",
-        light: "var(--color-yellow-60)",
-        default: "light-dark(var(--color-yellow-60), var(--color-white))",
-      },
-      name: "--tab-group-yellow-text-invert",
+      name: "--tab-group-yellow-content",
     },
     {
       value: {
@@ -2156,15 +2124,7 @@ export const tokensTable = {
         dark: "var(--color-pink-60)",
         default: "light-dark(var(--color-white), var(--color-pink-60))",
       },
-      name: "--tab-group-pink-text",
-    },
-    {
-      value: {
-        dark: "var(--color-white)",
-        light: "var(--color-pink-60)",
-        default: "light-dark(var(--color-pink-60), var(--color-white))",
-      },
-      name: "--tab-group-pink-text-invert",
+      name: "--tab-group-pink-content",
     },
     {
       value: {
@@ -2196,15 +2156,7 @@ export const tokensTable = {
         dark: "var(--color-green-60)",
         default: "light-dark(var(--color-white), var(--color-green-60))",
       },
-      name: "--tab-group-green-text",
-    },
-    {
-      value: {
-        dark: "var(--color-white)",
-        light: "var(--color-green-60)",
-        default: "light-dark(var(--color-green-60), var(--color-white))",
-      },
-      name: "--tab-group-green-text-invert",
+      name: "--tab-group-green-content",
     },
     {
       value: {
@@ -2236,15 +2188,7 @@ export const tokensTable = {
         dark: "var(--color-red-60)",
         default: "light-dark(var(--color-white), var(--color-red-60))",
       },
-      name: "--tab-group-red-text",
-    },
-    {
-      value: {
-        dark: "var(--color-white)",
-        light: "var(--color-red-60)",
-        default: "light-dark(var(--color-red-60), var(--color-white))",
-      },
-      name: "--tab-group-red-text-invert",
+      name: "--tab-group-red-content",
     },
     {
       value: {
@@ -2264,41 +2208,33 @@ export const tokensTable = {
     },
     {
       value: {
-        light: "var(--color-gray-55)",
-        dark: "var(--color-gray-05)",
-        default: "light-dark(var(--color-gray-55), var(--color-gray-05))",
+        light: "var(--color-gray-50)",
+        dark: "var(--color-gray-10)",
+        default: "light-dark(var(--color-gray-50), var(--color-gray-10))",
       },
       name: "--tab-group-gray",
     },
     {
       value: {
         light: "var(--color-white)",
-        dark: "var(--color-gray-65)",
-        default: "light-dark(var(--color-white), var(--color-gray-65))",
+        dark: "var(--color-gray-60)",
+        default: "light-dark(var(--color-white), var(--color-gray-60))",
       },
-      name: "--tab-group-gray-text",
+      name: "--tab-group-gray-content",
     },
     {
       value: {
-        dark: "var(--color-white)",
-        light: "var(--color-gray-65)",
-        default: "light-dark(var(--color-gray-65), var(--color-white))",
-      },
-      name: "--tab-group-gray-text-invert",
-    },
-    {
-      value: {
-        light: "var(--color-gray-65)",
-        dark: "var(--color-gray-10)",
-        default: "light-dark(var(--color-gray-65), var(--color-gray-10))",
+        light: "var(--color-gray-60)",
+        dark: "var(--color-gray-20)",
+        default: "light-dark(var(--color-gray-60), var(--color-gray-20))",
       },
       name: "--tab-group-gray-hover",
     },
     {
       value: {
-        light: "var(--color-gray-05)",
-        dark: "var(--color-gray-55)",
-        default: "light-dark(var(--color-gray-05), var(--color-gray-55))",
+        light: "var(--color-gray-10)",
+        dark: "var(--color-gray-50)",
+        default: "light-dark(var(--color-gray-10), var(--color-gray-50))",
       },
       name: "--tab-group-gray-invert",
     },
@@ -3517,7 +3453,7 @@ export const variableLookupTable = {
     dark: "var(--color-blue-10)",
     default: "light-dark(var(--color-blue-50), var(--color-blue-10))",
   },
-  "tab-group-blue-text": {
+  "tab-group-blue-content": {
     light: "var(--color-white)",
     dark: "var(--color-blue-60)",
     default: "light-dark(var(--color-white), var(--color-blue-60))",
@@ -3537,15 +3473,10 @@ export const variableLookupTable = {
     dark: "var(--color-purple-10)",
     default: "light-dark(var(--color-purple-50), var(--color-purple-10))",
   },
-  "tab-group-purple-text": {
+  "tab-group-purple-content": {
     light: "var(--color-white)",
     dark: "var(--color-purple-60)",
     default: "light-dark(var(--color-white), var(--color-purple-60))",
-  },
-  "tab-group-purple-text-invert": {
-    dark: "var(--color-white)",
-    light: "var(--color-purple-60)",
-    default: "light-dark(var(--color-purple-60), var(--color-white))",
   },
   "tab-group-purple-hover": {
     light: "var(--color-purple-60)",
@@ -3562,15 +3493,10 @@ export const variableLookupTable = {
     dark: "var(--color-cyan-10)",
     default: "light-dark(var(--color-cyan-50), var(--color-cyan-10))",
   },
-  "tab-group-cyan-text": {
+  "tab-group-cyan-content": {
     light: "var(--color-white)",
     dark: "var(--color-cyan-60)",
     default: "light-dark(var(--color-white), var(--color-cyan-60))",
-  },
-  "tab-group-cyan-text-invert": {
-    dark: "var(--color-white)",
-    light: "var(--color-cyan-60)",
-    default: "light-dark(var(--color-cyan-60), var(--color-white))",
   },
   "tab-group-cyan-hover": {
     light: "var(--color-cyan-60)",
@@ -3587,15 +3513,10 @@ export const variableLookupTable = {
     dark: "var(--color-orange-10)",
     default: "light-dark(var(--color-orange-50), var(--color-orange-10))",
   },
-  "tab-group-orange-text": {
+  "tab-group-orange-content": {
     light: "var(--color-white)",
     dark: "var(--color-orange-60)",
     default: "light-dark(var(--color-white), var(--color-orange-60))",
-  },
-  "tab-group-orange-text-invert": {
-    dark: "var(--color-white)",
-    light: "var(--color-orange-60)",
-    default: "light-dark(var(--color-orange-60), var(--color-white))",
   },
   "tab-group-orange-hover": {
     light: "var(--color-orange-60)",
@@ -3612,15 +3533,10 @@ export const variableLookupTable = {
     dark: "var(--color-yellow-10)",
     default: "light-dark(var(--color-yellow-50), var(--color-yellow-10))",
   },
-  "tab-group-yellow-text": {
+  "tab-group-yellow-content": {
     light: "var(--color-white)",
-    dark: "var(--color-yellow-60)",
-    default: "light-dark(var(--color-white), var(--color-yellow-60))",
-  },
-  "tab-group-yellow-text-invert": {
-    dark: "var(--color-white)",
-    light: "var(--color-yellow-60)",
-    default: "light-dark(var(--color-yellow-60), var(--color-white))",
+    dark: "#181923",
+    default: "light-dark(var(--color-white), #181923)",
   },
   "tab-group-yellow-hover": {
     light: "var(--color-yellow-60)",
@@ -3637,15 +3553,10 @@ export const variableLookupTable = {
     dark: "var(--color-pink-10)",
     default: "light-dark(var(--color-pink-50), var(--color-pink-10))",
   },
-  "tab-group-pink-text": {
+  "tab-group-pink-content": {
     light: "var(--color-white)",
     dark: "var(--color-pink-60)",
     default: "light-dark(var(--color-white), var(--color-pink-60))",
-  },
-  "tab-group-pink-text-invert": {
-    dark: "var(--color-white)",
-    light: "var(--color-pink-60)",
-    default: "light-dark(var(--color-pink-60), var(--color-white))",
   },
   "tab-group-pink-hover": {
     light: "var(--color-pink-60)",
@@ -3662,15 +3573,10 @@ export const variableLookupTable = {
     dark: "var(--color-green-10)",
     default: "light-dark(var(--color-green-50), var(--color-green-10))",
   },
-  "tab-group-green-text": {
+  "tab-group-green-content": {
     light: "var(--color-white)",
     dark: "var(--color-green-60)",
     default: "light-dark(var(--color-white), var(--color-green-60))",
-  },
-  "tab-group-green-text-invert": {
-    dark: "var(--color-white)",
-    light: "var(--color-green-60)",
-    default: "light-dark(var(--color-green-60), var(--color-white))",
   },
   "tab-group-green-hover": {
     light: "var(--color-green-60)",
@@ -3687,15 +3593,10 @@ export const variableLookupTable = {
     dark: "var(--color-red-10)",
     default: "light-dark(var(--color-red-50), var(--color-red-10))",
   },
-  "tab-group-red-text": {
+  "tab-group-red-content": {
     light: "var(--color-white)",
     dark: "var(--color-red-60)",
     default: "light-dark(var(--color-white), var(--color-red-60))",
-  },
-  "tab-group-red-text-invert": {
-    dark: "var(--color-white)",
-    light: "var(--color-red-60)",
-    default: "light-dark(var(--color-red-60), var(--color-white))",
   },
   "tab-group-red-hover": {
     light: "var(--color-red-60)",
@@ -3708,28 +3609,23 @@ export const variableLookupTable = {
     default: "light-dark(var(--color-red-10), var(--color-red-50))",
   },
   "tab-group-gray": {
-    light: "var(--color-gray-55)",
-    dark: "var(--color-gray-05)",
-    default: "light-dark(var(--color-gray-55), var(--color-gray-05))",
+    light: "var(--color-gray-50)",
+    dark: "var(--color-gray-10)",
+    default: "light-dark(var(--color-gray-50), var(--color-gray-10))",
   },
-  "tab-group-gray-text": {
+  "tab-group-gray-content": {
     light: "var(--color-white)",
-    dark: "var(--color-gray-65)",
-    default: "light-dark(var(--color-white), var(--color-gray-65))",
-  },
-  "tab-group-gray-text-invert": {
-    dark: "var(--color-white)",
-    light: "var(--color-gray-65)",
-    default: "light-dark(var(--color-gray-65), var(--color-white))",
+    dark: "var(--color-gray-60)",
+    default: "light-dark(var(--color-white), var(--color-gray-60))",
   },
   "tab-group-gray-hover": {
-    light: "var(--color-gray-65)",
-    dark: "var(--color-gray-10)",
-    default: "light-dark(var(--color-gray-65), var(--color-gray-10))",
+    light: "var(--color-gray-60)",
+    dark: "var(--color-gray-20)",
+    default: "light-dark(var(--color-gray-60), var(--color-gray-20))",
   },
   "tab-group-gray-invert": {
-    light: "var(--color-gray-05)",
-    dark: "var(--color-gray-55)",
-    default: "light-dark(var(--color-gray-05), var(--color-gray-55))",
+    light: "var(--color-gray-10)",
+    dark: "var(--color-gray-50)",
+    default: "light-dark(var(--color-gray-10), var(--color-gray-50))",
   },
 };
