@@ -194,38 +194,26 @@ data class TranslationInfo(
 )
 
 /**
- * Represents the display states of the IP protection menu item.
+ * Represents the possible display states of the IP protection menu item badge.
  */
 enum class IPProtectionMenuStatus {
-    /**
-     * IP protection is inactive.
-     */
-    Disabled,
+    /** Proxy is ready but not active. */
+    Off,
 
-    /**
-     * IP protection is in the process of activating.
-     */
+    /** Proxy is active and protecting traffic. */
+    On,
+
+    /** Proxy is in the process of activating. */
     Activating,
 
-    /**
-     * IP protection is active.
-     */
-    Enabled,
+    /** Proxy is paused. */
+    Paused,
 
-    /**
-     * IP protection is paused until the data limit resets.
-     */
-    DataLimitReached,
+    /** Proxy encountered an error. */
+    Error,
 
-    /**
-     * IP protection has errored.
-     */
-    ConnectionError,
-
-    /**
-     * User needs to authenticate or to authorize ip protection service before IP protection can be used.
-     */
-    AuthRequired,
+    /** User needs to authenticate before IP protection can be used. */
+    NeedsAuthentication,
 }
 
 /**
@@ -236,6 +224,6 @@ enum class IPProtectionMenuStatus {
  */
 @Immutable
 data class IPProtectionMenuState(
-    val status: IPProtectionMenuStatus = IPProtectionMenuStatus.Disabled,
+    val status: IPProtectionMenuStatus = IPProtectionMenuStatus.Off,
     val dataLimitGb: Int = -1,
 )
