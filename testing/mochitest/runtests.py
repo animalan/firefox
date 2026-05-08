@@ -223,7 +223,10 @@ class MessageLogger:
 
     def _fix_test_name(self, message):
         """Normalize a logged test path to match the relative path from the sourcedir."""
-        if message.get("test") is not None:
+        if message.get("test") is None:
+            if self._current_test_name is not None:
+                message["test"] = self._current_test_name
+        else:
             test = message["test"]
             for pattern in MessageLogger.TEST_PATH_PREFIXES:
                 test = re.sub(pattern, "", test)
