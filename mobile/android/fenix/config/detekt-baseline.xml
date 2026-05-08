@@ -68,7 +68,6 @@
     <ID>ForbiddenSuppress:HomeFragment.kt$HomeFragment$@Suppress("LongMethod")</ID>
     <ID>ForbiddenSuppress:HomeFragment.kt$HomeFragment$@Suppress("LongMethod", "CyclomaticComplexMethod")</ID>
     <ID>ForbiddenSuppress:Homepage.kt$@Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")</ID>
-    <ID>ForbiddenSuppress:InfoCard.kt$@Suppress("LongMethod")</ID>
     <ID>ForbiddenSuppress:InstalledAddonDetailsFragment.kt$InstalledAddonDetailsFragment$@SuppressWarnings("LongMethod")</ID>
     <ID>ForbiddenSuppress:LegacyWallpaperMigration.kt$LegacyWallpaperMigration$@Suppress("CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:ListItem.kt$@Suppress("CognitiveComplexMethod")</ID>

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.fenix.compose
+package mozilla.components.compose.base
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -35,14 +35,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import org.mozilla.fenix.R
-import org.mozilla.fenix.theme.FirefoxTheme
-import org.mozilla.fenix.theme.PreviewThemeProvider
-import org.mozilla.fenix.theme.Theme
+import mozilla.components.compose.base.theme.AcornTheme
 import mozilla.components.ui.icons.R as iconsR
 
 private val defaultCardElevation = 5.dp
@@ -76,9 +72,9 @@ fun ExpandableInfoCardContainer(
                 .semantics { heading() }
                 .clickable(
                     onClickLabel = if (isExpanded) {
-                        stringResource(R.string.a11y_action_label_collapse)
+                        stringResource(R.string.mozac_compose_base_a11y_action_label_collapse)
                     } else {
-                        stringResource(R.string.a11y_action_label_expand)
+                        stringResource(R.string.mozac_compose_base_a11y_action_label_expand)
                     },
                     onClick = onExpandToggleClick,
                 )
@@ -87,7 +83,7 @@ fun ExpandableInfoCardContainer(
         ) {
             Text(
                 text = title,
-                style = FirefoxTheme.typography.headline8,
+                style = AcornTheme.typography.headline8,
             )
 
             val chevronDrawable = if (isExpanded) {
@@ -99,9 +95,9 @@ fun ExpandableInfoCardContainer(
             Icon(
                 painter = painterResource(id = chevronDrawable),
                 contentDescription = if (isExpanded) {
-                    stringResource(R.string.a11y_state_label_expanded)
+                    stringResource(R.string.mozac_compose_base_a11y_state_label_expanded)
                 } else {
-                    stringResource(R.string.a11y_state_label_collapsed)
+                    stringResource(R.string.mozac_compose_base_a11y_state_label_collapsed)
                 },
             )
         }
@@ -153,12 +149,10 @@ fun InfoCardContainer(
     }
 }
 
-@Preview
 @Composable
-private fun InfoCardContainerPreview(
-    @PreviewParameter(PreviewThemeProvider::class) theme: Theme,
-) {
-    FirefoxTheme(theme) {
+@PreviewLightDark
+private fun InfoCardContainerPreview() {
+    AcornTheme {
         Surface {
             Column(modifier = Modifier.padding(16.dp)) {
                 var isExpanded by remember { mutableStateOf(true) }
@@ -168,7 +162,7 @@ private fun InfoCardContainerPreview(
                 ) {
                     Text(
                         text = "Info Check Card Content",
-                        style = FirefoxTheme.typography.headline8,
+                        style = AcornTheme.typography.headline8,
                     )
                 }
 
@@ -182,7 +176,7 @@ private fun InfoCardContainerPreview(
                 ) {
                     Text(
                         text = "content",
-                        style = FirefoxTheme.typography.body2,
+                        style = AcornTheme.typography.body2,
                     )
                 }
             }

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.fenix.compose
+package mozilla.components.compose.base
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Column
@@ -31,18 +31,18 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import mozilla.components.compose.base.LinkText
-import mozilla.components.compose.base.LinkTextState
+import mozilla.components.compose.base.theme.AcornTheme
+import mozilla.components.compose.base.theme.acornPrivateColorScheme
 import mozilla.components.compose.base.theme.informationContainer
 import mozilla.components.compose.base.theme.onInformationContainer
 import mozilla.components.compose.base.theme.onWarningContainer
+import mozilla.components.compose.base.theme.privateColorPalette
 import mozilla.components.compose.base.theme.warningContainer
-import org.mozilla.fenix.theme.FirefoxTheme
-import org.mozilla.fenix.theme.ThemedValue
-import org.mozilla.fenix.theme.ThemedValueProvider
-import kotlin.enums.enumEntries
+import mozilla.components.compose.base.utils.parseHtml
 import mozilla.components.ui.icons.R as iconsR
 
 /**
@@ -72,10 +72,10 @@ fun InfoCard(
         backgroundColor = colors.container,
         shape = MaterialTheme.shapes.large,
         contentPadding = PaddingValues(
-            start = FirefoxTheme.layout.space.static150,
-            top = FirefoxTheme.layout.space.static150,
-            end = FirefoxTheme.layout.space.static200,
-            bottom = FirefoxTheme.layout.space.static150,
+            start = AcornTheme.layout.space.static150,
+            top = AcornTheme.layout.space.static150,
+            end = AcornTheme.layout.space.static200,
+            bottom = AcornTheme.layout.space.static150,
         ),
         elevation = 0.dp,
     ) {
@@ -88,31 +88,31 @@ fun InfoCard(
                     contentDescription = null,
                 )
 
-                Spacer(modifier = Modifier.width(FirefoxTheme.layout.space.static150))
+                Spacer(modifier = Modifier.width(AcornTheme.layout.space.static150))
 
                 Column {
                     title?.let { titleText ->
                         Text(
                             text = titleText,
-                            style = FirefoxTheme.typography.headline8,
+                            style = AcornTheme.typography.headline8,
                             modifier = Modifier.semantics { heading() },
                         )
 
-                        Spacer(modifier = Modifier.height(FirefoxTheme.layout.space.static50))
+                        Spacer(modifier = Modifier.height(AcornTheme.layout.space.static50))
                     }
 
                     Text(
                         text = remember(description) { parseHtml(description) },
-                        style = FirefoxTheme.typography.body2,
+                        style = AcornTheme.typography.body2,
                     )
 
                     footer?.let {
-                        Spacer(modifier = Modifier.height(FirefoxTheme.layout.space.static50))
+                        Spacer(modifier = Modifier.height(AcornTheme.layout.space.static50))
 
                         LinkText(
                             text = it.first,
                             linkTextStates = listOf(it.second),
-                            style = FirefoxTheme.typography.body2,
+                            style = AcornTheme.typography.body2,
                             linkTextColor = colors.content,
                             linkTextDecoration = TextDecoration.Underline,
                         )
@@ -200,10 +200,13 @@ object InfoCardDefaults {
     }
 }
 
-private class PreviewModelParameterProvider : ThemedValueProvider<InfoType>(
-    baseValues = enumEntries<InfoType>().asSequence(),
-    getDisplayName = { _, infoType -> infoType.name },
-)
+private class InfoTypeProvider : PreviewParameterProvider<InfoType> {
+    private val types = InfoType.entries
+
+    override val values: Sequence<InfoType> = types.asSequence()
+
+    override fun getDisplayName(index: Int): String = types[index].name
+}
 
 @Composable
 private fun InfoCardPreviewContent(type: InfoType) {
@@ -232,12 +235,25 @@ private fun InfoCardPreviewContent(type: InfoType) {
     }
 }
 
-@Preview
 @Composable
+@PreviewLightDark
 private fun InfoCardPreview(
-    @PreviewParameter(PreviewModelParameterProvider::class) state: ThemedValue<InfoType>,
+    @PreviewParameter(InfoTypeProvider::class) type: InfoType,
 ) {
-    FirefoxTheme(state.theme) {
-        InfoCardPreviewContent(type = state.value)
+    AcornTheme {
+        InfoCardPreviewContent(type = type)
+    }
+}
+
+@Composable
+@Preview
+private fun InfoCardPrivatePreview(
+    @PreviewParameter(InfoTypeProvider::class) type: InfoType,
+) {
+    AcornTheme(
+        colors = privateColorPalette,
+        colorScheme = acornPrivateColorScheme(),
+    ) {
+        InfoCardPreviewContent(type = type)
     }
 }
