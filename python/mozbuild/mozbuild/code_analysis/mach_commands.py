@@ -380,7 +380,7 @@ def check(
         len(sources) + len(header_sources),
     )
 
-    footer = StaticAnalysisFooter(command_context.log_manager.terminal, monitor)
+    footer = StaticAnalysisFooter(monitor)
 
     with StaticAnalysisOutputManager(
         command_context.log_manager, monitor, footer
