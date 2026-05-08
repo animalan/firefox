@@ -1379,8 +1379,8 @@ IPCResult BrowserParent::RecvNewWindowGlobal(
     validationOptions += ValidatePrincipalOptions::AllowSystem;
   }
   if (!Manager()->ValidatePrincipal(aInit.principal(), validationOptions)) {
-    ContentParent::LogAndAssertFailedPrincipalValidationInfo(aInit.principal(),
-                                                             __func__);
+    return ContentParent::PrincipalValidationIpcFail(aInit.principal(), this,
+                                                     __func__);
   }
 
   // Construct our new WindowGlobalParent, bind, and initialize it.
