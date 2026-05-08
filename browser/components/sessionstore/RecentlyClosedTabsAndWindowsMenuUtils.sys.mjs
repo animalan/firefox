@@ -331,10 +331,6 @@ function setTabGroupColorProperties(element, tabGroup) {
     "--tab-group-color-pale",
     `var(--tab-group-color-${tabGroup.color}-pale)`
   );
-  element.style.setProperty(
-    "--tab-group-background-color",
-    `var(--tab-group-${tabGroup.color})`
-  );
 }
 
 /**
