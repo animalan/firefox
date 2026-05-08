@@ -27,19 +27,16 @@ class nsWindowWayland final : public nsWindow {
   void CreateCompositorVsyncDispatcher() override;
   RefPtr<mozilla::VsyncDispatcher> GetVsyncDispatcher() override;
 
-  nsresult SynthesizeNativeMouseMove(
-      LayoutDeviceIntPoint aPoint,
-      nsISynthesizedEventCallback* aCallback) override;
-
-  LayoutDeviceIntPoint GetNativeLockedPoint() {
-    MOZ_ASSERT(IsNativePointerLocked());
-    return mNativeLockedPoint;
+  LayoutDeviceIntPoint GetNativePointerLockCenter() {
+    return mNativePointerLockCenter;
+  }
+  void SetNativePointerLockCenter(
+      const LayoutDeviceIntPoint& aLockCenter) override {
+    mNativePointerLockCenter = aLockCenter;
   }
 
-  bool IsNativePointerLocked() { return mLockedPointer && mRelativePointer; }
   void LockNativePointer(NativePointerLockMode aNativePointerLockMode) override;
   void UnlockNativePointer() override;
-
   LayoutDeviceIntSize GetMoveToRectPopupSize() override;
 
   void NativeMoveResizeWaylandPopup(bool aMove, bool aResize);
@@ -231,7 +228,7 @@ class nsWindowWayland final : public nsWindow {
 
   RefPtr<mozilla::WaylandVsyncSource> mWaylandVsyncSource;
   RefPtr<mozilla::VsyncDispatcher> mWaylandVsyncDispatcher;
-  LayoutDeviceIntPoint mNativeLockedPoint;
+  LayoutDeviceIntPoint mNativePointerLockCenter;
   xx_toplevel_session_v1* mSessionRestoreToken = nullptr;
   int mSessionID = 0;
   gulong mXdgToplevelRealizedID = 0;
