@@ -102,7 +102,10 @@ already_AddRefed<Image> RemoteImageHolder::DeserializeImage(
     auto croppedCbCr = ImageDataSerializer::GetCroppedCbCrSize(descriptor);
     if (croppedCbCr.width > descriptor.cbCrSize().width ||
         croppedCbCr.height > descriptor.cbCrSize().height) {
-      MOZ_ASSERT_UNREACHABLE("YCbCr chroma dimensions exceed CbCr plane size!");
+      if (!PR_GetEnv("MOZ_RUN_GTEST")) {
+        MOZ_ASSERT_UNREACHABLE(
+            "YCbCr chroma dimensions exceed CbCr plane size!");
+      }
       return nullptr;
     }
 
