@@ -22,6 +22,7 @@ SVGArcConverter::SVGArcConverter(const Point& from, const Point& to,
                                  bool largeArcFlag, bool sweepFlag) {
   MOZ_ASSERT(radii.x != 0.0f && radii.y != 0.0f, "Bad radii");
 
+  const double radPerDeg = M_PI / 180.0;
   mTo = to;
 
   if (from == to) {
@@ -34,8 +35,8 @@ SVGArcConverter::SVGArcConverter(const Point& from, const Point& to,
   mRx = std::abs(radii.x);
   mRy = std::abs(radii.y);
 
-  mSinPhi = sin(angle * kRadPerDegree);
-  mCosPhi = cos(angle * kRadPerDegree);
+  mSinPhi = sin(angle * radPerDeg);
+  mCosPhi = cos(angle * radPerDeg);
 
   double x1dash =
       mCosPhi * (from.x - to.x) / 2.0 + mSinPhi * (from.y - to.y) / 2.0;

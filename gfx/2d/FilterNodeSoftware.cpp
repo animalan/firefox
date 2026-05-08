@@ -3429,7 +3429,7 @@ uint32_t PointLightSoftware::GetColor(uint32_t aLightColor,
 void SpotLightSoftware::Prepare() {
   mVectorFromFocusPointToLight = Normalized(mPointsAt - mPosition);
   mLimitingConeCos =
-      std::max<double>(cos(mLimitingConeAngle * kRadPerDegree), 0.0);
+      std::max<double>(cos(mLimitingConeAngle * M_PI / 180.0), 0.0);
   mPowCache.CacheForExponent(mSpecularFocus);
 }
 

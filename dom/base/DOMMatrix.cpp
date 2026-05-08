@@ -37,6 +37,8 @@ template <typename T>
 static void SetDataInMatrix(DOMMatrixReadOnly* aMatrix, const T* aData,
                             int aLength, ErrorResult& aRv);
 
+static const double radPerDegree = 2.0 * M_PI / 360.0;
+
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(DOMMatrixReadOnly, mParent)
 
 JSObject* DOMMatrixReadOnly::WrapObject(JSContext* aCx,
@@ -901,7 +903,7 @@ DOMMatrix* DOMMatrix::RotateFromVectorSelf(double aX, double aY) {
   }
 
   if (mMatrix3D) {
-    RotateAxisAngleSelf(0, 0, 1, angle / kRadPerDegree);
+    RotateAxisAngleSelf(0, 0, 1, angle / radPerDegree);
   } else {
     *mMatrix2D = mMatrix2D->PreRotate(angle);
   }
@@ -928,16 +930,16 @@ DOMMatrix* DOMMatrix::RotateSelf(double aRotX, const Optional<double>& aRotY,
 
   if (mMatrix3D) {
     if (fmod(rotZ, 360) != 0) {
-      mMatrix3D->RotateZ(rotZ * kRadPerDegree);
+      mMatrix3D->RotateZ(rotZ * radPerDegree);
     }
     if (fmod(rotY, 360) != 0) {
-      mMatrix3D->RotateY(rotY * kRadPerDegree);
+      mMatrix3D->RotateY(rotY * radPerDegree);
     }
     if (fmod(aRotX, 360) != 0) {
-      mMatrix3D->RotateX(aRotX * kRadPerDegree);
+      mMatrix3D->RotateX(aRotX * radPerDegree);
     }
   } else if (fmod(rotZ, 360) != 0) {
-    *mMatrix2D = mMatrix2D->PreRotate(rotZ * kRadPerDegree);
+    *mMatrix2D = mMatrix2D->PreRotate(rotZ * radPerDegree);
   }
 
   return this;
@@ -951,7 +953,7 @@ DOMMatrix* DOMMatrix::RotateAxisAngleSelf(double aX, double aY, double aZ,
     return this;
   }
 
-  aAngle *= kRadPerDegree;
+  aAngle *= radPerDegree;
 
   // Step 1: Post-multiply a rotation transformation on the current matrix
   // around the specified vector x, y, z by the specified rotation angle in
@@ -990,11 +992,11 @@ DOMMatrix* DOMMatrix::SkewXSelf(double aSx) {
 
   if (mMatrix3D) {
     gfx::Matrix4x4Double m;
-    m._21 = tan(aSx * kRadPerDegree);
+    m._21 = tan(aSx * radPerDegree);
     *mMatrix3D = m * *mMatrix3D;
   } else {
     gfx::MatrixDouble m;
-    m._21 = tan(aSx * kRadPerDegree);
+    m._21 = tan(aSx * radPerDegree);
     *mMatrix2D = m * *mMatrix2D;
   }
 
@@ -1008,11 +1010,11 @@ DOMMatrix* DOMMatrix::SkewYSelf(double aSy) {
 
   if (mMatrix3D) {
     gfx::Matrix4x4Double m;
-    m._12 = tan(aSy * kRadPerDegree);
+    m._12 = tan(aSy * radPerDegree);
     *mMatrix3D = m * *mMatrix3D;
   } else {
     gfx::MatrixDouble m;
-    m._12 = tan(aSy * kRadPerDegree);
+    m._12 = tan(aSy * radPerDegree);
     *mMatrix2D = m * *mMatrix2D;
   }
 

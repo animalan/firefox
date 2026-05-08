@@ -10,6 +10,8 @@
 #include "mozilla/dom/SVGMatrixBinding.h"
 #include "nsError.h"
 
+const double radPerDegree = 2.0 * M_PI / 360.0;
+
 namespace mozilla::dom {
 
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(SVGMatrix, mTransform)
@@ -126,7 +128,7 @@ already_AddRefed<SVGMatrix> SVGMatrix::ScaleNonUniform(float scaleFactorX,
 
 already_AddRefed<SVGMatrix> SVGMatrix::Rotate(float angle) {
   return MakeAndAddRef<SVGMatrix>(
-      gfxMatrix(GetMatrix()).PreRotate(angle * kRadPerDegree));
+      gfxMatrix(GetMatrix()).PreRotate(angle * radPerDegree));
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::RotateFromVector(float x, float y,
@@ -153,7 +155,7 @@ already_AddRefed<SVGMatrix> SVGMatrix::FlipY() {
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::SkewX(float angle, ErrorResult& aRv) {
-  double ta = tan(angle * kRadPerDegree);
+  double ta = tan(angle * radPerDegree);
   if (!std::isfinite(ta)) {
     aRv.ThrowInvalidAccessError("Invalid angle");
     return nullptr;
@@ -166,7 +168,7 @@ already_AddRefed<SVGMatrix> SVGMatrix::SkewX(float angle, ErrorResult& aRv) {
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::SkewY(float angle, ErrorResult& aRv) {
-  double ta = tan(angle * kRadPerDegree);
+  double ta = tan(angle * radPerDegree);
   if (!std::isfinite(ta)) {
     aRv.ThrowInvalidAccessError("Invalid angle");
     return nullptr;
