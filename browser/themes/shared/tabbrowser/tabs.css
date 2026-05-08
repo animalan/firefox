@@ -7,16 +7,23 @@
   --tab-min-height: 36px;
   --tab-group-suggestions-loading-animation-color-1: color-mix(in srgb, currentColor 5%, transparent);
   --tab-group-suggestions-loading-animation-color-2: color-mix(in srgb, currentColor 35%, transparent);
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media -moz-pref("browser.nova.enabled") {
-    --tab-min-height: 32px;
-  }
-  &[uidensity="compact"] {
-    --tab-min-height: 29px;
-  }
+  --tab-min-height: 32px;
+  --tab-group-label-size: var(--tab-min-height);
   &[uidensity="touch"] {
-    --tab-min-height: 41px;
+    --tab-group-label-size: var(--tab-min-height);
   }
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media not -moz-pref("browser.nova.enabled") {
+    --tab-group-label-size: 24px;
+    &[uidensity="compact"] {
+      --tab-min-height: 29px;
+    }
+    &[uidensity="touch"] {
+      --tab-min-height: 41px;
+      --tab-group-label-size: 27px;
+    }
+  }
+  --tab-group-counter-size: 24px;
   --split-view-padding-block: 2px;
   --split-view-tab-padding-inline: 2px;
   --tabstrip-min-height: calc(var(--tab-min-height) + 2 * var(--tab-block-margin));
@@ -38,7 +45,10 @@
   &[lwt-tab-selected="dark"] {
     --tab-selected-color-scheme: dark;
   }
-  --tab-selected-shadow: var(--tab-box-shadow);
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media -moz-pref("browser.nova.enabled") {
+    --tab-selected-shadow: var(--tab-box-shadow);
+  }
   @media (forced-colors) {
     &:not([lwtheme]) {
       --tab-outline-color: ButtonText;
@@ -1008,12 +1018,23 @@ tab-split-view-wrapper[dragtarget] {
       background-color: light-dark(var(--dragover-tab-group-color-pale), var(--dragover-tab-group-color));
       color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-pale));
       outline-color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-pale));
+
+      /* stylelint-disable-next-line media-query-no-invalid */
+      @media -moz-pref("browser.nova.enabled") {
+        background-color: var(--dragover-tab-group-color-invert);
+        color: currentColor;
+        outline-color: var(--dragover-tab-group-color);
+        outline-width: 2px;
+      }
     }
 
     &:is([selected], [multiselected]) {
-      outline-color: var(--dragover-tab-group-color);
-      outline-width: 2px;
-      outline-offset: -2px;
+      /* stylelint-disable-next-line media-query-no-invalid */
+      @media not -moz-pref("browser.nova.enabled") {
+        outline-color: var(--dragover-tab-group-color);
+        outline-width: 2px;
+        outline-offset: -2px;
+      }
     }
   }
 }
@@ -1313,6 +1334,14 @@ tab-group > tab-split-view-wrapper {
     background-color: light-dark(var(--dragover-tab-group-color-pale), var(--dragover-tab-group-color));
     color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-pale));
     outline-color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-pale));
+
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media -moz-pref("browser.nova.enabled") {
+      background-color: var(--dragover-tab-group-color-invert);
+      color: currentColor;
+      outline-color: var(--dragover-tab-group-color);
+      outline-width: 2px;
+    }
   }
 
   .tabbrowser-tab {
@@ -1666,6 +1695,11 @@ tab-group > tab-split-view-wrapper {
   #tabbrowser-tabs[movingtab][movingtab-addToGroup]:not([movingtab-group], [movingtab-ungroup]) tab-split-view-wrapper[dragtarget] & {
     display: flex;
     background-color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-invert));
+
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media -moz-pref("browser.nova.enabled") {
+      background-color: var(--dragover-tab-group-color);
+    }
   }
 
   /* prettier-ignore */
@@ -1726,6 +1760,11 @@ tab-group > tab-split-view-wrapper {
     display: flex;
     background-color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-invert));
     border-radius: var(--border-radius-xsmall);
+
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media -moz-pref("browser.nova.enabled") {
+      background-color: var(--dragover-tab-group-color);
+    }
   }
 
   #tabbrowser-tabs:is([movingtab-group], [movingtab-ungroup]) &:is([selected], [multiselected]) {
@@ -1870,7 +1909,13 @@ tab-group {
   #tabbrowser-tabs[orient="horizontal"] & {
     padding-inline-end: 3px;
     margin-inline-end: 3px;
+
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media -moz-pref("browser.nova.enabled") {
+      padding-inline-start: var(--space-xsmall);
+    }
   }
+
   #tabbrowser-tabs[orient="vertical"] & {
     #tabbrowser-tabs[expanded] & {
       margin-inline-start: var(--space-medium);
@@ -1907,6 +1952,25 @@ tab-group {
 
   #tabbrowser-tabs[orient="vertical"] & {
     margin-inline-start: var(--tab-inner-inline-margin);
+    width: var(--tab-group-counter-size);
+  }
+
+  #tabbrowser-tabs[orient="vertical"]:not([expanded]) & {
+    margin-inline-start: calc(var(--tab-inner-inline-margin) + (var(--tab-min-height) - var(--tab-group-counter-size)) / 2);
+  }
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media -moz-pref("browser.nova.enabled") {
+    text-align: center;
+    color: var(--tab-group-background-color);
+    padding: var(--space-xsmall);
+    background-color: color-mix(in srgb, var(--tab-group-background-color) 10%, transparent);
+    height: var(--tab-group-counter-size);
+    min-width: var(--tab-group-counter-size);
+    border-radius: var(--border-radius-circle);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: calc(var(--tab-group-counter-size) - 2 * var(--space-xsmall));
   }
 }
 
@@ -1916,10 +1980,13 @@ tab-group {
      * spread radius, make sure that these values vary together in order to add
      * up to --tab-border-radius.
      */
-    border-radius: calc(var(--tab-border-radius) - var(--tab-group-label-highlight-radius));
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media not -moz-pref("browser.nova.enabled") {
+      border-radius: calc(var(--tab-border-radius) - var(--tab-group-label-highlight-radius));
 
-    #tabbrowser-tabs[orient="horizontal"] & {
-      padding-block: 4px;
+      #tabbrowser-tabs[orient="horizontal"] & {
+        padding-block: 4px;
+      }
     }
 
     #tabbrowser-tabs[orient="vertical"][expanded] & {
@@ -1935,7 +2002,7 @@ tab-group {
      * group label from jumping around during the sidebar collapsed-to-expanded
      * transition.
      */
-    margin-inline: calc(var(--tab-inner-inline-margin) + (var(--tab-collapsed-background-width) - 24px) / 2);
+    margin-inline: calc(var(--tab-inner-inline-margin) + (var(--tab-collapsed-background-width) - var(--tab-group-label-size)) / 2);
   }
 
   tab-group[collapsed]:not([movingtabgroup]) &:hover,
@@ -1978,8 +2045,12 @@ tab-group {
 
   /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
+    line-height: var(--tab-group-label-size);
+    min-width: var(--tab-group-label-size);
     color: var(--tab-group-text-color);
     background-color: var(--tab-group-background-color);
+    border-radius: calc(var(--tab-group-label-size) / 2);
+    border-end-start-radius: calc(var(--tab-group-label-size) / 8);
 
     &:hover {
       background-color: var(--tab-group-background-color-hover);
@@ -1996,7 +2067,7 @@ tab-group {
       var(--tab-group-label-highlight-thickness);
     /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
-      box-shadow: color-mix(in oklab, var(--tab-group-background-color) 30%, transparent) 0 0 0 var(--tab-group-label-highlight-thickness);
+      box-shadow: none;
     }
   }
 
@@ -2010,6 +2081,13 @@ tab-group {
       color: var(--tab-group-text-color);
       background-color: var(--tab-group-background-color);
       outline: none;
+
+      &[dragover-groupTarget] {
+        box-shadow: none;
+        color: var(--tab-group-text-color-invert);
+        background-color: var(--tab-group-color-invert);
+        outline: 2px solid var(--tab-group-background-color);
+      }
     }
   }
 
@@ -2019,15 +2097,10 @@ tab-group {
   }
 
   #tabbrowser-tabs[orient="vertical"] & {
-    --tab-group-label-size: 24px;
     height: var(--tab-group-label-size);
     min-height: auto;
     line-height: var(--tab-group-label-size);
     min-width: var(--tab-group-label-size);
-
-    :root[uidensity="touch"] & {
-      --tab-group-label-size: 27px;
-    }
 
     #tabbrowser-tabs:not([expanded]) & {
       width: var(--tab-group-label-size);

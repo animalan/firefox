@@ -435,7 +435,8 @@ const createDesktopFormat =
 /* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("${pref}") {
 ${overrideContents}
-}`;
+}
+`;
     });
 
     return contents;

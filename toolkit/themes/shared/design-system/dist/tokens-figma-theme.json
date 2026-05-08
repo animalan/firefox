@@ -1095,7 +1095,7 @@
     "dark": "{Colors$color/blue/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/blue/content": {
+  "tab/group/blue/text": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/blue/60}",
     "forcedColors": "transparent"
@@ -1115,9 +1115,14 @@
     "dark": "{Colors$color/purple/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/purple/content": {
+  "tab/group/purple/text": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/purple/60}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/purple/text/invert": {
+    "light": "{Colors$color/purple/60}",
+    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/purple/hover": {
@@ -1135,9 +1140,14 @@
     "dark": "{Colors$color/cyan/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/cyan/content": {
+  "tab/group/cyan/text": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/cyan/60}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/cyan/text/invert": {
+    "light": "{Colors$color/cyan/60}",
+    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/cyan/hover": {
@@ -1155,9 +1165,14 @@
     "dark": "{Colors$color/orange/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/orange/content": {
+  "tab/group/orange/text": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/orange/60}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/orange/text/invert": {
+    "light": "{Colors$color/orange/60}",
+    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/orange/hover": {
@@ -1175,9 +1190,14 @@
     "dark": "{Colors$color/yellow/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/yellow/content": {
+  "tab/group/yellow/text": {
     "light": "{Colors$color/white}",
-    "dark": "#181923",
+    "dark": "{Colors$color/yellow/60}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/yellow/text/invert": {
+    "light": "{Colors$color/yellow/60}",
+    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/yellow/hover": {
@@ -1195,9 +1215,14 @@
     "dark": "{Colors$color/pink/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/pink/content": {
+  "tab/group/pink/text": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/pink/60}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/pink/text/invert": {
+    "light": "{Colors$color/pink/60}",
+    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/pink/hover": {
@@ -1215,9 +1240,14 @@
     "dark": "{Colors$color/green/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/green/content": {
+  "tab/group/green/text": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/green/60}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/green/text/invert": {
+    "light": "{Colors$color/green/60}",
+    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/green/hover": {
@@ -1235,9 +1265,14 @@
     "dark": "{Colors$color/red/10}",
     "forcedColors": "transparent"
   },
-  "tab/group/red/content": {
+  "tab/group/red/text": {
     "light": "{Colors$color/white}",
     "dark": "{Colors$color/red/60}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/red/text/invert": {
+    "light": "{Colors$color/red/60}",
+    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/red/hover": {
@@ -1251,23 +1286,28 @@
     "forcedColors": "transparent"
   },
   "tab/group/gray": {
-    "light": "{Colors$color/gray/50}",
-    "dark": "{Colors$color/gray/10}",
+    "light": "{Colors$color/gray/55}",
+    "dark": "{Colors$color/gray/05}",
     "forcedColors": "transparent"
   },
-  "tab/group/gray/content": {
+  "tab/group/gray/text": {
     "light": "{Colors$color/white}",
-    "dark": "{Colors$color/gray/60}",
+    "dark": "{Colors$color/gray/65}",
+    "forcedColors": "transparent"
+  },
+  "tab/group/gray/text/invert": {
+    "light": "{Colors$color/gray/65}",
+    "dark": "{Colors$color/white}",
     "forcedColors": "transparent"
   },
   "tab/group/gray/hover": {
-    "light": "{Colors$color/gray/60}",
-    "dark": "{Colors$color/gray/20}",
+    "light": "{Colors$color/gray/65}",
+    "dark": "{Colors$color/gray/10}",
     "forcedColors": "transparent"
   },
   "tab/group/gray/invert": {
-    "light": "{Colors$color/gray/10}",
-    "dark": "{Colors$color/gray/50}",
+    "light": "{Colors$color/gray/05}",
+    "dark": "{Colors$color/gray/55}",
     "forcedColors": "transparent"
   }
 }

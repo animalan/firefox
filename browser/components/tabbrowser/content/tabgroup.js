@@ -239,7 +239,9 @@
       );
       this.style.setProperty(
         "--tab-group-color-invert",
-        `var(--tab-group-color-${code}-invert)`
+        Services.prefs.getBoolPref("browser.nova.enabled", false)
+          ? `var(--tab-group-${code}-invert)`
+          : `var(--tab-group-color-${code}-invert)`
       );
       this.style.setProperty(
         "--tab-group-color-pale",
@@ -251,7 +253,11 @@
       );
       this.style.setProperty(
         "--tab-group-text-color",
-        `var(--tab-group-${code}-content)`
+        `var(--tab-group-${code}-text)`
+      );
+      this.style.setProperty(
+        "--tab-group-text-color-invert",
+        `var(--tab-group-${code}-text-invert)`
       );
       this.style.setProperty(
         "--tab-group-background-color-hover",
