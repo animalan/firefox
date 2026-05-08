@@ -1909,11 +1909,6 @@ class nsIWidget : public nsSupportsWeakReference {
     return LayoutDeviceIntSize();
   }
 
-  enum class NativePointerLockMode : uint8_t {
-    Regular,
-    Unadjusted,
-  };
-
   /**
    * If this widget uses native pointer lock instead of warp-to-center
    * (currently only GTK on Wayland), these methods provide access to that
@@ -1921,22 +1916,8 @@ class nsIWidget : public nsSupportsWeakReference {
    */
   virtual void SetNativePointerLockCenter(
       const LayoutDeviceIntPoint& aLockCenter) {}
-  virtual void LockNativePointer(NativePointerLockMode aNativePointerLockMode) {
-  }
+  virtual void LockNativePointer() {}
   virtual void UnlockNativePointer() {}
-
-  /**
-   * Inform the widget to change the native pointer lock mode. This is a no-op
-   * if the native pointer isn't locked or if the platform doesn't support
-   * unadjusted movement.
-   */
-  virtual void SetNativePointerLockMode(
-      NativePointerLockMode aNativePointerLockMode) {}
-
-  /**
-   * Whether unadjusted movement is supported for native pointer lock.
-   */
-  virtual bool SupportsUnadjustedMovement() { return false; }
 
   /*
    * Get safe area insets except to cutout.

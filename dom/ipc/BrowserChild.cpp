@@ -3763,12 +3763,6 @@ mozilla::ipc::IPCResult BrowserChild::RecvSafeAreaInsetsChanged(
   return IPC_OK();
 }
 
-mozilla::ipc::IPCResult BrowserChild::RecvInitSupportsUnadjustedMovement(
-    const bool& aSupportsUnadjustedMovement) {
-  mPuppetWidget->InitSupportsUnadjustedMovement(aSupportsUnadjustedMovement);
-  return IPC_OK();
-}
-
 mozilla::ipc::IPCResult BrowserChild::RecvAllowScriptsToClose() {
   nsCOMPtr<nsPIDOMWindowOuter> window = do_GetInterface(WebNavigation());
   if (window) {
