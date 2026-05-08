@@ -412,6 +412,19 @@ const CONFIG_PANES = Object.freeze({
     visible: () => NimbusFeatures.moreFromMozilla.getVariable("enabled"),
     replaces: "moreFromMozilla",
   },
+  tabsBrowsing: {
+    l10nId: "tabs-browsing-section",
+    groupIds: [
+      "tabs",
+      "pageNavigation",
+      "media",
+      "performance",
+      "recommendations",
+    ],
+    iconSrc: "chrome://global/skin/icons/cursor-arrow.svg",
+    module: "chrome://browser/content/preferences/config/tabs-browsing.mjs",
+    visible: () => srdSectionEnabled("tabsBrowsing"),
+  },
   translations: {
     parent: srdSectionEnabled("languages") ? "languages" : "general",
     l10nId: "settings-translations-subpage-header",
