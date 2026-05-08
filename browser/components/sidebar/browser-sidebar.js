@@ -1221,9 +1221,7 @@ var SidebarController = {
     let sidebarOnLeft = this._positionStart != RTL_UI;
     let sidebarShift = 0;
     let novaTranslate = 0;
-    const novaMode =
-      !expandOnHoverEnabled &&
-      Services.prefs.getBoolPref("browser.nova.enabled", false);
+    const novaMode = Services.prefs.getBoolPref("browser.nova.enabled", false);
     for (let i = 0; i < animatingElements.length; ++i) {
       const el = animatingElements[i];
       const [wasHidden, from] = fromRects[i];
@@ -2455,7 +2453,7 @@ var SidebarController = {
     await this.waitUntilStable();
     let collapsedWidth = await new Promise(resolve => {
       requestAnimationFrame(() => {
-        resolve(this._getRects([this.sidebarMain])[0][1].width);
+        resolve(this._getRects([this.sidebarContainer])[0][1].width);
       });
     });
 
