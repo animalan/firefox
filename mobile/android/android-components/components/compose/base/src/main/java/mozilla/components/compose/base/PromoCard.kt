@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.fenix.compose
+package mozilla.components.compose.base
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -27,13 +27,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import mozilla.components.compose.base.InfoCardContainer
-import mozilla.components.compose.base.LinkText
-import mozilla.components.compose.base.LinkTextState
 import mozilla.components.compose.base.button.FilledButton
 import mozilla.components.compose.base.button.IconButton
+import mozilla.components.compose.base.theme.AcornTheme
 import mozilla.components.compose.base.utils.parseHtml
-import org.mozilla.fenix.theme.FirefoxTheme
 import mozilla.components.ui.icons.R as iconsR
 
 /**
@@ -59,7 +56,7 @@ fun PromoCard(
     title: String? = null,
     footer: Pair<String, LinkTextState>? = null,
     illustration: (@Composable () -> Unit)? = null,
-    contentSpacing: Dp = FirefoxTheme.layout.space.static50,
+    contentSpacing: Dp = AcornTheme.layout.space.static50,
     colors: PromoCardColors = PromoCardColors.promoCardColors(),
     closeButtonContentDescription: String? = null,
     onDismiss: (() -> Unit)? = null,
@@ -73,7 +70,7 @@ fun PromoCard(
                 LinkText(
                     text = footerText,
                     linkTextStates = listOf(linkState),
-                    style = FirefoxTheme.typography.body2.copy(
+                    style = AcornTheme.typography.body2.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     ),
                     linkTextColor = colors.actionsTextColor,
@@ -112,7 +109,7 @@ fun PromoCard(
     message: (@Composable () -> Unit)? = null,
     actions: (@Composable () -> Unit)? = null,
     illustration: (@Composable () -> Unit)? = null,
-    contentSpacing: Dp = FirefoxTheme.layout.space.static50,
+    contentSpacing: Dp = AcornTheme.layout.space.static50,
     colors: PromoCardColors = PromoCardColors.promoCardColors(),
     closeButtonContentDescription: String? = null,
     onDismiss: (() -> Unit)? = null,
@@ -127,18 +124,18 @@ fun PromoCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = FirefoxTheme.layout.space.static200),
-                horizontalArrangement = Arrangement.spacedBy(FirefoxTheme.layout.space.static200),
+                    .padding(horizontal = AcornTheme.layout.space.static200),
+                horizontalArrangement = Arrangement.spacedBy(AcornTheme.layout.space.static200),
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(vertical = FirefoxTheme.layout.space.static150),
+                        .padding(vertical = AcornTheme.layout.space.static150),
                     verticalArrangement = Arrangement.spacedBy(contentSpacing),
                 ) {
                     CompositionLocalProvider(
-                        LocalTextStyle provides FirefoxTheme.typography.headline8.copy(
+                        LocalTextStyle provides AcornTheme.typography.headline8.copy(
                             color = colors.titleTextColor,
                         ),
                     ) {
@@ -146,7 +143,7 @@ fun PromoCard(
                     }
 
                     CompositionLocalProvider(
-                        LocalTextStyle provides FirefoxTheme.typography.body2.copy(
+                        LocalTextStyle provides AcornTheme.typography.body2.copy(
                             color = colors.messageTextColor,
                         ),
                     ) {
@@ -154,7 +151,7 @@ fun PromoCard(
                     }
 
                     CompositionLocalProvider(
-                        LocalTextStyle provides FirefoxTheme.typography.body2.copy(
+                        LocalTextStyle provides AcornTheme.typography.body2.copy(
                             color = colors.actionsTextColor,
                         ),
                     ) {
@@ -240,7 +237,7 @@ data class PromoCardColors(
 @Composable
 @PreviewLightDark
 private fun PromoCardWithSlotsPreview() {
-    FirefoxTheme {
+    AcornTheme {
         PromoCard(
             title = { Text("Title") },
             message = { Text("Description") },
@@ -265,7 +262,7 @@ private fun PromoCardWithSlotsPreview() {
 @Composable
 @PreviewLightDark
 private fun PromoCardWithSlotsAndNoCloseButtonPreview() {
-    FirefoxTheme {
+    AcornTheme {
         PromoCard(
             title = { Text("Title") },
             message = { Text("Description") },
@@ -288,7 +285,7 @@ private fun PromoCardWithSlotsAndNoCloseButtonPreview() {
 @Composable
 @PreviewLightDark
 private fun PromoCardWithoutTitlePreview() {
-    FirefoxTheme {
+    AcornTheme {
         PromoCard(
             message = { Text("Description") },
             actions = {
@@ -306,7 +303,7 @@ private fun PromoCardWithoutTitlePreview() {
 @Composable
 @PreviewLightDark
 private fun PromoCardFromStringsPreview() {
-    FirefoxTheme {
+    AcornTheme {
         PromoCard(
             description = "Description",
             closeButtonContentDescription = null,
@@ -330,7 +327,7 @@ private fun PromoCardFromStringsPreview() {
 @Composable
 @PreviewLightDark
 private fun PromoCardWithFilledButtonActionPreview() {
-    FirefoxTheme {
+    AcornTheme {
         PromoCard(
             closeButtonContentDescription = null,
             title = { Text("Title") },
