@@ -344,16 +344,10 @@ partial interface Element {
   attribute EventHandler onfullscreenerror;
 };
 
-// https://w3c.github.io/pointerlock/#pointerlockoptions-dictionary
-dictionary PointerLockOptions {
-  [Pref="dom.pointer-lock.unadjusted-movement.enabled"]
-  boolean unadjustedMovement = false;
-};
-
 // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
 partial interface Element {
-  [NewObject, NeedsCallerType, Pref="dom.pointer-lock.enabled"]
-  Promise<undefined> requestPointerLock(optional PointerLockOptions options = {});
+  [NeedsCallerType, Pref="dom.pointer-lock.enabled"]
+  undefined requestPointerLock();
 };
 
 // Mozilla-specific additions to support devtools

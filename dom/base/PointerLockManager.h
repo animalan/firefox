@@ -6,7 +6,6 @@
 #define mozilla_PointerLockManager_h
 
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/RefPtr.h"
 #include "nsIWeakReferenceUtils.h"
 #include "nsThreadUtils.h"
 
@@ -19,19 +18,11 @@ class BrowserParent;
 enum class CallerType : uint32_t;
 class Document;
 class Element;
-class Promise;
-struct PointerLockOptions;
 }  // namespace dom
 
 class PointerLockManager final {
  public:
-  // https://w3c.github.io/pointerlock/#dom-element-requestpointerlock
-  // |aPromise| is the Promise returned to script; it is resolved when the
-  // lock is acquired and rejected with a DOMException matching the spec
-  // when any check fails.
-  static void RequestLock(dom::Element* aElement,
-                          const dom::PointerLockOptions& aOptions,
-                          dom::CallerType aCallerType, dom::Promise* aPromise);
+  static void RequestLock(dom::Element* aElement, dom::CallerType aCallerType);
 
   MOZ_CAN_RUN_SCRIPT_BOUNDARY
   static void Unlock(const char* aReason, dom::Document* aDoc = nullptr);
@@ -61,19 +52,13 @@ class PointerLockManager final {
  private:
   class PointerLockRequest final : public Runnable {
    public:
-    PointerLockRequest(dom::Element* aElement, bool aUserInputOrChromeCaller,
-                       bool aUnadjustedMovement, dom::Promise* aPromise);
+    PointerLockRequest(dom::Element* aElement, bool aUserInputOrChromeCaller);
     MOZ_CAN_RUN_SCRIPT_BOUNDARY NS_IMETHOD Run() final;
 
    private:
     nsWeakPtr mElement;
     nsWeakPtr mDocument;
     bool mUserInputOrChromeCaller;
-    bool mUnadjustedMovement;
-    // Strong reference: the script-side lifetime of the returned Promise is
-    // independent of the requested element's lifetime, so we keep it alive
-    // until we resolve or reject it.
-    RefPtr<dom::Promise> mPromise;
   };
 
   static void ChangePointerLockedElement(dom::Element* aElement,
@@ -82,15 +67,13 @@ class PointerLockManager final {
 
   MOZ_CAN_RUN_SCRIPT_BOUNDARY
   static bool StartSetPointerLock(dom::Element* aElement,
-                                  dom::Document* aDocument,
-                                  bool aUnadjustedMovement);
+                                  dom::Document* aDocument);
 
   MOZ_CAN_RUN_SCRIPT
   static bool SetPointerLock(dom::Element* aElement, dom::Document* aDocument,
-                             StyleCursorKind, bool aUnadjustedMovement);
+                             StyleCursorKind);
 
   static bool sIsLocked;
-  static bool sIsLockUnadjustedMovement;
 };
 
 }  // namespace mozilla

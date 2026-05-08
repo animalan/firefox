@@ -548,13 +548,9 @@ class BrowserParent final : public PBrowserParent,
       const double& aDeltaY, const int32_t& aModifierFlags,
       const Maybe<uint64_t>& aCallbackId);
 
-  mozilla::ipc::IPCResult RecvLockNativePointer(
-      const nsIWidget::NativePointerLockMode& aNativePointerLockMode);
+  mozilla::ipc::IPCResult RecvLockNativePointer();
 
   mozilla::ipc::IPCResult RecvUnlockNativePointer();
-
-  mozilla::ipc::IPCResult RecvSetNativePointerLockMode(
-      const nsIWidget::NativePointerLockMode& aNativePointerLockMode);
 
   /**
    * The following Send*Event() marks aMouseOrPointerEvent as posted to remote

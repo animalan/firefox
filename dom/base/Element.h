@@ -122,7 +122,6 @@ struct FocusOptions;
 struct ShadowRootInit;
 struct ScrollOptions;
 struct FullscreenOptions;
-struct PointerLockOptions;
 class Attr;
 class BooleanOrScrollIntoViewOptions;
 class ContentList;
@@ -1586,9 +1585,7 @@ class Element : public FragmentOrElement {
 
   already_AddRefed<Promise> RequestFullscreen(const FullscreenOptions&,
                                               CallerType, ErrorResult&);
-  already_AddRefed<Promise> RequestPointerLock(
-      const PointerLockOptions& aOptions, CallerType aCallerType,
-      ErrorResult& aRv);
+  void RequestPointerLock(CallerType aCallerType);
   Attr* GetAttributeNode(const nsAString& aName);
   MOZ_CAN_RUN_SCRIPT already_AddRefed<Attr> SetAttributeNode(
       Attr& aNewAttr, nsIPrincipal* aSubjectPrincipal, ErrorResult& aError);
