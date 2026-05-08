@@ -769,11 +769,12 @@ toolbar[keyNav]:not([collapsed], [customizing]) toolbartabstop,
   font-weight: var(--font-weight-semibold);
   gap: var(--smartwindow-ask-btn-text-icon-gap);
   height: var(--size-item-medium);
-  --toolbarbutton-padding-outer: var(--space-small);
   padding-inline: var(--smartwindow-ask-btn-inner-padding-inline);
   --toolbarbutton-outline-color-hover: none;
   --toolbarbutton-background-color-hover: transparent;
   --toolbarbutton-background-color-active: transparent;
+  --toolbarbutton-border-radius: 0;
+  --toolbarbutton-padding-outer: var(--space-small);
 
   #smartwindow-ask-button:hover > & {
     color: var(--smartwindow-ask-btn-text-color-hover);
