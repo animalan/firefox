@@ -134,9 +134,14 @@ class TextInputHandler;
 
 @end
 
-@interface PopupWindow : BaseWindow {
+@interface PopupWindow : BaseWindow <NSPopoverDelegate> {
  @private
   BOOL mIsContextMenu;
+
+  // NSPopover support for native appearance
+  NSPopover* mPopover;
+  NSViewController* mPopoverViewController;
+  BOOL mUsePopover;
 }
 
 - (id)initWithContentRect:(NSRect)contentRect
@@ -146,6 +151,16 @@ class TextInputHandler;
 - (BOOL)isContextMenu;
 - (void)setIsContextMenu:(BOOL)flag;
 - (BOOL)canBecomeMainWindow;
+
+// NSPopover support
+- (void)setAllowPopover;
+- (BOOL)usePopover;
+- (void)showPopoverRelativeToRect:(NSRect)positioningRect
+                           ofView:(NSView*)positioningView
+                    preferredEdge:(NSRectEdge)preferredEdge
+                     hiddenAnchor:(BOOL)hiddenAnchor;
+- (void)closePopover;
+- (void)updatePopoverContent;
 
 @end
 
@@ -201,6 +216,10 @@ class nsCocoaWindow final : public nsIWidget {
 
  public:
   nsCocoaWindow();
+
+  // Check if this window should use NSPopover for popup/menu display
+  bool ShouldUseNSPopover() const;
+  bool ShouldShowAsNSPopover() const;
 
   [[nodiscard]] nsresult Create(nsIWidget* aParent, const DesktopIntRect& aRect,
                                 const InitData&) override;
