@@ -2885,6 +2885,8 @@
     <string name="ip_protection_menu_paused">Paused</string>
     <!-- Badge label shown in the menu item when the browser VPN has an error -->
     <string name="ip_protection_menu_error">Error</string>
+    <!-- Badge label shown in the menu item when the user is eligible to use the browser VPN but should authenticate or authorize it first. -->
+    <string name="ip_protection_menu_auth_required">Try it</string>
     <!-- Content description for the chevron button that opens the browser VPN settings screen -->
     <string name="ip_protection_navigate_settings">Open VPN settings</string>
     <!-- Subtitle shown below the VPN label in menus when the monthly data allowance is exhausted.
