@@ -2894,9 +2894,9 @@
         %1$d is the total monthly allowance in GB (for example "50"). -->
     <string name="ip_protection_data_limit_reached_description">You’ve used all %1$d GB of your VPN data. Access resets next month.</string>
     <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
-    <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN on</string>
+    <string name="ip_protection_toolbar_pill_label">VPN on</string>
     <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
-    <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN is active.</string>
+    <string name="ip_protection_toolbar_pill_description">VPN is active.</string>
     <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
     <string name="ip_protection_get_started">Get started</string>
     <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
