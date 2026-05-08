@@ -370,12 +370,8 @@ var gSearchResultsPane = {
     } else {
       noResultsEl.hidden = true;
       document.getElementById("sorry-message-query").textContent = "";
-      // Going back to Account and sync or General when cleared
-      let redesignEnabled = Services.prefs.getBoolPref(
-        "browser.settings-redesign.enabled"
-      );
-      let defaultPane = redesignEnabled ? "paneSync" : "paneGeneral";
-      await gotoPref(defaultPane);
+      // Going back to General when cleared
+      await gotoPref("paneGeneral");
       srHeader.hidden = true;
 
       // Hide some special second level headers in normal view
@@ -501,7 +497,6 @@ var gSearchResultsPane = {
       // Creating tooltips for buttons
       if (
         keywordsResult &&
-        // eslint-disable-next-line mozilla/use-isInstance
         (nodeObject instanceof HTMLElement ||
           nodeObject.localName === "button" ||
           nodeObject.localName == "menulist")
