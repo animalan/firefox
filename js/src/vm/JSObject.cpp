@@ -981,9 +981,6 @@ void JSObject::swap(JSContext* cx, HandleObject a, HandleObject b,
 
   unsigned r = NotifyGCPreSwap(a, b);
 
-  bool aIsProxyWithInlineValues = a->as<ProxyObject>().usingInlineValueArray();
-  bool bIsProxyWithInlineValues = b->as<ProxyObject>().usingInlineValueArray();
-
   bool aIsUsedAsPrototype = a->isUsedAsPrototype();
   bool bIsUsedAsPrototype = b->isUsedAsPrototype();
 
@@ -1018,14 +1015,8 @@ void JSObject::swap(JSContext* cx, HandleObject a, HandleObject b,
   js_memcpy(a, b, size);
   js_memcpy(b, tmp, size);
 
-  zone->swapCellMemory(a, b, MemoryUse::ProxyExternalValueArray);
-
-  if (aIsProxyWithInlineValues) {
-    b->as<ProxyObject>().setInlineValueArray();
-  }
-  if (bIsProxyWithInlineValues) {
-    a->as<ProxyObject>().setInlineValueArray();
-  }
+  a->as<ProxyObject>().setInlineValueArray();
+  b->as<ProxyObject>().setInlineValueArray();
 
   MOZ_ASSERT_IF(aid, gc::GetUniqueIdInfallible(a) == aid);
   MOZ_ASSERT_IF(bid, gc::GetUniqueIdInfallible(b) == bid);

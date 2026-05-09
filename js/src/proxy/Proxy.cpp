@@ -933,36 +933,12 @@ static void proxy_Finalize(JS::GCContext* gcx, JSObject* obj) {
   MOZ_ASSERT(obj->is<ProxyObject>());
   ProxyObject* proxy = &obj->as<ProxyObject>();
   proxy->handler()->finalize(gcx, obj);
-
-  if (!proxy->usingInlineValueArray() && proxy->isTenured()) {
-    auto* valArray = js::detail::GetProxyDataLayout(obj)->values();
-    size_t size =
-        js::detail::ProxyValueArray::sizeOf(proxy->numReservedSlots());
-    gcx->free_(obj, valArray, size, MemoryUse::ProxyExternalValueArray);
-  }
 }
 
 size_t js::proxy_ObjectMoved(JSObject* obj, JSObject* old) {
   ProxyObject& proxy = obj->as<ProxyObject>();
-
-  if (IsInsideNursery(old)) {
-    proxy.nurseryProxyTenured(&old->as<ProxyObject>());
-  }
-
+  proxy.setInlineValueArray();
   return proxy.handler()->objectMoved(obj, old);
-}
-
-void ProxyObject::nurseryProxyTenured(ProxyObject* old) {
-  if (old->usingInlineValueArray()) {
-    setInlineValueArray();
-    return;
-  }
-
-  Nursery& nursery = runtimeFromMainThread()->gc.nursery();
-  nursery.removeMallocedBufferDuringMinorGC(data.values());
-
-  size_t size = detail::ProxyValueArray::sizeOf(numReservedSlots());
-  AddCellMemory(this, size, MemoryUse::ProxyExternalValueArray);
 }
 
 const JSClassOps js::ProxyClassOps = {
