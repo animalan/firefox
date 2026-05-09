@@ -799,9 +799,6 @@ bool gfxPlatformFontList::InitFontList() {
         newList->SetLocalNames(mLocalNameTable);
         mLocalNameTable.Clear();
       }
-      // Ensure at least one family is initialized eagerly, in case the first
-      // attempt to set up a gfxFontGroup comes from a stylo or worker thread.
-      (void)InitializeFamily(newList->Families());
     } else {
       // something went wrong, fall back to in-process list
       gfxCriticalNote << "Failed to initialize shared font list, "
