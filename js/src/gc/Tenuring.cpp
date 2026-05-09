@@ -358,11 +358,7 @@ template struct StoreBuffer::MonoTypeBuffer<StoreBuffer::ObjectPtrEdge>;
 void js::gc::StoreBuffer::SlotsEdge::trace(TenuringTracer& mover) const {
   NativeObject* obj = object();
   MOZ_ASSERT(IsCellPointerValid(obj));
-
-  // Beware JSObject::swap exchanging a native object for a non-native one.
-  if (!obj->is<NativeObject>()) {
-    return;
-  }
+  MOZ_ASSERT(obj->is<NativeObject>());
 
   MOZ_ASSERT(!IsInsideNursery(obj), "obj shouldn't live in nursery.");
 

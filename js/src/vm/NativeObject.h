@@ -1329,22 +1329,15 @@ class NativeObject : public JSObject {
   // that the first reserved slots (up to MAX_FIXED_SLOTS) are always stored in
   // fixed slots. This lets the compiler optimize away the branch below when
   // |index| is a constant (after inlining).
-  //
-  // Note: objects that may be swapped have less predictable slot layouts
-  // because they could have been swapped with an object with fewer fixed slots.
-  // Fortunately, the only native objects that can be swapped are DOM objects
-  // and these shouldn't end up here (asserted below).
   MOZ_ALWAYS_INLINE HeapSlot& getReservedSlotRef(uint32_t index) {
     MOZ_ASSERT(index < JSSLOT_FREE(getClass()));
     MOZ_ASSERT(slotIsFixed(index) == (index < MAX_FIXED_SLOTS));
-    MOZ_ASSERT(!ObjectMayBeSwapped(this));
     return index < MAX_FIXED_SLOTS ? fixedSlots()[index]
                                    : slots_[index - MAX_FIXED_SLOTS];
   }
   MOZ_ALWAYS_INLINE const HeapSlot& getReservedSlotRef(uint32_t index) const {
     MOZ_ASSERT(index < JSSLOT_FREE(getClass()));
     MOZ_ASSERT(slotIsFixed(index) == (index < MAX_FIXED_SLOTS));
-    MOZ_ASSERT(!ObjectMayBeSwapped(this));
     return index < MAX_FIXED_SLOTS ? fixedSlots()[index]
                                    : slots_[index - MAX_FIXED_SLOTS];
   }

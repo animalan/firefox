@@ -1541,12 +1541,9 @@ bool GCMarker::processMainThreadBuffer(MainThreadBuffer& buffer,
     }
 
     const JSClass* clasp = obj->getClass();
-    // It's possible for the mutator to swap a native object with a proxy after
-    // it got put into the buffer so we need to recheck for a trace hook here.
-    if (clasp->hasTrace()) {
-      AutoSetTracingSource asts(tracer(), obj);
-      clasp->doTrace(tracer(), obj);
-    }
+    MOZ_ASSERT(clasp->hasTrace());
+    AutoSetTracingSource asts(tracer(), obj);
+    clasp->doTrace(tracer(), obj);
 
     budget.step();
     if (budget.isOverBudget()) {
@@ -1602,16 +1599,11 @@ void GCMarker::updateRangesAtStartOfSlice() {
     if (iter.isSlotsOrElementsRange()) {
       MarkStack::SlotsOrElementsRange range = iter.slotsOrElementsRange();
       JSObject* obj = range.ptr().asRangeObject();
-      if (!obj->is<NativeObject>()) {
-        // The object owning the range was swapped with a non-native object by
-        // the mutator. The barriers at the end of JSObject::swap ensure that
-        // everything gets marked so there's nothing to do here.
-        range.setEmpty();
-        iter.setSlotsOrElementsRange(range);
-      } else if (range.kind() == SlotsOrElementsKind::Elements) {
-        NativeObject* obj = &range.ptr().asRangeObject()->as<NativeObject>();
+      MOZ_ASSERT(obj->is<NativeObject>());
+      if (range.kind() == SlotsOrElementsKind::Elements) {
+        NativeObject* nobj = &obj->as<NativeObject>();
         size_t index = range.start();
-        size_t numShifted = obj->getElementsHeader()->numShiftedElements();
+        size_t numShifted = nobj->getElementsHeader()->numShiftedElements();
         index -= std::min(numShifted, index);
         range.setStart(index);
         iter.setSlotsOrElementsRange(range);
