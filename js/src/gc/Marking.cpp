@@ -133,7 +133,10 @@ static inline bool IsInFreeList(TenuredCell* cell) {
 template <typename T>
 void js::CheckTracedThing(JSTracer* trc, T* thing) {
   MOZ_ASSERT(trc);
-  MOZ_ASSERT(thing);
+
+  if (!thing) {
+    return;
+  }
 
   if (IsForwarded(thing)) {
     JS::TracerKind kind = trc->kind();
@@ -384,7 +387,6 @@ void js::gc::AssertRootMarkingPhase(JSTracer* trc) {
 template <typename T>
 static void TraceExternalEdgeHelper(JSTracer* trc, T* thingp,
                                     const char* name) {
-  MOZ_ASSERT(InternalBarrierMethods<T>::isMarkable(*thingp));
   TraceEdgeInternal(trc, ConvertToBase(thingp), name);
 }
 
@@ -865,6 +867,9 @@ template <uint32_t opts>
 template <typename T>
 void MarkingTracerT<opts>::onEdge(T** thingp, const char* name) {
   T* thing = *thingp;
+  if (!thing) {
+    return;
+  }
 
   // Do per-type marking precondition checks.
   if (!ShouldMark(markColor(), thing)) {
@@ -3005,6 +3010,10 @@ SweepingTracer::SweepingTracer(JSRuntime* rt)
 template <typename T>
 inline void SweepingTracer::onEdge(T** thingp, const char* name) {
   T* thing = *thingp;
+  if (!thing) {
+    return;
+  }
+
   CheckIsMarkedThing(thing);
 
   if (!thing->isTenured()) {
