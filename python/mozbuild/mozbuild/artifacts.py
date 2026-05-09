@@ -212,12 +212,11 @@ class ArtifactJob:
         log=None,
         download_tests=True,
         download_symbols=False,
-        artifact_filters=None,
+        download_maven_zip=False,
         override_job_configuration=None,
         substs=None,
         mozbuild=None,
     ):
-        artifact_filters = artifact_filters or []
         if override_job_configuration is not None:
             self.job_configuration = override_job_configuration
 
@@ -227,7 +226,9 @@ class ArtifactJob:
             self._tests_re = re.compile(
                 r"public/build/(en-US/)?target\.common\.tests\.(zip|tar\.zst)$"
             )
-        self._artifact_filters = set(artifact_filters)
+        self._maven_zip_re = None
+        if download_maven_zip:
+            self._maven_zip_re = re.compile(r"public/build/target\.maven\.zip$")
         self._log = log
         self._substs = substs
         self._symbols_archive_suffix = None
@@ -245,14 +246,15 @@ class ArtifactJob:
     def find_candidate_artifacts(self, artifacts):
         # TODO: Handle multiple artifacts, taking the latest one.
         tests_artifact = None
-        found_artifact_filters = set()
+        maven_zip_artifact = None
         for artifact in artifacts:
             name = artifact["name"]
-            if self._artifact_filters:
-                if name in self._artifact_filters:
-                    found_artifact_filters.add(name)
+            if self._maven_zip_re:
+                if self._maven_zip_re.match(name):
+                    maven_zip_artifact = name
                     yield name
-                continue
+                else:
+                    continue
             elif self._package_re and self._package_re.match(name):
                 yield name
             elif self._tests_re and self._tests_re.match(name):
@@ -275,12 +277,11 @@ class ArtifactJob:
             raise ValueError(
                 f'Expected tests archive matching "{self._tests_re}", but found none!'
             )
-        if self._artifact_filters:
-            missing_artifacts = self._artifact_filters - found_artifact_filters
-            if missing_artifacts:
-                raise ValueError(
-                    f"Did not find expected artifacts {sorted(missing_artifacts)}. Did find artifacts: {sorted(found_artifact_filters)}"
-                )
+        if self._maven_zip_re and not maven_zip_artifact:
+            raise ValueError(
+                f'Expected Maven zip archive matching "{self._maven_zip_re}", but '
+                "found none!"
+            )
 
     @contextmanager
     def get_writer(self, **kwargs):
@@ -1210,12 +1211,11 @@ class Artifacts:
         topsrcdir=None,
         download_tests=True,
         download_symbols=False,
-        artifact_filters=None,
+        download_maven_zip=False,
         no_process=False,
         unfiltered_project_package=False,
         mozbuild=None,
     ):
-        artifact_filters = artifact_filters or []
         if (hg and git) or (not hg and not git):
             raise ValueError("Must provide path to exactly one of hg and git")
 
@@ -1254,7 +1254,7 @@ class Artifacts:
                     log=self._log,
                     download_tests=download_tests,
                     download_symbols=download_symbols,
-                    artifact_filters=artifact_filters,
+                    download_maven_zip=download_maven_zip,
                     override_job_configuration=job_configuration,
                     substs=self._substs,
                     mozbuild=mozbuild,
@@ -1269,7 +1269,7 @@ class Artifacts:
                 log=self._log,
                 download_tests=False,
                 download_symbols=False,
-                artifact_filters=[],
+                download_maven_zip=False,
                 override_job_configuration=job_configuration,
                 substs=self._substs,
                 mozbuild=mozbuild,
