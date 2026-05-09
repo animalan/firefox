@@ -885,7 +885,7 @@ static inline void CheckProxyIsInCCWMap(ProxyObject* proxy) {
 void ProxyObject::trace(JSTracer* trc, JSObject* obj) {
   ProxyObject* proxy = &obj->as<ProxyObject>();
 
-  TraceNullableEdge(trc, proxy->slotOfExpando(), "expando");
+  TraceEdge(trc, proxy->slotOfExpando(), "expando");
 
 #ifdef DEBUG
   JSContext* cx = TlsContext.get();

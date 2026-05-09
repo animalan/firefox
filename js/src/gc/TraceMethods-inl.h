@@ -35,7 +35,7 @@
 #include "vm/StringType-inl.h"
 
 inline void js::BaseScript::traceChildren(JSTracer* trc) {
-  TraceNullableEdge(trc, &function_, "function");
+  TraceEdge(trc, &function_, "function");
   TraceEdge(trc, &sourceObject_, "sourceObject");
 
   if (data_) {
@@ -54,7 +54,7 @@ inline void js::Shape::traceChildren(JSTracer* trc) {
 }
 
 inline void js::NativeShape::traceChildren(JSTracer* trc) {
-  TraceNullableEdge(trc, &propMap_, "propertymap");
+  TraceEdge(trc, &propMap_, "propertymap");
 }
 
 template <uint32_t opts>
@@ -246,7 +246,7 @@ void js::gc::MarkingTracerT<opts>::eagerlyMarkChildren(JSRope* rope) {
 }
 
 inline void JS::Symbol::traceChildren(JSTracer* trc) {
-  js::TraceNullableCellHeaderEdge(trc, this, "symbol description");
+  js::TraceCellHeaderEdge(trc, this, "symbol description");
 }
 
 template <typename SlotInfo>
@@ -255,22 +255,22 @@ void js::RuntimeScopeData<SlotInfo>::trace(JSTracer* trc) {
 }
 
 inline void js::FunctionScope::RuntimeData::trace(JSTracer* trc) {
-  TraceNullableEdge(trc, &canonicalFunction, "scope canonical function");
+  TraceEdge(trc, &canonicalFunction, "scope canonical function");
   TraceNullableBindingNames(trc, GetScopeDataTrailingNamesPointer(this),
                             length);
 }
 inline void js::ModuleScope::RuntimeData::trace(JSTracer* trc) {
-  TraceNullableEdge(trc, &module, "scope module");
+  TraceEdge(trc, &module, "scope module");
   TraceBindingNames(trc, GetScopeDataTrailingNamesPointer(this), length);
 }
 inline void js::WasmInstanceScope::RuntimeData::trace(JSTracer* trc) {
-  TraceNullableEdge(trc, &instance, "wasm instance");
+  TraceEdge(trc, &instance, "wasm instance");
   TraceBindingNames(trc, GetScopeDataTrailingNamesPointer(this), length);
 }
 
 inline void js::Scope::traceChildren(JSTracer* trc) {
-  TraceNullableEdge(trc, &environmentShape_, "scope env shape");
-  TraceNullableEdge(trc, &enclosingScope_, "scope enclosing");
+  TraceEdge(trc, &environmentShape_, "scope env shape");
+  TraceEdge(trc, &enclosingScope_, "scope enclosing");
   BaseScopeData* data = rawData();
   if (data) {
     TraceBufferEdge(trc, this, &data, "Scope data");

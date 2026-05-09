@@ -399,7 +399,7 @@ JS_PUBLIC_API void js::UnsafeTraceManuallyBarrieredEdge(JSTracer* trc,
 template <typename T>
 static void TraceRootHelper(JSTracer* trc, T* thingp, const char* name) {
   MOZ_ASSERT(thingp);
-  js::TraceNullableRoot(trc, thingp, name);
+  js::TraceRoot(trc, thingp, name);
 }
 
 namespace js {

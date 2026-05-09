@@ -1060,7 +1060,7 @@ static void TraceRootArrays(JSTracer* trc, gc::MarkColor color) {
 
       GCPtr<ArrayObject*>& array =
           (color == gc::MarkColor::Black) ? priv->blackRoot : priv->grayRoot;
-      TraceNullableEdge(trc, &array, "shell root array");
+      TraceEdge(trc, &array, "shell root array");
 
       if (array) {
         // Trace the array elements as part of root marking.
