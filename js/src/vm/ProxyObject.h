@@ -58,11 +58,6 @@ class ProxyObject : public JSObject {
              ->reservedSlots;
   }
 
-  // For use from JSObject::swap.
-  [[nodiscard]] bool prepareForSwap(JSContext* cx,
-                                    MutableHandleValueVector valuesOut);
-  [[nodiscard]] bool fixupAfterSwap(JSContext* cx, HandleValueVector values);
-
   const Value& private_() const { return GetProxyPrivate(this); }
   const Value& expando() const { return GetProxyExpando(this); }
 

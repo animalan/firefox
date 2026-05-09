@@ -1160,20 +1160,6 @@ class NativeObject : public JSObject {
   static bool freezeOrSealProperties(JSContext* cx, Handle<NativeObject*> obj,
                                      IntegrityLevel level);
 
- protected:
-  static bool changeNumFixedSlotsAfterSwap(JSContext* cx,
-                                           Handle<NativeObject*> obj,
-                                           uint32_t nfixed);
-
-  // For use from JSObject::swap.
-  [[nodiscard]] bool prepareForSwap(JSContext* cx, JSObject* other,
-                                    MutableHandleValueVector slotValuesOut);
-  [[nodiscard]] static bool fixupAfterSwap(JSContext* cx,
-                                           Handle<NativeObject*> obj,
-                                           gc::AllocKind kind,
-                                           HandleValueVector slotValues);
-
- public:
   // Return true if this object has been converted from shared-immutable
   // shapes to object-owned dictionary shapes.
   bool inDictionaryMode() const { return shape()->isDictionary(); }
@@ -1313,7 +1299,6 @@ class NativeObject : public JSObject {
   inline uint64_t maybeUniqueId() const {
     return getSlotsHeader()->maybeUniqueId();
   }
-  bool setOrUpdateUniqueId(JSContext* cx, uint64_t uid);
 
   // MAX_FIXED_SLOTS is the biggest number of fixed slots our GC
   // size classes will give an object.
