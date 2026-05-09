@@ -961,10 +961,6 @@ void JSObject::swap(JSContext* cx, HandleObject a, HandleObject b,
   // execute all necessary barriers.
   gc::AutoSuppressGC nogc(cx);
 
-  if (!Watchtower::watchObjectSwap(cx, a, b)) {
-    oomUnsafe.crash("watchObjectSwap");
-  }
-
   // Ensure we update any embedded nursery pointers in either object.
   gc::StoreBuffer& storeBuffer = cx->runtime()->gc.storeBuffer();
   if (a->isTenured()) {
