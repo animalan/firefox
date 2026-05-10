@@ -83,7 +83,10 @@ already_AddRefed<Image> RemoteImageHolder::DeserializeImage(
         descriptor.chromaSubsampling());
     if (NS_WARN_IF(descriptorSize.isNothing() ||
                    descriptorSize.value() > bufferSize)) {
-      MOZ_ASSERT_UNREACHABLE("Buffer too small to fit descriptor!");
+      // Skip assertion during gtests.
+      if (!PR_GetEnv("MOZ_RUN_GTEST")) {
+        MOZ_ASSERT_UNREACHABLE("Buffer too small to fit descriptor!");
+      }
       return nullptr;
     }
 
