@@ -948,7 +948,7 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   }
 
   bool ValidateNonNegative(const char* argName, int64_t val) const {
-    if (MOZ_UNLIKELY(val < 0)) {
+    if (val < 0) [[unlikely]] {
       EnqueueError(LOCAL_GL_INVALID_VALUE, "`%s` must be non-negative.",
                    argName);
       return false;

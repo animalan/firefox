@@ -182,7 +182,9 @@ class ConsumerView {
   template <typename T>
   inline Maybe<Range<const T>> ReadRange(const size_t elemCount) {
     static_assert(BytesAlwaysValidT<T>::value);
-    if (MOZ_UNLIKELY(!mOk)) return {};
+    if (!mOk) [[unlikely]] {
+      return {};
+    }
     const auto view = mConsumer->template ReadRange<T>(elemCount);
     mOk &= bool(view);
     return view;

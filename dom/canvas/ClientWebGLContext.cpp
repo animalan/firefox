@@ -4973,7 +4973,7 @@ void ClientWebGLContext::UniformData(const GLenum funcElemType,
     for (const auto allowed : loc->mValidUploadElemTypes) {
       funcMatchesLocation |= (funcElemType == allowed);
     }
-    if (MOZ_UNLIKELY(!funcMatchesLocation)) {
+    if (!funcMatchesLocation) [[unlikely]] {
       std::string validSetters;
       for (const auto allowed : loc->mValidUploadElemTypes) {
         validSetters += EnumString(allowed);

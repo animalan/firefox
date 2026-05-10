@@ -2377,7 +2377,7 @@ Matrix CanvasRenderingContext2D::GetCurrentTransform() const {
 }
 
 void CanvasRenderingContext2D::Save() {
-  if (MOZ_UNLIKELY(HasErrorState() || mStyleStack.IsEmpty())) {
+  if (HasErrorState() || mStyleStack.IsEmpty()) [[unlikely]] {
     SetErrorState();
     return;
   }
@@ -2393,7 +2393,7 @@ void CanvasRenderingContext2D::Save() {
 }
 
 void CanvasRenderingContext2D::Restore() {
-  if (MOZ_UNLIKELY(mStyleStack.Length() < 2 || HasErrorState())) {
+  if (mStyleStack.Length() < 2 || HasErrorState()) [[unlikely]] {
     return;
   }
 
@@ -3257,7 +3257,7 @@ void CanvasRenderingContext2D::UpdateFilter(bool aFlushIfNeeded) {
       presShell->FlushPendingNotifications(FlushType::Frames);
     }
 
-    if (MOZ_UNLIKELY(presShell->IsDestroying())) {
+    if (presShell->IsDestroying()) [[unlikely]] {
       return;
     }
 
