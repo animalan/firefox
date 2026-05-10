@@ -238,7 +238,9 @@ class ObjectJS {
   // The workhorse:
   bool ValidateUsable(const ClientWebGLContext& context,
                       const char* const argName) const {
-    if (MOZ_LIKELY(IsUsable(context))) return true;
+    if (IsUsable(context)) [[likely]] {
+      return true;
+    }
     WarnInvalidUse(context, argName);
     return false;
   }
@@ -1119,7 +1121,9 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   mutable bool mAutoFlushPending = false;
 
   void AutoEnqueueFlush() const {
-    if (MOZ_LIKELY(mAutoFlushPending)) return;
+    if (mAutoFlushPending) [[likely]] {
+      return;
+    }
     mAutoFlushPending = true;
 
     const auto DeferredFlush = [weak =

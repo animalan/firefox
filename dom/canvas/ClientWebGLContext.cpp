@@ -4952,7 +4952,7 @@ void ClientWebGLContext::UniformData(const GLenum funcElemType,
   // -
 
   uint32_t locId = -1;
-  if (MOZ_LIKELY(loc)) {
+  if (loc) [[likely]] {
     locId = loc->mLocation;
     if (!loc->ValidateUsable(*this, "location")) {
       nogc.reset();

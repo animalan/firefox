@@ -284,7 +284,9 @@ bool WebGLContext::ValidateBufferForNonTf(const WebGLBuffer& nonTfBuffer,
   for (const auto& cur : tfAttribs) {
     dupe |= (&nonTfBuffer == cur.mBufferBinding.get());
   }
-  if (MOZ_LIKELY(!dupe)) return true;
+  if (!dupe) [[likely]] {
+    return true;
+  }
 
   dupe = false;
   for (const auto tfId : IntegerRange(tfAttribs.size())) {
@@ -335,7 +337,9 @@ bool WebGLContext::ValidateBuffersForTf(
       dupe |= (nonTf && tf.buffer == nonTf);
     }
 
-    if (MOZ_LIKELY(!dupe)) return false;
+    if (!dupe) [[likely]] {
+      return false;
+    }
 
     for (const auto& tf : tfBuffers) {
       if (nonTf && tf.buffer == nonTf) {

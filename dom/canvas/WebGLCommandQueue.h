@@ -116,7 +116,7 @@ class RangeProducerView final : public webgl::ProducerView<RangeProducerView> {
     mDestItr += padToAlign;
 
     MOZ_ASSERT(byteSize <= Remaining());
-    if (MOZ_LIKELY(byteSize)) {
+    if (byteSize) [[likely]] {
       memcpy(mDestItr.get(), src.begin().get(), byteSize);
     }
     mDestItr += byteSize;
