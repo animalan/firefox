@@ -346,8 +346,8 @@ partial interface Element {
 
 // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
 partial interface Element {
-  [NeedsCallerType, Pref="dom.pointer-lock.enabled"]
-  undefined requestPointerLock();
+  [NewObject, NeedsCallerType, Pref="dom.pointer-lock.enabled"]
+  Promise<undefined> requestPointerLock();
 };
 
 // Mozilla-specific additions to support devtools
