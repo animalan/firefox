@@ -940,7 +940,7 @@ float gfxFont::SkewForSyntheticOblique() const {
   // Precomputed value of tan(kDefaultAngle), the default italic/oblique slant;
   // avoids calling tan() at runtime except for custom oblique values.
   static const float kTanDefaultAngle =
-      tan(FontSlantStyle::DEFAULT_OBLIQUE_DEGREES * (M_PI / 180.0));
+      tan(FontSlantStyle::DEFAULT_OBLIQUE_DEGREES * kRadPerDegree);
 
   float angle = AngleForSyntheticOblique();
   if (angle == 0.0f) {
@@ -948,7 +948,7 @@ float gfxFont::SkewForSyntheticOblique() const {
   } else if (angle == FontSlantStyle::DEFAULT_OBLIQUE_DEGREES) {
     return kTanDefaultAngle;
   } else {
-    return tan(angle * (M_PI / 180.0));
+    return tan(angle * kRadPerDegree);
   }
 }
 
