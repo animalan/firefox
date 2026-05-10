@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "gtest/gtest.h"
 #include "ImageContainer.h"
+#include "gtest/gtest.h"
 #include "mozilla/RemoteImageHolder.h"
 #include "mozilla/gfx/Types.h"
 #include "mozilla/ipc/Shmem.h"
@@ -44,11 +44,11 @@ static YCbCrDescriptor MakeOversizedDisplayDescriptor() {
 
 // cbCrSize is smaller than what chromaSubsampling implies.
 static YCbCrDescriptor MakeInvalidChromaDimensionsDescriptor() {
-  return YCbCrDescriptor(
-      IntRect(0, 0, 64, 2), IntSize(64, 2), 64u, IntSize(64, 1), 64u, 0u, 128u,
-      192u, StereoMode::MONO, ColorDepth::COLOR_8, YUVColorSpace::BT601,
-      ColorRange::LIMITED, TransferFunction::BT709, ChromaSubsampling::FULL,
-      Nothing());
+  return YCbCrDescriptor(IntRect(0, 0, 64, 2), IntSize(64, 2), 64u,
+                         IntSize(64, 1), 64u, 0u, 128u, 192u, StereoMode::MONO,
+                         ColorDepth::COLOR_8, YUVColorSpace::BT601,
+                         ColorRange::LIMITED, TransferFunction::BT709,
+                         ChromaSubsampling::FULL, Nothing());
 }
 
 TEST(TestRemoteImageHolder, InvalidDescriptorValidation)
