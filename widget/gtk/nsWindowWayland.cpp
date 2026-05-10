@@ -306,7 +306,8 @@ static const struct zwp_relative_pointer_v1_listener relative_pointer_listener =
         relative_pointer_handle_relative_motion,
 };
 
-void nsWindowWayland::LockNativePointer() {
+void nsWindowWayland::LockNativePointer(
+    NativePointerLockMode aNativePointerLockMode) {
   if (!GdkIsWaylandDisplay()) {
     return;
   }

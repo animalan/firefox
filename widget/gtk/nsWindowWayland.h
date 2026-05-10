@@ -35,7 +35,7 @@ class nsWindowWayland final : public nsWindow {
     mNativePointerLockCenter = aLockCenter;
   }
 
-  void LockNativePointer() override;
+  void LockNativePointer(NativePointerLockMode aNativePointerLockMode) override;
   void UnlockNativePointer() override;
   LayoutDeviceIntSize GetMoveToRectPopupSize() override;
 

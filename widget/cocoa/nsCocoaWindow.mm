@@ -502,7 +502,7 @@ nsresult nsCocoaWindow::SynthesizeNativeMouseEvent(
 
 nsresult nsCocoaWindow::SynthesizeNativeMouseMove(
     LayoutDeviceIntPoint aPoint, nsISynthesizedEventCallback* aCallback) {
-  if (IsNativePointerLocked()) {
+  if (GetNativePointerLockedMode()) {
     AutoSynthesizedEventCallbackNotifier notifier(aCallback);
     sNativeLockedPoint = aPoint - WidgetToScreenOffset();
 
@@ -2890,14 +2890,37 @@ static gfx::IntPoint GetIntegerDeltaForEvent(NSEvent* aEvent) {
   // If the pointer is locked, we need to track the reference point ourselves,
   // because EventStateManager uses the mouse event's mRefPoint to determine
   // whether the pointer needs to be re-centered.
-  if (nsCocoaWindow::IsNativePointerLocked()) {
+  if (const auto& nativePointerLockMode =
+          nsCocoaWindow::GetNativePointerLockedMode()) {
     outGeckoEvent->mRefPoint = nsCocoaWindow::GetNativeLockedPoint();
     WidgetMouseEvent* widgetMouseEvent = outGeckoEvent->AsMouseEvent();
     if (widgetMouseEvent && widgetMouseEvent->mMessage == eMouseMove) {
-      // XXX maybe we would like to ignore the the mousemove event with zero
-      // movement, since they don't cause any chanage of the pointer?
-      widgetMouseEvent->mMovement = Some(LayoutDeviceIntPoint(
-          int32_t(aMouseEvent.deltaX), int32_t(aMouseEvent.deltaY)));
+      Maybe<LayoutDeviceIntPoint> movement;
+      // If pointer lock is active with |unadjustedMovement: true|, source
+      // unaccelerated mouse delta directly from the underlying CGEvent and
+      // stash it on the WidgetMouseEvent. MouseEvent::movementX/Y will then
+      // return this value verbatim instead of computing a delta from the warped
+      // cursor position, which carries OS mouse acceleration.
+      // https://w3c.github.io/pointerlock/#pointerlockoptions-dictionary
+      if (*nativePointerLockMode ==
+          nsIWidget::NativePointerLockMode::Unadjusted) {
+        if (CGEventRef cgEvent = [aMouseEvent CGEvent]) {
+          movement.emplace(
+              int32_t(CGEventGetIntegerValueField(
+                  cgEvent, kCGEventUnacceleratedPointerMovementX)),
+              int32_t(CGEventGetIntegerValueField(
+                  cgEvent, kCGEventUnacceleratedPointerMovementY)));
+        }
+      }
+
+      // Fallback to use the deltaX/Y if we don't request unadjusted movement or
+      // fail to get the unadjusted movement from the CGEvent.
+      if (!movement) {
+        movement.emplace(int32_t(aMouseEvent.deltaX),
+                         int32_t(aMouseEvent.deltaY));
+      }
+
+      widgetMouseEvent->mMovement = std::move(movement);
     }
   } else {
     outGeckoEvent->mRefPoint = [self convertWindowCoordinates:locationInWindow];
@@ -7256,49 +7279,63 @@ void nsCocoaWindow::CocoaWindowDidResize() {
   ReportSizeEvent();
 }
 
-void nsCocoaWindow::LockNativePointer() {
+void nsCocoaWindow::LockNativePointer(
+    NativePointerLockMode aNativePointerLockMode) {
   if (!StaticPrefs::dom_pointer_lock_native_lock_enabled()) {
     return;
   }
 
-  if (sIsNativePointerLocked) {
+  if (GetNativePointerLockedMode()) {
+    MOZ_ASSERT(*GetNativePointerLockedMode() == aNativePointerLockMode,
+               "Should not call LockNativePointer() with a different mode "
+               "whenthe pointer is already locked");
     // XXX Maybe we should avoid calling LockNativePointer() again when the
     // content changes the pointer lock element while the pointer is already
     // locked.
     return;
   }
 
-  sIsNativePointerLocked = true;
+  sNativePointerLockMode.emplace(aNativePointerLockMode);
   CGAssociateMouseAndMouseCursorPosition(false);
 }
 
 void nsCocoaWindow::UnlockNativePointer() {
-  if (!StaticPrefs::dom_pointer_lock_native_lock_enabled()) {
+  if (NS_WARN_IF(!GetNativePointerLockedMode())) {
     return;
   }
 
-  if (NS_WARN_IF(!sIsNativePointerLocked)) {
-    return;
-  }
-
-  sIsNativePointerLocked = false;
+  sNativePointerLockMode.reset();
   CGAssociateMouseAndMouseCursorPosition(true);
   sNativeLockedPoint = LayoutDeviceIntPoint(0, 0);
 }
 
-/* static */ bool nsCocoaWindow::sIsNativePointerLocked = false;
+void nsCocoaWindow::SetNativePointerLockMode(
+    NativePointerLockMode aNativePointerLockMode) {
+  if (NS_WARN_IF(!GetNativePointerLockedMode())) {
+    return;
+  }
+  sNativePointerLockMode.ref() = aNativePointerLockMode;
+}
+
+bool nsCocoaWindow::SupportsUnadjustedMovement() {
+  return StaticPrefs::dom_pointer_lock_native_lock_enabled();
+}
+
+/* static */ Maybe<nsIWidget::NativePointerLockMode>
+    nsCocoaWindow::sNativePointerLockMode;
 /* static */ LayoutDeviceIntPoint nsCocoaWindow::sNativeLockedPoint;
 
 /* static */
-bool nsCocoaWindow::IsNativePointerLocked() {
-  MOZ_ASSERT_IF(sIsNativePointerLocked,
+const Maybe<nsIWidget::NativePointerLockMode>&
+nsCocoaWindow::GetNativePointerLockedMode() {
+  MOZ_ASSERT_IF(sNativePointerLockMode,
                 StaticPrefs::dom_pointer_lock_native_lock_enabled());
-  return sIsNativePointerLocked;
+  return sNativePointerLockMode;
 }
 
 /* static */
 LayoutDeviceIntPoint nsCocoaWindow::GetNativeLockedPoint() {
-  MOZ_ASSERT(IsNativePointerLocked());
+  MOZ_ASSERT(GetNativePointerLockedMode());
   return sNativeLockedPoint;
 }
 

@@ -502,10 +502,14 @@ class nsCocoaWindow final : public nsIWidget {
   // a resize.
   bool HandleUpdateFullscreenOnResize();
 
-  void LockNativePointer() override;
+  void LockNativePointer(NativePointerLockMode aNativePointerLockMode) override;
   void UnlockNativePointer() override;
+  void SetNativePointerLockMode(
+      NativePointerLockMode aNativePointerLockMode) override;
+  bool SupportsUnadjustedMovement() override;
 
-  static bool IsNativePointerLocked();
+  static const mozilla::Maybe<NativePointerLockMode>&
+  GetNativePointerLockedMode();
   static LayoutDeviceIntPoint GetNativeLockedPoint();
 
  protected:
@@ -681,7 +685,7 @@ class nsCocoaWindow final : public nsIWidget {
   void EndOurNativeTransition();
 
   // This is class state for tracking native pointer lock state.
-  static bool sIsNativePointerLocked;
+  static mozilla::Maybe<NativePointerLockMode> sNativePointerLockMode;
   static LayoutDeviceIntPoint sNativeLockedPoint;
 };
 

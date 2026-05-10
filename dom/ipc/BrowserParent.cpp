@@ -1009,6 +1009,8 @@ void BrowserParent::InitRendering() {
   RefPtr<nsIWidget> widget = GetTopLevelWidget();
   if (widget) {
     (void)SendSafeAreaInsetsChanged(widget->GetSafeAreaInsets());
+    (void)SendInitSupportsUnadjustedMovement(
+        widget->SupportsUnadjustedMovement());
   }
 
 #if defined(MOZ_WIDGET_ANDROID)
@@ -2056,11 +2058,12 @@ mozilla::ipc::IPCResult BrowserParent::RecvSynthesizeNativeTouchpadPan(
   return IPC_OK();
 }
 
-mozilla::ipc::IPCResult BrowserParent::RecvLockNativePointer() {
+mozilla::ipc::IPCResult BrowserParent::RecvLockNativePointer(
+    const nsIWidget::NativePointerLockMode& aNativePointerLockMode) {
   if (nsCOMPtr<nsIWidget> widget = GetWidget()) {
     mLockedNativePointer = true;  // do before updating the center
     UpdateNativePointerLockCenter(widget);
-    widget->LockNativePointer();
+    widget->LockNativePointer(aNativePointerLockMode);
   }
   return IPC_OK();
 }
@@ -2077,6 +2080,14 @@ void BrowserParent::UnlockNativePointer() {
 
 mozilla::ipc::IPCResult BrowserParent::RecvUnlockNativePointer() {
   UnlockNativePointer();
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult BrowserParent::RecvSetNativePointerLockMode(
+    const nsIWidget::NativePointerLockMode& aNativePointerLockMode) {
+  if (nsCOMPtr<nsIWidget> widget = GetWidget()) {
+    widget->SetNativePointerLockMode(aNativePointerLockMode);
+  }
   return IPC_OK();
 }
 

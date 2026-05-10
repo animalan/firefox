@@ -4791,10 +4791,11 @@ already_AddRefed<Promise> Element::RequestFullscreen(
   return promise.forget();
 }
 
-already_AddRefed<Promise> Element::RequestPointerLock(CallerType aCallerType,
-                                                      ErrorResult& aRv) {
+already_AddRefed<Promise> Element::RequestPointerLock(
+    const PointerLockOptions& aOptions, CallerType aCallerType,
+    ErrorResult& aRv) {
   RefPtr<Promise> promise = Promise::CreateInfallible(GetRelevantGlobal());
-  PointerLockManager::RequestLock(this, aCallerType, promise);
+  PointerLockManager::RequestLock(this, aOptions, aCallerType, promise);
   return promise.forget();
 }
 
