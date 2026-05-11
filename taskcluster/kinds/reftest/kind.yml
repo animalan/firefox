@@ -216,6 +216,7 @@ tasks:
                 android-hw.*/opt: 6
                 windows.*-asan.*/opt: 6
                 windows.*-ccov.*/opt: 5
+                windows.*/debug: 4
                 windows.*/opt: 2
                 linux.*64-ccov.*/.*: 5
                 linux2404-64/opt: 4
