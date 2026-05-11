@@ -769,7 +769,7 @@ update-history-2 =
 update-application-installation =
     .label = Installation
 
-update-application-auto =
+update-application-auto-2 =
     .label = Automatically install updates (recommended)
     .accesskey = A
 

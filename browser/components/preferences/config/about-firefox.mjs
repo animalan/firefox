@@ -521,7 +521,7 @@ SettingGroupManager.registerGroups({
               {
                 id: "autoDesktop",
                 value: true,
-                l10nId: "update-application-auto",
+                l10nId: "update-application-auto-2",
                 items: [
                   {
                     id: "backgroundUpdate",
