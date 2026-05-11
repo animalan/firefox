@@ -1407,16 +1407,22 @@ export var PlacesUIUtils = {
   placesContextShowing(event) {
     let menupopup = /** @type {XULPopupElement} */ (event.target);
     if (
-      !["placesContext", "sidebar-history-context-menu"].includes(menupopup.id)
+      ![
+        "placesContext",
+        "sidebar-history-context-menu",
+        "sidebar-synced-tabs-context-menu",
+      ].includes(menupopup.id)
     ) {
       // Ignore any popupshowing events from submenus
       return;
     }
 
-    if (menupopup.id == "sidebar-history-context-menu") {
-      PlacesUIUtils.lastContextMenuTriggerNode =
-        menupopup.triggerNode.triggerNode;
-      return;
+    switch (menupopup.id) {
+      case "sidebar-history-context-menu":
+      case "sidebar-synced-tabs-context-menu":
+        PlacesUIUtils.lastContextMenuTriggerNode =
+          menupopup.triggerNode.triggerNode;
+        return;
     }
 
     PlacesUIUtils.lastContextMenuTriggerNode = menupopup.triggerNode;
