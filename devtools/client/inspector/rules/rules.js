@@ -80,6 +80,7 @@ const PREF_DEFAULT_COLOR_UNIT = "devtools.defaultColorUnit";
 const PREF_DRAGGABLE = "devtools.inspector.draggable_properties";
 const PREF_INPLACE_EDITOR_FOCUS_NEXT_ON_ENTER =
   "devtools.inspector.rule-view.focusNextOnEnter";
+const PREF_CSS_EXPLAINERS = "devtools.inspector.css-explainers";
 const FILTER_CHANGED_TIMEOUT = 150;
 // Removes the flash-out class from an element after 1 second (100ms in tests so they
 // don't take too long to run).
@@ -309,6 +310,10 @@ class CssRuleView extends EventEmitter {
       this.pseudoClassesElementSpecificPanel
     );
     this.#showUserAgentStyles = Services.prefs.getBoolPref(PREF_UA_STYLES);
+    this.cssExplainersEnabled = Services.prefs.getBoolPref(
+      PREF_CSS_EXPLAINERS,
+      false
+    );
 
     // Add the tooltips and highlighters to the view
     this.tooltips = new TooltipsOverlay(this);

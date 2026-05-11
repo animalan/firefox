@@ -639,6 +639,7 @@ class TextPropertyEditor {
       },
       inStartingStyleRule: this.rule.isInStartingStyle(),
       isValid: this.isValid(),
+      cssExplainersEnabled: this.ruleView.cssExplainersEnabled,
     };
 
     if (this.rule.darkColorScheme !== undefined) {

@@ -65,6 +65,35 @@ const BASIC_SHAPE_FUNCTIONS = new Set([
   "ellipse",
   "inset",
 ]);
+// TODO: Get the list from an InspectorUtils method (see Bug 2038635)
+const CSS_EXPLAINERS_SUPPORTED_FUNCTIONS = new Set([
+  "abs",
+  "acos",
+  "asin",
+  "atan",
+  "atan2",
+  "attr",
+  "calc",
+  "clamp",
+  "cos",
+  "env",
+  "exp",
+  "hypot",
+  "log",
+  "max",
+  "min",
+  "mod",
+  "pow",
+  // Not supported yet, see Bug 1975530
+  "progress",
+  "rem",
+  "round",
+  "sign",
+  "sin",
+  "sqrt",
+  "tan",
+  "var",
+]);
 
 const BACKDROP_FILTER_ENABLED = Services.prefs.getBoolPref(
   "layout.css.backdrop-filter.enabled"
@@ -252,7 +281,21 @@ class OutputParser {
             text: tokenText,
           });
 
-          this.#appendTextNode(tokenText, token);
+          if (
+            options.cssExplainersEnabled &&
+            CSS_EXPLAINERS_SUPPORTED_FUNCTIONS.has(lowerCaseFunctionName)
+          ) {
+            this.#appendNode(
+              "span",
+              { class: "css-explainers-function-name" },
+              functionName,
+              token
+            );
+            this.#appendTextNode("(", token);
+          } else {
+            this.#appendTextNode(tokenText, token);
+          }
+
           break;
         }
 
@@ -399,7 +442,7 @@ class OutputParser {
             this.#stack.at(-1).sawComma = true;
           }
 
-          this.#appendTextNode(token.text, token);
+          this.#appendTextNode(tokenText, token);
           break;
 
         // falls through
@@ -467,6 +510,8 @@ class OutputParser {
       // Lowercase function name if token is a function, null otherwise.
       // Precomputed because this can be a hot path.
       lowerCaseFunctionName: null,
+      // Will hold the names of the functions that are used inside the current one
+      nestedFunctions: [],
       // Boolean indicating if the function accepts color parameters
       // if token is a function, null otherwise.
       isColorTakingFunction: null,
@@ -542,6 +587,21 @@ class OutputParser {
       parts = [colorContainerEl];
     }
 
+    if (
+      options.cssExplainersEnabled &&
+      CSS_EXPLAINERS_SUPPORTED_FUNCTIONS.has(lowerCaseFunctionName) &&
+      stackEntry.nestedFunctions.every(fn =>
+        CSS_EXPLAINERS_SUPPORTED_FUNCTIONS.has(fn)
+      )
+    ) {
+      const functionNode = this.#createNode("span", {
+        class: options.functionClass,
+        "data-function-expression": stackEntry.text,
+      });
+      functionNode.append(...parts);
+      parts = [functionNode];
+    }
+
     // Put all the parts in the "new" last stack, or the main parsed array if there
     // is no more entry in the stack
     this.#getCurrentStackParts().push(...parts);
@@ -568,6 +628,12 @@ class OutputParser {
       }
       // Then update the authored text
       lastStackEntry.text += text;
+
+      // Set the nested functions by adding the one for the stack entry we just handled
+      lastStackEntry.nestedFunctions = [
+        stackEntry.lowerCaseFunctionName,
+        ...stackEntry.nestedFunctions,
+      ];
 
       const compoundEntryToken = {
         // Associate AGGREGATED_TOKEN_TYPE to the part so consumers can know the part was for
@@ -2445,6 +2511,7 @@ class OutputParser {
    *        definition for CSS variables. Defaults to true.
    * @param {boolean} overrides.isDarkColorScheme: Is the currently applied color scheme dark.
    * @param {boolean} overrides.isValid: Is the name+value valid.
+   * @param {boolean} overrides.cssExplainersEnabled: Are CSS explainers enabled
    * @return {object} Overridden options object
    */
   #mergeOptions(overrides) {
@@ -2458,6 +2525,7 @@ class OutputParser {
       colorClass: null,
       colorSwatchClass: null,
       colorSwatchReadOnly: false,
+      cssExplainersEnabled: false,
       filterSwatch: false,
       flexClass: null,
       gridClass: null,

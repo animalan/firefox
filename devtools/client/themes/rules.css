@@ -978,3 +978,8 @@
     var(--rule-enableproperty-margin-inline-end)
   );
 }
+
+[data-function-expression] .css-explainers-function-name {
+  text-decoration: 1px solid underline;
+  text-underline-offset: 2px;
+}
