@@ -10,11 +10,8 @@
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Maybe.h"
 
-#include "gc/ChunkPool.h"
-#include "gc/GCRuntime.h"
 #include "gc/IteratorUtils.h"
 #include "gc/Marking.h"
-#include "gc/PublicIterators.h"
 #include "gc/Zone.h"
 #include "vm/Runtime.h"
 
@@ -344,21 +341,6 @@ class ZoneCellIter : protected ZoneAllCellIter<T> {
     }
   }
 };
-
-template <typename F>
-inline void GCRuntime::forEachNonEmptyChunk(const AutoLockGC& lock, F&& func) {
-  for (AllZonesIter zone(rt); !zone.done(); zone.next()) {
-    clearCurrentChunk(zone, lock);
-    for (ChunkPool::Iter chunk(zone->availableChunks(lock)); !chunk.done();
-         chunk.next()) {
-      func(chunk.get());
-    }
-    for (ChunkPool::Iter chunk(zone->fullChunks(lock)); !chunk.done();
-         chunk.next()) {
-      func(chunk.get());
-    }
-  }
-}
 
 }  // namespace js::gc
 
