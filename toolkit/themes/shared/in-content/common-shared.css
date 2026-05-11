@@ -266,6 +266,9 @@ html|select:disabled,
 html|input[type="color"]:disabled,
 xul|button[disabled],
 xul|menulist[disabled] {
+  background-color: var(--button-background-color-disabled);
+  border-color: var(--button-border-color-disabled);
+  color: var(--button-text-color-disabled);
   opacity: var(--button-opacity-disabled);
 }
 
@@ -276,6 +279,15 @@ button.primary {
   background-color: var(--button-background-color-primary);
   color: var(--button-text-color-primary);
   border-color: var(--button-border-color-primary);
+}
+
+html|button[autofocus]:disabled,
+html|button[type="submit"]:disabled,
+xul|button[default]:disabled,
+button.primary:disabled {
+  background-color: var(--button-background-color-primary-disabled);
+  border-color: var(--button-border-color-primary-disabled);
+  color: var(--button-text-color-primary-disabled);
 }
 
 html|button[autofocus]:enabled:hover,
