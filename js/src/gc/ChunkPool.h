@@ -40,6 +40,7 @@ class ChunkPool {
     MOZ_ASSERT(head_);
     return head_;
   }
+  ArenaChunk* maybeHead() { return head_; }
   ArenaChunk* pop();
   void push(ArenaChunk* chunk);
   ArenaChunk* remove(ArenaChunk* chunk);

@@ -153,6 +153,7 @@ class ChunkBase {
 // Information about tenured heap chunks containing arenas.
 struct ArenaChunkInfo {
  private:
+  friend class ArenaChunk;
   friend class ChunkPool;
   ArenaChunk* next = nullptr;
   ArenaChunk* prev = nullptr;
