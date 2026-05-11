@@ -13415,12 +13415,12 @@ bool SetGlobalOptionsPreJSInit(const OptionParser& op) {
     JS::Prefs::setAtStartup_experimental_intl_locale_info(true);
   }
   if (op.getBoolOption("enable-wasm-esm-integration")) {
-    JS::Prefs::setAtStartup_experimental_wasm_esm_integration(true);
+    JS::Prefs::set_experimental_wasm_esm_integration(true);
   }
 #endif
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
   if (op.getBoolOption("enable-source-phase-imports")) {
-    JS::Prefs::setAtStartup_experimental_source_phase_imports(true);
+    JS::Prefs::set_experimental_source_phase_imports(true);
   }
   if (op.getBoolOption("enable-source-phase-imports-test262-module-source")) {
     JS::Prefs::
