@@ -66,9 +66,9 @@ nsresult HttpTransactionChild::InitInternal(
     uint32_t caps, const HttpConnectionInfoCloneArgs& infoArgs,
     nsHttpRequestHead* requestHead, nsIInputStream* requestBody,
     uint64_t requestContentLength, bool requestBodyHasHeaders,
-    uint64_t browserId, uint8_t httpTrafficCategory, uint64_t requestContextID,
-    ClassOfService classOfService, uint32_t initialRwin,
-    bool responseTimeoutEnabled, uint64_t channelId,
+    uint64_t browserId, HttpTrafficCategory httpTrafficCategory,
+    uint64_t requestContextID, ClassOfService classOfService,
+    uint32_t initialRwin, bool responseTimeoutEnabled, uint64_t channelId,
     bool aHasTransactionObserver,
     const nsILoadInfo::IPAddressSpace& aParentIPAddressSpace,
     const LNAPerms& aLnaPermissionStatus) {
@@ -92,9 +92,9 @@ nsresult HttpTransactionChild::InitInternal(
       caps, cinfo, requestHead, requestBody, requestContentLength,
       requestBodyHasHeaders, GetCurrentSerialEventTarget(),
       nullptr,  // TODO: security callback, fix in bug 1512479.
-      this, browserId, static_cast<HttpTrafficCategory>(httpTrafficCategory),
-      rc, classOfService, initialRwin, responseTimeoutEnabled, channelId,
-      std::move(observer), aParentIPAddressSpace, aLnaPermissionStatus);
+      this, browserId, httpTrafficCategory, rc, classOfService, initialRwin,
+      responseTimeoutEnabled, channelId, std::move(observer),
+      aParentIPAddressSpace, aLnaPermissionStatus);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     mTransaction = nullptr;
     return rv;
@@ -144,10 +144,10 @@ mozilla::ipc::IPCResult HttpTransactionChild::RecvInit(
     const nsHttpRequestHead& aReqHeaders, const Maybe<IPCStream>& aRequestBody,
     const uint64_t& aReqContentLength, const bool& aReqBodyIncludesHeaders,
     const uint64_t& aTopLevelOuterContentWindowId,
-    const uint8_t& aHttpTrafficCategory, const uint64_t& aRequestContextID,
-    const ClassOfService& aClassOfService, const uint32_t& aInitialRwin,
-    const bool& aResponseTimeoutEnabled, const uint64_t& aChannelId,
-    const bool& aHasTransactionObserver,
+    const HttpTrafficCategory& aHttpTrafficCategory,
+    const uint64_t& aRequestContextID, const ClassOfService& aClassOfService,
+    const uint32_t& aInitialRwin, const bool& aResponseTimeoutEnabled,
+    const uint64_t& aChannelId, const bool& aHasTransactionObserver,
     const mozilla::Maybe<PInputChannelThrottleQueueChild*>& aThrottleQueue,
     const bool& aIsDocumentLoad,
     const nsILoadInfo::IPAddressSpace& aParentIPAddressSpace,
