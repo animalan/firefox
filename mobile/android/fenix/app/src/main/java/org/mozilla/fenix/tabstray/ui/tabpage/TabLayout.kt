@@ -14,15 +14,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -107,6 +110,7 @@ import org.mozilla.fenix.tabstray.ui.tabitems.tabItemBorderFocused
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.theme.ThemedValue
 import org.mozilla.fenix.theme.ThemedValueProvider
+import org.mozilla.fenix.trackingprotection.TrackersBlockedCard
 import kotlin.math.max
 
 // Key for the span item at the bottom of the tray, used to make the item not reorderable.
@@ -142,6 +146,7 @@ private val TabListPadding = 16.dp
  * or multi-selection and contains the set of selected tabs.
  * @param tabInteractionHandler Handles tab interactions such as moves and drag and drop.
  * @param modifier [Modifier] to be applied to the layout.
+ * @param trackersBlockedCount The number of trackers blocked to display in the footer card.
  * @param onTabClose Invoked when the user clicks to close a tab.
  * @param onItemClick Invoked when the user clicks on a tab.
  * @param onItemLongClick Invoked when the user long clicks a tab.
@@ -162,6 +167,7 @@ fun TabLayout(
     selectionMode: TabsTrayState.Mode,
     tabInteractionHandler: TabInteractionHandler,
     modifier: Modifier = Modifier,
+    trackersBlockedCount: Int? = null,
     onTabClose: (TabsTrayItem.Tab) -> Unit,
     onItemClick: (TabsTrayItem) -> Unit,
     onItemLongClick: (TabsTrayItem) -> Unit,
@@ -179,6 +185,7 @@ fun TabLayout(
                 selectedItemIndex = selectedItemIndex,
                 selectionMode = selectionMode,
                 modifier = modifier,
+                trackersBlockedCount = trackersBlockedCount,
                 onTabClose = onTabClose,
                 onItemClick = onItemClick,
                 onItemLongClick = onItemLongClick,
@@ -206,6 +213,7 @@ fun TabLayout(
                 onCloseTabGroupClick = onCloseTabGroupClick,
                 header = header,
                 contentPadding = contentPadding,
+                trackersBlockedCount = trackersBlockedCount,
             )
         }
     } else {
@@ -223,6 +231,7 @@ fun TabLayout(
             onEditTabGroupClick = onEditTabGroupClick,
             onCloseTabGroupClick = onCloseTabGroupClick,
             header = header,
+            trackersBlockedCount = trackersBlockedCount,
         )
     }
 }
@@ -298,6 +307,7 @@ private fun ReorderableTabGrid(
     onEditTabGroupClick: (TabsTrayItem.TabGroup) -> Unit,
     onCloseTabGroupClick: (TabsTrayItem.TabGroup) -> Unit,
     header: (@Composable () -> Unit)? = null,
+    trackersBlockedCount: Int? = null,
 ) {
     val gridState = rememberLazyGridState()
     val tabGridBottomPadding = dimensionResource(id = R.dimen.tab_tray_grid_bottom_padding)
@@ -381,7 +391,21 @@ private fun ReorderableTabGrid(
             }
 
             item(key = SPAN_ITEM_KEY, span = { GridItemSpan(maxLineSpan) }) {
-                Spacer(modifier = Modifier.height(tabGridBottomPadding))
+                val bottomBarHeight = dimensionResource(id = R.dimen.browser_toolbar_height)
+                Column(
+                    modifier = Modifier.thenConditional(
+                        Modifier.padding(top = FirefoxTheme.layout.space.static200),
+                        { trackersBlockedCount != null },
+                    ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    if (trackersBlockedCount != null) {
+                        TrackersBlockedCard(trackersBlockedCount = trackersBlockedCount)
+                        Spacer(modifier = Modifier.height(bottomBarHeight + 16.dp))
+                    } else {
+                        Spacer(modifier = Modifier.height(tabGridBottomPadding))
+                    }
+                }
             }
         }
     }
@@ -397,6 +421,7 @@ private fun InteractableTabGrid(
     tabInteractionHandler: TabInteractionHandler,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
+    trackersBlockedCount: Int? = null,
     onTabClose: (TabsTrayItem.Tab) -> Unit,
     onItemClick: (TabsTrayItem) -> Unit,
     onItemLongClick: (TabsTrayItem) -> Unit,
@@ -497,7 +522,21 @@ private fun InteractableTabGrid(
             }
 
             item(key = SPAN_ITEM_KEY, span = { GridItemSpan(maxLineSpan) }) {
-                Spacer(modifier = Modifier.height(tabGridBottomPadding))
+                val bottomBarHeight = dimensionResource(id = R.dimen.browser_toolbar_height)
+                Column(
+                    modifier = Modifier.thenConditional(
+                        Modifier.padding(top = FirefoxTheme.layout.space.static200),
+                        { trackersBlockedCount != null },
+                    ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    if (trackersBlockedCount != null) {
+                        TrackersBlockedCard(trackersBlockedCount = trackersBlockedCount)
+                        Spacer(modifier = Modifier.height(bottomBarHeight + 16.dp))
+                    } else {
+                        Spacer(modifier = Modifier.height(tabGridBottomPadding))
+                    }
+                }
             }
         }
     }
@@ -680,6 +719,7 @@ private fun TabList(
     onCloseTabGroupClick: (TabsTrayItem.TabGroup) -> Unit,
     header: (@Composable () -> Unit)? = null,
     onTabDragStart: () -> Unit = {},
+    trackersBlockedCount: Int? = null,
 ) {
     val state = rememberLazyListState()
     val tabListBottomPadding = dimensionResource(id = R.dimen.tab_tray_list_bottom_padding)
@@ -828,6 +868,18 @@ private fun TabList(
 
                 if (index != tabs.size - 1) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
+            }
+
+            if (trackersBlockedCount != null) {
+                item(key = SPAN_ITEM_KEY) {
+                    TrackersBlockedCard(
+                        trackersBlockedCount = trackersBlockedCount,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                            .padding(top = FirefoxTheme.layout.space.static200),
+                    )
                 }
             }
         }

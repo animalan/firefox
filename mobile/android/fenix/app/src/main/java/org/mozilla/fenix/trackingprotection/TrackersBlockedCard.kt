@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import mozilla.components.compose.base.modifier.thenConditional
 import mozilla.components.ui.colors.PhotonColors
 import org.mozilla.fenix.R
 import org.mozilla.fenix.home.sessioncontrol.TrackingProtectionInteractor
@@ -63,15 +64,15 @@ private const val CURSOR_BLINK_MS = 500L
  * A card that displays the number of trackers blocked with an animated fox.
  *
  * @param trackersBlockedCount The number of trackers blocked to display.
- * @param interactor [TrackingProtectionInteractor] for handling interactions.
  * @param modifier Modifier to be applied to the card.
+ * @param interactor Optional [TrackingProtectionInteractor] for handling interactions.
  * @param showLongfoxEntryPoint Whether to show the fox animation and typewriter text.
  */
 @Composable
 fun TrackersBlockedCard(
     trackersBlockedCount: Int,
-    interactor: TrackingProtectionInteractor,
     modifier: Modifier = Modifier,
+    interactor: TrackingProtectionInteractor? = null,
     showLongfoxEntryPoint: Boolean = false,
 ) {
     val foxOffsetY = remember { Animatable(1f) }
@@ -110,7 +111,7 @@ fun TrackersBlockedCard(
 
             ProtectionStatusPill(
                 trackersBlockedCount = trackersBlockedCount,
-                onClick = { interactor.onPrivacyReportTapped() },
+                interactor = interactor,
             )
         }
 
@@ -127,7 +128,7 @@ fun TrackersBlockedCard(
 @Composable
 private fun ProtectionStatusPill(
     trackersBlockedCount: Int,
-    onClick: () -> Unit,
+    interactor: TrackingProtectionInteractor? = null,
 ) {
     val shape = RoundedCornerShape(24.dp)
     Row(
@@ -137,7 +138,10 @@ private fun ProtectionStatusPill(
                 shape = shape,
             )
             .clip(shape)
-            .clickable { onClick() }
+            .thenConditional(
+                Modifier.clickable { interactor?.onPrivacyReportTapped() },
+                { interactor != null },
+            )
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,

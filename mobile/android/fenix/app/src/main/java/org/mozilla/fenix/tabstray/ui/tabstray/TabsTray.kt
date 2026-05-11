@@ -106,6 +106,7 @@ import org.mozilla.fenix.tabstray.ui.syncedtabs.OnTabCloseClick as OnSyncedTabCl
  * @param onOpenNewPrivateTabClicked Invoked when the fab is clicked in [Page.PrivateTabs].
  * @param onSyncedTabsFabClicked Invoked when the fab is clicked in [Page.SyncedTabs].
  * @param onUnlockPbmClick Invoked when user clicks on the Unlock button.
+ * @param trackersBlockedCount The number of trackers blocked to display in the footer card.
  */
 @Suppress("LongMethod", "LongParameterList")
 @Composable
@@ -149,6 +150,7 @@ fun TabsTray(
     onOpenNewPrivateTabClicked: () -> Unit,
     onSyncedTabsFabClicked: () -> Unit,
     onUnlockPbmClick: () -> Unit,
+    trackersBlockedCount: Int? = null,
 ) {
     val tabsTrayState by tabsTrayStore.stateFlow.collectAsState()
     val shouldShowTabGroupsPage = tabsTrayState.config.tabGroupsEnabled
@@ -277,6 +279,7 @@ fun TabsTray(
                         onCloseTabGroupClick = { group ->
                             tabsTrayStore.dispatch(TabGroupAction.CloseTabGroupClicked(group = group))
                         },
+                        trackersBlockedCount = trackersBlockedCount,
                     )
                 }
 

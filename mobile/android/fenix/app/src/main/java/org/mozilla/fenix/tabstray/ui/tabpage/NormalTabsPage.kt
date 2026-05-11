@@ -7,6 +7,7 @@ package org.mozilla.fenix.tabstray.ui.tabpage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +35,7 @@ import org.mozilla.fenix.tabstray.data.TabsTrayItem
 import org.mozilla.fenix.tabstray.redux.state.TabsTrayState
 import org.mozilla.fenix.tabstray.ui.inactivetabs.InactiveTabsList
 import org.mozilla.fenix.theme.FirefoxTheme
+import org.mozilla.fenix.trackingprotection.TrackersBlockedCard
 import mozilla.components.ui.icons.R as iconsR
 
 private val EmptyPageWidth = 170.dp
@@ -48,6 +51,7 @@ private val EmptyPageWidth = 170.dp
  * @param displayTabsInGrid Whether the normal and private tabs should be displayed in a grid.
  * @param dragAndDropEnabled Whether the grid supports dragging and dropping for tab groups.
  * @param tabInteractionHandler Handles tab interactions, such as moves and drag and drop.
+ * @param trackersBlockedCount The number of trackers blocked to display in the footer card.
  * @param onTabClose Invoked when the user clicks to close a tab.
  * @param onItemClick Invoked when the user clicks on a tab.
  * @param onItemLongClick Invoked when the user long clicks a tab.
@@ -82,6 +86,7 @@ internal fun NormalTabsPage(
     displayTabsInGrid: Boolean,
     dragAndDropEnabled: Boolean,
     tabInteractionHandler: TabInteractionHandler,
+    trackersBlockedCount: Int? = null,
     onTabClose: (TabsTrayItem.Tab) -> Unit,
     onItemClick: (TabsTrayItem) -> Unit,
     onItemLongClick: (TabsTrayItem) -> Unit,
@@ -143,6 +148,7 @@ internal fun NormalTabsPage(
             dragAndDropEnabled = dragAndDropEnabled,
             selectedItemIndex = selectedItemIndex,
             selectionMode = selectionMode,
+            trackersBlockedCount = trackersBlockedCount,
             modifier = Modifier.testTag(TabsTrayTestTag.NORMAL_TABS_LIST),
             onTabClose = onTabClose,
             onItemClick = onItemClick,
@@ -155,7 +161,7 @@ internal fun NormalTabsPage(
             tabInteractionHandler = tabInteractionHandler,
         )
     } else {
-        EmptyNormalTabsPage()
+        EmptyNormalTabsPage(trackersBlockedCount = trackersBlockedCount)
     }
 }
 
@@ -163,31 +169,45 @@ internal fun NormalTabsPage(
  * UI for displaying the empty state of the Normal Tabs Page in the Tab Manager.
  *
  * @param modifier The [Modifier] to be applied to the layout.
+ * @param trackersBlockedCount The number of trackers blocked to display in the footer card.
  */
 @Composable
 private fun EmptyNormalTabsPage(
     modifier: Modifier = Modifier,
+    trackersBlockedCount: Int? = null,
 ) {
-    EmptyTabPage(
-        modifier = modifier.testTag(TabsTrayTestTag.EMPTY_NORMAL_TABS_LIST),
+    val bottomBarHeight = dimensionResource(id = R.dimen.browser_toolbar_height)
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TabsTrayTestTag.EMPTY_NORMAL_TABS_LIST),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(
-            modifier = Modifier.width(EmptyPageWidth),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(
-                painter = painterResource(id = iconsR.drawable.mozac_ic_tab_24),
-                contentDescription = null,
-                modifier = Modifier.size(72.dp),
-            )
+        EmptyTabPage(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.width(EmptyPageWidth),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(
+                    painter = painterResource(id = iconsR.drawable.mozac_ic_tab_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(72.dp),
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = stringResource(id = R.string.tab_manager_empty_normal_tabs_page_header),
-                textAlign = TextAlign.Center,
-                style = FirefoxTheme.typography.headline7,
-            )
+                Text(
+                    text = stringResource(id = R.string.tab_manager_empty_normal_tabs_page_header),
+                    textAlign = TextAlign.Center,
+                    style = FirefoxTheme.typography.headline7,
+                )
+            }
+        }
+
+        if (trackersBlockedCount != null) {
+            TrackersBlockedCard(trackersBlockedCount = trackersBlockedCount)
+            Spacer(modifier = Modifier.height(bottomBarHeight + 32.dp))
         }
     }
 }

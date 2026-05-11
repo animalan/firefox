@@ -249,7 +249,8 @@ internal sealed class HomepageState {
                     recommendationState.pocketStories.isNotEmpty() && !settings.privateModeAndStoriesEntryPointEnabled,
                 showCollections = settings.collections,
                 showPrivacyReport = settings.showPrivacyReportSectionToggle &&
-                    settings.showPrivacyReportFeature,
+                    settings.showPrivacyReportFeature &&
+                    settings.shouldUseTrackingProtectionDatabase,
                 showLongfoxEntryPoint = settings.longfoxEnabled,
                 trackersBlockedCount = trackersBlockedCount,
                 sportsWidgetState = sportsWidgetState,
