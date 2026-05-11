@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -194,12 +195,10 @@ def run_tools(mach_cmd, kwargs):
     into a separate file that runs the tools and sets them up dynamically
     in a similar way to how we use layers.
     """
-    import subprocess
-
     from mozperftest.utils import ON_TRY, install_package
 
     mach_cmd.activate_virtualenv()
-    if sys.version_info == (3, 9):
+    if sys.version_info[:2] == (3, 9):
         # Bug 2033807
         # On Python 3.9, pip resolves numpy>=1.23 to numpy 2.x from the internal mirror,
         # which is only available as a source archive and fails to build
