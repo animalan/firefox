@@ -2284,6 +2284,7 @@ package org.mozilla.geckoview {
   public class IPProtectionController {
     method @HandlerThread @NonNull public GeckoResult<Void> activate();
     method @HandlerThread @NonNull public GeckoResult<Void> deactivate();
+    method @HandlerThread @NonNull public GeckoResult<IPProtectionController.EnrollResult> enroll();
     method @Nullable @UiThread public IPProtectionController.AuthProvider getAuthProvider();
     method @Nullable @UiThread public IPProtectionController.Delegate getDelegate();
     method @HandlerThread @NonNull public GeckoResult<IPProtectionController.ProxyState> getProxyState();
@@ -2308,6 +2309,12 @@ package org.mozilla.geckoview {
     method @UiThread default public void onProxyStateChanged(@NonNull IPProtectionController.ProxyState);
     method @UiThread default public void onServiceStateChanged(int);
     method @UiThread default public void onUsageChanged(@NonNull IPProtectionController.UsageInfo);
+  }
+
+  public static class IPProtectionController.EnrollResult {
+    ctor protected EnrollResult();
+    field @Nullable public final String error;
+    field public final boolean isEnrolledAndEntitled;
   }
 
   public static class IPProtectionController.IPProxyException extends RuntimeException {

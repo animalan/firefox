@@ -24,6 +24,15 @@ interface IPProtectionHandler {
     fun deactivate()
 
     /**
+     * Triggers enrollment via the active auth provider. The [onResult] callback is invoked once
+     * the enrollment attempt has completed, with the final outcome.
+     *
+     * @param onResult Called with the [EnrollResult] describing whether the user is now enrolled
+     *  and entitled, and the error string if not.
+     */
+    fun enroll(onResult: (EnrollResult) -> Unit)
+
+    /**
      * Initializes the proxy state machine.
      */
     fun init()
@@ -38,6 +47,18 @@ interface IPProtectionHandler {
     fun setTokenProvider(
         provider: TokenProvider?,
         onInitialState: ((StateInfo) -> Unit)? = null,
+    )
+
+    /**
+     * Result of an enrollment attempt.
+     *
+     * @property isEnrolledAndEntitled Whether the user is now enrolled and entitled to use the
+     *  proxy.
+     * @property error Error string describing why enrollment failed, or null on success.
+     */
+    data class EnrollResult(
+        val isEnrolledAndEntitled: Boolean,
+        val error: String? = null,
     )
 
     /**

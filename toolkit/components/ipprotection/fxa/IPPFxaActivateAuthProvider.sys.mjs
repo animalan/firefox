@@ -67,9 +67,9 @@ class IPPFxaActivateAuthProviderSingleton extends IPPFxaBaseAuthProvider {
         return { isEnrolledAndEntitled: false, error };
       }
       this._setEntitlement(entitlement ?? null);
-      return { isEnrolledAndEntitled: true, entitlement };
+      return { isEnrolledAndEntitled: true, error: null };
     } catch (error) {
-      return { isEnrolledAndEntitled: false, error: error?.message };
+      return { isEnrolledAndEntitled: false, error: error?.message ?? null };
     } finally {
       this.#isEnrolling = false;
       lazy.IPProtectionService.updateState();
