@@ -16,16 +16,16 @@ const TEST_MESSAGE_ID = "TEST_ASROUTER_MULTISTAGE_MESSAGE";
 let gTestMultistageMessage;
 
 /**
- * @backward-compat { version 152 }
+ * @backward-compat { version 151 }
  *
- * The asrouter-newtab-multistage component is only supported in 152 onwards.
- * This todo is placed here to keep the test harness happy on pre-152 versions,
+ * The asrouter-newtab-multistage component is only supported in 151 onwards.
+ * This todo is placed here to keep the test harness happy on pre-151 versions,
  * otherwise there are no passes or fails.
  */
-if (Services.vc.compare(AppConstants.MOZ_APP_VERSION, "152.0a1") < 0) {
+if (Services.vc.compare(AppConstants.MOZ_APP_VERSION, "151.0a1") < 0) {
   todo(
     false,
-    "The asrouter-newtab-multistage component is only supported in 152 onwards."
+    "The asrouter-newtab-multistage component is only supported in 151 onwards."
   );
 }
 
@@ -96,12 +96,12 @@ add_setup(async function () {
 add_task(
   {
     /**
-     * @backward-compat { version 152 }
+     * @backward-compat { version 151 }
      *
-     * The asrouter-newtab-multistage component is only supported in 152 onwards.
+     * The asrouter-newtab-multistage component is only supported in 151 onwards.
      */
     skip_if: () => {
-      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "152.0a1") < 0;
+      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "151.0a1") < 0;
     },
   },
   async function test_show_multistage_message() {
@@ -137,12 +137,12 @@ add_task(
 add_task(
   {
     /**
-     * @backward-compat { version 152 }
+     * @backward-compat { version 151 }
      *
-     * The asrouter-newtab-multistage component is only supported in 152 onwards.
+     * The asrouter-newtab-multistage component is only supported in 151 onwards.
      */
     skip_if: () => {
-      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "152.0a1") < 0;
+      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "151.0a1") < 0;
     },
   },
   async function test_dismiss_button_blocks_message() {
@@ -196,12 +196,12 @@ add_task(
 add_task(
   {
     /**
-     * @backward-compat { version 152 }
+     * @backward-compat { version 151 }
      *
-     * The asrouter-newtab-multistage component is only supported in 152 onwards.
+     * The asrouter-newtab-multistage component is only supported in 151 onwards.
      */
     skip_if: () => {
-      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "152.0a1") < 0;
+      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "151.0a1") < 0;
     },
   },
   async function test_impression_telemetry() {
@@ -254,12 +254,12 @@ add_task(
 add_task(
   {
     /**
-     * @backward-compat { version 152 }
+     * @backward-compat { version 151 }
      *
-     * The asrouter-newtab-multistage component is only supported in 152 onwards.
+     * The asrouter-newtab-multistage component is only supported in 151 onwards.
      */
     skip_if: () => {
-      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "152.0a1") < 0;
+      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "151.0a1") < 0;
     },
   },
   async function test_screen_impression() {
@@ -304,12 +304,12 @@ add_task(
 add_task(
   {
     /**
-     * @backward-compat { version 152 }
+     * @backward-compat { version 151 }
      *
-     * The asrouter-newtab-multistage component is only supported in 152 onwards.
+     * The asrouter-newtab-multistage component is only supported in 151 onwards.
      */
     skip_if: () => {
-      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "152.0a1") < 0;
+      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "151.0a1") < 0;
     },
   },
   async function test_no_click_telemetry_on_render() {
@@ -361,12 +361,12 @@ add_task(
 add_task(
   {
     /**
-     * @backward-compat { version 152 }
+     * @backward-compat { version 151 }
      *
-     * The asrouter-newtab-multistage component is only supported in 152 onwards.
+     * The asrouter-newtab-multistage component is only supported in 151 onwards.
      */
     skip_if: () => {
-      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "152.0a1") < 0;
+      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "151.0a1") < 0;
     },
   },
   async function test_primary_button_click_telemetry() {
@@ -443,12 +443,12 @@ add_task(
 add_task(
   {
     /**
-     * @backward-compat { version 152 }
+     * @backward-compat { version 151 }
      *
-     * The asrouter-newtab-multistage component is only supported in 152 onwards.
+     * The asrouter-newtab-multistage component is only supported in 151 onwards.
      */
     skip_if: () => {
-      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "152.0a1") < 0;
+      return Services.vc.compare(AppConstants.MOZ_APP_VERSION, "151.0a1") < 0;
     },
   },
   async function test_dismiss_button_telemetry() {
