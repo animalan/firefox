@@ -128,6 +128,17 @@
     <color name="search_suggestion_indicator_icon_color_normal_theme">@color/photonGreen60</color>
     <color name="search_suggestion_indicator_icon_bookmark_color_normal_theme">@color/photonBlue40</color>
 
+    <!-- Protections Dashboard colors -->
+    <color name="protections_dashboard_background">#FF4B3974</color>
+    <color name="protections_dashboard_text_primary">#FFD9D0F5</color>
+    <color name="protections_dashboard_text_accent">#FFE8CCFF</color>
+    <color name="protections_dashboard_chip_background">#FF3D3264</color>
+    <color name="protections_dashboard_chip_text">#FFD9D0F5</color>
+    <color name="protections_dashboard_wave_gradient1">#FF342668</color>
+    <color name="protections_dashboard_wave_gradient2">#FF3D2D7A</color>
+    <color name="protections_dashboard_wave_gradient3">#FF4A3A8C</color>
+    <color name="protections_dashboard_wave_gradient4">#FF5C4A9E</color>
+
     <!-- Colors for Edge to Edge background  -->
     <color name="homepage_edge_to_edge_gradient_start">#FF0A1A3B</color>
     <color name="homepage_edge_to_edge_gradient_end">#FF293564</color>

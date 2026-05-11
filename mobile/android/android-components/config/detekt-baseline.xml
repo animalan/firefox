@@ -105,6 +105,7 @@
     <ID>ForbiddenSuppress:ToolbarActivity.kt$ToolbarActivity$@Suppress("MagicNumber")</ID>
     <ID>ForbiddenSuppress:ToolbarActivity.kt$ToolbarActivity$@Suppress("TooGenericExceptionCaught", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:TopSiteDatabase.kt$Migrations$@Suppress("MagicNumber")</ID>
+    <ID>ForbiddenSuppress:TrackerProtectionDashboard.kt$@Suppress("MagicNumber")</ID>
     <ID>ForbiddenSuppress:TranslationsMiddleware.kt$TranslationsMiddleware$@Suppress("CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:TranslationsMiddleware.kt$TranslationsMiddleware$@Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:TranslationsStateReducer.kt$TranslationsStateReducer$@Suppress("LongMethod", "CognitiveComplexMethod")</ID>
