@@ -238,11 +238,13 @@ TrackingDBService.prototype = {
         } else if (
           // If there is a tracker blocked, attribute it to trackers. Social
           // tracker blocks also fall through to here when STP is not enabled.
-          // We also attribute replaced tracking content to trackers.
+          // We also attribute replaced tracking content and email tracker
+          // blocks to trackers.
           state & Ci.nsIWebProgressListener.STATE_BLOCKED_TRACKING_CONTENT ||
           state &
             Ci.nsIWebProgressListener.STATE_BLOCKED_SOCIALTRACKING_CONTENT ||
-          state & Ci.nsIWebProgressListener.STATE_REPLACED_TRACKING_CONTENT
+          state & Ci.nsIWebProgressListener.STATE_REPLACED_TRACKING_CONTENT ||
+          state & Ci.nsIWebProgressListener.STATE_BLOCKED_EMAILTRACKING_CONTENT
         ) {
           result = Ci.nsITrackingDBService.TRACKERS_ID;
         } else if (
