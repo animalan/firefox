@@ -315,34 +315,6 @@ class BoxModel {
     }
   }
 
-  getPropertyValue(property) {
-    const state = this.store.getState();
-    const { layout } = state.boxModel;
-    return layout[property];
-  }
-
-  getFloatValue(valueString) {
-    return valueString ? parseFloat(valueString) : 0;
-  }
-
-  getNonContentHeight() {
-    return (
-      this.getFloatValue(this.getPropertyValue("border-bottom-width")) +
-      this.getFloatValue(this.getPropertyValue("border-top-width")) +
-      this.getFloatValue(this.getPropertyValue("padding-bottom")) +
-      this.getFloatValue(this.getPropertyValue("padding-top"))
-    );
-  }
-
-  getNonContentWidth() {
-    return (
-      this.getFloatValue(this.getPropertyValue("border-left-width")) +
-      this.getFloatValue(this.getPropertyValue("border-right-width")) +
-      this.getFloatValue(this.getPropertyValue("padding-left")) +
-      this.getFloatValue(this.getPropertyValue("padding-right"))
-    );
-  }
-
   /**
    * Shows the inplace editor when a box model editable value is clicked on the
    * box model panel.
@@ -360,16 +332,7 @@ class BoxModel {
       doc: this.document,
       elementRules: this.elementRules,
     });
-    let initialValue = session.getProperty(property);
-    const isBorderBox = this.getPropertyValue("box-sizing") === "border-box";
-    if (isBorderBox && (property === "width" || property === "height")) {
-      initialValue = this.getFloatValue(this.getPropertyValue(property));
-      if (property === "height") {
-        initialValue -= this.getNonContentHeight();
-      } else if (property === "width") {
-        initialValue -= this.getNonContentWidth();
-      }
-    }
+    const initialValue = session.getProperty(property);
 
     const editor = new InplaceEditor(
       {
@@ -383,18 +346,6 @@ class BoxModel {
           self.elt.parentNode.classList.add("boxmodel-editing");
         },
         change: value => {
-          if (isBorderBox && property === "height") {
-            const float = this.getFloatValue(value);
-            if (!isNaN(float)) {
-              value = float + this.getNonContentHeight();
-            }
-          }
-          if (isBorderBox && property === "width") {
-            const float = this.getFloatValue(value);
-            if (!isNaN(float)) {
-              value = float + this.getNonContentWidth();
-            }
-          }
           if (NUMERIC.test(value)) {
             value += "px";
           }
