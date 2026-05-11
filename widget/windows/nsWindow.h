@@ -298,12 +298,11 @@ class nsWindow final : public nsIWidget {
    * Event helpers
    */
   enum class IsNonclient : bool { No = false, Yes = true };
-  bool DispatchMouseEvent(
-      mozilla::EventMessage aEventMessage, WPARAM wParam, LPARAM lParam,
-      bool aIsContextMenuKey, int16_t aButton, uint16_t aInputSource,
-      WinPointerInfo* aPointerInfo = nullptr,
-      IsNonclient aIgnoreAPZ = IsNonclient::No,
-      mozilla::Maybe<LayoutDeviceIntPoint> aMovement = mozilla::Nothing());
+  bool DispatchMouseEvent(mozilla::EventMessage aEventMessage, WPARAM wParam,
+                          LPARAM lParam, bool aIsContextMenuKey,
+                          int16_t aButton, uint16_t aInputSource,
+                          WinPointerInfo* aPointerInfo = nullptr,
+                          IsNonclient aIgnoreAPZ = IsNonclient::No);
   void DispatchPendingEvents();
   void DispatchCustomEvent(const nsString& eventName);
 
@@ -426,21 +425,6 @@ class nsWindow final : public nsIWidget {
   bool HandleAppCommandMsg(const MSG& aAppCommandMsg, LRESULT* aRetValue);
 
   const InputContext& InputContextRef() const { return mInputContext; }
-
-  /*
-   * Pointer lock handler.
-   */
-  void LockNativePointer(NativePointerLockMode aNativePointerLockMode) override;
-  void UnlockNativePointer() override;
-  void SetNativePointerLockMode(
-      NativePointerLockMode aNativePointerLockMode) override;
-  bool SupportsUnadjustedMovement() override { return true; }
-
-  static bool IsNativePointerLocked() { return sIsNativePointLocked; }
-  static bool IsUsingRawInputForMouseMove() {
-    MOZ_ASSERT_IF(sIsUsingRawInputForMouseMove, sIsNativePointLocked);
-    return sIsUsingRawInputForMouseMove;
-  }
 
  private:
   using TimeStamp = mozilla::TimeStamp;
@@ -714,8 +698,6 @@ class nsWindow final : public nsIWidget {
   static bool sJustGotActivate;
   static bool sIsInMouseCapture;
   static bool sIsRestoringSession;
-  static bool sIsNativePointLocked;
-  static bool sIsUsingRawInputForMouseMove;
 
   // Message postponement hack. See the definition-site of
   // WndProcUrgentInvocation::sDepth for details.
