@@ -2,7 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>ForbiddenSuppress:UrlInputFragment.kt$UrlInputFragment$@Suppress("CognitiveComplexMethod")</ID>
     <ID>HardcodedPaddingUsage:AboutFragment.kt$(10.dp)</ID>
     <ID>HardcodedPaddingUsage:AboutFragment.kt$(4.dp)</ID>
     <ID>HardcodedPaddingUsage:AboutFragment.kt$(8.dp)</ID>
