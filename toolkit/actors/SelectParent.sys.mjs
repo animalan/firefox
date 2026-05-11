@@ -309,15 +309,10 @@ export var SelectParentHelper = {
 
   open(browser, menulist, rect, isOpenedViaTouch, selectParentActor) {
     const canOpen = (() => {
-      if (!menulist.ownerDocument.hasFocus()) {
-        // Don't open in inactive browser windows.
+      if (!selectParentActor.browsingContext.canOpenModalPicker) {
         return false;
       }
       if (browser) {
-        if (!browser.browsingContext.isActive) {
-          // Don't open in inactive tabs.
-          return false;
-        }
         let tabbrowser = browser.getTabBrowser();
         if (tabbrowser && tabbrowser.selectedBrowser != browser) {
           // AsyncTabSwitcher might delay activating our browser, check
