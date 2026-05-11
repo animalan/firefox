@@ -10,7 +10,7 @@ import {
   resolveWidgetOrder,
   resolveWidgetHasSidebar,
   PREF_WIDGETS_ORDER,
-} from "common/WidgetsRegistry.mjs";
+} from "content-src/components/Widgets/WidgetsRegistry.mjs";
 
 const registryIds = WIDGET_REGISTRY.map(w => w.id);
 

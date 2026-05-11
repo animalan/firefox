@@ -19,7 +19,6 @@ import {
   actionTypes as at,
   actionUtils as au,
 } from "resource://newtab/common/Actions.mjs";
-import { WIDGET_REGISTRY } from "resource://newtab/common/WidgetsRegistry.mjs";
 import { Prefs } from "resource://newtab/lib/ActivityStreamPrefs.sys.mjs";
 import { classifySite } from "resource://newtab/lib/SiteClassifier.sys.mjs";
 
@@ -1593,7 +1592,6 @@ export class TelemetryFeed {
         break;
       case at.PREFS_INITIAL_VALUES:
         this.initializeGleanSession();
-        this.recordEnabledWidgets();
         break;
     }
   }
@@ -1723,20 +1721,7 @@ export class TelemetryFeed {
       }
 
       Glean.newtab.widgetsEnabled.record(payload);
-      this.recordEnabledWidgets();
     }
-  }
-
-  recordEnabledWidgets() {
-    const prefs = this.store?.getState()?.Prefs.values;
-    if (!prefs) {
-      return;
-    }
-    Glean.newtab.widgetsEnabledList.set(
-      WIDGET_REGISTRY.filter(w => prefs[w.enabledPref]).map(
-        w => w.telemetryName
-      )
-    );
   }
 
   handleWidgetsHideAll(action) {
@@ -2028,14 +2013,12 @@ export class TelemetryFeed {
           newtab_visit_id: session.session_id,
           display_status: action.data.value,
         });
-        this.recordEnabledWidgets();
         break;
       case "widgets.focusTimer.enabled":
         Glean.newtab.widgetsTimerChangeDisplay.record({
           newtab_visit_id: session.session_id,
           display_status: action.data.value,
         });
-        this.recordEnabledWidgets();
         break;
     }
   }
