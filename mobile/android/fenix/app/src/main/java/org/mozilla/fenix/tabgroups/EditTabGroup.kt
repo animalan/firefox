@@ -12,10 +12,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement.spacedBy
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -58,12 +57,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import mozilla.components.compose.base.annotation.FlexibleWindowPreview
 import mozilla.components.compose.base.button.FilledButton
 import mozilla.components.compose.base.modifier.thenConditional
-import mozilla.components.compose.base.theme.AcornTheme
 import mozilla.components.compose.base.theme.layout.AcornWindowSize.Companion.isLargeWindow
 import org.mozilla.fenix.R
 import org.mozilla.fenix.compose.BottomSheetHandle
@@ -79,7 +76,7 @@ import org.mozilla.fenix.theme.PreviewThemeProvider
 import org.mozilla.fenix.theme.Theme
 
 private val formFieldShape = RoundedCornerShape(16.dp)
-private const val COLOR_PICKER_MAX_ITEMS_PER_ROW = 6
+private const val COLOR_PICKER_MAX_ITEMS_PER_ROW = 5
 
 /**
  * Prompt to edit a tab group.
@@ -152,9 +149,7 @@ private fun EditTabGroupContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    vertical = AcornTheme.layout.space.static150,
-                ),
+                .padding(vertical = FirefoxTheme.layout.space.static150),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -177,7 +172,7 @@ private fun EditTabGroupContent(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = AcornTheme.layout.space.dynamic200),
+                .padding(horizontal = FirefoxTheme.layout.space.dynamic200),
         ) {
             TabGroupNameTextField(
                 tabGroupName = tabGroupName,
@@ -203,32 +198,34 @@ private fun TabGroupColorPicker(theme: TabGroupTheme, onTabGroupThemeChange: (Ta
     var selectedTheme by remember {
         mutableStateOf(theme.name)
     }
+
     Surface(
         shape = formFieldShape,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = AcornTheme.layout.space.dynamic200),
+            .padding(horizontal = FirefoxTheme.layout.space.dynamic200),
     ) {
-        val iconSize = if (isLargeWindow()) FirefoxTheme.layout.size.static600 else FirefoxTheme.layout.size.static400
-        FlowRow(
+        Column(
             modifier = Modifier
-                .padding(vertical = FirefoxTheme.layout.space.static300)
-                .testTag(BOTTOM_SHEET_COLOR_LIST),
-            maxItemsInEachRow = COLOR_PICKER_MAX_ITEMS_PER_ROW,
-            horizontalArrangement = spacedBy(FirefoxTheme.layout.space.static200, Alignment.CenterHorizontally),
-            verticalArrangement = spacedBy(FirefoxTheme.layout.space.static200),
+                .fillMaxWidth()
+                .padding(vertical = FirefoxTheme.layout.space.static200),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(space = FirefoxTheme.layout.space.static200),
         ) {
-            for (i in 0 until TabGroupTheme.entries.size) {
-                TabGroupColorPickerItem(
-                    iconSize = iconSize,
-                    theme = TabGroupTheme.entries[i],
-                    selected = TabGroupTheme.entries[i].name == selectedTheme,
-                    onClicked = { theme ->
-                        selectedTheme = theme.name
-                        onTabGroupThemeChange(theme)
-                    },
-                )
+            TabGroupTheme.entries.chunked(COLOR_PICKER_MAX_ITEMS_PER_ROW).forEach { themeRow ->
+                Row(horizontalArrangement = Arrangement.spacedBy(space = FirefoxTheme.layout.space.static200)) {
+                    themeRow.forEach { theme ->
+                        TabGroupColorPickerItem(
+                            theme = theme,
+                            selected = theme.name == selectedTheme,
+                            onClicked = { theme ->
+                                selectedTheme = theme.name
+                                onTabGroupThemeChange(theme)
+                            },
+                        )
+                    }
+                }
             }
         }
     }
@@ -236,13 +233,13 @@ private fun TabGroupColorPicker(theme: TabGroupTheme, onTabGroupThemeChange: (Ta
 
 @Composable
 private fun TabGroupColorPickerItem(
-    iconSize: Dp,
     theme: TabGroupTheme,
     selected: Boolean,
     onClicked: (TabGroupTheme) -> Unit,
 ) {
     // An object with a corner radius half its own size is a circle.
     // Animating from 8.dp to 1000.dp causes a janky UX
+    val iconSize = if (isLargeWindow()) FirefoxTheme.layout.size.static600 else FirefoxTheme.layout.size.static400
     val circularRadius = iconSize / 2
     val animatedCorner by animateDpAsState(
         targetValue = if (selected) {
@@ -272,7 +269,6 @@ private fun TabGroupColorPickerItem(
         },
         animationSpec = colorPickerAnimationSpec(),
     )
-
     val contentLabel = theme.contentLabel
 
     Box(
