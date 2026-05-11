@@ -854,9 +854,10 @@ class CallbackHandler:
         params = payload["params"]
         self.logger.debug(f"Got action: {action}")
         try:
-            action_handler = self.actions.get(action)
-            if action_handler is None:
-                raise NotImplementedError
+            action_handler = self.actions[action]
+        except KeyError as e:
+            raise ValueError(f"Unknown action {action}") from e
+        try:
             with ActionContext(self.logger, self.protocol, params.get("context")):
                 try:
                     result = action_handler(params)
