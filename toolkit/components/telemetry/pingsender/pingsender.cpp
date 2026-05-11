@@ -25,7 +25,7 @@ bool IsValidDestination(std::string aHost) {
       "localhost",
       "incoming.telemetry.mozilla.org",
   };
-  for (auto destination : kValidDestinations) {
+  for (const auto& destination : kValidDestinations) {
     if (aHost == destination) {
       return true;
     }
