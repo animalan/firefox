@@ -511,6 +511,9 @@ MSG_DEF(JSMSG_WASM_MODIFIED_GC_OBJECT,   0, JSEXN_TYPEERR,     "can't modify Web
 MSG_DEF(JSMSG_WASM_ARRAYBUFFER_PAGE_MULTIPLE, 0, JSEXN_RANGEERR, "can only grow by WebAssembly page multiples")
 MSG_DEF(JSMSG_WASM_ARRAYBUFFER_CANNOT_SHRINK, 0, JSEXN_RANGEERR, "cannot shrink WebAssembly memory")
 MSG_DEF(JSMSG_WASM_MEMORY_NOT_RESIZABLE,      0, JSEXN_TYPEERR,  "WebAssembly memory non-resizable, maximum length is not provided")
+MSG_DEF(JSMSG_WASM_ESM_RESERVED_MODULE_NAME,  1, JSEXN_WASMLINKERROR, "module import name '{0}' is reserved")
+MSG_DEF(JSMSG_WASM_ESM_RESERVED_FIELD_NAME,   1, JSEXN_WASMLINKERROR, "field import name '{0}' is reserved")
+MSG_DEF(JSMSG_WASM_ESM_RESERVED_EXPORT_NAME,  1, JSEXN_WASMLINKERROR, "export name '{0}' is reserved")
 
 // Wasm/asm.js deprecation warnings
 MSG_DEF(JSMSG_WASM_LEGACY_EXCEPTIONS_DEPRECATED, 0, JSEXN_WARN, "The WebAssembly exception handling 'try' instruction is deprecated and should no longer be used. Please recompile to use the 'try_table' instruction instead.")
