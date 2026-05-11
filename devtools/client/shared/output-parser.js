@@ -500,20 +500,20 @@ class OutputParser {
 
     const stackEntry = this.#stack.pop();
     let { lowerCaseFunctionName, parts, text } = stackEntry;
-    if (lowerCaseFunctionName === "light-dark") {
-      parts = this.#onCloseParenthesisForLightDark(stackEntry, options);
+    if (lowerCaseFunctionName === "attr") {
+      parts = this.#onCloseParenthesisForAttr(stackEntry, options);
     } else if (lowerCaseFunctionName === "cubic-bezier") {
       parts = this.#onCloseParenthesisForCubicBezier(stackEntry, options);
+    } else if (lowerCaseFunctionName === "light-dark") {
+      parts = this.#onCloseParenthesisForLightDark(stackEntry, options);
     } else if (lowerCaseFunctionName === "linear") {
       parts = this.#onCloseParenthesisForLinear(stackEntry, options);
-    } else if (lowerCaseFunctionName === "attr") {
-      parts = this.#onCloseParenthesisForAttr(stackEntry, options);
-    } else if (BASIC_SHAPE_FUNCTIONS.has(lowerCaseFunctionName)) {
-      parts = this.#onCloseParenthesisForBasicShape(stackEntry, options);
     } else if (lowerCaseFunctionName === "url") {
       parts = this.#onCloseParenthesisForUrl(stackEntry, options);
     } else if (lowerCaseFunctionName === "var") {
       parts = this.#onCloseParenthesisForVar(stackEntry, options);
+    } else if (BASIC_SHAPE_FUNCTIONS.has(lowerCaseFunctionName)) {
+      parts = this.#onCloseParenthesisForBasicShape(stackEntry, options);
     } else if (
       (options.supportsColor ||
         ((options.expectFilter || options.isVariable) &&
