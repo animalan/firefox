@@ -5084,10 +5084,9 @@ export class BackupService extends EventTarget {
     multipleFiles = false,
     speedUpHeuristic = false,
   } = {}) {
-    // Do we already have a backup for this browser? if so, we don't need to do any searching!
-    if (lazy.lastBackupFileName) {
+    // If we already have a backup and aren't scanning for multiple files, skip searching
+    if (lazy.lastBackupFileName && !multipleFiles) {
       return {
-        found: true,
         multipleBackupsFound: false,
         count: 1,
       };
@@ -5154,7 +5153,7 @@ export class BackupService extends EventTarget {
         maybeBackupFiles.sort((a, b) => {
           let nameA = PathUtils.filename(a);
           let nameB = PathUtils.filename(b);
-          const match = /_(\d{8}-\d{4})\.html$/;
+          const match = /_(\d{8}-\d{6}\.\d{3})\.html$/;
           let timestampA = nameA.match(match)?.[1];
           let timestampB = nameB.match(match)?.[1];
 

@@ -129,6 +129,3 @@ prefs = [
 ["test_SiteSettingsBackupResource.js"]
 
 ["test_backupService_findBackupsInWellKnownLocations.js"]
-run-if = [
-  "os == 'win'",
-]
