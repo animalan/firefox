@@ -245,6 +245,7 @@ export const tokensTable = {
       value: "var(--button-background-color-active)",
       name: "--button-background-color-selected",
     },
+    { value: "var(--background-color-box)", name: "--card-background-color" },
     {
       value: {
         light: "var(--color-white)",
@@ -826,6 +827,7 @@ export const tokensTable = {
   ],
   "border-width": [
     { value: "1px", name: "--border-width" },
+    { value: "var(--border-width)", name: "--card-border-width" },
     { value: "1px", name: "--badge-border-width" },
     { value: "var(--border-width)", name: "--message-bar-border-width" },
     { value: "var(--border-width)", name: "--promo-border-width" },
@@ -1154,6 +1156,7 @@ export const tokensTable = {
       value: "var(--focus-outline-width) solid var(--focus-outline-color)",
       name: "--focus-outline",
     },
+    { value: "var(--focus-outline)", name: "--card-focus-outline" },
     {
       value: "var(--border-width) solid var(--toolbarbutton-outline-color)",
       name: "--toolbarbutton-outline",
@@ -1370,6 +1373,9 @@ export const tokensTable = {
       name: "--button-padding",
     },
     { value: 0, name: "--button-padding-icon" },
+    { value: "var(--space-large)", name: "--card-padding" },
+    { value: "var(--card-padding)", name: "--card-gap" },
+    { value: "var(--space-small)", name: "--card-gap-article" },
     { value: "var(--space-small)", name: "--checkbox-margin-inline" },
     {
       value:
@@ -1815,6 +1821,10 @@ export const tokensTable = {
     {
       value: "var(--border-width) solid var(--button-border-color)",
       name: "--button-border",
+    },
+    {
+      value: "var(--card-border-width) solid var(--card-border-color)",
+      name: "--card-border",
     },
     {
       value: "var(--promo-border-width) solid var(--promo-border-color)",
@@ -3038,6 +3048,9 @@ export const variableLookupTable = {
     "var(--button-text-color-primary-active)",
   "button-text-color-selected": "var(--button-text-color-active)",
   "button-attention-dot-color": "var(--color-accent-attention)",
+  "card-background-color": "var(--background-color-box)",
+  "card-border": "var(--card-border-width) solid var(--card-border-color)",
+  "card-border-width": "var(--border-width)",
   "card-border-color": {
     light: "color-mix(in srgb, currentColor 10%, transparent)",
     dark: "color-mix(in srgb, currentColor 6%, transparent)",
@@ -3049,6 +3062,10 @@ export const variableLookupTable = {
   "card-border-radius": "var(--border-radius-large)",
   "card-box-shadow": "var(--box-shadow-level-2)",
   "card-box-shadow-hover": "var(--box-shadow-level-4)",
+  "card-focus-outline": "var(--focus-outline)",
+  "card-padding": "var(--space-large)",
+  "card-gap": "var(--card-padding)",
+  "card-gap-article": "var(--space-small)",
   "checkbox-margin-inline": "var(--space-small)",
   "checkbox-size": "var(--size-item-small)",
   "icon-color": {

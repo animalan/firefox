@@ -534,10 +534,25 @@
     "dark": "{Theme$color/accent/attention}",
     "forcedColors": "{Theme$color/accent/attention}"
   },
+  "card/background/color": {
+    "light": "{Theme$background/color/box}",
+    "dark": "{Theme$background/color/box}",
+    "forcedColors": "{Theme$background/color/box}"
+  },
+  "card/border": {
+    "light": "{Primitives$card/border/width} solid {Theme$card/border/color}",
+    "dark": "{Primitives$card/border/width} solid {Theme$card/border/color}",
+    "forcedColors": "{Primitives$card/border/width} solid {Theme$card/border/color}"
+  },
   "card/border/color": {
     "light": "color-mix(in srgb, currentColor 10%, transparent)",
     "dark": "color-mix(in srgb, currentColor 6%, transparent)",
     "forcedColors": "{HCM Theme$CanvasText}"
+  },
+  "card/focus/outline": {
+    "light": "{Theme$focus/outline}",
+    "dark": "{Theme$focus/outline}",
+    "forcedColors": "{Theme$focus/outline}"
   },
   "icon/color": {
     "light": "{Colors$color/gray/70}",
