@@ -204,8 +204,6 @@ bool ModuleLoader::LoadRejected(JSContext* cx, HandleValue hostDefined,
 
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
 // See https://github.com/tc39/test262/blob/main/INTERPRETING.md#modules
-// We don't currently support wasm modules, so instead we implement an empty
-// module with a valid [[ModuleSource]] slot for test262.
 JSObject* ModuleLoader::getOrCreateTest262ModuleSourceModule(JSContext* cx) {
   RootedString key(cx, JS_NewStringCopyZ(cx, "<module source>"));
   if (!key) {
@@ -213,30 +211,31 @@ JSObject* ModuleLoader::getOrCreateTest262ModuleSourceModule(JSContext* cx) {
   }
 
   RootedObject module(cx);
-  if (!lookupModuleInRegistry(cx, JS::ModuleType::JavaScript, key, &module)) {
+  if (!lookupModuleInRegistry(cx, JS::ModuleType::JavaScriptOrWasm, key,
+                              &module)) {
     return nullptr;
   }
   if (module) {
     return module;
   }
 
-  JS::CompileOptions options(cx);
-  options.setFileAndLine("<module source>", 1);
-  JS::SourceText<char16_t> srcBuf;
-  if (!srcBuf.init(cx, u"", 0, JS::SourceOwnership::Borrowed)) {
+  // Empty module: The string \0xasm, followed by version number 1.
+  // https://webassembly.github.io/spec/core/binary/modules.html#binary-module
+  static const uint8_t emptyWasmModule[] = {0x00, 0x61, 0x73, 0x6d,
+                                            0x01, 0x00, 0x00, 0x00};
+  js::Vector<uint8_t, 0, js::MallocAllocPolicy> srcBuf;
+  if (!srcBuf.append(emptyWasmModule, sizeof(emptyWasmModule))) {
     return nullptr;
   }
-  module = JS::CompileModule(cx, options, srcBuf);
+
+  JS::CompileOptions options(cx);
+  options.setFileAndLine("<module source>", 1);
+  module = JS::CompileWasmModuleAsSource(cx, options, srcBuf);
   if (!module) {
     return nullptr;
   }
-  Rooted<ModuleSourceObject*> moduleSource(cx, ModuleSourceObject::create(cx));
-  if (!moduleSource) {
-    return nullptr;
-  }
-  module->as<ModuleObject>().initModuleSourceSlot(moduleSource);
 
-  if (!addModuleToRegistry(cx, JS::ModuleType::JavaScript, key, module)) {
+  if (!addModuleToRegistry(cx, JS::ModuleType::JavaScriptOrWasm, key, module)) {
     return nullptr;
   }
   return module;
