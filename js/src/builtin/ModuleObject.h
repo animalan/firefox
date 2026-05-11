@@ -432,7 +432,7 @@ class ModuleObject : public NativeObject {
   // Initialize the slots on this object that are dependent on the script.
   void initScriptSlots(HandleScript script);
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
-  void initModuleSourceSlot(Handle<ModuleSourceObject*> moduleSource);
+  void initModuleSourceSlot(HandleObject moduleSource);
 #endif
 
   void setInitialEnvironment(
@@ -456,7 +456,7 @@ class ModuleObject : public NativeObject {
   ModuleEnvironmentObject* environment() const;
   ModuleNamespaceObject* namespace_();
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
-  ModuleSourceObject* moduleSource() const;
+  JSObject* moduleSource() const;
   bool isSourcePhaseModule() const { return moduleSource() != nullptr; }
 #endif
   ModuleStatus status() const;
