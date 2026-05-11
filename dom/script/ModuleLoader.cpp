@@ -317,7 +317,9 @@ nsresult ModuleLoader::CompileJavaScriptOrWasmModule(
   } else {
     MOZ_ASSERT(aRequest->IsSerializedStencil());
     JS::DecodeOptions decodeOptions(aOptions);
-    decodeOptions.borrowBuffer = true;
+    if (!GetScriptLoader()->UsesMemoryCache()) {
+      decodeOptions.borrowBuffer = true;
+    }
 
     JS::TranscodeRange range = aRequest->SerializedStencil();
     JS::TranscodeResult tr =

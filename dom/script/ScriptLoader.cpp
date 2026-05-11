@@ -2825,7 +2825,9 @@ nsresult ScriptLoader::FillCompileOptionsForRequest(
 
   aOptions->setDeferDebugMetadata(true);
 
-  aOptions->borrowBuffer = true;
+  if (!mCache) {
+    aOptions->borrowBuffer = true;
+  }
 
   ApplyEagerBaselineStrategy(aOptions);
 
@@ -3252,11 +3254,13 @@ nsresult ScriptLoader::EvaluateScriptElement(ScriptLoadRequest* aRequest) {
 }
 
 // Decode a script contained in a buffer.
-static void Decode(JSContext* aCx, JS::CompileOptions& aCompileOptions,
-                   const JS::TranscodeRange& aRange,
-                   RefPtr<JS::Stencil>& aStencil, ErrorResult& aRv) {
+void ScriptLoader::Decode(JSContext* aCx, JS::CompileOptions& aCompileOptions,
+                          const JS::TranscodeRange& aRange,
+                          RefPtr<JS::Stencil>& aStencil, ErrorResult& aRv) {
   JS::DecodeOptions decodeOptions(aCompileOptions);
-  decodeOptions.borrowBuffer = true;
+  if (!mCache) {
+    decodeOptions.borrowBuffer = true;
+  }
 
   MOZ_ASSERT(aCompileOptions.noScriptRval);
   JS::TranscodeResult tr =
