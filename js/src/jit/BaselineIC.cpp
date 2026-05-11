@@ -472,6 +472,7 @@ bool ICCacheIRStub::traceWeak(JSTracer* trc) {
 static void MaybeTransition(JSContext* cx, BaselineFrame* frame,
                             ICFallbackStub* stub) {
   if (!stub->state().newStubIsFirstStub() && !JitOptions.disableJitHints &&
+      MOZ_LIKELY(cx->runtime()->hasJitRuntime()) &&
       cx->runtime()->jitRuntime()->hasJitHintsMap()) {
     JitHintsMap* hints = cx->runtime()->jitRuntime()->getJitHintsMap();
     if (hints->shouldTransitionMegamorphic(frame->script(), frame->icScript(),
