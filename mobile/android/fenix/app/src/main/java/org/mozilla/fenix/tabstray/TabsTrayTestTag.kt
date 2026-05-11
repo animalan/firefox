@@ -65,6 +65,8 @@ internal object TabsTrayTestTag {
     const val BOTTOM_SHEET_COLOR_LIST = "$TAB_GROUP_BOTTOM_SHEET_ROOT.colors"
 
     const val GROUP_NAME = "$TAB_GROUP_BOTTOM_SHEET_ROOT.name"
+    const val ADD_TO_TAB_GROUP_ROOT = "$TAB_GROUP_BOTTOM_SHEET_ROOT.addToGroup"
+    const val ADD_TO_NEW_TAB_GROUP = "$ADD_TO_TAB_GROUP_ROOT.newGroup"
 
     // Tab group three dot menu
     const val TAB_GROUP_THREE_DOT_BUTTON = "$TAB_GROUP_ROOT.threeDotButton"

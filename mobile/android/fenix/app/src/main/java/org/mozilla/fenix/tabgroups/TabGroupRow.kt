@@ -79,7 +79,7 @@ fun TabGroupRow(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .testTag(TabsTrayTestTag.TAB_GROUP_ROOT)
+            .testTag("${TabsTrayTestTag.TAB_GROUP_ROOT}.${tabGroup.id}")
             .padding(
                 if (trailingContent == null) {
                     PaddingValues(

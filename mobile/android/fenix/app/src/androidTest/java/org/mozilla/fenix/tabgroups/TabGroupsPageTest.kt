@@ -64,7 +64,7 @@ class TabGroupsPageTest {
             }
         }
 
-        composeTestRule.onNodeWithTag(TabsTrayTestTag.TAB_GROUP_ROOT)
+        composeTestRule.onNodeWithTag("${TabsTrayTestTag.TAB_GROUP_ROOT}.${group.id}")
             .performClick()
 
         assertTrue(groupClicked)
