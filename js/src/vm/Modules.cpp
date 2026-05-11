@@ -546,6 +546,16 @@ JS_PUBLIC_API JS::ModuleType JS::GetModuleRequestType(
   return moduleRequestArg->as<ModuleRequestObject>().moduleType();
 }
 
+JS_PUBLIC_API bool JS::ModuleRequestIsSourcePhase(
+    JSContext* cx, Handle<JSObject*> moduleRequestArg) {
+  AssertHeapIsIdle();
+  CHECK_THREAD(cx);
+  cx->check(moduleRequestArg);
+
+  return moduleRequestArg->as<ModuleRequestObject>().phase() ==
+         ImportPhase::Source;
+}
+
 JS_PUBLIC_API void JS::ClearModuleEnvironment(JSObject* moduleObj) {
   MOZ_ASSERT(moduleObj);
   AssertHeapIsIdle();
