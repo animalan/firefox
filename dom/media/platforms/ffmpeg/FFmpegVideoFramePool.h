@@ -82,9 +82,6 @@ class VideoFrameSurface<LIBAV_VER> {
   void SetWPChromaLocation(uint32_t aWPChromaLocation) {
     mSurface->GetAsDMABufSurfaceYUV()->SetWPChromaLocation(aWPChromaLocation);
   }
-  void SetVulkanCopySlotIndex(int32_t aSlotIndex) {
-    mVulkanCopySlotIndex = aSlotIndex;
-  }
 
   RefPtr<DMABufSurfaceYUV> GetDMABufSurface() {
     return mSurface->GetAsDMABufSurfaceYUV();
@@ -124,7 +121,6 @@ class VideoFrameSurface<LIBAV_VER> {
   AVBufferRef* mHWAVBuffer;
   VASurfaceID mFFMPEGSurfaceID;
   bool mHoldByFFmpeg;
-  int32_t mVulkanCopySlotIndex = -1;
 };
 
 // VideoFramePool class is thread-safe.
@@ -147,7 +143,6 @@ class VideoFramePool<LIBAV_VER> {
 
   void ReleaseUnusedVAAPIFrames();
   void FlushFFmpegFrames();
-  bool IsVulkanFrameSlotInUseByRenderer(int32_t aSlotIndex);
 
  private:
   RefPtr<VideoFrameSurface<LIBAV_VER>> GetTargetVideoFrameSurfaceLocked(
