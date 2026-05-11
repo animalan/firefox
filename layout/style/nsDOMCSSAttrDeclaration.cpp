@@ -74,8 +74,6 @@ nsresult nsDOMCSSAttributeDeclaration::SetCSSDeclaration(
   // getting here when the attribute hasn't changed.
   MOZ_ASSERT_IF(aClosureData && aClosureData->mShouldBeCalled,
                 aClosureData->mWasCalled);
-
-  aDecl->SetDirty();
   if (mIsSMILOverride) {
     mElement->SetSMILOverrideStyleDeclaration(*aDecl);
     return NS_OK;
@@ -114,9 +112,6 @@ DeclarationBlock* nsDOMCSSAttributeDeclaration::GetOrCreateCSSDeclaration(
 
   // cannot fail
   auto decl = MakeRefPtr<DeclarationBlock>();
-  // Mark the declaration dirty so that it can be reused by the caller.
-  // Normally SetDirty is called later in SetCSSDeclaration.
-  decl->SetDirty();
 #ifdef DEBUG
   RefPtr<DeclarationBlock> mutableDecl = decl->EnsureMutable();
   MOZ_ASSERT(mutableDecl == decl);

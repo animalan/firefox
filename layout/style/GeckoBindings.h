@@ -192,8 +192,6 @@ SERVO_DECLARE_ELEMENT_ATTR_MATCHING_FUNCTIONS(
 const mozilla::StyleLockedDeclarationBlock* Gecko_GetStyleAttrDeclarationBlock(
     const mozilla::dom::Element* element);
 
-void Gecko_UnsetDirtyStyleAttr(const mozilla::dom::Element* element);
-
 const mozilla::StyleLockedDeclarationBlock* Gecko_GetViewTransitionDynamicRule(
     const mozilla::dom::Element* element);
 

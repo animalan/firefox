@@ -1010,7 +1010,6 @@ void Animation::CommitStyles(ErrorResult& aRv) {
     declarationBlock = existing->EnsureMutable();
   } else {
     declarationBlock = new DeclarationBlock();
-    declarationBlock->SetDirty();
   }
 
   // Prepare the callback

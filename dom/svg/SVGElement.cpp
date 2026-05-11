@@ -253,7 +253,6 @@ nsresult SVGElement::CopyInnerTo(mozilla::dom::Element* aDest) {
     if (const auto* smilOverrideStyleDecoration =
             GetSMILOverrideStyleDeclaration()) {
       RefPtr<DeclarationBlock> declClone = smilOverrideStyleDecoration->Clone();
-      declClone->SetDirty();
       dest->SetSMILOverrideStyleDeclaration(*declClone);
     }
   }

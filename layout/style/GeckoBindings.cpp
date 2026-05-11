@@ -385,14 +385,6 @@ const StyleLockedDeclarationBlock* Gecko_GetStyleAttrDeclarationBlock(
   return decl->Raw();
 }
 
-void Gecko_UnsetDirtyStyleAttr(const Element* aElement) {
-  DeclarationBlock* decl = aElement->GetInlineStyleDeclaration();
-  if (!decl) {
-    return;
-  }
-  decl->UnsetDirty();
-}
-
 const StyleLockedDeclarationBlock*
 Gecko_GetHTMLPresentationAttrDeclarationBlock(const Element* aElement) {
   return aElement->GetMappedAttributeStyle();
