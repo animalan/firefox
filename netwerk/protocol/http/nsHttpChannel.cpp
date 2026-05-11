@@ -7611,8 +7611,7 @@ void nsHttpChannel::AsyncOpenFinal(TimeStamp aTimeStamp) {
   // lookup is not needed so CheckIsTrackerWithLocalTable() will return an
   // error and then we can MaybeResolveProxyAndBeginConnect() right away.
   // We skip the check in case this is an internal redirected channel
-  if (!LoadAuthRedirectedChannel() &&
-      NS_ShouldClassifyChannel(this, ClassifyType::ETP)) {
+  if (NS_ShouldClassifyChannel(this, ClassifyType::ETP)) {
     RefPtr<nsHttpChannel> self = this;
     willCallback = NS_SUCCEEDED(
         AsyncUrlChannelClassifier::CheckChannel(this, [self]() -> void {
@@ -8042,7 +8041,6 @@ nsresult nsHttpChannel::BeginConnect() {
   // skip classifier checks if this channel was the result of internal auth
   // redirect
   bool shouldBeClassifiedForTracker =
-      !LoadAuthRedirectedChannel() &&
       NS_ShouldClassifyChannel(this, ClassifyType::ETP);
 
   if (shouldBeClassifiedForTracker) {

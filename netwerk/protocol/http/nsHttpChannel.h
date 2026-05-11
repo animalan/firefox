@@ -548,6 +548,8 @@ class nsHttpChannel final : public HttpBaseChannel,
   // writing a new entry. The content type is used in cache internally only.
   void SetCachedContentType();
 
+  bool IsAuthRedirectedChannel() { return !!LoadAuthRedirectedChannel(); }
+
  private:
   // --- MAIN THREAD ONLY OBJECTS ---
   // this section is for main-thread-only objects

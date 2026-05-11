@@ -78,6 +78,7 @@
 #include "mozilla/dom/nsMixedContentBlocker.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/net/HttpBaseChannel.h"
+#include "nsHttpChannel.h"
 #include "nsIScriptError.h"
 #include "nsISiteSecurityService.h"
 #include "nsHttpHandler.h"
@@ -3335,6 +3336,15 @@ bool NS_ShouldClassifyChannel(nsIChannel* aChannel, ClassifyType aType) {
     // channels are critical to bypass classification. for channels don't
     // support beConservative, continue to apply the exemption rules.
     if (NS_SUCCEEDED(rv) && beConservative) {
+      return false;
+    }
+  }
+
+  // Skip auth redirect channels for ETP
+  if (aType == ClassifyType::ETP) {
+    RefPtr<mozilla::net::nsHttpChannel> concreteHttpChannel =
+        do_QueryObject(aChannel);
+    if (concreteHttpChannel && concreteHttpChannel->IsAuthRedirectedChannel()) {
       return false;
     }
   }
