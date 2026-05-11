@@ -551,7 +551,6 @@ dependencies {
     implementation project(':components:browser-domains')
     implementation project(':components:browser-icons')
     implementation project(':components:browser-menu')
-    implementation project(':components:browser-menu2')
     implementation project(':components:browser-session-storage')
     implementation project(':components:browser-state')
     implementation project(':components:browser-storage-sync')
