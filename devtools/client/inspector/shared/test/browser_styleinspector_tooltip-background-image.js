@@ -208,8 +208,16 @@ async function testCase({
   const computedPropertyEl = computedProperty.nameSpan.closest(
     ".computed-property-view"
   );
+
   // Expand the matched selectors section
+  AccessibilityUtils.setEnv({
+    // Focus is properly handled by the parent element, which will handle Enter to toggle
+    // the item, so we can disable the accessibility check to avoid the test failure.
+    focusableRule: false,
+  });
   computedPropertyEl.querySelector(".computed-expandable").click();
+  AccessibilityUtils.resetEnv();
+
   await waitFor(() => computedPropertyEl.querySelector(".rule-text"));
   // Retrieve the matched selector we want
   const computedRuleEl = [
