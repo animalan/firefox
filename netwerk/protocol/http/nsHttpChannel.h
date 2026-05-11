@@ -320,6 +320,14 @@ class nsHttpChannel final : public HttpBaseChannel,
   // storage-permission granted. Public to be accible from AntiTrackingUtils.
   bool StorageAccessReloadedChannel();
 
+  // Tells the channel to suspend after examining the response
+  void PrimeSuspendAfterExamineResponse();
+  // Cancel the suspension request, or resume if the suspension started
+  void CancelSuspendOrResumeAfterExamineResponse();
+  // Suspend if we called PrimeSuspendAfterExamineResponse
+  // and not CancelSuspendOrResumeAfterExamineResponse
+  void MaybeSuspendAfterExamineResponse();
+
  private:
   // We might synchronously or asynchronously call BeginConnect,
   // which includes DNS prefetch and speculative connection, according to
@@ -833,6 +841,12 @@ class nsHttpChannel final : public HttpBaseChannel,
   // cache. When the timer fires we'll notify the cache entry to make
   // all other listeners continue.
   nsCOMPtr<nsITimer> mSuspendTimer;
+  // Tri-state to track whether anti-tracking classification happened
+  // and has completed or not.
+  // Nothing: No anti-tracking classification
+  // Some(true): classification ongoing
+  // Some(false): classification done
+  Maybe<Atomic<bool>> mSuspendAfterExamineResponse;
   bool mWritingToCache = false;
   bool mWaitingForProxy = false;
   bool mStaleRevalidation = false;

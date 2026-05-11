@@ -598,6 +598,30 @@ bool nsHttpChannel::StorageAccessReloadedChannel() {
   return LoadStorageAccessReloadChannel();
 }
 
+void nsHttpChannel::PrimeSuspendAfterExamineResponse() {
+  mSuspendAfterExamineResponse = Some(true);
+}
+
+void nsHttpChannel::CancelSuspendOrResumeAfterExamineResponse() {
+  if (mSuspendAfterExamineResponse.isNothing()) {
+    return;
+  }
+  bool oldValue = mSuspendAfterExamineResponse.ref().exchange(false);
+  if (!oldValue) {
+    Resume();
+  }
+}
+
+void nsHttpChannel::MaybeSuspendAfterExamineResponse() {
+  if (mSuspendAfterExamineResponse.isNothing()) {
+    return;
+  }
+  bool oldValue = mSuspendAfterExamineResponse.ref().exchange(false);
+  if (oldValue) {
+    Suspend();
+  }
+}
+
 nsresult nsHttpChannel::PrepareToConnect() {
   LOG(("nsHttpChannel::PrepareToConnect [this=%p]\n", this));
 
@@ -3077,6 +3101,8 @@ nsresult nsHttpChannel::ProcessResponse(nsHttpConnectionInfo* aConnInfo) {
 
   // notify "http-on-examine-response" observers
   gHttpHandler->OnExamineResponse(this);
+
+  MaybeSuspendAfterExamineResponse();
 
   return ContinueProcessResponse1(aConnInfo);
 }
@@ -8069,6 +8095,18 @@ nsresult nsHttpChannel::BeginConnect() {
 
   bool shouldBeClassifiedForSafeBrowsing =
       NS_ShouldClassifyChannel(this, ClassifyType::SafeBrowsing);
+
+  if (shouldBeClassifiedForTracker) {
+    PrimeSuspendAfterExamineResponse();
+    RefPtr<nsHttpChannel> self(this);
+    nsresult rv =
+        AntiTrackingChannelClassifierUtils::CheckChannelBeforeProcessResponse(
+            this,
+            [self]() { self->CancelSuspendOrResumeAfterExamineResponse(); });
+    if (NS_FAILED(rv)) {
+      CancelSuspendOrResumeAfterExamineResponse();
+    }
+  }
 
   if (shouldBeClassifiedForSafeBrowsing) {
     // Start nsChannelClassifier to catch phishing and malware URIs.
