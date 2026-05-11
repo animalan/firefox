@@ -3135,13 +3135,7 @@ nsDOMWindowUtils::GetUnanimatedComputedStyle(Element* aElement,
     return NS_ERROR_FAILURE;
   }
 
-  RefPtr<Document> doc = GetDocument();
-  if (!doc) {
-    return NS_ERROR_FAILURE;
-  }
-
-  Maybe<PseudoStyleRequest> pseudo =
-      PseudoStyleRequest::Parse(aPseudoElement, doc->DefaultStyleAttrURLData());
+  Maybe<PseudoStyleRequest> pseudo = PseudoStyleRequest::Parse(aPseudoElement);
   if (!pseudo) {
     return NS_ERROR_FAILURE;
   }

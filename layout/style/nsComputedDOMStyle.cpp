@@ -66,8 +66,7 @@ using namespace mozilla::dom;
 already_AddRefed<nsComputedDOMStyle> NS_NewComputedDOMStyle(
     dom::Element* aElement, const nsAString& aPseudoElt, Document* aDocument,
     nsComputedDOMStyle::StyleType aStyleType, mozilla::ErrorResult&) {
-  auto request = PseudoStyleRequest::Parse(
-      aPseudoElt, aElement->OwnerDoc()->DefaultStyleAttrURLData());
+  auto request = PseudoStyleRequest::Parse(aPseudoElt);
   auto returnEmpty = nsComputedDOMStyle::AlwaysReturnEmptyStyle::No;
   if (!request) {
     if (!aPseudoElt.IsEmpty() && aPseudoElt.First() == u':') {

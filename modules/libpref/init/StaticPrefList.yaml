@@ -11386,13 +11386,6 @@
   mirror: always
   rust: true
 
-# Per-domain blocklist for ::-webkit-scrollbar pseudo element
-- name: layout.css.fake-webkit-scrollbar.disabled-domains
-  type: DataMutexString
-  value: "discord.com"
-  mirror: always
-  rust: true
-
 # Is support for the ::details-content pseudo-element enabled?
 - name: layout.css.details-content.enabled
   type: RelaxedAtomicBool

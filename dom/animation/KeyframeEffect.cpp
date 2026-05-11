@@ -775,7 +775,7 @@ static const KeyframeEffectOptions& KeyframeEffectOptionsFromUnion(
 
 template <class OptionsType>
 static KeyframeEffectParams KeyframeEffectParamsFromUnion(
-    const OptionsType& aOptions, Document* aDocument, ErrorResult& aRv) {
+    const OptionsType& aOptions, CallerType aCallerType, ErrorResult& aRv) {
   KeyframeEffectParams result;
   if (aOptions.IsUnrestrictedDouble()) {
     return result;
@@ -792,8 +792,8 @@ static KeyframeEffectParams KeyframeEffectParamsFromUnion(
     return result;
   }
 
-  Maybe<PseudoStyleRequest> pseudoRequest = PseudoStyleRequest::Parse(
-      options.mPseudoElement, aDocument->DefaultStyleAttrURLData());
+  Maybe<PseudoStyleRequest> pseudoRequest =
+      PseudoStyleRequest::Parse(options.mPseudoElement);
   if (!pseudoRequest) {
     // Per the spec, we throw SyntaxError for syntactically invalid pseudos.
     aRv.ThrowSyntaxError(
@@ -835,7 +835,7 @@ already_AddRefed<KeyframeEffect> KeyframeEffect::ConstructKeyframeEffect(
   }
 
   KeyframeEffectParams effectOptions =
-      KeyframeEffectParamsFromUnion(aOptions, doc, aRv);
+      KeyframeEffectParamsFromUnion(aOptions, aGlobal.CallerType(), aRv);
   // An invalid Pseudo-element aborts all further steps.
   if (aRv.Failed()) {
     return nullptr;
@@ -1100,8 +1100,8 @@ void KeyframeEffect::SetPseudoElement(const nsAString& aPseudoElement,
 
   // Note: ParsePseudoELement() returns Some(NotPseudo) for the null string,
   // so we handle null case before this.
-  Maybe<PseudoStyleRequest> pseudoRequest = PseudoStyleRequest::Parse(
-      aPseudoElement, mDocument->DefaultStyleAttrURLData());
+  Maybe<PseudoStyleRequest> pseudoRequest =
+      PseudoStyleRequest::Parse(aPseudoElement);
   if (!pseudoRequest || pseudoRequest->IsNotPseudo()) {
     // Per the spec, we throw SyntaxError for syntactically invalid pseudos.
     aRv.ThrowSyntaxError(

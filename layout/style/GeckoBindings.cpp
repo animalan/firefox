@@ -1266,11 +1266,6 @@ void Gecko_Snapshot_DebugListAttributes(const ServoElementSnapshot* aSnapshot,
 
 NS_IMPL_THREADSAFE_FFI_REFCOUNTING(URLExtraData, URLExtraData);
 
-bool Gecko_IsURIInList(const URLExtraData* aData, const nsACString* aList) {
-  return nsContentUtils::IsURIInList(aData->BaseURI(),
-                                     PromiseFlatCString(*aList));
-}
-
 void Gecko_nsStyleFont_SetLang(nsStyleFont* aFont, nsAtom* aAtom) {
   aFont->mLanguage = dont_AddRef(aAtom);
   aFont->mExplicitLanguage = true;
