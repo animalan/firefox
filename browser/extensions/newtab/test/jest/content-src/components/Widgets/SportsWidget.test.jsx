@@ -95,7 +95,7 @@ describe("<SportsWidget>", () => {
     ).toBeInTheDocument();
   });
 
-  it("should render the view-schedule button", () => {
+  it("should render the view-matches button", () => {
     const { container } = render(
       <WrapWithProvider state={makeState()}>
         <SportsWidget {...defaultProps} />
@@ -103,7 +103,7 @@ describe("<SportsWidget>", () => {
     );
     expect(
       container.querySelector(
-        "[data-l10n-id='newtab-sports-widget-view-schedule']"
+        "[data-l10n-id='newtab-sports-widget-view-matches']"
       )
     ).toBeInTheDocument();
   });
@@ -115,7 +115,7 @@ describe("<SportsWidget>", () => {
       </WrapWithProvider>
     );
     expect(
-      container.querySelector(".sports-view-schedule").getAttribute("size")
+      container.querySelector(".sports-view-matches").getAttribute("size")
     ).toBe("small");
     expect(
       container.querySelector(".sports-follow-teams-btn").getAttribute("size")
@@ -131,7 +131,7 @@ describe("<SportsWidget>", () => {
       </WrapWithProvider>
     );
     expect(
-      container.querySelector(".sports-view-schedule").getAttribute("size")
+      container.querySelector(".sports-view-matches").getAttribute("size")
     ).toBeNull();
     expect(
       container.querySelector(".sports-follow-teams-btn").getAttribute("size")
@@ -350,11 +350,11 @@ describe("<SportsWidget> telemetry", () => {
     );
   }
 
-  it("should dispatch view_schedule telemetry when view-schedule is clicked", () => {
+  it("should dispatch view_schedule telemetry when view-matches is clicked", () => {
     const { container } = renderWidget();
     fireEvent.click(
       container.querySelector(
-        "[data-l10n-id='newtab-sports-widget-view-schedule']"
+        "[data-l10n-id='newtab-sports-widget-view-matches']"
       )
     );
     expect(dispatch).toHaveBeenCalledWith(

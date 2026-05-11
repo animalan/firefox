@@ -6272,7 +6272,7 @@ button.arrow-button:dir(rtl) {
   flex-direction: column;
   align-items: center;
 }
-.sports-buttons-wrapper .sports-view-schedule {
+.sports-buttons-wrapper .sports-view-matches {
   margin-block-end: var(--space-small);
 }
 

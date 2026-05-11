@@ -357,8 +357,8 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
               <moz-button
                 type="primary"
                 size={widgetSize === "medium" ? "small" : undefined}
-                data-l10n-id="newtab-sports-widget-view-schedule"
-                className="sports-view-schedule"
+                data-l10n-id="newtab-sports-widget-view-matches"
+                className="sports-view-matches"
                 onClick={handleViewSchedule}
               />
               <moz-button
