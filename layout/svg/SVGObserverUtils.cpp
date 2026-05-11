@@ -1707,15 +1707,8 @@ void SVGObserverUtils::RemoveTemplateObserver(nsIFrame* aFrame) {
 
 Element* SVGObserverUtils::GetAndObserveBackgroundImage(nsIFrame* aFrame,
                                                         const nsAtom* aHref) {
-  bool found;
   URIObserverHashtable* hashtable =
-      aFrame->GetProperty(BackgroundImageProperty(), &found);
-  if (!found) {
-    hashtable = new URIObserverHashtable();
-    aFrame->AddProperty(BackgroundImageProperty(), hashtable);
-  } else {
-    MOZ_ASSERT(hashtable, "this property should only store non-null values");
-  }
+      aFrame->GetOrCreateDeletableProperty(BackgroundImageProperty());
   nsAutoString localRef = u"#"_ns + nsDependentAtomString(aHref);
   auto* doc = aFrame->GetContent()->OwnerDoc();
   nsIURI* baseURI = aFrame->GetContent()->GetBaseURI();

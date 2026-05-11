@@ -92,11 +92,7 @@ static already_AddRefed<imgIContainer> GetSymbolicIconImage(nsAtom* aName,
   }
   const auto fg = aFrame->StyleText()->mColor.ToColor();
   auto key = std::make_tuple(aName, aScale, fg);
-  auto* cache = aFrame->GetProperty(SymbolicImageCacheProp());
-  if (!cache) {
-    cache = new SymbolicImageCache();
-    aFrame->SetProperty(SymbolicImageCacheProp(), cache);
-  }
+  auto* cache = aFrame->GetOrCreateDeletableProperty(SymbolicImageCacheProp());
   auto lookup = cache->Lookup(key);
   if (lookup) {
     return do_AddRef(lookup.Data().mImage);
