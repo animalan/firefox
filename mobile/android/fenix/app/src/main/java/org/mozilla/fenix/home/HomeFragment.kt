@@ -91,6 +91,7 @@ import org.mozilla.fenix.components.appstate.AppAction.ContentRecommendationsAct
 import org.mozilla.fenix.components.appstate.AppAction.MessagingAction
 import org.mozilla.fenix.components.appstate.AppAction.MessagingAction.MicrosurveyAction
 import org.mozilla.fenix.components.appstate.AppAction.ReviewPromptAction.CheckIfEligibleForReviewPrompt
+import org.mozilla.fenix.components.appstate.AppAction.SportsWidgetAction
 import org.mozilla.fenix.components.appstate.OrientationMode
 import org.mozilla.fenix.components.components
 import org.mozilla.fenix.components.metrics.installSourcePackage
@@ -982,6 +983,11 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
         components.useCases.sessionUseCases.updateLastAccess()
 
         evaluateMessagesForMicrosurvey(components)
+
+        val sportsWidgetState = components.appStore.state.sportsWidgetState
+        if (sportsWidgetState.isShown && sportsWidgetState.hasWorldCupStarted) {
+            components.appStore.dispatch(SportsWidgetAction.FetchMatches)
+        }
 
         BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
             true
