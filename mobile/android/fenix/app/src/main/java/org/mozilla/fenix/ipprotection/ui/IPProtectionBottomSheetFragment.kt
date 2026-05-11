@@ -11,9 +11,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.compose.content
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import mozilla.components.lib.state.helpers.StoreProvider.Companion.fragmentStore
+import org.mozilla.fenix.NavGraphDirections
+import org.mozilla.fenix.R
+import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
+import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ipprotection.store.IPProtectionPromptAction
 import org.mozilla.fenix.ipprotection.store.IPProtectionPromptPreferencesMiddleware
@@ -80,6 +85,12 @@ class IPProtectionBottomSheetFragment : BottomSheetDialogFragment() {
                     onGetStartedClicked = {
                         ipProtectionPromptStore.dispatch(
                             IPProtectionPromptAction.OnGetStartedClicked(args.surface),
+                        )
+                        findNavController().nav(
+                            R.id.ipProtectionOnboardingDialogFragment,
+                            NavGraphDirections.actionGlobalTurnOnSync(
+                                entrypoint = FenixFxAEntryPoint.IPProtectionOnboarding,
+                            ),
                         )
                         dismiss()
                     },
