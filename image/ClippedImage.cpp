@@ -356,8 +356,7 @@ ClippedImage::Draw(gfxContext* aContext, const nsIntSize& aSize,
     }
 
     // Create a drawable from that surface.
-    RefPtr<gfxSurfaceDrawable> drawable =
-        new gfxSurfaceDrawable(surface, aSize);
+    auto drawable = MakeRefPtr<gfxSurfaceDrawable>(surface, aSize);
 
     // Draw.
     gfxUtils::DrawPixelSnapped(aContext, drawable, SizeDouble(aSize), aRegion,

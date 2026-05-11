@@ -956,8 +956,7 @@ VectorImage::Draw(gfxContext* aContext, const nsIntSize& aSize,
   std::tie(sourceSurface, params.size) =
       LookupCachedSurface(aSize, params.svgContext, aFlags);
   if (sourceSurface) {
-    RefPtr<gfxDrawable> drawable =
-        new gfxSurfaceDrawable(sourceSurface, params.size);
+    auto drawable = MakeRefPtr<gfxSurfaceDrawable>(sourceSurface, params.size);
     Show(drawable, params);
     return ImgDrawResult::SUCCESS;
   }
@@ -980,8 +979,7 @@ VectorImage::Draw(gfxContext* aContext, const nsIntSize& aSize,
     return ImgDrawResult::SUCCESS;
   }
 
-  RefPtr<gfxDrawable> drawable =
-      new gfxSurfaceDrawable(sourceSurface, params.size);
+  auto drawable = MakeRefPtr<gfxSurfaceDrawable>(sourceSurface, params.size);
   Show(drawable, params);
   SendFrameComplete(didCache, params.flags);
   return ImgDrawResult::SUCCESS;

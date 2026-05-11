@@ -109,7 +109,7 @@ static already_AddRefed<imgIContainer> GetSymbolicIconImage(nsAtom* aName,
   if (NS_WARN_IF(!surface)) {
     return nullptr;
   }
-  RefPtr drawable = new gfxSurfaceDrawable(surface, surface->GetSize());
+  auto drawable = MakeRefPtr<gfxSurfaceDrawable>(surface, surface->GetSize());
   nsCOMPtr<imgIContainer> container = ImageOps::CreateFromDrawable(drawable);
   MOZ_ASSERT(container);
   lookup.Set(SymbolicImageEntry{std::move(key), std::move(container)});
@@ -809,10 +809,9 @@ already_AddRefed<gfxDrawable> nsImageRenderer::DrawableForElement(
   }
   NS_ASSERTION(mImageElementSurface.GetSourceSurface(),
                "Surface should be ready.");
-  RefPtr<gfxDrawable> drawable =
-      new gfxSurfaceDrawable(mImageElementSurface.GetSourceSurface().get(),
-                             mImageElementSurface.mSize);
-  return drawable.forget();
+  return MakeAndAddRef<gfxSurfaceDrawable>(
+      mImageElementSurface.GetSourceSurface().get(),
+      mImageElementSurface.mSize);
 }
 
 ImgDrawResult nsImageRenderer::DrawLayer(

@@ -9632,8 +9632,7 @@ already_AddRefed<imgIContainer> nsContentUtils::IPCImageToImage(
     return nullptr;
   }
 
-  RefPtr<gfxDrawable> drawable =
-      new gfxSurfaceDrawable(surface, surface->GetSize());
+  auto drawable = MakeRefPtr<gfxSurfaceDrawable>(surface, surface->GetSize());
   nsCOMPtr<imgIContainer> imageContainer =
       image::ImageOps::CreateFromDrawable(drawable);
   return imageContainer.forget();
