@@ -4546,7 +4546,7 @@ bool CanvasRenderingContext2D::SetFontInternalDisconnected(
 }
 
 void CanvasRenderingContext2D::UpdateSpacing() {
-  auto state = CurrentState();
+  const auto& state = CurrentState();
   if (!state.letterSpacingStr.IsEmpty()) {
     SetLetterSpacing(state.letterSpacingStr);
   }
