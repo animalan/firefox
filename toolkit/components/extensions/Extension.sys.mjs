@@ -4299,11 +4299,19 @@ export class Extension extends ExtensionData {
       lazy.ExtensionPermissions.add(this.id, { permissions: [], origins });
       updateCache = true;
 
+      // ExtensionPermissions.add asynchronously updates this.allowedOrigins
+      // and this.permissions as needed, but that is too late for us, so we
+      // fix up the permissions here based on what we know.
+
       let allowed = this.allowedOrigins.patterns.map(p => p.pattern);
       this.allowedOrigins = new MatchPatternSet(origins.concat(allowed), {
         restrictSchemes: this.restrictSchemes,
         ignorePath: true,
       });
+
+      if (origins.includes("<all_urls>")) {
+        this.permissions.add("<all_urls>");
+      }
     }
 
     if (updateCache) {
