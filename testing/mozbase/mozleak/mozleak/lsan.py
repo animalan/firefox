@@ -73,7 +73,7 @@ class LSANLeaks:
         )
         self.stackFrameRegExp = re.compile(
             r"    #\d+ (?P<offset>0x[0-9a-f]+) in (?P<func>[^(</]+)"
-            r"(?:[^ ]* (?P<file>[^:]+)(?::(?P<line>\d+)(?::(?P<col>\d+))?)?)?$"
+            r"(?:.* (?P<file>/[^:]+)(?::(?P<line>\d+)(?::(?P<col>\d+))?)?)?$"
         )
         self.sysLibStackFrameRegExp = re.compile(
             r"    #\d+ (?P<offset>0x[0-9a-f]+) \((?P<module>[^+]+)\+(?P<modoffset>0x[0-9a-f]+)\)"
@@ -82,7 +82,7 @@ class LSANLeaks:
             r"^(Direct|Indirect) leak of (\d+) byte\(s\) in (\d+) object\(s\) allocated from"
         )
         self.summaryRegexp = re.compile(
-            r"SUMMARY: AddressSanitizer: (\d+) byte\(s\) leaked in (\d+) allocation\(s\)."
+            r"SUMMARY: AddressSanitizer: (\d+) byte\(s\) leaked in (\d+) allocation\(s\)\."
         )
         self.rustRegexp = re.compile("::h[a-f0-9]{16}$")
         self.setAllowed(allowed)
@@ -124,12 +124,23 @@ class LSANLeaks:
             self.currObjects = int(leakHeader.group(3))
             return line
 
+        # The startswith fallback ensures we always terminate the report
+        # (reset inReport, flush the current stack) even if the summary line
+        # format drifts and the regex no longer matches; we just lose the
+        # byte/allocation counts in that case, and warn so the regex can be
+        # updated.
         summaryData = self.summaryRegexp.match(line)
-        if summaryData:
-            assert self.summaryData is None
+        if summaryData or line.startswith("SUMMARY: AddressSanitizer"):
             self._finishStack()
             self.inReport = False
-            self.summaryData = (int(item) for item in summaryData.groups())
+            if summaryData:
+                assert self.summaryData is None
+                self.summaryData = (int(item) for item in summaryData.groups())
+            else:
+                self.logger.warning(
+                    "LeakSanitizer summary line did not match expected "
+                    f"format; byte/allocation counts will be missing: {line}"
+                )
             # We don't return the line here because we want to control whether the
             # leak is seen as an expected failure later
             return
