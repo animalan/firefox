@@ -708,6 +708,13 @@ void BrowserParent::Deactivated() {
   }
   UnlockNativePointer();
   UnsetTopLevelWebFocus(this);
+  if (sFocus == this) {
+    sFocus = sTopLevelWebFocus;
+    LOGBROWSERFOCUS(
+        ("Deactivated moved focus to top-level web; old: %p, new: %p", this,
+         sFocus));
+    IMEStateManager::OnFocusMovedBetweenBrowsers(this, sFocus);
+  }
   UnsetLastMouseRemoteTarget(this);
   PointerLockManager::ReleaseLockedRemoteTarget(this);
   PointerEventHandler::ReleasePointerCaptureRemoteTarget(this);
