@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
+
 const lazy = {};
 
 /**
@@ -47,6 +49,14 @@ class IPPStartupCacheSingleton {
     }
 
     this.handleEvent = this.#handleEvent.bind(this);
+
+    // Android has no `sessionstore-windows-restored` notification; mark
+    // startup as completed so IPProtectionService.init() runs
+    // initOnStartupCompleted() synchronously.
+    if (AppConstants.platform === "android") {
+      this.#startupCompleted = true;
+      return;
+    }
 
     const stateFromCache = Services.prefs.getCharPref(
       STATE_CACHE_PREF,
