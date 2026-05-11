@@ -457,6 +457,7 @@ class ModuleObject : public NativeObject {
   ModuleNamespaceObject* namespace_();
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
   ModuleSourceObject* moduleSource() const;
+  bool isSourcePhaseModule() const { return moduleSource() != nullptr; }
 #endif
   ModuleStatus status() const;
   mozilla::Maybe<uint32_t> maybeDfsAncestorIndex() const;

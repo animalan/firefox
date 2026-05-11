@@ -1259,7 +1259,13 @@ const char* ModuleObject::filename() const {
   if (!hasCyclicModuleFields()) {
     return "(JSON module)";
   }
-  return cyclicModuleFields()->scriptSourceObject->source()->filename();
+  ScriptSourceObject* sso = cyclicModuleFields()->scriptSourceObject;
+  if (!sso->hasSource()) {
+    // TODO: Bug 2030454: Return the wasm module filename once we support
+    // evaluation phase imports.
+    return "(unknown)";
+  }
+  return sso->source()->filename();
 }
 
 static inline void AssertValidModuleStatus(ModuleStatus status) {
