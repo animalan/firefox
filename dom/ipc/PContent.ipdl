@@ -153,6 +153,7 @@ using FontVisibility from "gfxTypes.h";
 using mozilla::dom::MediaControlAction from "mozilla/dom/MediaControlKeySource.h";
 using mozilla::dom::MediaPlaybackState from "mozilla/dom/MediaPlaybackStatus.h";
 using mozilla::dom::MediaAudibleState from "mozilla/dom/MediaPlaybackStatus.h";
+using mozilla::dom::ControlType from "mozilla/dom/MediaPlaybackStatus.h";
 using mozilla::dom::MediaMetadataBase from "mozilla/dom/MediaMetadata.h";
 using mozilla::dom::MediaSessionAction from "mozilla/dom/MediaSessionBinding.h";
 using mozilla::dom::MediaSessionPlaybackState from "mozilla/dom/MediaSessionBinding.h";
@@ -1673,10 +1674,13 @@ parent:
 
    /**
     * When media became audible or inaudible in content process, we have to
-    * notify chrome process in order to which tab is audible.
+    * notify chrome process in order to which tab is audible. The aType
+    * parameter distinguishes controllable sources (full media-control
+    * lifecycle) from uncontrollable sources that only contribute audibility.
     */
     async NotifyMediaAudibleChanged(MaybeDiscardedBrowsingContext aContext,
-                                    MediaAudibleState aState);
+                                    MediaAudibleState aState,
+                                    ControlType aType);
 
    /**
     * When media enabled or disabled the Picture-in-Picture mode, we have to

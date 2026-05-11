@@ -32,6 +32,12 @@ struct ParamTraits<mozilla::dom::MediaAudibleState>
           mozilla::dom::MediaAudibleState::eAudible> {};
 
 template <>
+struct ParamTraits<mozilla::dom::ControlType>
+    : public ContiguousEnumSerializerInclusive<
+          mozilla::dom::ControlType, mozilla::dom::ControlType::eControllable,
+          mozilla::dom::ControlType::eUncontrollable> {};
+
+template <>
 struct ParamTraits<mozilla::dom::AbsoluteSeek> {
   typedef mozilla::dom::AbsoluteSeek paramType;
 
