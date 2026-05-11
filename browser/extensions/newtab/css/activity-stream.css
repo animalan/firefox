@@ -14138,7 +14138,7 @@ hr {
  * those token values directly so nova/activity-stream.css is self-contained.
  * Remove this file when `browser.nova.enabled` unifies both prefs and reaches Release.
  */
-:root:has(.nova-enabled) {
+:root.nova-tokens {
   /** background-color **/
   --background-color-box: light-dark(var(--color-white), var(--color-gray-70));
   --background-color-box-info: light-dark(var(--color-gray-15), var(--color-gray-60));
@@ -14406,7 +14406,7 @@ hr {
 }
 
 @media (forced-colors) {
-  :root:has(.nova-enabled) {
+  :root.nova-tokens {
     /** background-color **/
     --background-color-box: var(--background-color-canvas);
     --background-color-box-info: var(--background-color-canvas);
