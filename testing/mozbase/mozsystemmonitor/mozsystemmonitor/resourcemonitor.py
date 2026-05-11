@@ -5,6 +5,7 @@
 import json
 import multiprocessing
 import os
+import posixpath
 import re
 import sys
 import threading
@@ -69,6 +70,34 @@ _CONSOLE_RE = re.compile(r"^console\.(?P<method>[a-zA-Z]+): (?P<message>.*)$")
 # Stack frames that follow console.trace, formatted by Console.cpp as
 # "<filename> <line> <funcname>" per frame (one process_output line each).
 _CONSOLE_FRAME_RE = re.compile(r"^(?P<file>\S+/\S+) (?P<line>\d+) (?P<func>\S.*)$")
+
+# CI builds embed paths like
+# "/builds/worker/workspace/obj-build/.../checkouts/gecko/<repo-relative>".
+# Strip the build prefix so frames carry the repo-relative path expected by
+# the profiler source view.
+_CHECKOUTS_GECKO = "checkouts/gecko/"
+
+# Matches the sourceURL mozharness writes into the profile metadata, e.g.
+# "https://hg.mozilla.org/try/rev/56b3cc68b5e7557a3e13fca984f0f8aebc60dd22".
+# The non-greedy <repo> group lets us match multi-segment repo paths like
+# "integration/autoland" and "releases/mozilla-beta".
+_HG_SOURCE_URL_RE = re.compile(
+    r"^https?://(?P<host>hg\.mozilla\.org)/(?P<repo>.+?)/rev/(?P<rev>[0-9a-f]+)$"
+)
+
+
+def _parse_hg_source_url(source_url):
+    """Return (prefix, rev) for an hg.mozilla.org sourceURL, or (None, None).
+
+    The returned prefix combines with a repo-relative path and the rev to form
+    the "hg:<host>/<repo>:<path>:<rev>" shape the profiler source view fetches.
+    """
+    if not source_url:
+        return (None, None)
+    m = _HG_SOURCE_URL_RE.match(source_url)
+    if not m:
+        return (None, None)
+    return (f"hg:{m['host']}/{m['repo']}:", m["rev"])
 
 
 class PsutilStub:
@@ -448,6 +477,14 @@ class SystemResourceMonitor:
         self._drain_timer = None
         self._pipe_lock = threading.Lock()
 
+        self.metadata = metadata
+        # "hg:<host>/<repo>:" prefix and revision parsed once from the profile
+        # metadata's sourceURL, used to wrap repo-relative frame paths into
+        # URLs the profiler source view can fetch.
+        self._frame_file_prefix, self._frame_file_rev = _parse_hg_source_url(
+            metadata.get("sourceURL")
+        )
+
         if psutil is None:
             return
 
@@ -488,7 +525,6 @@ class SystemResourceMonitor:
             target=_collect, args=(child_pipe, poll_interval)
         )
         self.poll_interval = poll_interval
-        self.metadata = metadata
 
     def __del__(self):
         if self._running:
@@ -887,6 +923,33 @@ class SystemResourceMonitor:
         )
         self._stream_marker(name, start, end, markerData, category)
 
+    def _clean_frame_file(self, path):
+        """Return (display_path, source_view_path).
+
+        display_path is the build-prefix-stripped path for tooltip/marker display.
+        source_view_path is an "hg:<host>/<repo>:<path>:<rev>" URL the profiler
+        source view can fetch when the path was repo-relative (i.e. contained the
+        CI "checkouts/gecko/" marker) and this monitor knows the hg prefix from
+        the profile metadata; otherwise it equals display_path.
+        Sysroot, fetches and rust-stdlib paths fall through unchanged in both
+        fields so the source view doesn't 404 trying to fetch them from hg.
+        """
+        if not path:
+            return (path, path)
+        idx = path.rfind(_CHECKOUTS_GECKO)
+        if idx == -1:
+            return (path, path)
+        # The path has already been narrowed to a CI build path (POSIX) by
+        # the rfind above; use posixpath.normpath rather than os.path.normpath
+        # so we don't produce backslash separators on Windows.
+        cleaned = posixpath.normpath(path[idx + len(_CHECKOUTS_GECKO) :])
+        if not self._frame_file_prefix:
+            return (cleaned, cleaned)
+        return (
+            cleaned,
+            f"{self._frame_file_prefix}{cleaned}:{self._frame_file_rev}",
+        )
+
     def _parse_process_output(self, line, timestamp, test_name):
         """Parse a single process_output line and emit a typed marker if it matches a known pattern.
 
@@ -940,15 +1003,16 @@ class SystemResourceMonitor:
             return True
 
         if m := _WARNING_RE.match(line):
+            display, frame_file = self._clean_frame_file(m["file"])
             marker_data = {
                 "type": "cppDebug",
                 "message": m["message"],
-                "file": m["file"],
+                "file": display,
                 "line": int(m["line"]),
                 "process": m["proc"],
                 "pid": int(m["pid"]),
                 "thread": m["thread"],
-                "stack": [{"file": m["file"], "line": int(m["line"])}],
+                "stack": [{"file": frame_file, "line": int(m["line"])}],
             }
             if test_name:
                 marker_data["test"] = test_name
@@ -956,15 +1020,16 @@ class SystemResourceMonitor:
             return True
 
         if m := _ASSERTION_RE.match(line):
+            display, frame_file = self._clean_frame_file(m["file"])
             marker_data = {
                 "type": "cppDebug",
                 "message": m["message"],
-                "file": m["file"],
+                "file": display,
                 "line": int(m["line"]),
                 "process": m["proc"],
                 "pid": int(m["pid"]),
                 "thread": m["thread"],
-                "stack": [{"file": m["file"], "line": int(m["line"])}],
+                "stack": [{"file": frame_file, "line": int(m["line"])}],
                 "color": "red",
             }
             if test_name:
@@ -1318,7 +1383,18 @@ class SystemResourceMonitor:
         }
 
         if stack := data.get("stack"):
-            marker_data["stack"] = stack
+            rewritten = []
+            for frame in stack:
+                if "file" in frame:
+                    rewritten.append({
+                        **frame,
+                        "file": SystemResourceMonitor.instance._clean_frame_file(
+                            frame["file"]
+                        )[1],
+                    })
+                else:
+                    rewritten.append(frame)
+            marker_data["stack"] = rewritten
         if scope := data.get("scope"):
             marker_data["scope"] = scope
         if allowed_match := data.get("allowed_match"):
