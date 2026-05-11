@@ -2309,9 +2309,14 @@ class SystemResourceMonitor:
                 if not func_name and (offset := module_offset or raw_offset):
                     func_name = hex(offset)
 
-                # Get or create resource for the module or file
+                # Get or create resource for the module or file. Native frames
+                # with a function but no module (e.g. LSan log frames) get an
+                # "unknown" resource so the front-end treats them as resolved.
                 resource_index = -1
-                resource_name = module_name or (file_name if is_js else None)
+                if is_js:
+                    resource_name = file_name
+                else:
+                    resource_name = module_name or "unknown"
                 if resource_name:
                     # Find existing resource
                     for i, name_idx in enumerate(resourceTable["name"]):
@@ -2327,7 +2332,7 @@ class SystemResourceMonitor:
                         # Possible resourceTypes:
                         # 0 = unknown, 1 = library, 2 = addon, 3 = webhost, 4 = otherhost, 5 = url
                         # https://github.com/firefox-devtools/profiler/blob/32cb6672c7ed47311e9d84963023d51f5147042b/src/profile-logic/data-structures.ts#L322
-                        resource_type = 1 if module_name else (5 if is_js else 0)
+                        resource_type = 5 if is_js else 1
                         resourceTable["type"].append(resource_type)
                         resourceTable["length"] += 1
 
