@@ -37,7 +37,6 @@ export class AIChatContent extends MozLitElement {
   #scrollClickHandler = null;
   #scrollRafId = null;
   #pendingAnnouncementMessageId = null;
-  #scrollPositions = new Map();
 
   constructor() {
     super();
@@ -74,7 +73,6 @@ export class AIChatContent extends MozLitElement {
     this.#initFooterActionListeners();
     this.#initOverflowObserver();
     this.#initScrollListener();
-    this.#scrollPositions.clear();
   }
 
   disconnectedCallback() {
@@ -349,57 +347,10 @@ export class AIChatContent extends MozLitElement {
       case "assistant-message-complete":
         this.#setMessageComplete(message);
         break;
-      case "restored-all-messages-in-a-conversation":
-        this.#restoreChatScrollPosition(message.convId);
-        break;
       // Used to clear the conversation state via side effects ( new conv id )
       case "clear-conversation":
         this.#checkConversationState(message);
     }
-  }
-
-  async #restoreChatScrollPosition(convId) {
-    await this.updateComplete;
-
-    // Making sure we check if convId hasn't changed while we awaited
-    const lastMessage = this.conversationState.findLast(m => m);
-    if (!lastMessage || lastMessage.convId !== convId) {
-      return;
-    }
-
-    const wrapper = this.#wrapper;
-    if (!wrapper) {
-      return;
-    }
-
-    const savedPosition = this.#scrollPositions.get(convId);
-    if (savedPosition?.contentHeight) {
-      this.shadowRoot
-        ?.querySelector(".chat-inner-wrapper")
-        ?.style.setProperty("--content-height", savedPosition.contentHeight);
-    }
-
-    const goToBottom =
-      !savedPosition ||
-      savedPosition.wasAtBottom ||
-      savedPosition.wasWaitingForResponse;
-
-    if (!goToBottom) {
-      wrapper.scrollTo({
-        top: savedPosition.scrollTop,
-        behavior: "instant",
-      });
-      return;
-    }
-
-    const lastChild = this.shadowRoot.querySelector(
-      ".chat-inner-wrapper"
-    )?.lastElementChild;
-    if (lastChild) {
-      lastChild.scrollIntoView({ block: "end", behavior: "instant" });
-      return;
-    }
-    wrapper.scrollTo({ top: wrapper.scrollHeight, behavior: "instant" });
   }
 
   #setMessageComplete(message) {
@@ -441,41 +392,6 @@ export class AIChatContent extends MozLitElement {
       firstMessage.convId === message.convId &&
       firstMessage.ordinal === message.ordinal;
     const convIdChanged = message.convId !== lastMessage?.convId;
-
-    // If convIdChanged is true because we've changed tabs
-    // We must save the scroll value to restore it
-    if (convIdChanged && lastMessage?.convId) {
-      const wrapper = this.#wrapper;
-      if (wrapper) {
-        const innerWrapper = this.shadowRoot.querySelector(
-          ".chat-inner-wrapper"
-        );
-
-        // if element is near the bottom (50px or less)
-        // we scroll all the way to the end as default
-        let wasAtBottom = true;
-        const lastChild = innerWrapper?.lastElementChild;
-        if (lastChild) {
-          const lastChildRect = lastChild.getBoundingClientRect();
-          const wrapperRect = wrapper.getBoundingClientRect();
-          wasAtBottom = lastChildRect.bottom <= wrapperRect.bottom + 50;
-        }
-
-        const wasWaitingForResponse =
-          this.assistantIsLoading ||
-          this.isSearching ||
-          lastMessage.role !== "assistant" ||
-          !lastMessage.isLastChunk;
-
-        this.#scrollPositions.set(lastMessage.convId, {
-          scrollTop: wrapper.scrollTop,
-          wasAtBottom,
-          wasWaitingForResponse,
-          contentHeight:
-            innerWrapper?.style.getPropertyValue("--content-height") || null,
-        });
-      }
-    }
 
     // If the conversation ID has changed, reset the conversation state
     if (convIdChanged || isReloadingSameConvo) {
