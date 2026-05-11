@@ -7,6 +7,8 @@ support-files = [
 
 ["browser_antifraud_annotation.js"]
 
+["browser_check_channel_helper_telemetry.js"]
+
 ["browser_consentmanager_annotation.js"]
 
 ["browser_emailtracking_telemetry.js"]

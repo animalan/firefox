@@ -7,7 +7,11 @@
 #include "HttpBaseChannel.h"
 #include "mozilla/Components.h"
 #include "mozilla/ErrorNames.h"
+#include "mozilla/FlowMarkers.h"
 #include "mozilla/Maybe.h"
+#include "mozilla/ProfilerMarkers.h"
+#include "mozilla/TimeStamp.h"
+#include "mozilla/glean/UrlClassifierMetrics.h"
 #include "mozilla/net/AsyncUrlChannelClassifier.h"
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/CanonicalBrowsingContext.h"
@@ -1002,14 +1006,25 @@ nsresult AntiTrackingChannelClassifierUtils::CheckChannelHelper(
     }
   }
 
+  PROFILER_MARKER("AntiTrackingChannelClassifier::CheckChannelHelper", NETWORK,
+                  MarkerTiming::IntervalStart(), FlowMarker,
+                  Flow::FromPointer(aChannel));
+  TimeStamp outerStartTime = TimeStamp::Now();
+
   nsCOMPtr<nsIRunnable> r = NS_NewRunnableFunction(
       "AntiTrackingChannelClassifierUtils::CheckChannelHelper",
       [aPerformAnnotations, aPerformBlocking, task, workerClassifier,
-       eventPriority,
+       eventPriority, outerStartTime,
        contentClassifierRequest = std::move(contentClassifierRequest),
        contentClassifier, callbackFromFeature = std::move(callbackFromFeature),
        channel = nsCOMPtr<nsIChannel>(aChannel)]() mutable -> void {
         MOZ_ASSERT(!NS_IsMainThread());
+
+        PROFILER_MARKER(
+            "AntiTrackingChannelClassifier::CheckChannelHelper lookup", NETWORK,
+            MarkerTiming::IntervalStart(), FlowMarker,
+            Flow::FromPointer(channel.get()));
+        TimeStamp workerStartTime = TimeStamp::Now();
 
         bool shouldCancel = false;
         bool shouldAnnotate = false;
@@ -1035,11 +1050,18 @@ nsresult AntiTrackingChannelClassifierUtils::CheckChannelHelper(
           task->DoLookup(workerClassifier);
         }
 
+        glean::urlclassifier::check_channel_helper_worker_time
+            .AccumulateRawDuration(TimeStamp::Now() - workerStartTime);
+        PROFILER_MARKER(
+            "AntiTrackingChannelClassifier::CheckChannelHelper lookup", NETWORK,
+            MarkerTiming::IntervalEnd(), FlowMarker,
+            Flow::FromPointer(channel.get()));
+
         NS_DispatchToMainThreadQueue(
             NS_NewRunnableFunction(
                 "AntiTrackingChannelClassifierUtils::CheckChannelHelper - "
                 "return",
-                [task, channel, shouldCancel, shouldAnnotate,
+                [task, channel, shouldCancel, shouldAnnotate, outerStartTime,
                  callbackFromFeature = std::move(callbackFromFeature),
                  contentClassifier]() -> void {
                   if (shouldAnnotate) {
@@ -1054,6 +1076,13 @@ nsresult AntiTrackingChannelClassifierUtils::CheckChannelHelper(
                   } else {
                     callbackFromFeature();
                   }
+
+                  glean::urlclassifier::check_channel_helper_time
+                      .AccumulateRawDuration(TimeStamp::Now() - outerStartTime);
+                  PROFILER_MARKER(
+                      "AntiTrackingChannelClassifier::CheckChannelHelper",
+                      NETWORK, MarkerTiming::IntervalEnd(), FlowMarker,
+                      Flow::FromPointer(channel.get()));
                 }),
             eventPriority);
       });
