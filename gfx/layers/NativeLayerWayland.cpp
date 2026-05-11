@@ -165,10 +165,26 @@ void NativeLayerRootWayland::Init() {
   mRootSurface->SetVSyncCallbackStateHandlerLocked(
       lock, [this, self = RefPtr{this}](bool aState) -> void {
         LOGVERBOSE("VSyncCallbackStateHandler()");
+        // It's run on locked surface
         mRootSurface->AssertCurrentThreadOwnsMutex();
         for (RefPtr<NativeLayerWayland>& layer : mSublayers) {
           layer->SetFrameCallbackState(aState);
         }
+      });
+
+  // Run emulated VSync if there isn't any mapped/painted layer
+  mRootSurface->SetVSyncEmulateCheckLocked(
+      lock, [this, self = RefPtr{this}]() -> bool {
+        // It's run on locked surface
+        mRootSurface->AssertCurrentThreadOwnsMutex();
+        bool isVisible = false;
+        for (RefPtr<NativeLayerWayland>& layer : mSublayers) {
+          if ((isVisible = layer->IsVisible())) {
+            break;
+          }
+        }
+        LOGVERBOSE("Emulate VSync [%d]", !isVisible);
+        return !isVisible;
       });
 
   // Get the best DMABuf format for root wl_surface. We use the same
@@ -693,6 +709,10 @@ NativeLayerWayland::~NativeLayerWayland() {
 
 bool NativeLayerWayland::IsMapped() { return mSurface->IsMapped(); }
 
+bool NativeLayerWayland::IsVisible() {
+  return mSurface->IsMapped() && mSurface->HasBufferAttached();
+}
+
 void NativeLayerWayland::SetSurfaceIsFlipped(bool aIsFlipped) {
   WaylandSurfaceLock lock(mSurface);
   if (aIsFlipped != mSurfaceIsFlipped) {
@@ -1036,7 +1056,6 @@ void NativeLayerWayland::Unmap() {
   mSurface->UnmapLocked(surfaceLock);
   // Clear reference to this added at NativeLayerWayland::Map() by
   // callback handler.
-  // TODO: Keep it? Remove callbacks only?
   mSurface->ClearVSyncCallbackHandlerLocked(surfaceLock);
   mState.mMutatedStackingOrder = true;
   mState.mMutatedVisibility = true;
