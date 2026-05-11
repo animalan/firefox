@@ -597,6 +597,15 @@ class MochitestServer:
                 os.path.join(os.path.dirname(here), "bin"),
                 env["LD_LIBRARY_PATH"],
             ])
+            # The trainhop bundle ships an m-c libxul.so in tests/bin that gets
+            # loaded by this xpcshell. That libxul would rendez-vous with the
+            # crashhelper from the Beta/Release application directory, but the
+            # two speak incompatible IPC protocols (see bug 2037462), causing
+            # the synchronous startup rendez-vous to hang. The httpd xpcshell
+            # is not the SUT, so suppress its crash-reporter setup -- xpcshell
+            # only enters the OOPInit/SetExceptionHandler block when
+            # MOZ_CRASHREPORTER is set (XPCShellImpl.cpp), so we just unset it.
+            env.pop("MOZ_CRASHREPORTER", None)
 
         # When running with an ASan build, our xpcshell server will also be ASan-enabled,
         # thus consuming too much resources when running together with the browser on
