@@ -940,6 +940,12 @@ bool IsNotUAWidget(JSContext* cx, JSObject* /* unused */);
 bool IsChromeOrUAWidget(JSContext* cx, JSObject* /* unused */);
 
 /**
+ * A test for whether WebIDL methods that should only be visible to
+ * chrome or WorkerDebugger scopes.
+ */
+bool IsChromeOrWorkerDebugger(JSContext* cx, JSObject* /* unused */);
+
+/**
  * Same as IsChromeOrUAWidget but can be used in worker threads as well.
  */
 bool ThreadSafeIsChromeOrUAWidget(JSContext* cx, JSObject* obj);
