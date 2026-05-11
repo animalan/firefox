@@ -12573,7 +12573,6 @@ function Lists({
   };
   const widgetSize = getListsWidgetSize();
   const isMediumSize = widgetSize === "medium";
-  const prevCompletedCount = (0,external_React_namespaceObject.useRef)(selectedList?.completed?.length || 0);
   const inputRef = (0,external_React_namespaceObject.useRef)(null);
   const reorderListRef = (0,external_React_namespaceObject.useRef)(null);
   const sizeSubmenuRef = (0,external_React_namespaceObject.useRef)(null);
@@ -12771,6 +12770,9 @@ function Lists({
       newTasks = selectedList.tasks.filter(task => task.id !== updatedTask.id);
       newCompleted = [...selectedList.completed, updatedTask];
       userAction = USER_ACTION_TYPES.TASK_COMPLETE;
+      if (!newTasks.length && newCompleted.length) {
+        triggerCelebration();
+      }
     } else {
       const targetKey = isCompletedType ? "completed" : "tasks";
       const updatedArray = selectedList[targetKey].map(task => task.id === updatedTask.id ? updatedTask : task);
@@ -13145,25 +13147,9 @@ function Lists({
     el.addEventListener("click", listener);
     return () => el.removeEventListener("click", listener);
   }, [handleChangeSize]);
-
-  // Reset baseline only when switching lists
   (0,external_React_namespaceObject.useEffect)(() => {
-    prevCompletedCount.current = selectedList?.completed?.length || 0;
     setIsAddingTask(false);
-    // intentionally leaving out selectedList from dependency array
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (selectedList) {
-      const doneCount = selectedList.completed?.length || 0;
-      const previous = Math.floor(prevCompletedCount.current / 5);
-      const current = Math.floor(doneCount / 5);
-      if (current > previous) {
-        triggerCelebration();
-      }
-      prevCompletedCount.current = doneCount;
-    }
-  }, [selectedList, triggerCelebration, selected]);
   if (!lists) {
     return null;
   }

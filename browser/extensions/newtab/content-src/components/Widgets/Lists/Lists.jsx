@@ -193,7 +193,6 @@ function Lists({
   const widgetSize = getListsWidgetSize();
   const isMediumSize = widgetSize === "medium";
 
-  const prevCompletedCount = useRef(selectedList?.completed?.length || 0);
   const inputRef = useRef(null);
   const reorderListRef = useRef(null);
   const sizeSubmenuRef = useRef(null);
@@ -439,6 +438,9 @@ function Lists({
       newCompleted = [...selectedList.completed, updatedTask];
 
       userAction = USER_ACTION_TYPES.TASK_COMPLETE;
+      if (!newTasks.length && newCompleted.length) {
+        triggerCelebration();
+      }
     } else {
       const targetKey = isCompletedType ? "completed" : "tasks";
       const updatedArray = selectedList[targetKey].map(task =>
@@ -870,26 +872,9 @@ function Lists({
     return () => el.removeEventListener("click", listener);
   }, [handleChangeSize]);
 
-  // Reset baseline only when switching lists
   useEffect(() => {
-    prevCompletedCount.current = selectedList?.completed?.length || 0;
     setIsAddingTask(false);
-    // intentionally leaving out selectedList from dependency array
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
-
-  useEffect(() => {
-    if (selectedList) {
-      const doneCount = selectedList.completed?.length || 0;
-      const previous = Math.floor(prevCompletedCount.current / 5);
-      const current = Math.floor(doneCount / 5);
-
-      if (current > previous) {
-        triggerCelebration();
-      }
-      prevCompletedCount.current = doneCount;
-    }
-  }, [selectedList, triggerCelebration, selected]);
 
   if (!lists) {
     return null;
