@@ -112,7 +112,7 @@ def lint(paths, config, **lintargs):
         lint_mfbt_headers(results, path, raw_content, config, fix)
         diskarzhan_results = diskarzhan.diskarzhan.lint_std_headers(path, raw_content)
         diskarzhan_results += diskarzhan.diskarzhan.lint_cstd_headers(path, raw_content)
-        if fix:
+        if diskarzhan_results and fix:
             diskarzhan.diskarzhan.fix_includes(path, raw_content, diskarzhan_results)
             results["fixed"] += len(diskarzhan_results)
         else:
