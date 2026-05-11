@@ -1025,6 +1025,7 @@ class TelemetryEvent {
       event,
       provider: details.result?.providerName,
       selIndex: details.result?.rowIndex ?? -1,
+      pickedActionKey: details.element?.dataset.action ?? null,
     };
 
     let { queryContext } = this._controller._lastQueryContextWrapper || {};
@@ -1039,6 +1040,7 @@ class TelemetryEvent {
       searchMode: internalDetails.searchMode,
       selIndex: internalDetails.selIndex,
       selType: internalDetails.selType,
+      pickedActionKey: internalDetails.pickedActionKey,
       location: internalDetails.location,
       windowMode: internalDetails.windowMode,
       ...this.#getOptionalSmartbarTelemetry(internalDetails.searchSource),
@@ -1144,6 +1146,10 @@ class TelemetryEvent {
    *   One of "unknown", "autofill", "visiturl", "bookmark", "help", "history",
    *   "keyword", "searchengine", "searchsuggestion", "switchtab", "remotetab",
    *   "extension", "oneoff", "dismiss".
+   * @param {string|null} [details.pickedActionKey]
+   *   The `data-action` of the action button the user picked, when selType is
+   *   "action". Used to disambiguate which action was picked in the global
+   *   actions row, which can contain multiple action buttons.
    * @param {number} [details.viewTime]
    *   The length of the view time in milliseconds.
    * @param {SapLocation} [details.location]
@@ -1172,6 +1178,7 @@ class TelemetryEvent {
       searchMode,
       selIndex,
       selType,
+      pickedActionKey = null,
       viewTime = 0,
       location = null,
       chatId = "",
@@ -1211,7 +1218,7 @@ class TelemetryEvent {
       .map(r => lazy.UrlbarUtils.searchEngagementTelemetryType(r))
       .join(",");
     let actions = currentResults
-      .map((r, i) => lazy.UrlbarUtils.searchEngagementTelemetryAction(r, i))
+      .map(r => lazy.UrlbarUtils.searchEngagementTelemetryAction(r))
       .filter(v => v)
       .join(",");
     let available_semantic_sources = this.#getAvailableSemanticSources().join();
@@ -1228,7 +1235,7 @@ class TelemetryEvent {
         if (selType == "action") {
           let actionKey = lazy.UrlbarUtils.searchEngagementTelemetryAction(
             currentResults[selIndex],
-            selIndex
+            pickedActionKey
           );
           selected_result = `action_${actionKey}`;
         }

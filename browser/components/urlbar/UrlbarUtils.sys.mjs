@@ -2042,9 +2042,12 @@ export var UrlbarUtils = {
     return "unknown";
   },
 
-  searchEngagementTelemetryAction(result) {
+  searchEngagementTelemetryAction(result, pickedActionKey = null) {
     if (result.providerName != "UrlbarProviderGlobalActions") {
       return result.payload.action?.key ?? "none";
+    }
+    if (pickedActionKey) {
+      return pickedActionKey;
     }
     return result.payload.actionsResults.map(({ key }) => key).join(",");
   },
