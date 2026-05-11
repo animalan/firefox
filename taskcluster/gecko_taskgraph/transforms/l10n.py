@@ -25,7 +25,6 @@ from gecko_taskgraph.transforms.job import JobDescriptionSchema
 from gecko_taskgraph.transforms.task import TaskDescriptionSchema
 from gecko_taskgraph.util.attributes import (
     copy_attributes_from_dependent_job,
-    sorted_unique_list,
     task_name,
 )
 
@@ -188,18 +187,6 @@ def copy_in_useful_magic(config, jobs):
 
 
 transforms.add_validate(L10nDescriptionSchema)
-
-
-@transforms.add
-def gather_required_signoffs(config, jobs):
-    for job in jobs:
-        job.setdefault("attributes", {})["required_signoffs"] = sorted_unique_list(
-            *(
-                dep.attributes.get("required_signoffs", [])
-                for dep in get_dependencies(config, job)
-            )
-        )
-        yield job
 
 
 @transforms.add

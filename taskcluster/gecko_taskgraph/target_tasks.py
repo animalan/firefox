@@ -231,15 +231,6 @@ def filter_release_tasks(task, parameters):
     return True
 
 
-def filter_out_missing_signoffs(task, parameters):
-    for signoff in parameters["required_signoffs"]:
-        if signoff not in parameters["signoff_urls"] and signoff in task.attributes.get(
-            "required_signoffs", []
-        ):
-            return False
-    return True
-
-
 def filter_tests_without_manifests(task, parameters):
     """Remove test tasks that have an empty 'test_manifests' attribute.
 
@@ -542,9 +533,6 @@ def target_tasks_promote_desktop(full_task_graph, parameters, graph_config):
         if task.attributes.get("shipping_product") != parameters["release_product"]:
             return False
 
-        if not filter_out_missing_signoffs(task, parameters):
-            return False
-
         if task.attributes.get("shipping_phase") == "promote":
             return True
 
@@ -562,8 +550,6 @@ def target_tasks_push_desktop(full_task_graph, parameters, graph_config):
     )
 
     def filter(task):
-        if not filter_out_missing_signoffs(task, parameters):
-            return False
         # Include promotion tasks; these will be optimized out
         if task.label in filtered_for_candidates:
             return True
@@ -588,8 +574,6 @@ def target_tasks_ship_desktop(full_task_graph, parameters, graph_config):
     )
 
     def filter(task):
-        if not filter_out_missing_signoffs(task, parameters):
-            return False
         # Include promotion tasks; these will be optimized out
         if task.label in filtered_for_candidates:
             return True

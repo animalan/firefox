@@ -37,8 +37,6 @@ gecko_parameters_schema = {
     Required("release_partner_build_number"): int,
     Required("release_type"): str,
     Required("release_product"): Any(None, str),
-    Required("required_signoffs"): [str],
-    Required("signoff_urls"): dict,
     Required("test_manifest_loader"): str,
     Required("try_mode"): Any(None, str),
     Required("try_task_config"): {
@@ -160,8 +158,6 @@ def get_defaults(repo_root=None):
         # This refers to the upstream repo rather than the local checkout, so
         # should be hardcoded to 'hg' even with git-cinnabar.
         "repository_type": "hg",
-        "required_signoffs": [],
-        "signoff_urls": {},
         "test_manifest_loader": "default",
         "try_mode": None,
         "try_task_config": {},
