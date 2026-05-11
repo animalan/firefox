@@ -24,26 +24,32 @@
 
         <html:moz-card id="identity-popup-securityView-extended-info">
           <!-- (EV) Certificate Information -->
-          <description id="identity-popup-content-owner-label"
-                       when-connection="secure-ev secure-etsi"
-                       data-l10n-id="identity-ev-owner-label"/>
-          <description id="identity-popup-content-owner"
-                       when-connection="secure-ev secure-etsi"
-                       class="header"/>
-          <description id="identity-popup-content-supplemental"
-                       when-connection="secure-ev secure-etsi"/>
-          <description id="identity-popup-content-verifier-label"
-                       when-connection="secure secure-ev secure-etsi"
-                       data-l10n-id="identity-verifier-label"/>
-          <description id="identity-popup-content-verifier"
-                       when-connection="secure secure-ev secure-etsi"
-                       class="header"/>
-          <description id="identity-popup-content-etsi"
-                       when-connection="secure-etsi"
-                       data-l10n-id="identity-etsi"/>
-          <description id="identity-popup-content-cert-exception-overridden"
-                       when-connection="secure-cert-user-overridden"
-                       data-l10n-id="identity-cert-exception-overridden"/>
+          <hbox>
+            <vbox>
+              <description id="identity-popup-content-owner-label"
+                           when-connection="secure-ev secure-etsi"
+                           data-l10n-id="identity-ev-owner-label"/>
+              <description id="identity-popup-content-owner"
+                           when-connection="secure-ev secure-etsi"
+                           class="header"/>
+              <description id="identity-popup-content-supplemental"
+                           when-connection="secure-ev secure-etsi"/>
+              <description id="identity-popup-content-verifier-label"
+                           when-connection="secure secure-ev secure-etsi"
+                           data-l10n-id="identity-verifier-label"/>
+              <description id="identity-popup-content-verifier"
+                           when-connection="secure secure-ev secure-etsi"
+                           class="header"/>
+              <description id="identity-popup-content-etsi"
+                           when-connection="secure-etsi"
+                           data-l10n-id="identity-etsi"/>
+              <description id="identity-popup-content-cert-exception-overridden"
+                           when-connection="secure-cert-user-overridden"
+                           data-l10n-id="identity-cert-exception-overridden"/>
+            </vbox>
+            <image flex="1" id="identity-popup-content-eu-trust-mark"
+                   when-connection="secure-etsi"/>
+          </hbox>
           <description id="identity-popup-content-verifier-unknown"
                        class="identity-popup-warning-box identity-popup-warning-gray"
                        when-customroot="true">

@@ -116,6 +116,8 @@
   skin/classic/global/icons/security-broken.svg            (../../shared/icons/security-broken.svg)
   skin/classic/global/icons/security-custom-root.svg       (../../shared/icons/security-custom-root.svg)
   skin/classic/global/icons/security-warning.svg           (../../shared/icons/security-warning.svg)
+  skin/classic/global/icons/EU-trust-mark-inverted.svg     (../../shared/icons/EU-trust-mark-inverted.svg)
+  skin/classic/global/icons/EU-trust-mark.svg              (../../shared/icons/EU-trust-mark.svg)
   skin/classic/global/icons/settings.svg                   (../../shared/icons/settings.svg)
   skin/classic/global/icons/sort-arrow.svg                 (../../shared/icons/sort-arrow.svg)
   skin/classic/global/icons/swap-horizontal-20.svg         (../../shared/icons/swap-horizontal-20.svg)
