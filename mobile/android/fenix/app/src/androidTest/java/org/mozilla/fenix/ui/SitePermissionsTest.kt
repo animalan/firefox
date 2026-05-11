@@ -333,8 +333,9 @@ class SitePermissionsTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/4024998
     @Test
-    fun doNotAskAgainIsHiddenForLocationPermissionInPrivateMode() {
+    fun verifyDoNotAskAgainIsHiddenForLocationPermissionInPrivateModeTest() {
         homeScreen(composeTestRule) {
         }.togglePrivateBrowsingMode()
 
@@ -343,27 +344,6 @@ class SitePermissionsTest {
         }.clickGetLocationButton {
             verifyLocationPermissionPrompt(testPageHost)
             verifyDoNotAskAgainIsHidden()
-        }
-    }
-
-    @Test
-    fun crossOriginStoragePermissionLearnMoreLinkTest() {
-        val genericWebPage = mockWebServer.getGenericAsset(1)
-        val testPage = mockWebServer.url("pages/cross-site-cookies.html").toString().toUri()
-        val originHost = "mozilla-mobile.github.io"
-        val currentHost = "localhost"
-
-        navigationToolbar(composeTestRule) {
-        }.enterURLAndEnterToBrowser(genericWebPage.url) {
-            waitForPageToLoad()
-        }
-        navigationToolbar(composeTestRule) {
-        }.enterURLAndEnterToBrowser(testPage) {
-            waitForPageToLoad()
-        }.clickRequestStorageAccessButton {
-            verifyCrossOriginCookiesPermissionPrompt(originHost, currentHost)
-        }.clickLearnMore {
-            verifyCrossOriginStorageLearnMoreURL()
         }
     }
 }

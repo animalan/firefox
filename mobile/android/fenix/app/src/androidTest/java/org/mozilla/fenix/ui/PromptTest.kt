@@ -39,6 +39,7 @@ class PromptTest {
     @get:Rule(order = 2)
     val memoryLeaksRule = DetectMemoryLeaksRule(composeTestRule = { composeTestRule })
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/4025097
     @Test
     fun verifyBeforeUnloadPrompt() {
         val defaultWebPage = mockWebServer.getGenericAsset(1)

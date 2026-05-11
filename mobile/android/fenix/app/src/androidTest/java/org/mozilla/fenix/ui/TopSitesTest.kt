@@ -139,6 +139,7 @@ class TopSitesTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2673886
     @Test
     fun editTopSiteTestWithInvalidURL() {
         val webPage = mockWebServer.getGenericAsset(1)

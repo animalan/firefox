@@ -67,6 +67,7 @@ class SettingsAboutTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3132646
     @SkipLeaks(reasons = ["https://bugzilla.mozilla.org/show_bug.cgi?id=2011974"])
     @Test
     fun verifyLibrariesListInReleaseBuildsTest() {
