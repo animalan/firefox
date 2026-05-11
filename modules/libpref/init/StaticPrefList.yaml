@@ -17669,7 +17669,7 @@
 # Reduce page protection infobar
 - name: privacy.reducePageProtection.infobar.enabled.pbmode
   type: bool
-  value: false
+  value: true
   mirror: always
 
 #---------------------------------------------------------------------------
