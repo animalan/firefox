@@ -267,6 +267,7 @@ ${
    * @type {"searchbar"|"smartbar"|"urlbar"}
    */
   #sapName;
+  #scrollAnimationId = null;
   #smartbarAction = "";
   #smartbarActionPending = false;
   // Stores the smartbar action in effect before generation started, so it can
@@ -526,6 +527,9 @@ ${
     // recording abandonment events when the command causes a blur event.
     this.view.panel.addEventListener("command", this, true);
 
+    // This listener handles the overflow scroll fade animation.
+    this.view.panel.addEventListener("scroll", this);
+
     this.window.addEventListener("customizationstarting", this);
     this.window.addEventListener("aftercustomization", this);
     this.window.addEventListener("toolbarvisibilitychange", this);
@@ -616,6 +620,13 @@ ${
     // This is used to detect commands launched from the panel, to avoid
     // recording abandonment events when the command causes a blur event.
     this.view.panel.removeEventListener("command", this, true);
+
+    // This listener handles the overflow scroll fade animation.
+    this.view.panel.removeEventListener("scroll", this);
+    if (this.#scrollAnimationId) {
+      this.window.cancelAnimationFrame(this.#scrollAnimationId);
+      this.#scrollAnimationId = null;
+    }
 
     this.window.removeEventListener("customizationstarting", this);
     this.window.removeEventListener("aftercustomization", this);
@@ -2654,6 +2665,11 @@ ${
     }
     this.#smartbarActionPending = false;
     this.#updateSmartbarCTAButton(queryContext.results[0]);
+  }
+
+  onQueryFinished() {
+    // Calling #updatePanelScrollFade to ensure `has-overflow` is not stale.
+    this.#updatePanelScrollFade();
   }
 
   /**
@@ -6068,6 +6084,46 @@ ${
     }
 
     return new lazy.UrlbarQueryContext(options);
+  }
+
+  /**
+   * Handles scroll events from the urlbarView panel.
+   *
+   * Returns early if:
+   * - the event does not come from the urlbarView panel
+   * - CSS `animation-timeline: scroll()` is supported
+   *
+   * @param {Event} event
+   */
+  _on_scroll(event) {
+    if (
+      event.target !== this.view.panel ||
+      CSS.supports("animation-timeline", "scroll()")
+    ) {
+      return;
+    }
+    this.#updatePanelScrollFade();
+  }
+
+  #updatePanelScrollFade() {
+    // Only run animation if there is not already an animation request for
+    // the current frame.
+    if (this.#scrollAnimationId) {
+      return;
+    }
+    this.#scrollAnimationId = this.window.requestAnimationFrame(() => {
+      this.#scrollAnimationId = null;
+
+      const { scrollTop, scrollHeight, clientHeight } = this.view.panel;
+      const maxScroll = scrollHeight - clientHeight;
+      const hasScrollOverflow = maxScroll > 0;
+      const progress = hasScrollOverflow ? scrollTop / maxScroll : 0;
+      this.view.panel.toggleAttribute("has-overflow", hasScrollOverflow);
+      this.view.panel.style.setProperty(
+        "--smartbar-view-scroll-progress",
+        progress.toFixed(3)
+      );
+    });
   }
 
   _on_scrollend() {

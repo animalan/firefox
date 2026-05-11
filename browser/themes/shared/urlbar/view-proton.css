@@ -16,8 +16,10 @@
 
   --urlbarView-results-padding: 7px;
   --urlbarView-row-gutter: var(--space-xxsmall);
-  --urlbarView-item-inline-padding: var(--urlbar-icon-padding);
-  --urlbarView-item-block-padding: 6px;
+  --urlbarView-row-padding-inline: var(--urlbar-icon-padding);
+  --urlbarView-row-padding-block: 6px;
+  --urlbarView-row-min-height: var(--size-item-large);
+  --urlbarView-row-inner-min-height: calc(var(--urlbarView-row-min-height) - var(--urlbarView-row-padding-block) * 2);
 
   /* The inline margins of a row icon. Rows with different icon sizes will define
      different values for these variables so that the icons of all rows are
@@ -166,7 +168,7 @@
 
   &:not([type="tip"], [type="dynamic"]) {
     :root:not([uidensity="compact"]) & {
-      min-height: 32px;
+      min-height: var(--urlbarView-row-min-height);
     }
     :root[uidensity="touch"] & {
       padding-block: 11px;
@@ -194,11 +196,11 @@
 .urlbarView-row-inner {
   flex: 1 1;
   overflow: hidden;
-  padding-inline: var(--urlbarView-item-inline-padding);
-  padding-block: var(--urlbarView-item-block-padding);
+  padding-inline: var(--urlbarView-row-padding-inline);
+  padding-block: var(--urlbarView-row-padding-block);
 
   :root:not([uidensity="compact"]) & {
-    min-height: 20px; /* row min-height 32px - (2 * padding-block 6px) */
+    min-height: var(--urlbarView-row-inner-min-height);
   }
 }
 
@@ -555,7 +557,7 @@
     position: absolute;
     /* `top` controls how far the label is from the main part of the row. */
     top: var(--urlbarView-labeled-row-label-top);
-    margin-inline-start: var(--urlbarView-item-inline-padding);
+    margin-inline-start: var(--urlbarView-row-padding-inline);
     font-size: 0.8em;
     /* The color and opacity of labels is the same as the "This time, search with"
        text in the search shortcuts. See `.search-panel-header > label` in
@@ -594,7 +596,7 @@
     position: absolute;
     bottom: 0.72em;
     font-size: var(--urlbarView-small-font-size);
-    margin-inline-start: calc(var(--urlbarView-item-inline-padding) + var(--urlbarView-favicon-margin-start));
+    margin-inline-start: calc(var(--urlbarView-row-padding-inline) + var(--urlbarView-favicon-margin-start));
     padding-inline-start: calc(var(--urlbarView-favicon-width) + var(--urlbarView-favicon-margin-end));
     background-image: url("chrome://branding/content/icon32.png");
     background-repeat: no-repeat;
@@ -1003,7 +1005,7 @@
   }
 
   > .urlbarView-row-inner {
-    min-height: 32px;
+    min-height: var(--urlbarView-row-min-height);
     align-items: center;
 
     /* Add space between the tip title (and the rest of row-inner) and its
@@ -1210,9 +1212,9 @@
 
 .urlbarView-actions-container {
   margin-inline-start: calc(
-    var(--urlbarView-item-inline-padding) + var(--urlbarView-favicon-margin-start) + var(--urlbarView-favicon-width) + var(--urlbarView-icon-margin-end)
+    var(--urlbarView-row-padding-inline) + var(--urlbarView-favicon-margin-start) + var(--urlbarView-favicon-width) + var(--urlbarView-icon-margin-end)
   );
-  margin-block-end: var(--urlbarView-item-block-padding);
+  margin-block-end: var(--urlbarView-row-padding-block);
 }
 
 .urlbarView-action-btn {
@@ -1276,7 +1278,7 @@
 .urlbarView-row[rich-suggestion][tip-type="realtime_opt_in"] {
   /* `margin-block-end` is large to give enough spacing between the opt-in and the
      row label in the next row. */
-  margin-block: var(--urlbarView-item-block-padding) calc(5 * var(--urlbarView-item-block-padding));
+  margin-block: var(--urlbarView-row-padding-block) calc(5 * var(--urlbarView-row-padding-block));
   padding-block: 0;
   border-block: none;
   border-radius: var(--border-radius-medium);
@@ -1367,7 +1369,7 @@
     /* The block and inline-start padding should match the normal inner inline
      padding we removed above, in order to keep the first item's image aligned
      with the text and images in other rows. */
-    padding: var(--urlbarView-item-inline-padding);
+    padding: var(--urlbarView-row-padding-inline);
     padding-inline-end: var(--space-large);
 
     .urlbarView-realtime-root:not([selectable]) > &:not([selected]):hover {
@@ -1781,7 +1783,7 @@
 #urlbar .search-panel-one-offs-header-label {
   white-space: nowrap;
   margin: 0;
-  padding-inline: var(--urlbarView-item-inline-padding) 18px;
+  padding-inline: var(--urlbarView-row-padding-inline) 18px;
 }
 
 #urlbar .searchbar-engine-one-off-item {

@@ -15,18 +15,20 @@
   --smartbar-box-shadow: var(--smartwindow-shadow, var(--box-shadow-level-2));
   --smartbar-glow-color: color-mix(in srgb, var(--color-violet-40) 30%, transparent);
   --smartbar-max-height: 50vh;
+  --smartbar-max-visible-rows: 7;
   --smartbar-max-width: calc(var(--size-item-xlarge) * 12);
   --smartbar-outline: var(--focus-outline-width) solid var(--smartbar-outline-color);
   --smartbar-outline-color: light-dark(var(--color-violet-30), var(--color-violet-50));
   --smartbar-cta-icon-fill: var(--icon-color);
+  --smartbar-scroll-mask-height: calc(var(--urlbarView-row-min-height) * 1.5);
   --text-color-deemphasized: light-dark(color-mix(in srgb, var(--color-gray-100) 69%, transparent), color-mix(in srgb, var(--color-gray-05) 69%, transparent));
 }
 
 .smartbar {
   --urlbarView-favicon-margin-start: 0;
   --urlbarView-favicon-margin-end: var(--space-small);
-  --urlbarView-item-inline-padding: var(--space-small);
-  --urlbarView-item-block-padding: var(--space-small);
+  --urlbarView-row-padding-inline: var(--space-small);
+  --urlbarView-row-padding-block: var(--space-small);
   --urlbarView-labeled-row-margin-top: 0;
 
   --urlbarView-small-font-size: var(--font-size-small);
@@ -88,10 +90,88 @@
     overflow-y: auto;
     margin-inline: 0;
     width: 100%;
+    /*
+     * Limit to `--smartbar-max-visible-rows` non-rich results. Fewer results
+     * are visible if rich results are present.
+     */
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+    max-height: calc(
+      (var(--urlbarView-row-inner-min-height) + var(--urlbarView-row-padding-block) * 2 + var(--urlbarView-row-gutter) * 2) * var(--smartbar-max-visible-rows) +
+        var(--space-medium) * 2 - var(--urlbarView-row-gutter) * 2
+    );
+    /*
+     * Scroll fade using an animated mask:
+     * --smartbar-view-scroll-progress is set by JS as a fallback when
+     * `animation-timeline: scroll()` is not supported.
+     */
+    --smartbar-view-scroll-progress: 0;
+    --smartbar-view-fade-threshold: 0.1;
+    --smartbar-view-scroll-at-top-ratio: clamp(0, var(--smartbar-view-scroll-progress) / var(--smartbar-view-fade-threshold), 1);
+    --smartbar-view-scroll-at-bottom-ratio: clamp(
+      0,
+      (var(--smartbar-view-scroll-progress) - (1 - var(--smartbar-view-fade-threshold))) / var(--smartbar-view-fade-threshold),
+      1
+    );
+
+    @media not (prefers-contrast) {
+      mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        black var(--smartbar-scroll-mask-height),
+        black calc(100% - var(--smartbar-scroll-mask-height)),
+        transparent
+      );
+      mask-position: 0 calc((var(--smartbar-view-scroll-at-top-ratio) - 1) * var(--smartbar-scroll-mask-height));
+      mask-repeat: no-repeat;
+      mask-size: 100%
+        calc(100% + (1 - var(--smartbar-view-scroll-at-top-ratio) + var(--smartbar-view-scroll-at-bottom-ratio)) * var(--smartbar-scroll-mask-height));
+
+      &:not([has-overflow]) {
+        mask-image: none;
+      }
+    }
   }
 
   .urlbarView-row[label] {
     --urlbarView-labeled-row-margin-top: calc(var(--urlbarView-labeled-row-label-top) + 3.25em);
+  }
+
+  .urlbarView-row:not([type="tip"], [type="dynamic"]) {
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+    min-height: var(--urlbarView-row-min-height);
+  }
+
+  .urlbarView-row-inner {
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+    min-height: var(--urlbarView-row-inner-min-height);
+  }
+}
+
+@media not (prefers-contrast) {
+  @supports (animation-timeline: scroll()) {
+    .smartbar > .urlbarView {
+      animation: smartbar-view-scroll-mask-fade linear both;
+      animation-timeline: scroll(self);
+    }
+
+    @keyframes smartbar-view-scroll-mask-fade {
+      /* Scrolled to top: Top fade hidden, bottom fade visible. */
+      0% {
+        mask-position: 0 calc(-1 * var(--smartbar-scroll-mask-height));
+        mask-size: 100% calc(100% + var(--smartbar-scroll-mask-height));
+      }
+      /* Scrolling: Top and bottom fades visible. */
+      10%,
+      90% {
+        mask-position: 0 0;
+        mask-size: 100% 100%;
+      }
+      /* Scrolled to bottom: Top fade visible, bottom fade hidden. */
+      100% {
+        mask-position: 0 0;
+        mask-size: 100% calc(100% + var(--smartbar-scroll-mask-height));
+      }
+    }
   }
 }
 
@@ -198,7 +278,7 @@
 
 /* Button container */
 .smartbar-button-container {
-  padding: 0 var(--space-large) var(--space-medium);
+  padding: var(--space-xsmall) var(--space-large) var(--space-medium);
   position: relative;
   display: flex;
 }

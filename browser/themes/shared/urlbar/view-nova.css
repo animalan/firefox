@@ -23,6 +23,8 @@
 
   --urlbarView-row-padding-block: var(--space-small);
   --urlbarView-row-padding-inline: var(--urlbar-icon-padding);
+  --urlbarView-row-min-height: var(--size-item-large);
+  --urlbarView-row-inner-min-height: calc(var(--urlbarView-row-min-height) - var(--urlbarView-row-padding-block) * 2);
 
   --urlbarView-padding: calc(var(--space-large) - var(--urlbarView-row-gutter));
 
@@ -150,7 +152,7 @@
 
   &:not([type="tip"], [type="dynamic"]) {
     :root:not([uidensity="compact"]) & {
-      min-height: 32px;
+      min-height: var(--urlbarView-row-min-height);
     }
     :root[uidensity="touch"] & {
       padding-block: 11px;
@@ -181,7 +183,7 @@
   padding-block: var(--urlbarView-row-padding-block);
 
   :root:not([uidensity="compact"]) & {
-    min-height: 20px; /* row min-height 32px - (2 * padding-block 6px) */
+    min-height: var(--urlbarView-row-inner-min-height);
   }
 }
 
@@ -870,7 +872,7 @@
   }
 
   > .urlbarView-row-inner {
-    min-height: 32px;
+    min-height: var(--urlbarView-row-min-height);
     align-items: center;
 
     /* Add space between the tip title (and the rest of row-inner) and its
