@@ -5169,20 +5169,13 @@ UniquePtr<TextMetrics> CanvasRenderingContext2D::DrawOrMeasureText(
     }
   }
 
-  gfx::ShapedTextFlags runOrientation =
-      (processor.mTextRunFlags & gfx::ShapedTextFlags::TEXT_ORIENT_MASK);
-  nsFontMetrics::FontOrientation fontOrientation =
-      (runOrientation == gfx::ShapedTextFlags::TEXT_ORIENT_VERTICAL_MIXED ||
-       runOrientation == gfx::ShapedTextFlags::TEXT_ORIENT_VERTICAL_UPRIGHT)
-          ? nsFontMetrics::eVertical
-          : nsFontMetrics::eHorizontal;
-
   nscoord totalWidthCoord;
 
   processor.mFontgrp
       ->UpdateUserFonts();  // ensure user font generation is current
   RefPtr<gfxFont> font = processor.mFontgrp->GetFirstValidFont();
-  const gfxFont::Metrics& fontMetrics = font->GetMetrics(fontOrientation);
+  const gfxFont::Metrics& fontMetrics =
+      font->GetMetrics(nsFontMetrics::eHorizontal);
 
   // calls bidi algo twice since it needs the full text width and the
   // bounding boxes before rendering anything
@@ -5220,6 +5213,14 @@ UniquePtr<TextMetrics> CanvasRenderingContext2D::DrawOrMeasureText(
   float offsetX = anchorX * totalWidth;
   processor.mPt.x -= offsetX;
 
+  gfx::ShapedTextFlags runOrientation =
+      (processor.mTextRunFlags & gfx::ShapedTextFlags::TEXT_ORIENT_MASK);
+  nsFontMetrics::FontOrientation fontOrientation =
+      (runOrientation == gfx::ShapedTextFlags::TEXT_ORIENT_VERTICAL_MIXED ||
+       runOrientation == gfx::ShapedTextFlags::TEXT_ORIENT_VERTICAL_UPRIGHT)
+          ? nsFontMetrics::eVertical
+          : nsFontMetrics::eHorizontal;
+
   // offset pt.y (or pt.x, for vertical text) based on text baseline
   gfxFloat baselineAnchor;
 
@@ -5250,6 +5251,11 @@ UniquePtr<TextMetrics> CanvasRenderingContext2D::DrawOrMeasureText(
   // We can't query the textRun directly, as it may not have been created yet;
   // so instead we check the flags that will be used to initialize it.
   if (runOrientation != gfx::ShapedTextFlags::TEXT_ORIENT_HORIZONTAL) {
+    if (fontOrientation == nsFontMetrics::eVertical) {
+      // Adjust to account for mTextRun being shaped using center baseline
+      // rather than alphabetic.
+      baselineAnchor -= (fontMetrics.emAscent - fontMetrics.emDescent) * .5f;
+    }
     processor.mPt.x -= baselineAnchor;
   } else {
     processor.mPt.y += baselineAnchor;

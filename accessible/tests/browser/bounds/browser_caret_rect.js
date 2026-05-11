@@ -98,7 +98,7 @@ function testCaretRect(
   let queryOffset = atEnd && !empty ? offset - 1 : offset;
   const atEndInNewLine = atEnd && acc.getCharacterAtOffset(queryOffset) == "\n";
 
-  const [rangeX, rangeY, rangeW, rangeH] =
+  const [rangeX, rangeY, , rangeH] =
     fetchedBounds.length > queryOffset
       ? fetchedBounds[queryOffset]
       : [0, 0, 0, 0];
@@ -121,71 +121,31 @@ function testCaretRect(
     );
   }
 
-  let [caretInlinePos, caretBlockPos, rangeInlinePos, rangeBlockPos] =
-    isVertical
-      ? [caretY, caretX, rangeY, rangeX]
-      : [caretX, caretY, rangeX, rangeY];
-
-  // Compare inline-axis position for caret and text range
   if (atEndInNewLine) {
-    Assert.lessOrEqual(
-      caretInlinePos,
-      rangeInlinePos,
-      "Caret inline before range inline"
-    );
+    Assert.lessOrEqual(caretX, rangeX, "Caret x before range x");
   } else if (atEnd || atLineEnd) {
-    Assert.greaterOrEqual(
-      caretInlinePos,
-      rangeInlinePos,
-      "Caret inline after last range inline"
-    );
+    Assert.greater(caretX, rangeX, "Caret x after last range x");
   } else {
-    // Caret inline size changes depending on device pixel ratio. In RTL
+    // Caret width changes depending on device pixel ratio. In RTL
     // text that would change the x where the caret is drawn by a pixel or two.
-    isWithin(
-      caretInlinePos,
-      rangeInlinePos,
-      3,
-      "Caret inline similar to range inline"
-    );
+    isWithin(caretX, rangeX, 3, "Caret x similar to range x");
   }
 
-  // Compare block-axis position for caret and text range
-  if (atEndInNewLine) {
-    Assert.greater(
-      caretBlockPos,
-      rangeBlockPos,
-      "Caret block below range block"
-    );
+  if (isVertical && atEnd) {
+    Assert.greaterOrEqual(caretY, rangeY, "Caret y below range y");
+  } else if (atEndInNewLine) {
+    Assert.greater(caretY, rangeY, "Caret y below range y");
   } else if (atLineEnd) {
-    Assert.less(
-      caretBlockPos,
-      rangeBlockPos,
-      "Caret block above start range block"
-    );
+    Assert.less(caretY, rangeY, "Caret y above start line range.");
   } else {
-    isWithin(
-      caretBlockPos,
-      rangeBlockPos,
-      3,
-      "Caret block similar to range block"
-    );
+    isWithin(caretY, rangeY, 3, "Caret y similar to range y");
   }
 
-  let [caretInlineSize, caretBlockSize, rangeBlockSize] = isVertical
-    ? [caretH, caretW, rangeW]
-    : [caretW, caretH, rangeH];
-
-  ok(caretInlineSize, "Caret inline size is greater than 0");
+  ok(caretW, "Caret width is greater than 0");
 
   if (!empty) {
     // Depending on glyph, the range can be taller.
-    isWithin(
-      caretBlockSize,
-      rangeBlockSize,
-      2,
-      "Caret block size similar to range block size"
-    );
+    isWithin(caretH, rangeH, 2, "Caret height similar to range height");
   }
 }
 
@@ -200,15 +160,11 @@ function getAccBounds(acc) {
 
 /**
  * Test the caret rect in content documents.
- *
- * Padding is removed in order to make the text range bounds
- * and the caret bounds consistent for the empty text input.
- * See Bug 2038670.
  */
 addAccessibleTask(
   `
-<input id="input" value="ab" style="padding: 0;">
-<input id="emptyInput" style="padding: 0;">
+<input id="input" value="ab">
+<input id="emptyInput">
   `,
   async function (browser, docAcc) {
     async function runTests() {
@@ -512,15 +468,11 @@ addAccessibleTask(
 
 /**
  * Test the caret rect in vertical text.
- *
- * Padding is removed in order to make the text range bounds
- * and the caret bounds consistent for the empty text input.
- * See Bug 2038670.
  */
 addAccessibleTask(
   `
-<input id="input" value="ab" style="writing-mode: vertical-lr; padding: 0;">
-<input id="emptyInput" style="writing-mode: vertical-lr; padding: 0;">
+<input id="input" value="ab" style="writing-mode: vertical-lr;">
+<input id="emptyInput" style="writing-mode: vertical-lr;">
   `,
   async function testVerticalInputs(browser, docAcc) {
     const input = findAccessibleChildByID(docAcc, "input", [nsIAccessibleText]);
