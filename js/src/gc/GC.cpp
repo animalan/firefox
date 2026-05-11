@@ -355,15 +355,18 @@ void JS::GCContext::poisonJitCode() {
 #ifdef DEBUG
 void GCRuntime::verifyAllChunks() {
   AutoLockGC lock(this);
-  fullChunks(lock).verifyChunks();
-  availableChunks(lock).verifyChunks();
-  emptyChunks(lock).verifyChunks();
-  if (currentChunk_) {
-    MOZ_ASSERT(currentChunk_->info.isCurrentChunk);
-    currentChunk_->verify();
-  } else {
-    MOZ_ASSERT(pendingFreeCommittedArenas.ref().IsEmpty());
+  for (AllZonesIter zone(rt); !zone.done(); zone.next()) {
+    zone->fullChunks(lock).verifyChunks();
+    zone->availableChunks(lock).verifyChunks();
+    if (zone->currentChunk_) {
+      MOZ_ASSERT(zone->currentChunk_->info.isCurrentChunk);
+      MOZ_ASSERT(zone->currentChunk_->info.zone == zone.get());
+      zone->currentChunk_->verify();
+    } else {
+      MOZ_ASSERT(zone->pendingFreeCommittedArenas.ref().IsEmpty());
+    }
   }
+  emptyChunks(lock).verifyChunks();
 }
 #endif
 
@@ -1089,6 +1092,16 @@ void GCRuntime::finish() {
   finishVerifier();
 #endif
 
+  // Free all zone-owned chunks before deleting zones.
+  {
+    AutoLockGC lock(this);
+    for (ZonesIter zone(this, WithAtoms); !zone.done(); zone.next()) {
+      clearCurrentChunk(zone, lock);
+      FreeChunkPool(zone->fullChunks(lock));
+      FreeChunkPool(zone->availableChunks(lock));
+    }
+  }
+
   // Delete all remaining zones.
   for (ZonesIter zone(this, WithAtoms); !zone.done(); zone.next()) {
     AutoSetThreadIsSweeping threadIsSweeping(rt->gcContext(), zone);
@@ -1105,13 +1118,6 @@ void GCRuntime::finish() {
 
   zones().clear();
 
-  {
-    AutoLockGC lock(this);
-    clearCurrentChunk(lock);
-  }
-
-  FreeChunkPool(fullChunks_.ref());
-  FreeChunkPool(availableChunks_.ref());
   FreeChunkPool(emptyChunks_.ref());
 
   TlsGCContext.set(nullptr);
@@ -1416,12 +1422,18 @@ uint32_t GCRuntime::getParameter(JSGCParamKey key, const AutoLockGC& lock) {
     case JSGC_PER_ZONE_GC_ENABLED:
       return perZoneGCEnabled;
     case JSGC_UNUSED_CHUNKS:
-      clearCurrentChunk(lock);
       return uint32_t(emptyChunks(lock).count());
-    case JSGC_TOTAL_CHUNKS:
-      clearCurrentChunk(lock);
-      return uint32_t(fullChunks(lock).count() + availableChunks(lock).count() +
-                      emptyChunks(lock).count());
+    case JSGC_TOTAL_CHUNKS: {
+      size_t count = emptyChunks(lock).count();
+      for (AllZonesIter zone(rt); !zone.done(); zone.next()) {
+        count += zone->fullChunks(lock).count() +
+                 zone->availableChunks(lock).count();
+        if (zone->currentChunk_) {
+          count++;
+        }
+      }
+      return uint32_t(count);
+    }
     case JSGC_SLICE_TIME_BUDGET_MS:
       MOZ_RELEASE_ASSERT(defaultTimeBudgetMS_ >= 0);
       MOZ_RELEASE_ASSERT(defaultTimeBudgetMS_ <= UINT32_MAX);
@@ -2254,8 +2266,10 @@ void GCRuntime::startDecommit() {
 
   {
     AutoLockGC lock(this);
-    MOZ_ASSERT(fullChunks(lock).verify());
-    MOZ_ASSERT(availableChunks(lock).verify());
+    for (AllZonesIter zone(rt); !zone.done(); zone.next()) {
+      MOZ_ASSERT(zone->fullChunks(lock).verify());
+      MOZ_ASSERT(zone->availableChunks(lock).verify());
+    }
     MOZ_ASSERT(emptyChunks(lock).verify());
 
     // Verify that all entries in the empty chunks pool are unused.
@@ -2272,7 +2286,14 @@ void GCRuntime::startDecommit() {
 
   {
     AutoLockGC lock(this);
-    if (availableChunks(lock).empty() && !tooManyEmptyChunks(lock) &&
+    bool hasAvailableChunks = false;
+    for (AllZonesIter zone(rt); !zone.done(); zone.next()) {
+      if (!zone->availableChunks(lock).empty()) {
+        hasAvailableChunks = true;
+        break;
+      }
+    }
+    if (!hasAvailableChunks && !tooManyEmptyChunks(lock) &&
         emptyChunks(lock).empty()) {
       return;  // Nothing to do.
     }
@@ -2313,7 +2334,9 @@ void js::gc::BackgroundDecommitTask::run(AutoLockHelperThreadState& lock) {
 
       // To help minimize the total number of chunks needed over time, sort the
       // available chunks list so that we allocate into more-used chunks first.
-      gc->availableChunks(gcLock).sort();
+      for (AllZonesIter zone(gc->rt); !zone.done(); zone.next()) {
+        zone->availableChunks(gcLock).sort();
+      }
 
       if (DecommitEnabled()) {
         gc->decommitEmptyChunks(cancel_, gcLock);
@@ -2377,18 +2400,21 @@ void GCRuntime::decommitFreeArenas(const bool& cancel, AutoLockGC& lock) {
   // thread could modify it concurrently. Instead, we build and pass an
   // explicit Vector containing the Chunks we want to visit.
   Vector<ArenaChunk*, 0, SystemAllocPolicy> chunksToDecommit;
-  for (ChunkPool::Iter chunk(availableChunks(lock)); !chunk.done();
-       chunk.next()) {
-    if (chunk->info.numArenasFreeCommitted != 0 &&
-        !chunksToDecommit.append(chunk)) {
-      onOutOfMallocMemory(lock);
-      return;
+  for (AllZonesIter zone(rt); !zone.done(); zone.next()) {
+    for (ChunkPool::Iter chunk(zone->availableChunks(lock)); !chunk.done();
+         chunk.next()) {
+      if (chunk->info.numArenasFreeCommitted != 0 &&
+          !chunksToDecommit.append(chunk)) {
+        onOutOfMallocMemory(lock);
+        return;
+      }
     }
   }
 
   for (ArenaChunk* chunk : chunksToDecommit) {
     MOZ_ASSERT(chunk->getKind() == ChunkKind::TenuredArenas);
     MOZ_ASSERT(!chunk->isEmpty());
+    MOZ_ASSERT(chunk->info.zone);
 
     if (chunk->info.isCurrentChunk) {
       // Chunk has become current chunk while lock was released.
@@ -2400,7 +2426,7 @@ void GCRuntime::decommitFreeArenas(const bool& cancel, AutoLockGC& lock) {
       continue;
     }
 
-    MOZ_ASSERT(availableChunks(lock).contains(chunk));
+    MOZ_ASSERT(chunk->info.zone->availableChunks(lock).contains(chunk));
     chunk->decommitFreeArenas(this, cancel, lock);
   }
 }
@@ -2409,11 +2435,13 @@ void GCRuntime::decommitFreeArenas(const bool& cancel, AutoLockGC& lock) {
 // releasing the GC lock or allocating any memory.
 void GCRuntime::decommitFreeArenasWithoutUnlocking(const AutoLockGC& lock) {
   MOZ_ASSERT(DecommitEnabled());
-  for (ChunkPool::Iter chunk(availableChunks(lock)); !chunk.done();
-       chunk.next()) {
-    chunk->decommitFreeArenasWithoutUnlocking(lock);
+  for (AllZonesIter zone(rt); !zone.done(); zone.next()) {
+    for (ChunkPool::Iter chunk(zone->availableChunks(lock)); !chunk.done();
+         chunk.next()) {
+      chunk->decommitFreeArenasWithoutUnlocking(lock);
+    }
+    MOZ_ASSERT(zone->availableChunks(lock).verify());
   }
-  MOZ_ASSERT(availableChunks(lock).verify());
 }
 
 void GCRuntime::maybeRequestGCAfterBackgroundTask(
@@ -4411,7 +4439,9 @@ void GCRuntime::incrementalSlice(SliceBudget& budget, JS::GCReason reason,
 
       {
         AutoLockGC lock(this);
-        clearCurrentChunk(lock);
+        for (AllZonesIter zone(rt); !zone.done(); zone.next()) {
+          clearCurrentChunk(zone, lock);
+        }
       }
 
       assertBackgroundSweepingFinished();
