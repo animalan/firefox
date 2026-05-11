@@ -719,7 +719,6 @@
     <ID>UndocumentedPublicFunction:BrowserToolbarInteractor.kt$BrowserToolbarInteractor$fun onTabCounterMenuItemTapped(item: TabCounterMenu.Item)</ID>
     <ID>UndocumentedPublicFunction:BrowserToolbarMenuController.kt$BrowserToolbarMenuController$fun handleToolbarItemInteraction(item: ToolbarMenu.Item)</ID>
     <ID>UndocumentedPublicFunction:ClearSiteDataView.kt$ClearSiteDataView$fun update(webInfoState: WebsiteInfoState)</ID>
-    <ID>UndocumentedPublicFunction:ClearableEditText.kt$ClearableEditText$fun onTextChanged(text: CharSequence?)</ID>
     <ID>UndocumentedPublicFunction:CollectionCreationBottomBarView.kt$CollectionCreationBottomBarView$fun update(step: SaveCollectionStep, state: CollectionCreationState)</ID>
     <ID>UndocumentedPublicFunction:CollectionCreationController.kt$CollectionCreationController$fun addNewCollection()</ID>
     <ID>UndocumentedPublicFunction:CollectionCreationController.kt$CollectionCreationController$fun addTabToSelection(tab: Tab)</ID>

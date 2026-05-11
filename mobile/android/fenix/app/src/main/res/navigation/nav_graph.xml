@@ -480,8 +480,7 @@
 
     <fragment
         android:id="@+id/bookmarkEditFragment"
-        android:name="org.mozilla.fenix.bookmarks.EditBookmarkFragment"
-        tools:layout="@layout/fragment_edit_bookmark">
+        android:name="org.mozilla.fenix.bookmarks.EditBookmarkFragment">
         <argument
             android:name="guidToEdit"
             app:argType="string"
