@@ -1,5 +1,5 @@
 ---
-name: perf-investigation
+name: js-perf-investigation
 description: >
   Structured performance opportunity investigation for SpiderMonkey (the Firefox JavaScript engine).
   Use this skill when the user wants to investigate JS engine performance, profile SpiderMonkey,
