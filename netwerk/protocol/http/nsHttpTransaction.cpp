@@ -1461,10 +1461,17 @@ void nsHttpTransaction::Close(nsresult reason) {
   // Skip this for ECH connections: ECH manages its own retry chain (record
   // rotation, fallback to origin) through PrepareConnInfoForRetry, and must
   // not be blocked.
+  //
+  // Also skip if NS_HTTP_DISALLOW_HTTP3 is already set: Http3Session::Close
+  // calls DisableHttp3() before CloseTransaction(), so the session layer may
+  // have already decided H3 is unusable. Keeping an H3 connInfo with that cap
+  // set would trip the ProcessNewTransaction assertion that forbids the
+  // combination.
   const bool echConfigUsed =
       nsHttpHandler::EchConfigEnabled(mConnInfo->IsHttp3()) &&
       !mConnInfo->GetEchConfig().IsEmpty();
   if (shouldRestartTransactionForHTTPSRR && !echConfigUsed &&
+      !(mCaps & NS_HTTP_DISALLOW_HTTP3) &&
       ShouldRestartOnResumptionError(reason)) {
     shouldRestartTransactionForHTTPSRR = false;
     mDontRetryWithDirectRoute = true;
