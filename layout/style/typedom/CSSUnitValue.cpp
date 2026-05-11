@@ -4,6 +4,8 @@
 
 #include "mozilla/dom/CSSUnitValue.h"
 
+#include <math.h>
+
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/CSSPropertyId.h"
 #include "mozilla/ErrorResult.h"
@@ -79,6 +81,10 @@ void CSSUnitValue::ToCssTextWithProperty(const CSSPropertyId& aPropertyId,
   // and fully spec-compliant manner. See bug 2005142
   const bool isValueOutOfRange = [](NonCustomCSSPropertyId aId, double aValue) {
     switch (aId) {
+      case eCSSProperty_order:
+      case eCSSProperty_z_index:
+        return round(aValue) != aValue;
+
       case eCSSProperty_font_size_adjust:
       case eCSSProperty_font_stretch:
       case eCSSProperty_flex_grow:
