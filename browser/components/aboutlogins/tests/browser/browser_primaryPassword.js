@@ -18,10 +18,6 @@ function waitForLoginCountToReach(browser, loginCount) {
 }
 
 add_setup(async function () {
-  // ensure the rust mirror is disabled (Rust has its own PrP dialog)
-  await SpecialPowers.pushPrefEnv({
-    set: [["signon.rustMirror.enabled", false]],
-  });
   await addLogin(TEST_LOGIN1);
 
   // head.js enables OS auth for all tests in this directory but since we
@@ -32,7 +28,6 @@ add_setup(async function () {
   registerCleanupFunction(async () => {
     await Services.logins.removeAllUserFacingLoginsAsync();
     LoginTestUtils.primaryPassword.disable();
-    await SpecialPowers.popPrefEnv();
   });
 });
 
