@@ -2555,6 +2555,20 @@ Preferences.addSetting(
     },
   })
 );
+
+// Trigger site data calculation the first time the privacy pane is shown in
+// this prefs document. siteDataSize, clearSiteDataButton, and siteDataSettings
+// all consume the resulting "sitedatamanager:*" notifications.
+{
+  let onPaneShown = event => {
+    if (event.detail.category === "panePrivacy") {
+      lazy.SiteDataManager.updateSites();
+      window.removeEventListener("paneshown", onPaneShown);
+    }
+  };
+  window.addEventListener("paneshown", onPaneShown);
+}
+
 Preferences.addSetting({
   id: "cookieExceptions",
   onUserClick() {

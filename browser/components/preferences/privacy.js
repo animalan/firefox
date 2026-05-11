@@ -733,8 +733,6 @@ var gPrivacyPane = {
 
     setSyncFromPrefListener("savePasswords", () => this.readSavePasswords());
 
-    this.initSiteDataControls();
-
     this.initPrivacySegmentation();
 
     let signonBundle = document.getElementById("signonBundle");
@@ -772,10 +770,6 @@ var gPrivacyPane = {
 
     // Notify observers that the UI is now ready
     Services.obs.notifyObservers(window, "privacy-pane-loaded");
-  },
-
-  initSiteDataControls() {
-    SiteDataManager.updateSites();
   },
 
   // CONTENT BLOCKING
