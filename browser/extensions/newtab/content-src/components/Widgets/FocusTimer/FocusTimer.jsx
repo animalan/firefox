@@ -6,7 +6,7 @@ import { actionCreators as ac, actionTypes as at } from "common/Actions.mjs";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, batch } from "react-redux";
 import { useIntersectionObserver } from "../../../lib/utils";
-import { WIDGET_REGISTRY, resolveWidgetSize } from "../WidgetsRegistry.mjs";
+import { WIDGET_REGISTRY, resolveWidgetSize } from "common/WidgetsRegistry.mjs";
 import { WidgetCelebration } from "../WidgetCelebration";
 import { useWidgetCelebration } from "../useWidgetCelebration";
 

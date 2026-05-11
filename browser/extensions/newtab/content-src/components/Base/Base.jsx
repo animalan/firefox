@@ -33,7 +33,7 @@ import {
   WIDGET_REGISTRY,
   resolveWidgetHasSidebar,
   resolveWidgetSize,
-} from "content-src/components/Widgets/WidgetsRegistry.mjs";
+} from "common/WidgetsRegistry.mjs";
 
 const VISIBLE = "visible";
 const VISIBILITY_CHANGE_EVENT = "visibilitychange";

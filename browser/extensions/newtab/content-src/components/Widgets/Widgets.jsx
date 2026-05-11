@@ -21,7 +21,7 @@ import {
   resolveWidgetOrder,
   resolveWidgetHasSidebar,
   getHideAllTargets,
-} from "./WidgetsRegistry.mjs";
+} from "common/WidgetsRegistry.mjs";
 import { WIDGET_ROW_COMPONENTS } from "./WidgetsComponentRegistry.jsx";
 
 const CONTAINER_ACTION_TYPES = {
