@@ -216,10 +216,16 @@ extern JS_PUBLIC_API JSObject* CreateDefaultExportSyntheticModule(
     JSContext* cx, Handle<Value> defaultExport);
 
 /**
- * Parse the given source buffer as a module in the scope of the current global
- * of cx and return a source text module record.
+ * Compile the given wasm source buffer as an evaluation phase module record.
  */
 extern JS_PUBLIC_API JSObject* CompileWasmModule(
+    JSContext* cx, const ReadOnlyCompileOptions& options,
+    js::Vector<uint8_t, 0, js::MallocAllocPolicy>& srcBuf);
+
+/**
+ * Compile the given wasm source buffer as a source phase module record.
+ */
+extern JS_PUBLIC_API JSObject* CompileWasmModuleAsSource(
     JSContext* cx, const ReadOnlyCompileOptions& options,
     js::Vector<uint8_t, 0, js::MallocAllocPolicy>& srcBuf);
 

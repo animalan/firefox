@@ -31,8 +31,10 @@
 #include "vm/JSContext.h"               // CHECK_THREAD, JSContext
 #include "vm/JSObject.h"                // JSObject
 #include "vm/JSONParser.h"              // JSONParser
+#include "vm/JSScript.h"                // js::ScriptSourceObject
 #include "vm/List.h"                    // ListObject
 #include "vm/Runtime.h"                 // JSRuntime
+#include "wasm/WasmCompile.h"
 
 #include "builtin/HandlerFunction-inl.h"  // js::ExtraValueFromHandler, js::NewHandler{,WithExtraValue}, js::TargetFromHandler
 #include "vm/JSAtomUtils-inl.h"           // AtomToId
@@ -305,17 +307,61 @@ JS_PUBLIC_API JSObject* JS::CreateDefaultExportSyntheticModule(
   return moduleObject;
 }
 
+// https://webassembly.github.io/esm-integration/js-api/index.html#esm-integration
 JS_PUBLIC_API JSObject* JS::CompileWasmModule(
     JSContext* cx, const ReadOnlyCompileOptions& options,
     js::Vector<uint8_t, 0, js::MallocAllocPolicy>& srcBuf) {
   // TODO: Compilation of wasm modules will be added in
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1997621.
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=2030454.
   // For now, we fail unconditionally.
   JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                            JSMSG_WASM_COMPILE_ERROR,
                            "Compilation of wasm modules not implemented.");
 
   return nullptr;
+}
+
+// https://webassembly.github.io/esm-integration/js-api/index.html#esm-integration
+JS_PUBLIC_API JSObject* JS::CompileWasmModuleAsSource(
+    JSContext* cx, const ReadOnlyCompileOptions& options,
+    js::Vector<uint8_t, 0, js::MallocAllocPolicy>& srcBuf) {
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+  MOZ_ASSERT(!cx->zone()->isAtomsZone());
+  AssertHeapIsIdle();
+  CHECK_THREAD(cx);
+
+  wasm::BytecodeSource source(srcBuf.begin(), srcBuf.length());
+  RootedObject wasmModuleObject(cx);
+  if (!wasm::CompileForESM(cx, options, source, &wasmModuleObject)) {
+    return nullptr;
+  }
+
+  Rooted<ModuleObject*> moduleObject(cx, ModuleObject::create(cx));
+  if (!moduleObject) {
+    return nullptr;
+  }
+
+  moduleObject->initModuleSourceSlot(wasmModuleObject);
+
+  Rooted<ScriptSourceObject*> sso(cx,
+                                  ScriptSourceObject::createForWasmModule(cx));
+  if (!sso) {
+    return nullptr;
+  }
+  moduleObject->initScriptSourceObject(sso);
+
+  if (!ModuleObject::createWasmEnvironment(cx, moduleObject)) {
+    return nullptr;
+  }
+
+  return moduleObject;
+#else
+  JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                           JSMSG_WASM_COMPILE_ERROR,
+                           "Compilation of wasm modules not enabled.");
+
+  return nullptr;
+#endif
 }
 
 JS_PUBLIC_API void JS::SetModulePrivate(JSObject* module, const Value& value) {
