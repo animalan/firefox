@@ -695,6 +695,14 @@ def target_tasks_custom_car_perf_testing(full_task_graph, parameters, graph_conf
                 # Bug 1898514: avoid tp6m or non-essential tp6 jobs in cron
                 if "tp6" in try_name and "essential" not in try_name:
                     return False
+                # Bug 2038340: temporarily limit CaR benchmarks on Windows
+                # to sp3/js3/motionmark during PSU replacement
+                if "windows" in platform and "benchmark" in try_name:
+                    if not any(
+                        x in try_name
+                        for x in ["speedometer3", "jetstream3", "motionmark"]
+                    ):
+                        return False
                 # Bug 1928416
                 # For ARM coverage, this will only run on M2 machines at the moment.
                 if "jetstream2" in try_name:
@@ -780,6 +788,14 @@ def target_tasks_general_perf_testing(full_task_graph, parameters, graph_config)
                 if "chrome" in try_name:
                     if "tp6" in try_name and "essential" not in try_name:
                         return False
+                    # Bug 2038340: temporarily limit Chrome benchmarks on Windows
+                    # to sp3/js3/motionmark during PSU replacement
+                    if "windows" in platform and "benchmark" in try_name:
+                        if not any(
+                            x in try_name
+                            for x in ["speedometer3", "jetstream3", "motionmark"]
+                        ):
+                            return False
                     return True
                 # chromium-as-release has its own cron
                 if "custom-car" in try_name:
@@ -791,6 +807,14 @@ def target_tasks_general_perf_testing(full_task_graph, parameters, graph_config)
                 if "linux" in platform:
                     if "speedometer3" in try_name:
                         return True
+                # Bug 2038340: temporarily limit Firefox benchmarks on Windows
+                # to sp3/js3/motionmark during PSU replacement
+                if "windows" in platform and "benchmark" in try_name:
+                    if not any(
+                        x in try_name
+                        for x in ["speedometer3", "jetstream3", "motionmark"]
+                    ):
+                        return False
                 if "safari" and "benchmark" in try_name:
                     if "jetstream2" in try_name and "safari" in try_name:
                         return False
