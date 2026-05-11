@@ -67,6 +67,7 @@ export const ERRORS = Object.freeze({
   GENERIC: "generic-error",
   MAX_RETRY_ATTEMPTS: "max-retry-attempts-error",
   UNAUTHORIZED: "unauthorized-error",
+  DISABLED: "disabled-error",
 });
 
 /**
@@ -81,6 +82,11 @@ class ContentSharingUtilsClass {
 
   get serverURL() {
     return lazy.CONTENT_SHARING_SERVER_URL;
+  }
+
+  disable() {
+    Services.prefs.setBoolPref("browser.contentsharing.enabled", false);
+    Services.prefs.setStringPref("browser.contentsharing.server.url", "");
   }
 
   async getValidator() {
@@ -434,6 +440,10 @@ class ContentSharingUtilsClass {
           if (response.status === 401) {
             // Bug 2033911
             result.error = ERRORS.UNAUTHORIZED;
+          }
+          if (response.status === 410) {
+            result.error = ERRORS.DISABLED;
+            this.disable();
           } else {
             result.error = ERRORS.GENERIC;
           }
