@@ -67,6 +67,10 @@ export class AIChatContentParent extends JSWindowActorParent {
     this.sendAsyncMessage("AIChatContent:SeenUrls", payload);
   }
 
+  setGeneratingOnChatContent(isGenerating) {
+    this.sendAsyncMessage("AIChatContent:SetGenerating", { isGenerating });
+  }
+
   receiveMessage({ data, name }) {
     switch (name) {
       case "aiChatContentActor:followUp":

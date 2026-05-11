@@ -31,6 +31,9 @@ export class AIChatContentChild extends JSWindowActorChild {
     "AIChatContent:SeenUrls": {
       event: "aiChatContentActor:seen-urls",
     },
+    "AIChatContent:SetGenerating": {
+      event: "aiChatContentActor:set-generating",
+    },
   };
 
   static #VALID_EVENTS_FROM_CONTENT = new Set([

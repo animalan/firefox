@@ -121,6 +121,11 @@ export class AIChatContent extends MozLitElement {
     );
 
     this.addEventListener(
+      "aiChatContentActor:set-generating",
+      this.#handleSetGenerating.bind(this)
+    );
+
+    this.addEventListener(
       "aiChatError:retry-message",
       this.retryUserMessageAfterError.bind(this)
     );
@@ -353,8 +358,15 @@ export class AIChatContent extends MozLitElement {
     }
   }
 
+  #handleSetGenerating(event) {
+    this.assistantIsLoading = !!event.detail?.isGenerating;
+    if (!this.assistantIsLoading) {
+      this.isSearching = false;
+    }
+    this.requestUpdate();
+  }
+
   #setMessageComplete(message) {
-    this.assistantIsLoading = false;
     const messageId = message.content?.id;
     if (!messageId) {
       return;
@@ -398,7 +410,6 @@ export class AIChatContent extends MozLitElement {
       this.conversationState = [];
       this.followUpSuggestions = [];
       this.#clearAssistantResponseAnnouncement();
-      this.assistantIsLoading = false;
       this.isSearching = false;
       if (convIdChanged) {
         this.shadowRoot
@@ -413,12 +424,10 @@ export class AIChatContent extends MozLitElement {
     const { isSearching } = event.detail;
     this.#clearAssistantResponseAnnouncement();
     this.isSearching = !!isSearching;
-    this.assistantIsLoading = true;
     this.requestUpdate();
   }
 
   handleErrorEvent(error) {
-    this.assistantIsLoading = false;
     this.isSearching = false;
     this.errorObj = error;
     this.requestUpdate();
@@ -434,7 +443,6 @@ export class AIChatContent extends MozLitElement {
     this.followUpSuggestions = [];
     const { convId, content, ordinal, isPreviousMessage } = event.detail;
     if (!isPreviousMessage) {
-      this.assistantIsLoading = true;
       this.#clearAssistantResponseAnnouncement();
     }
     this.conversationState[ordinal] = {
@@ -476,7 +484,6 @@ export class AIChatContent extends MozLitElement {
 
   handleAIResponseEvent(event) {
     this.isSearching = false;
-    this.assistantIsLoading = false;
 
     const {
       convId,

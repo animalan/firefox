@@ -1542,8 +1542,13 @@ export class AIWindow extends MozLitElement {
 
   updated(changedProps) {
     super.updated?.(changedProps);
-    if (changedProps.has("isGenerating") && this.#smartbar) {
-      this.#smartbar.assistantIsGenerating = this.isGenerating;
+    if (changedProps.has("isGenerating")) {
+      if (this.#smartbar) {
+        this.#smartbar.assistantIsGenerating = this.isGenerating;
+      }
+      this.#getAIChatContentActor()?.setGeneratingOnChatContent(
+        this.isGenerating
+      );
     }
   }
 
@@ -1768,6 +1773,7 @@ export class AIWindow extends MozLitElement {
         this.#pendingMessageDelivery = true;
       }
       this.#deliverConversationMessages(actor);
+      actor.setGeneratingOnChatContent(this.isGenerating);
     }
   }
 
