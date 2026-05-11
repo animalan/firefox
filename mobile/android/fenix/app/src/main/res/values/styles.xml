@@ -53,6 +53,7 @@
         <item name="mozacProtectionsDashboardWaveGradient2" tools:ignore="UnusedResources">@color/protections_dashboard_wave_gradient2</item>
         <item name="mozacProtectionsDashboardWaveGradient3" tools:ignore="UnusedResources">@color/protections_dashboard_wave_gradient3</item>
         <item name="mozacProtectionsDashboardWaveGradient4" tools:ignore="UnusedResources">@color/protections_dashboard_wave_gradient4</item>
+        <item name="mozacProtectionsDashboardProgressBar" tools:ignore="UnusedResources">@color/protections_dashboard_progress_bar</item>
 
         <!-- Material3 -->
         <item name="colorPrimarySurface">@color/fx_mobile_primary</item>
@@ -343,6 +344,7 @@
         <item name="mozacProtectionsDashboardWaveGradient2" tools:ignore="UnusedResources">@color/protections_dashboard_wave_gradient2_private</item>
         <item name="mozacProtectionsDashboardWaveGradient3" tools:ignore="UnusedResources">@color/protections_dashboard_wave_gradient3_private</item>
         <item name="mozacProtectionsDashboardWaveGradient4" tools:ignore="UnusedResources">@color/protections_dashboard_wave_gradient4_private</item>
+        <item name="mozacProtectionsDashboardProgressBar" tools:ignore="UnusedResources">@color/protections_dashboard_progress_bar_private</item>
 
         <!-- Material3 -->
         <item name="colorPrimarySurface">@color/fx_mobile_private_primary</item>

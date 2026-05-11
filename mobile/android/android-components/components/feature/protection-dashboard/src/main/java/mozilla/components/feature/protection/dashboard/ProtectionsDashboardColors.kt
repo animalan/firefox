@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
  * @param textAccent The accent text color for the tracker count.
  * @param chipBackground The background color of the data saved chip.
  * @param chipText The text color of the data saved chip.
+ * @param progressBar The color of the progress bar in the tracker breakdown.
  */
 internal data class ProtectionsDashboardColors(
     val background: Color,
@@ -28,6 +29,7 @@ internal data class ProtectionsDashboardColors(
     val textAccent: Color,
     val chipBackground: Color,
     val chipText: Color,
+    val progressBar: Color,
 )
 
 @Composable
@@ -58,6 +60,10 @@ internal fun rememberProtectionsDashboardColors(): ProtectionsDashboardColors {
                     chipText = attrs.getRequiredColor(
                         R.styleable.ProtectionsDashboard_mozacProtectionsDashboardChipText,
                         "mozacProtectionsDashboardChipText",
+                    ),
+                    progressBar = attrs.getRequiredColor(
+                        R.styleable.ProtectionsDashboard_mozacProtectionsDashboardProgressBar,
+                        "mozacProtectionsDashboardProgressBar",
                     ),
                 )
             } finally {

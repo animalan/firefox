@@ -138,6 +138,7 @@
     <color name="protections_dashboard_wave_gradient2">#FF3D2D7A</color>
     <color name="protections_dashboard_wave_gradient3">#FF4A3A8C</color>
     <color name="protections_dashboard_wave_gradient4">#FF5C4A9E</color>
+    <color name="protections_dashboard_progress_bar">#FFD9BFFF</color>
 
     <!-- Colors for Edge to Edge background  -->
     <color name="homepage_edge_to_edge_gradient_start">#FF0A1A3B</color>
