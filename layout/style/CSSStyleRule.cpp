@@ -314,8 +314,9 @@ bool CSSStyleRule::SelectorMatchesElement(uint32_t aSelectorIndex,
                                           Element& aElement,
                                           const nsAString& aPseudo,
                                           bool aRelevantLinkVisited) {
-  const auto pseudo =
-      PseudoStyleRequest::Parse(aPseudo, /* aIgnoreEnabledState = */ true);
+  const auto pseudo = PseudoStyleRequest::Parse(
+      aPseudo, aElement.OwnerDoc()->DefaultStyleAttrURLData(),
+      /* aIgnoreEnabledState = */ true);
   if (!pseudo) {
     return false;
   }
@@ -345,8 +346,9 @@ Element* CSSStyleRule::GetScopeRootFor(uint32_t aSelectorIndex,
                                        dom::Element& aElement,
                                        const nsAString& aPseudo,
                                        bool aRelevantLinkVisited) {
-  const auto pseudo =
-      PseudoStyleRequest::Parse(aPseudo, /* aIgnoreEnabledState = */ true);
+  const auto pseudo = PseudoStyleRequest::Parse(
+      aPseudo, aElement.OwnerDoc()->DefaultStyleAttrURLData(),
+      /* aIgnoreEnabledState = */ true);
   if (!pseudo) {
     return nullptr;
   }
