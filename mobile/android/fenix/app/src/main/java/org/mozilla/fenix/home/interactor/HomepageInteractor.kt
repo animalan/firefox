@@ -22,7 +22,6 @@ import org.mozilla.fenix.home.sports.SportsInteractor
 import org.mozilla.fenix.home.termsofuse.PrivacyNoticeBannerInteractor
 import org.mozilla.fenix.home.toolbar.ToolbarInteractor
 import org.mozilla.fenix.home.topsites.interactor.TopSiteInteractor
-import org.mozilla.fenix.search.toolbar.SearchSelectorInteractor
 
 /**
  * Homepage interactor for interactions with the homepage UI.
@@ -41,7 +40,6 @@ interface HomepageInteractor :
     RecentVisitsInteractor,
     PocketStoriesInteractor,
     PrivateBrowsingInteractor,
-    SearchSelectorInteractor,
     WallpaperInteractor,
     SetupChecklistInteractor,
     TrackingProtectionInteractor,

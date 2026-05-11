@@ -162,7 +162,6 @@ import org.mozilla.fenix.perf.MarkersFragmentLifecycleCallbacks
 import org.mozilla.fenix.perf.StartupTimeline
 import org.mozilla.fenix.reviewprompt.ShowReviewPromptBinding
 import org.mozilla.fenix.search.awesomebar.AwesomeBarComposable
-import org.mozilla.fenix.search.toolbar.DefaultSearchSelectorController
 import org.mozilla.fenix.snackbar.FenixSnackbarDelegate
 import org.mozilla.fenix.snackbar.SnackbarBinding
 import org.mozilla.fenix.tabstray.redux.state.Page
@@ -1284,9 +1283,6 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
                 browsingModeManager = browsingModeManager,
                 fenixBrowserUseCases = requireComponents.useCases.fenixBrowserUseCases,
                 settings = requireComponents.settings,
-            ),
-            searchSelectorController = DefaultSearchSelectorController(
-                navController = findNavController(),
             ),
             toolbarController = DefaultToolbarController(
                 appStore = requireComponents.appStore,

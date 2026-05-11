@@ -53,7 +53,6 @@ import org.mozilla.fenix.home.store.NimbusMessageState
 import org.mozilla.fenix.home.termsofuse.PrivacyNoticeBannerInteractor
 import org.mozilla.fenix.home.termsofuse.PrivacyNoticeBannerInteractorNoOp
 import org.mozilla.fenix.home.topsites.interactor.TopSiteInteractor
-import org.mozilla.fenix.search.toolbar.SearchSelectorMenu
 import org.mozilla.fenix.wallpapers.WallpaperState
 import java.io.File
 import java.util.UUID
@@ -87,8 +86,6 @@ internal object FakeHomepagePreview {
             override fun onMessageClicked(message: Message) { /* no op */ }
 
             override fun onMessageClosedClicked(message: Message) { /* no op */ }
-
-            override fun onMenuItemTapped(item: SearchSelectorMenu.Item) { /* no op */ }
 
             override fun showWallpapersOnboardingDialog(state: WallpaperState): Boolean {
                 return false
