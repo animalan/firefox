@@ -27,7 +27,6 @@
 #include "mozilla/dom/Element.h"
 #include "nsImageToPixbuf.h"
 #include "nsXULAppAPI.h"
-#include "gfxPlatform.h"
 
 #include <glib.h>
 #include <gdk/gdk.h>
@@ -66,13 +65,6 @@ static const MimeTypeAssociation appTypes[] = {
 
 nsresult nsGNOMEShellService::Init() {
   nsresult rv;
-
-  if (gfxPlatform::IsHeadless()) {
-    return NS_ERROR_NOT_AVAILABLE;
-  }
-
-  // GSettings or GIO _must_ be available, or we do not allow
-  // CreateInstance to succeed.
 
 #ifdef MOZ_ENABLE_DBUS
   if (widget::IsGnomeDesktopEnvironment() &&
