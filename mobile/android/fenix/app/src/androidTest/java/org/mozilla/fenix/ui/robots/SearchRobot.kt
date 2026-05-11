@@ -632,8 +632,6 @@ private fun clearButton() =
 
 private fun searchWrapper() = mDevice.findObject(UiSelector().resourceId("$packageName:id/search_wrapper"))
 
-private fun searchSelectorButton() = itemWithResId("$packageName:id/search_selector")
-
 private fun searchShortcutList() =
     mDevice.findObject(UiSelector().resourceId("$packageName:id/mozac_browser_menu_recyclerView"))
 

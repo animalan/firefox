@@ -761,6 +761,3 @@ private fun tabsCounter() = onView(
 private fun clearAddressBarButton() = itemWithResId("$packageName:id/mozac_browser_toolbar_clear_view")
 private fun readerViewToggle() =
     itemWithDescription(getStringResource(R.string.browser_menu_read))
-
-private fun searchSelectorButton() =
-    mDevice.findObject(UiSelector().resourceId("$packageName:id/search_selector"))
