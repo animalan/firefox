@@ -23,7 +23,7 @@
       "platforms": ["desktop"],
       "content_scripts": {
         "all_frames": true,
-        "js": ["bug1911423-app.powerbi.com-emulate-mousewheel-events.js"]
+        "js": ["emulate_MouseWheel_events.js"]
       }
     }
   ]
