@@ -885,6 +885,16 @@ nsresult AsyncUrlChannelClassifier::CheckChannel(
     nsIChannel* aChannel, std::function<void()>&& aCallback) {
   MOZ_ASSERT(XRE_IsParentProcess());
   MOZ_ASSERT(aChannel);
+  return AntiTrackingChannelClassifierUtils::CheckChannelBeforeBeginConnect(
+      aChannel, std::move(aCallback));
+}
+
+/* static */
+nsresult AntiTrackingChannelClassifierUtils::CheckChannelHelper(
+    nsIChannel* aChannel, std::function<void()>&& aCallback,
+    bool aPerformAnnotations, bool aPerformBlocking) {
+  MOZ_ASSERT(XRE_IsParentProcess());
+  MOZ_ASSERT(aChannel);
 
   if (!aCallback) {
     return NS_ERROR_INVALID_ARG;
@@ -907,9 +917,12 @@ nsresult AsyncUrlChannelClassifier::CheckChannel(
           std::min(topWinSpec.Length(), UrlClassifierCommon::sMaxSpecLength));
 
       UC_LOG(
-          ("AsyncUrlChannelClassifier::CheckChannel - starting the "
-           "classification on channel %p",
-           aChannel));
+          ("AntiTrackingChannelClassifierUtils::CheckChannelHelper - starting "
+           "the "
+           "classification on channel %p - running classifiers for "
+           "%sannotating and %sblocking",
+           aChannel, aPerformAnnotations ? "" : "non-",
+           aPerformBlocking ? "" : "non-"));
       UC_LOG(("    uri is %s [channel=%p]", chanSpec.get(), aChannel));
       UC_LOG(
           ("    top-level uri is %s [channel=%p]", topWinSpec.get(), aChannel));
@@ -918,11 +931,34 @@ nsresult AsyncUrlChannelClassifier::CheckChannel(
 
   std::function<void()> callbackFromFeature = aCallback;
 
-  RefPtr<FeatureTask> task;
-  nsresult rv =
-      FeatureTask::Create(aChannel, std::move(aCallback), getter_AddRefs(task));
-  if (NS_FAILED(rv)) {
-    return rv;
+  RefPtr<FeatureTask> task = nullptr;
+
+  if (aPerformAnnotations && aPerformBlocking) {
+    nsresult rv = FeatureTask::Create(aChannel, std::move(aCallback),
+                                      getter_AddRefs(task));
+    if (NS_FAILED(rv)) {
+      return rv;
+    }
+  } else if (aPerformAnnotations) {
+    nsTArray<nsCOMPtr<nsIUrlClassifierFeature>> features;
+    UrlClassifierFeatureFactory::GetNonCancelingFeaturesFromChannel(aChannel,
+                                                                    features);
+    nsresult rv = FeatureTask::CreateWithFeatures(
+        aChannel, features, std::move(aCallback), getter_AddRefs(task));
+    if (NS_FAILED(rv)) {
+      return rv;
+    }
+  } else if (aPerformBlocking) {
+    nsTArray<nsCOMPtr<nsIUrlClassifierFeature>> features;
+    UrlClassifierFeatureFactory::GetCancelingFeaturesFromChannel(aChannel,
+                                                                 features);
+    nsresult rv = FeatureTask::CreateWithFeatures(
+        aChannel, features, std::move(aCallback), getter_AddRefs(task));
+    if (NS_FAILED(rv)) {
+      return rv;
+    }
+  } else {
+    return NS_ERROR_FAILURE;
   }
 
   Maybe<ContentClassifierRequest> contentClassifierRequest;
@@ -945,28 +981,31 @@ nsresult AsyncUrlChannelClassifier::CheckChannel(
   // raise the priority of URLClassifier's return dispatch to the MainThread if
   // the channel is considered important
   EventQueuePriority eventPriority = EventQueuePriority::Normal;
-  if (nsCOMPtr<HttpBaseChannel> baseChannel = do_QueryInterface(aChannel)) {
-    uint32_t classOfServiceFlags = 0;
-    baseChannel->GetClassFlags(&classOfServiceFlags);
-    if (classOfServiceFlags &
-        (nsIClassOfService::Leader | nsIClassOfService::UrgentStart |
-         nsIClassOfService::Unblocked)) {
-      eventPriority = EventQueuePriority::MediumHigh;
+  if (aPerformBlocking) {
+    if (nsCOMPtr<HttpBaseChannel> baseChannel = do_QueryInterface(aChannel)) {
+      uint32_t classOfServiceFlags = 0;
+      baseChannel->GetClassFlags(&classOfServiceFlags);
+      if (classOfServiceFlags &
+          (nsIClassOfService::Leader | nsIClassOfService::UrgentStart |
+           nsIClassOfService::Unblocked)) {
+        eventPriority = EventQueuePriority::MediumHigh;
+      }
     }
-  }
-  if (nsCOMPtr<nsISupportsPriority> supportsPriority =
-          do_QueryInterface(aChannel)) {
-    int32_t priority = nsISupportsPriority::PRIORITY_NORMAL;
-    supportsPriority->GetPriority(&priority);
-    // note that higher priorities have lower numeric values
-    if (priority <= nsISupportsPriority::PRIORITY_HIGH) {
-      eventPriority = EventQueuePriority::MediumHigh;
+    if (nsCOMPtr<nsISupportsPriority> supportsPriority =
+            do_QueryInterface(aChannel)) {
+      int32_t priority = nsISupportsPriority::PRIORITY_NORMAL;
+      supportsPriority->GetPriority(&priority);
+      // note that higher priorities have lower numeric values
+      if (priority <= nsISupportsPriority::PRIORITY_HIGH) {
+        eventPriority = EventQueuePriority::MediumHigh;
+      }
     }
   }
 
   nsCOMPtr<nsIRunnable> r = NS_NewRunnableFunction(
-      "AsyncUrlChannelClassifier::CheckChannel",
-      [task, workerClassifier, eventPriority,
+      "AntiTrackingChannelClassifierUtils::CheckChannelHelper",
+      [aPerformAnnotations, aPerformBlocking, task, workerClassifier,
+       eventPriority,
        contentClassifierRequest = std::move(contentClassifierRequest),
        contentClassifier, callbackFromFeature = std::move(callbackFromFeature),
        channel = nsCOMPtr<nsIChannel>(aChannel)]() mutable -> void {
@@ -977,13 +1016,17 @@ nsresult AsyncUrlChannelClassifier::CheckChannel(
 
         if (contentClassifier && contentClassifier->IsInitialized() &&
             contentClassifierRequest.isSome()) {
-          ContentClassifierResult cancelResult =
-              contentClassifier->ClassifyForCancel(*contentClassifierRequest);
-          ContentClassifierResult annotateResult =
-              contentClassifier->ClassifyForAnnotate(*contentClassifierRequest);
-
-          shouldCancel = cancelResult.Hit();
-          shouldAnnotate = annotateResult.Hit();
+          if (aPerformBlocking) {
+            ContentClassifierResult cancelResult =
+                contentClassifier->ClassifyForCancel(*contentClassifierRequest);
+            shouldCancel = cancelResult.Hit();
+          }
+          if (aPerformAnnotations) {
+            ContentClassifierResult annotateResult =
+                contentClassifier->ClassifyForAnnotate(
+                    *contentClassifierRequest);
+            shouldAnnotate = annotateResult.Hit();
+          }
         }
 
         // If this is going to get cancelled anyway, then don't do all of the
@@ -994,7 +1037,8 @@ nsresult AsyncUrlChannelClassifier::CheckChannel(
 
         NS_DispatchToMainThreadQueue(
             NS_NewRunnableFunction(
-                "AsyncUrlChannelClassifier::CheckChannel - return",
+                "AntiTrackingChannelClassifierUtils::CheckChannelHelper - "
+                "return",
                 [task, channel, shouldCancel, shouldAnnotate,
                  callbackFromFeature = std::move(callbackFromFeature),
                  contentClassifier]() -> void {
@@ -1018,6 +1062,30 @@ nsresult AsyncUrlChannelClassifier::CheckChannel(
   // since overriding prioritization is ignored if we aren't on the MainThread
   return nsUrlClassifierDBService::BackgroundThread()->Dispatch(
       r, NS_DISPATCH_NORMAL);
+}
+
+/* static */
+nsresult AntiTrackingChannelClassifierUtils::CheckChannelBeforeBeginConnect(
+    nsIChannel* aChannel, std::function<void()>&& aCallback) {
+  if (StaticPrefs::privacy_trackingprotection_defer_annotation_enabled()) {
+    return CheckChannelHelper(aChannel, std::move(aCallback), false, true);
+  }
+  return CheckChannelHelper(aChannel, std::move(aCallback), true, true);
+}
+
+/* static */
+nsresult AntiTrackingChannelClassifierUtils::CheckChannelBeforeProcessResponse(
+    nsIChannel* aChannel, std::function<void()>&& aCallback) {
+  if (StaticPrefs::privacy_trackingprotection_defer_annotation_enabled()) {
+    return CheckChannelHelper(aChannel, std::move(aCallback), true, false);
+  }
+
+  // The caller is expecting the callback to be called if we return success,
+  // so we call it here, maintaining that invariant of CheckChannelHelper up.
+  if (aCallback) {
+    aCallback();
+  }
+  return NS_OK;
 }
 
 }  // namespace net
