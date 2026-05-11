@@ -472,10 +472,7 @@ JS::Zone* TenuredCell::zone() const {
   return zone;
 }
 
-JS::Zone* TenuredCell::zoneFromAnyThread() const {
-  MOZ_ASSERT(chunk()->info.zone == arena()->zone());
-  return arena()->zone();
-}
+JS::Zone* TenuredCell::zoneFromAnyThread() const { return chunk()->info.zone; }
 
 bool TenuredCell::isInsideZone(JS::Zone* zone) const {
   return zone == zoneFromAnyThread();

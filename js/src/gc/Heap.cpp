@@ -107,8 +107,6 @@ bool Arena::allocated() const {
   bool result = !chunk()->decommittedPages[pageIndex] &&
                 !chunk()->freeCommittedArenas[arenaIndex] &&
                 IsValidAllocKind(allocKind);
-  MOZ_ASSERT_IF(result, zone_);
-  MOZ_ASSERT_IF(result, (uintptr_t(zone_) & 7) == 0);
 
 #if defined(DEBUG) && defined(MOZ_VALGRIND)
   // Reenable error reporting for the range we just said to ignore.
@@ -165,8 +163,6 @@ void Arena::staticAsserts() {
                 "We haven't defined all offsets.");
   static_assert(std::size(ThingsPerArena) == AllocKindCount,
                 "We haven't defined all counts.");
-  static_assert(ArenaZoneOffset == offsetof(Arena, zone_),
-                "The hardcoded API zone offset must match the actual offset.");
   static_assert(sizeof(Arena) == ArenaSize,
                 "ArenaSize must match the actual size of the Arena structure.");
   static_assert(
