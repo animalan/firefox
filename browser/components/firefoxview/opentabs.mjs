@@ -909,16 +909,8 @@ class OpenTabsContextMenu extends MozLitElement {
     return html`<panel-item
       data-l10n-id="fxviewtabrow-send-to-mobile"
       data-l10n-attrs="accesskey"
-      submenu="send-tab-menu3"
-    >
-      <panel-list slot="submenu" id="send-tab-menu3">
-        <panel-item
-          data-l10n-id="fxviewtabrow-send-to-mobile-sign-in"
-          @click=${this.onSendTabSignedOutItemClick}
-        >
-        </panel-item>
-      </panel-list>
-    </panel-item>`;
+      @click=${this.onSendTabSignedOutItemClick}
+    ></panel-item>`;
   }
 
   sendTabSyncDisabledTemplate() {
