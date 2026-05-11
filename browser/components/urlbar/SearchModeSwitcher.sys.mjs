@@ -35,8 +35,8 @@ const DEFAULT_ENGINE_ICON =
  * Implements the SearchModeSwitcher in the urlbar.
  */
 export class SearchModeSwitcher {
-  static DEFAULT_ICON = lazy.UrlbarUtils.ICON.SEARCH_GLASS;
-  static DEFAULT_ICON_KEYWORD_DISABLED = lazy.UrlbarUtils.ICON.GLOBE;
+  static ICON_GLASS = lazy.UrlbarUtils.ICON.SEARCH_GLASS;
+  static ICON_GLOBE = lazy.UrlbarUtils.ICON.GLOBE;
   /**
    * The maximum number of openSearch engines available to install
    * to display.
@@ -443,43 +443,27 @@ export class SearchModeSwitcher {
     }
 
     const inSearchMode = this.#input.searchMode;
-    if (!lazy.UrlbarPrefs.get("unifiedSearchButton.always")) {
-      const keywordEnabled = lazy.UrlbarPrefs.get("keyword.enabled");
-      if (
-        this.#input.sapName != "searchbar" &&
-        !keywordEnabled &&
-        !inSearchMode
-      ) {
-        icon = SearchModeSwitcher.DEFAULT_ICON_KEYWORD_DISABLED;
-      }
-    } else if (!inSearchMode) {
-      icon = SearchModeSwitcher.DEFAULT_ICON;
+
+    if (
+      this.#input.sapName != "searchbar" &&
+      !lazy.UrlbarPrefs.get("keyword.enabled") &&
+      !inSearchMode
+    ) {
+      icon = SearchModeSwitcher.ICON_GLOBE;
     }
 
     // If the pref is enabled, then update urlbar icons as user types.
     if (lazy.UrlbarPrefs.get("unifiedSearchButton.always")) {
-      if (!this.#input.focused || !this.#input.value.length) {
-        // The magnifying glass is shown by default, when the urlbar is unfocused and initially focused.
-        icon = SearchModeSwitcher.DEFAULT_ICON;
-      } else {
-        // When the user has typed something, we detect whether what they typed will visit a url or open a search.
-        // Check top result to decide which icon to show.
+      if (this.#input.focused && this.#input.value.length) {
         let result = this.#input.view?.getResultAtIndex(0);
-        if (result?.type == lazy.UrlbarUtils.RESULT_TYPE.SEARCH) {
-          // Show the engine icon for a search.
-          let engineName = result.payload.engine;
-          let engine = lazy.UrlbarSearchUtils.getEngineByName(engineName);
-          icon =
-            (await engine?.getIconURL()) ?? SearchModeSwitcher.DEFAULT_ICON;
-        } else if (
+        if (
           result &&
           (result.type == lazy.UrlbarUtils.RESULT_TYPE.URL ||
             result.type == lazy.UrlbarUtils.RESULT_TYPE.TAB_SWITCH)
         ) {
-          // URL or autofilled result, show globe icon.
-          icon = SearchModeSwitcher.DEFAULT_ICON_KEYWORD_DISABLED;
-        } else {
-          icon = SearchModeSwitcher.DEFAULT_ICON;
+          // If the user has typed a url then indicate that ENTER will visit
+          // that address.
+          icon = SearchModeSwitcher.ICON_GLOBE;
         }
       }
     }
@@ -529,7 +513,7 @@ export class SearchModeSwitcher {
 
   async #getDisplayedEngineDetails(searchMode = null) {
     if (!lazy.SearchService.hasSuccessfullyInitialized) {
-      return { label: null, icon: SearchModeSwitcher.DEFAULT_ICON };
+      return { label: null, icon: SearchModeSwitcher.ICON_GLASS };
     }
 
     if (!searchMode || searchMode.engineName) {
@@ -539,9 +523,9 @@ export class SearchModeSwitcher {
             lazy.PrivateBrowsingUtils.isWindowPrivate(this.#input.window)
           );
       if (!engine) {
-        return { label: null, icon: SearchModeSwitcher.DEFAULT_ICON };
+        return { label: null, icon: SearchModeSwitcher.ICON_GLASS };
       }
-      let icon = (await engine.getIconURL()) ?? SearchModeSwitcher.DEFAULT_ICON;
+      let icon = (await engine.getIconURL()) ?? SearchModeSwitcher.ICON_GLASS;
       return { label: engine.name, icon };
     }
 
