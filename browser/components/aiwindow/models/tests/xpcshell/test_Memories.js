@@ -187,6 +187,9 @@ add_task(async function test_buildRecentHistoryCSV_only_browsing_history() {
   ];
   await PlacesUtils.history.clear();
   await PlacesUtils.history.insertMany(seeded);
+  for (const { url, visits } of seeded) {
+    await insertPlacesMetadata(url, visits[0].date.getTime());
+  }
 
   const [domainItems, titleItems, searchItems] =
     await getBrowserHistoryAggregates();
