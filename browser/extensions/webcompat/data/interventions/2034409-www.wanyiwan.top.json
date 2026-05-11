@@ -9,12 +9,9 @@
   "interventions": [
     {
       "platforms": ["all"],
-      "hide_messages": [
-        {
-          "container": ".ant-alert-banner",
-          "message": "chrome"
-        }
-      ]
+      "content_scripts": {
+        "js": ["bug2034409-www.wanyiwan.top-prevent-unsupported-message.js"]
+      }
     }
   ]
 }

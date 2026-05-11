@@ -10,7 +10,7 @@
     {
       "platforms": ["desktop"],
       "content_scripts": {
-        "js": ["define_minimal_window_chrome.js"]
+        "js": ["bug1928941-oasis.decart.ai-window-chrome-shim.js"]
       },
       "ua_string": ["Chrome", "add_Firefox_as_Gecko"]
     }

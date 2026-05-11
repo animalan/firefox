@@ -10,7 +10,9 @@
     {
       "platforms": ["all"],
       "content_scripts": {
-        "js": ["define_WebKitMutationObserver.js"]
+        "js": [
+          "bug1983538-incontrol.landrover.com-alias-WebKitMutationObserver.js"
+        ]
       }
     }
   ]

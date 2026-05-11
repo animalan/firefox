@@ -93,11 +93,11 @@ class ContentScriptsAreCorrectlyPersistedTest(MarionetteTestCase):
                     const bgWin = window.wrappedJSObject.browser.extension.getBackgroundPage();
                     const { matches, excludeMatches } = bgWin.interventions.getBlocksAndMatchesFor(config);
                     const { id } =
-                      bgWin.interventions.buildContentScriptsRegistrationsForIntervention(
-                        config,
+                      bgWin.interventions.buildContentScriptRegistrations(
+                        config.label,
+                        config.interventions[0],
                         matches,
                         excludeMatches,
-                        /* force = */ true,
                       )[0];
                       return id;
               """,

@@ -10,7 +10,7 @@
     {
       "platforms": ["all"],
       "content_scripts": {
-        "js": ["run_late_window_load_listeners.js"]
+        "js": ["bug1939248-rosasthai.com-load-event-helper.js"]
       }
     }
   ]

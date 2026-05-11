@@ -14,11 +14,7 @@
     {
       "platforms": ["linux", "windows"],
       "content_scripts": {
-        "js": [
-          "spoof_as_windows.js",
-          "use_chrome_useragent.js",
-          "bug1902520-keisan.nta.go.jp-spoof-windows11.js"
-        ]
+        "js": ["bug1902520-keisan.nta.go.jp-ua-override.js"]
       }
     }
   ]

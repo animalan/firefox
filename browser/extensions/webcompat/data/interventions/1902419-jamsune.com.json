@@ -9,9 +9,9 @@
   "interventions": [
     {
       "platforms": ["desktop"],
-      "hide_alerts": {
+      "content_scripts": {
         "all_frames": true,
-        "alerts": ["크롬"]
+        "js": ["bug1902419-www.jamsune.com-prevent-unsupported-alert.js"]
       }
     }
   ]

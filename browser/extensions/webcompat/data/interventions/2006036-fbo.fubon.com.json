@@ -11,12 +11,7 @@
       "not_platforms": ["linux"],
       "content_scripts": {
         "all_frames": true,
-        "js": [
-          "define_userAgentData.js",
-          "define_window_chrome.js",
-          "use_chrome_vendor.js",
-          "undefine_firefox_properties.js"
-        ]
+        "js": ["bug2006036-fbo.fubon.com-unblock-firefox.js"]
       },
       "ua_string": ["Chrome_with_FxQuantum"]
     }

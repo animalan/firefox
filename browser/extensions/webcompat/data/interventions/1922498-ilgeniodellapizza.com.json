@@ -10,7 +10,7 @@
     {
       "platforms": ["desktop"],
       "content_scripts": {
-        "js": ["slow_down_wheel_events.js"]
+        "js": ["bug1922498-www.ilgeniodellapizza.com-fix-broken-scrolling.js"]
       }
     }
   ]

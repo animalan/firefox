@@ -18,7 +18,7 @@
     {
       "platforms": ["android"],
       "content_scripts": {
-        "js": ["disable_legacy_FastClick.js"]
+        "js": ["bug1818818-fastclick-legacy-shim.js"]
       }
     }
   ]

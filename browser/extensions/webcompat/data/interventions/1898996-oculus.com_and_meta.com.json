@@ -10,7 +10,7 @@
     {
       "platforms": ["desktop"],
       "content_scripts": {
-        "js": ["use_chrome_vendor.js", "define_minimal_window_chrome.js"]
+        "js": ["bug1898996-oculus.com-chrome-shims.js"]
       },
       "ua_string": ["Chrome"]
     }
