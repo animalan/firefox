@@ -638,6 +638,7 @@ class LinuxArtifactJob(ArtifactJob):
         "{product}/glxtest",
         "{product}/v4l2test",
         "{product}/vaapitest",
+        "{product}/vulkantest",
         "{product}/**/*.so",
         # Preserve signatures when present.
         "{product}/**/*.sig",
