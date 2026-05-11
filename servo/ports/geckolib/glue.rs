@@ -53,7 +53,6 @@ use style::gecko::restyle_damage::GeckoRestyleDamage;
 use style::gecko::selector_parser::{NonTSPseudoClass, PseudoElement};
 use style::gecko::snapshot_helpers::classes_changed;
 use style::gecko::traversal::RecalcStyleOnly;
-use style::gecko::url;
 use style::gecko::wrapper::{
     slow_selector_flags_from_node_selector_flags, GeckoElement, GeckoNode,
 };
@@ -130,6 +129,7 @@ use style::traversal::DomTraversal;
 use style::traversal_flags::{self, TraversalFlags};
 use style::typed_om::numeric_declaration::NumericDeclaration;
 use style::typed_om::sum_value::SumValue;
+use style::url;
 use style::use_counters::{CustomUseCounter, UseCounters};
 use style::values::animated::{Animate, Procedure, ToAnimatedZero};
 use style::values::computed::easing::ComputedTimingFunction;
@@ -222,7 +222,7 @@ pub unsafe extern "C" fn Servo_Shutdown() {
     DUMMY_URL_DATA = ptr::null_mut();
     DUMMY_CHROME_URL_DATA = ptr::null_mut();
     Stylist::shutdown();
-    url::shutdown();
+    url::gecko::shutdown();
 }
 
 #[inline(always)]
@@ -9804,8 +9804,8 @@ pub unsafe extern "C" fn Servo_StyleArcSlice_EmptyPtr() -> *mut c_void {
 
 #[no_mangle]
 pub unsafe extern "C" fn Servo_LoadData_GetLazy(
-    source: &url::LoadDataSource,
-) -> *const url::LoadData {
+    source: &url::gecko::LoadDataSource,
+) -> *const url::gecko::LoadData {
     source.get()
 }
 
