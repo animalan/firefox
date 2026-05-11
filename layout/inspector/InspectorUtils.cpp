@@ -418,7 +418,8 @@ void InspectorUtils::GetMatchingCSSRules(
     GlobalObject& aGlobalObject, Element& aElement, const nsAString& aPseudo,
     bool aIncludeVisitedStyle, bool aWithStartingStyle,
     nsTArray<OwningCSSRuleOrInspectorDeclaration>& aResult) {
-  auto pseudo = PseudoStyleRequest::Parse(aPseudo);
+  auto pseudo = PseudoStyleRequest::Parse(
+      aPseudo, aElement.OwnerDoc()->DefaultStyleAttrURLData());
   if (!pseudo) {
     return;
   }

@@ -5112,8 +5112,8 @@ void Element::GetAnimationsWithoutFlush(
       aError.ThrowSyntaxError("The pseudo-element selector cannot be empty.");
       return;
     }
-    Maybe<PseudoStyleRequest> request =
-        PseudoStyleRequest::Parse(aOptions.mPseudoElement);
+    Maybe<PseudoStyleRequest> request = PseudoStyleRequest::Parse(
+        aOptions.mPseudoElement, OwnerDoc()->DefaultStyleAttrURLData());
     if (request.isNothing()) {
       aError.ThrowSyntaxError("The pseudo-element selector is not valid.");
       return;

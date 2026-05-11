@@ -5204,6 +5204,7 @@ pub extern "C" fn Servo_PseudoStyleType_EnabledForAllContent(ty: PseudoStyleType
 #[no_mangle]
 pub extern "C" fn Servo_ParsePseudoElement(
     data: &nsAString,
+    url_data: *mut URLExtraData,
     ignore_enabled_state: bool,
     request: &mut structs::PseudoStyleRequest, /* output */
 ) -> bool {
@@ -5224,7 +5225,8 @@ pub extern "C" fn Servo_ParsePseudoElement(
     if parser.next_including_whitespace().is_ok() {
         return false;
     }
-    if !ignore_enabled_state && !pseudo.enabled_in_content() {
+    let data = unsafe { UrlExtraData::from_ptr_ref(&url_data) };
+    if !ignore_enabled_state && !pseudo.enabled_in_content(data) {
         return false;
     }
     let (pseudo_type, name) = pseudo.pseudo_type_and_argument();
