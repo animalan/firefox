@@ -259,7 +259,7 @@ VacuumManager::Observe(nsISupports* aSubject, const char* aTopic,
     }
     int32_t index;
     for (index = startIndex; index < entries.Count(); ++index) {
-      auto vacuum = MakeRefPtr<Vacuumer>(entries[index]);
+      RefPtr<Vacuumer> vacuum = new Vacuumer(entries[index]);
       // Only vacuum one database per day.
       if (vacuum->execute()) {
         break;

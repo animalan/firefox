@@ -174,7 +174,8 @@ void test_drop_index_does_not_loop() {
       db->CreateStatement("SELECT * FROM test"_ns, getter_AddRefs(stmt));
   do_check_success(rv);
 
-  auto tester = MakeRefPtr<DatabaseTester>(db, "DROP INDEX unique_data");
+  RefPtr<DatabaseTester> tester =
+      new DatabaseTester(db, "DROP INDEX unique_data");
   do_check_true(tester);
   {
     mozilla::ReentrantMonitorAutoEnter lock(tester->monitor);

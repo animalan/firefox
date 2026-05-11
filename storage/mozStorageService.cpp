@@ -399,8 +399,9 @@ Service::OpenSpecialDatabase(const nsACString& aStorageKey,
     flags |= SQLITE_OPEN_URI;
   }
 
-  auto msc = MakeRefPtr<Connection>(this, flags, Connection::SYNCHRONOUS,
-                                    kMozStorageMemoryStorageKey, interruptible);
+  RefPtr<Connection> msc =
+      new Connection(this, flags, Connection::SYNCHRONOUS,
+                     kMozStorageMemoryStorageKey, interruptible);
   const nsresult rv = msc->initialize(aStorageKey, aName);
   NS_ENSURE_SUCCESS(rv, rv);
 
@@ -441,8 +442,8 @@ class AsyncInitDatabase final : public Runnable {
 
  private:
   nsresult DispatchResult(nsresult aStatus, nsISupports* aValue) {
-    auto event =
-        MakeRefPtr<CallbackComplete>(aStatus, aValue, mCallback.forget());
+    RefPtr<CallbackComplete> event =
+        new CallbackComplete(aStatus, aValue, mCallback.forget());
     return NS_DispatchToMainThread(event);
   }
 
@@ -528,14 +529,14 @@ Service::OpenAsyncDatabase(nsIVariant* aDatabaseStore, uint32_t aOpenFlags,
     rv = storageFile->GetNativeLeafName(telemetryFilename);
     NS_ENSURE_SUCCESS(rv, rv);
   }
-  auto msc = MakeRefPtr<Connection>(
+  RefPtr<Connection> msc = new Connection(
       this, flags, Connection::ASYNCHRONOUS, telemetryFilename,
       /* interruptible */ true, ignoreLockingMode, openNotExclusive);
   nsCOMPtr<nsIEventTarget> target = msc->getAsyncExecutionTarget();
   MOZ_ASSERT(target,
              "Cannot initialize a connection that has been closed already");
 
-  auto asyncInit = MakeRefPtr<AsyncInitDatabase>(
+  RefPtr<AsyncInitDatabase> asyncInit = new AsyncInitDatabase(
       msc, storageFile, /* growthIncrement */ -1, aCallback);
   return target->Dispatch(asyncInit, nsIEventTarget::DISPATCH_NORMAL);
 }
@@ -555,8 +556,8 @@ Service::OpenDatabase(nsIFile* aDatabaseFile, uint32_t aConnectionFlags,
   nsAutoCString telemetryFilename;
   nsresult rv = aDatabaseFile->GetNativeLeafName(telemetryFilename);
   NS_ENSURE_SUCCESS(rv, rv);
-  auto msc = MakeRefPtr<Connection>(this, flags, Connection::SYNCHRONOUS,
-                                    telemetryFilename, interruptible);
+  RefPtr<Connection> msc = new Connection(this, flags, Connection::SYNCHRONOUS,
+                                          telemetryFilename, interruptible);
   rv = msc->initialize(aDatabaseFile);
   NS_ENSURE_SUCCESS(rv, rv);
 
@@ -579,8 +580,8 @@ Service::OpenUnsharedDatabase(nsIFile* aDatabaseFile, uint32_t aConnectionFlags,
   nsAutoCString telemetryFilename;
   nsresult rv = aDatabaseFile->GetNativeLeafName(telemetryFilename);
   NS_ENSURE_SUCCESS(rv, rv);
-  auto msc = MakeRefPtr<Connection>(this, flags, Connection::SYNCHRONOUS,
-                                    telemetryFilename, interruptible);
+  RefPtr<Connection> msc = new Connection(this, flags, Connection::SYNCHRONOUS,
+                                          telemetryFilename, interruptible);
   rv = msc->initialize(aDatabaseFile);
   NS_ENSURE_SUCCESS(rv, rv);
 
@@ -613,8 +614,8 @@ Service::OpenDatabaseWithFileURL(nsIFileURL* aFileURL,
     rv = databaseFile->GetNativeLeafName(telemetryFilename);
     NS_ENSURE_SUCCESS(rv, rv);
   }
-  auto msc = MakeRefPtr<Connection>(this, flags, Connection::SYNCHRONOUS,
-                                    telemetryFilename, interruptible);
+  RefPtr<Connection> msc = new Connection(this, flags, Connection::SYNCHRONOUS,
+                                          telemetryFilename, interruptible);
   rv = msc->initialize(aFileURL);
   NS_ENSURE_SUCCESS(rv, rv);
 

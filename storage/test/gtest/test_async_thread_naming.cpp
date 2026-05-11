@@ -170,8 +170,9 @@ TEST(storage_async_thread_naming, AsyncOpenDatabase)
   do_check_success(dbFile->Append(filename));
   nsCOMPtr<mozIStorageService> ss = getService();
 
-  auto completionSpinner = MakeRefPtr<AsyncCompletionSpinner>();
-  auto variant = MakeRefPtr<nsVariant>();
+  RefPtr<AsyncCompletionSpinner> completionSpinner =
+      new AsyncCompletionSpinner();
+  RefPtr<nsVariant> variant = new nsVariant();
   variant->SetAsInterface(NS_GET_IID(nsIFile), dbFile);
   do_check_success(ss->OpenAsyncDatabase(variant, 0, 0, completionSpinner));
   completionSpinner->SpinUntilCompleted();
@@ -204,8 +205,9 @@ TEST(storage_async_thread_naming, AsyncClone)
   nsCOMPtr<mozIStorageConnection> conn;
   do_check_success(ss->OpenDatabase(dbFile, 0, getter_AddRefs(conn)));
 
-  auto completionSpinner = MakeRefPtr<AsyncCompletionSpinner>();
-  auto variant = MakeRefPtr<nsVariant>();
+  RefPtr<AsyncCompletionSpinner> completionSpinner =
+      new AsyncCompletionSpinner();
+  RefPtr<nsVariant> variant = new nsVariant();
   variant->SetAsInterface(NS_GET_IID(nsIFile), dbFile);
   do_check_success(conn->AsyncClone(true, completionSpinner));
   completionSpinner->SpinUntilCompleted();

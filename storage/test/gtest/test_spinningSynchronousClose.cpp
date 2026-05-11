@@ -44,7 +44,7 @@ TEST(storage_spinningSynchronousClose, CloseOnAsync)
   do_check_success(stmt->Finalize());
 
   // Wrongly use Close() instead of AsyncClose().
-  auto event = MakeRefPtr<CompletionRunnable>();
+  RefPtr<CompletionRunnable> event = new CompletionRunnable();
   NS_DispatchToMainThread(event, NS_DISPATCH_NORMAL);
   do_check_false(NS_SUCCEEDED(db->Close()));
   do_check_true(event->mDone);
@@ -63,7 +63,7 @@ TEST(storage_spinningSynchronousClose, spinningSynchronousCloseOnAsync)
   do_check_success(stmt->Finalize());
 
   // Use the spinning close API.
-  auto event = MakeRefPtr<CompletionRunnable>();
+  RefPtr<CompletionRunnable> event = new CompletionRunnable();
   NS_DispatchToMainThread(event, NS_DISPATCH_NORMAL);
   do_check_success(db->SpinningSynchronousClose());
   do_check_true(event->mDone);

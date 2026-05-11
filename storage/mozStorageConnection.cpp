@@ -391,8 +391,8 @@ class AsyncInitializeClone final : public Runnable {
 
  private:
   nsresult Dispatch(nsresult aResult, nsISupports* aValue) {
-    auto event =
-        MakeRefPtr<CallbackComplete>(aResult, aValue, mCallback.forget());
+    RefPtr<CallbackComplete> event =
+        new CallbackComplete(aResult, aValue, mCallback.forget());
     return mClone->eventTargetOpenedOn->Dispatch(event, NS_DISPATCH_NORMAL);
   }
 
@@ -739,8 +739,8 @@ class AsyncBackupDatabaseFile final : public Runnable, public nsITimerCallback {
   }
 
   nsresult Dispatch(nsresult aResult, nsISupports* aValue) {
-    auto event =
-        MakeRefPtr<CallbackComplete>(aResult, aValue, mCallback.forget());
+    RefPtr<CallbackComplete> event =
+        new CallbackComplete(aResult, aValue, mCallback.forget());
     return mConnection->eventTargetOpenedOn->Dispatch(event,
                                                       NS_DISPATCH_NORMAL);
   }
@@ -1773,7 +1773,7 @@ Connection::SpinningSynchronousClose() {
     return NS_ERROR_UNEXPECTED;
   }
 
-  auto listener = MakeRefPtr<CloseListener>();
+  RefPtr<CloseListener> listener = new CloseListener();
   rv = AsyncClose(listener);
   NS_ENSURE_SUCCESS(rv, rv);
   MOZ_ALWAYS_TRUE(
@@ -1923,12 +1923,12 @@ Connection::AsyncClone(bool aReadOnly,
 
   // The cloned connection will still implement the synchronous API, but throw
   // if any synchronous methods are called on the main thread.
-  auto clone = MakeRefPtr<Connection>(mStorageService, flags, ASYNCHRONOUS,
-                                      mTelemetryFilename, mInterruptible,
-                                      mIgnoreLockingMode, mOpenNotExclusive);
+  RefPtr<Connection> clone =
+      new Connection(mStorageService, flags, ASYNCHRONOUS, mTelemetryFilename,
+                     mInterruptible, mIgnoreLockingMode, mOpenNotExclusive);
 
-  auto initEvent =
-      MakeRefPtr<AsyncInitializeClone>(this, clone, aReadOnly, aCallback);
+  RefPtr<AsyncInitializeClone> initEvent =
+      new AsyncInitializeClone(this, clone, aReadOnly, aCallback);
   // Dispatch to our async thread, since the originating connection must remain
   // valid and open for the whole cloning process.  This also ensures we are
   // properly serialized with a `close` operation, rather than race with it.
@@ -2100,9 +2100,9 @@ Connection::Clone(bool aReadOnly, mozIStorageConnection** _connection) {
     flags = (~SQLITE_OPEN_CREATE & flags);
   }
 
-  auto clone =
-      MakeRefPtr<Connection>(mStorageService, flags, mSupportedOperations,
-                             mTelemetryFilename, mInterruptible);
+  RefPtr<Connection> clone =
+      new Connection(mStorageService, flags, mSupportedOperations,
+                     mTelemetryFilename, mInterruptible);
 
   rv = initializeClone(clone, aReadOnly);
   if (NS_FAILED(rv)) {

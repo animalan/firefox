@@ -100,8 +100,11 @@ nsresult StatementJSHelper::getRow(Statement* aStatement, JSContext* aCtx,
     nsCOMPtr<nsPIDOMWindowInner> window =
         do_QueryInterface(global.GetAsSupports());
 
-    auto row = MakeRefPtr<StatementRow>(window, aStatement);
-    auto rowHolder = MakeRefPtr<StatementRowHolder>(row);
+    RefPtr<StatementRow> row(new StatementRow(window, aStatement));
+    NS_ENSURE_TRUE(row, NS_ERROR_OUT_OF_MEMORY);
+
+    RefPtr<StatementRowHolder> rowHolder = new StatementRowHolder(row);
+    NS_ENSURE_TRUE(rowHolder, NS_ERROR_OUT_OF_MEMORY);
 
     aStatement->mStatementRowHolder =
         new nsMainThreadPtrHolder<StatementRowHolder>(
@@ -140,8 +143,12 @@ nsresult StatementJSHelper::getParams(Statement* aStatement, JSContext* aCtx,
     nsCOMPtr<nsPIDOMWindowInner> window =
         do_QueryInterface(global.GetAsSupports());
 
-    auto params = MakeRefPtr<StatementParams>(window, aStatement);
-    auto paramsHolder = MakeRefPtr<StatementParamsHolder>(params);
+    RefPtr<StatementParams> params(new StatementParams(window, aStatement));
+    NS_ENSURE_TRUE(params, NS_ERROR_OUT_OF_MEMORY);
+
+    RefPtr<StatementParamsHolder> paramsHolder =
+        new StatementParamsHolder(params);
+    NS_ENSURE_TRUE(paramsHolder, NS_ERROR_OUT_OF_MEMORY);
 
     aStatement->mStatementParamsHolder =
         new nsMainThreadPtrHolder<StatementParamsHolder>(
