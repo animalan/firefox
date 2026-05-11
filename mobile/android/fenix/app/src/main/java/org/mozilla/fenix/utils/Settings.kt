@@ -2753,9 +2753,12 @@ class Settings(
         default = true,
     )
 
+    /**
+     * Feature flag that indicates if the Import Bookmarks feature is enabled.
+     */
     var importBookmarksFeatureFlagEnabled by booleanPreference(
         key = appContext.getPreferenceKey(R.string.pref_key_enable_import_bookmarks),
-        default = Config.channel.isDebug,
+        default = Config.channel.isNightlyOrDebug,
     )
 
     /**
