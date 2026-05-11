@@ -55,7 +55,7 @@ class IPProtectionMenuBinding(
 
     private fun IPProtectionState.toMenuState() = IPProtectionMenuState(
         status = proxyStatus.toMenuStatus(),
-        dataLimitGb = if (dataMaxBytes > 0) (dataMaxBytes / BYTES_PER_GB).toInt() else -1,
+        dataLimitGb = if (maxDataBytes > 0) maxDataGb.toInt() else -1,
     )
 
     private fun ProxyStatus.toMenuStatus() = when (this) {

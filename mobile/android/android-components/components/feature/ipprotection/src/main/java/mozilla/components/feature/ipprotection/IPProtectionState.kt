@@ -6,25 +6,32 @@ package mozilla.components.feature.ipprotection
 
 import mozilla.components.lib.state.State
 
+const val BYTES_PER_GB = 1024 * 1024 * 1024f
+
 /**
  * State stored by the feature to drive UI and decisions.
  *
+ * @property eligibilityStatus The feature eligibility state.
  * @property proxyStatus The proxy state.
- * @property dataRemainingBytes Remaining monthly data allowance in bytes.
- * @property dataMaxBytes Maximum monthly data allowance in bytes.
- * @property dataRemainingBytes Remaining monthly data allowance in bytes, or -1 if unavailable.
- * @property dataMaxBytes Maximum monthly data allowance in bytes, or -1 if unavailable.
+ * @property remainingDataBytes Remaining monthly data allowance in bytes.
+ * @property maxDataBytes Maximum monthly data allowance in bytes.
  * @property resetDate ISO 8601 string for when the monthly allowance resets, or null if unavailable.
  * @property isSignedIn Whether the user is signed in.
  */
 data class IPProtectionState(
     val eligibilityStatus: EligibilityStatus = EligibilityStatus.Unknown,
     val proxyStatus: ProxyStatus = Uninitialized,
-    val dataRemainingBytes: Long = -1L,
-    val dataMaxBytes: Long = -1L,
+    val remainingDataBytes: Long = -1L,
+    val maxDataBytes: Long = -1L,
     val resetDate: String? = null,
     val isSignedIn: Boolean = false,
 ) : State {
     val isEligible: Boolean
         get() = eligibilityStatus == EligibilityStatus.Eligible
+    val remainingDataGb: Float
+        get() = remainingDataBytes / BYTES_PER_GB
+    val maxDataGb: Float
+        get() = maxDataBytes / BYTES_PER_GB
+    val usedDataGb: Float
+        get() = maxDataGb - remainingDataGb
 }

@@ -56,8 +56,8 @@ class IPProtectionReducerTest {
         )
         assertEquals(
             defaultState.copy(
-                dataRemainingBytes = 1000L,
-                dataMaxBytes = 5000L,
+                remainingDataBytes = 1000L,
+                maxDataBytes = 5000L,
                 resetDate = "2026-06-01T00:00:00Z",
             ),
             iPProtectionReducer(defaultState, IPProtectionAction.EngineStateChanged(info)),

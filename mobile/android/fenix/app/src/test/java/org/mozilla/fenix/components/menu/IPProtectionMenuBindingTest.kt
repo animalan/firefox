@@ -131,7 +131,7 @@ class IPProtectionMenuBindingTest {
         val ipProtectionStore = IPProtectionStore(
             initialState = IPProtectionState(
                 proxyStatus = Authorized.Active,
-                dataMaxBytes = (5 * BYTES_PER_GB).toLong(),
+                maxDataBytes = (5 * BYTES_PER_GB).toLong(),
             ),
         )
 
@@ -146,7 +146,7 @@ class IPProtectionMenuBindingTest {
     fun `GIVEN dataMaxBytes is unavailable WHEN binding starts THEN dispatch dataLimitGb as -1`() = runTest {
         val (captureMiddleware, menuStore) = createMenuStore()
         val ipProtectionStore = IPProtectionStore(
-            initialState = IPProtectionState(proxyStatus = Authorized.Active, dataMaxBytes = -1L),
+            initialState = IPProtectionState(proxyStatus = Authorized.Active, maxDataBytes = -1L),
         )
 
         startBinding(ipProtectionStore, menuStore)

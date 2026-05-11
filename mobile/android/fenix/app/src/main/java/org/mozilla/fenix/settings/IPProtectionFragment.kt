@@ -12,10 +12,11 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import mozilla.components.ExperimentalAndroidComponentsApi
-import mozilla.components.concept.engine.ipprotection.IPProtectionHandler
+import mozilla.components.lib.state.ext.observeAsComposableState
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.Vpn
 import org.mozilla.fenix.R
+import org.mozilla.fenix.components.components
 import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
@@ -33,8 +34,9 @@ class IPProtectionFragment : Fragment(), SystemInsetsPaddedFragment {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             FirefoxTheme {
+                val state = components.ipProtectionStore.observeAsComposableState { it }
                 IPProtectionScreen(
-                    state = IPProtectionHandler.StateInfo(),
+                    state = state.value,
                     onVpnToggle = { enabled ->
                         if (enabled) {
                             requireContext().settings().hasAlreadyUsedVpn = true

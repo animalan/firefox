@@ -42,8 +42,8 @@ internal fun iPProtectionReducer(
     }
 
     is IPProtectionAction.EngineStateChanged -> state.copy(
-        dataRemainingBytes = action.info.remaining,
-        dataMaxBytes = action.info.max,
+        remainingDataBytes = action.info.remaining,
+        maxDataBytes = action.info.max,
         resetDate = action.info.resetTime,
         proxyStatus = action.info.asProxyStatus(state.isSignedIn),
     )
