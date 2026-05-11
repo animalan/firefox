@@ -562,6 +562,10 @@ class FeatureTask {
   static nsresult Create(nsIChannel* aChannel,
                          std::function<void()>&& aCallback,
                          FeatureTask** aTask);
+  static nsresult CreateWithFeatures(
+      nsIChannel* aChannel,
+      const nsTArray<nsCOMPtr<nsIUrlClassifierFeature>>& aFeatures,
+      std::function<void()>&& aCallback, FeatureTask** aTask);
 
   // Called on the classifier thread.
   void DoLookup(nsUrlClassifierDBServiceWorker* aWorkerClassifier);
@@ -604,9 +608,18 @@ nsresult FeatureTask::Create(nsIChannel* aChannel,
   // classify this channel. If the list is empty, we do an early return.
   nsTArray<nsCOMPtr<nsIUrlClassifierFeature>> features;
   UrlClassifierFeatureFactory::GetFeaturesFromChannel(aChannel, features);
-  if (features.IsEmpty()) {
+  return CreateWithFeatures(aChannel, features, std::move(aCallback), aTask);
+}
+
+/* static */
+nsresult FeatureTask::CreateWithFeatures(
+    nsIChannel* aChannel,
+    const nsTArray<nsCOMPtr<nsIUrlClassifierFeature>>& aFeatures,
+    std::function<void()>&& aCallback, FeatureTask** aTask) {
+  if (aFeatures.IsEmpty()) {
     UC_LOG(
-        ("AsyncChannelClassifier::FeatureTask::Create - no task is needed for "
+        ("AsyncChannelClassifier::FeatureTask::CreateWithFeatures - no task is "
+         "needed for "
          "channel %p",
          aChannel));
     return NS_OK;
@@ -615,11 +628,12 @@ nsresult FeatureTask::Create(nsIChannel* aChannel,
   RefPtr<FeatureTask> task = new FeatureTask(aChannel, std::move(aCallback));
 
   UC_LOG(
-      ("AsyncChannelClassifier::FeatureTask::Create - FeatureTask %p created "
+      ("AsyncChannelClassifier::FeatureTask::CreateWithFeatures - FeatureTask "
+       "%p created "
        "for channel %p",
        task.get(), aChannel));
 
-  for (nsIUrlClassifierFeature* feature : features) {
+  for (nsIUrlClassifierFeature* feature : aFeatures) {
     FeatureData* featureData = task->mFeatures.AppendElement();
     nsresult rv = featureData->Initialize(task, aChannel, feature);
     if (NS_FAILED(rv)) {
