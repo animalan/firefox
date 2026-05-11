@@ -14595,11 +14595,24 @@ void Document::ScheduleSVGUseElementShadowTreeUpdate(
   }
 }
 
+class MOZ_RAII AutoRestoreCloningForSVGUse {
+ public:
+  explicit AutoRestoreCloningForSVGUse(Document* aDocument)
+      : mDocument(aDocument), mValue(aDocument->mCloningForSVGUse) {}
+
+  ~AutoRestoreCloningForSVGUse() { mDocument->mCloningForSVGUse = mValue; }
+
+ private:
+  const RefPtr<Document> mDocument;
+  const bool mValue;
+};
+
 void Document::DoUpdateSVGUseElementShadowTrees() {
   MOZ_ASSERT(!mSVGUseElementsNeedingShadowTreeUpdate.IsEmpty());
 
   MOZ_ASSERT(!mCloningForSVGUse);
   nsAutoScriptBlockerSuppressNodeRemoved blocker;
+  AutoRestoreCloningForSVGUse guard(this);
   mCloningForSVGUse = true;
 
   do {
@@ -14618,8 +14631,6 @@ void Document::DoUpdateSVGUseElementShadowTrees() {
       useElement->UpdateShadowTree();
     }
   } while (!mSVGUseElementsNeedingShadowTreeUpdate.IsEmpty());
-
-  mCloningForSVGUse = false;
 }
 
 void Document::NotifyMediaFeatureValuesChanged() {

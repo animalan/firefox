@@ -563,6 +563,7 @@ class Document : public nsINode,
   friend class DocumentOrShadowRoot;
   friend class LinkedList<Document>;
   friend class LinkedListElement<Document>;
+  friend class AutoRestoreCloningForSVGUse;
 
  protected:
   Document(const char* aContentType, LoadedAsData aLoadedAsData);
