@@ -7,6 +7,7 @@ package mozilla.components.browser.storage.sync
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlin.coroutines.ContinuationInterceptor
 
 /**
  * Convenience function to get the dispatcher component of a coroutine scope
@@ -15,6 +16,5 @@ import kotlinx.coroutines.Dispatchers
  * call can break structured concurrency, which we need to be able to ensure that cancellation
  * behaves as it should.
  */
-@OptIn(ExperimentalStdlibApi::class)
 internal val CoroutineScope.dispatcher: CoroutineDispatcher
-    get() = coroutineContext[CoroutineDispatcher] ?: Dispatchers.IO
+    get() = (coroutineContext[ContinuationInterceptor] as? CoroutineDispatcher) ?: Dispatchers.IO
