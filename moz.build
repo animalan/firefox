@@ -59,7 +59,7 @@ with Files("*.json"):
     BUG_COMPONENT = ("Firefox Build System", "General")
 
 with Files("**/l10n.toml"):
-    BUG_COMPONENT = ("Core", "Localization")
+    BUG_COMPONENT = ("Core", "Internationalization: Localization")
     FINAL = True
 
 with Files("README.md"):
