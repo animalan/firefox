@@ -14,7 +14,7 @@
   box-shadow: var(--box-shadow-level-2);
 
   &:hover,
-  &:focus-within {
+  &:has(:focus-visible) {
     outline: 1px solid var(--border-color-deemphasized);
     box-shadow: var(--card-box-shadow-hover);
   }
@@ -67,6 +67,12 @@
       padding: var(--space-small);
     }
   }
+
+  &.sports-matches {
+    .sports-title-wrapper {
+      grid-template-columns: auto 1fr auto;
+    }
+  }
 }
 
 .sports-title-wrapper {
@@ -92,11 +98,16 @@
 }
 
 .sports:hover,
-.sports:focus-within {
+.sports:has(:focus-visible) {
   .sports-context-menu-wrapper {
     opacity: 1;
     pointer-events: auto;
   }
+}
+
+// Handles keyboard focus on moz-button, since :has(:focus-visible) doesn't include shadow DOM
+.sports-context-menu-wrapper:focus-within {
+  opacity: 1;
 }
 
 .sports-body {
@@ -160,6 +171,38 @@
   gap: var(--space-medium);
   flex: 1;
   overflow-y: auto;
+}
+
+.sports-back-button {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.sports-matches-tabs {
+  display: flex;
+}
+
+.sports-matches-tab {
+  flex: 1;
+  padding-block: var(--space-small);
+  border: none;
+  border-block-end: 2px solid transparent;
+  font-size: var(--font-size-small);
+
+  &:focus-visible {
+    outline: var(--focus-outline);
+  }
+
+  &.is-active {
+    font-weight: var(--font-weight-semibold);
+    border-block-end-color: var(--color-accent-primary);
+  }
+
+  &.is-disabled {
+    color: var(--text-color-disabled);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 }
 
 .sports-cancel-button {

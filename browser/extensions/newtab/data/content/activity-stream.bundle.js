@@ -306,8 +306,10 @@ for (const type of [
   "WIDGETS_LISTS_UPDATE",
   "WIDGETS_LISTS_USER_EVENT",
   "WIDGETS_LISTS_USER_IMPRESSION",
+  "WIDGETS_SPORTS_CHANGE_MATCHES_TAB",
   "WIDGETS_SPORTS_CHANGE_SELECTED_TEAMS",
   "WIDGETS_SPORTS_CHANGE_WIDGET_STATE",
+  "WIDGETS_SPORTS_SET_MATCHES_TAB",
   "WIDGETS_SPORTS_SET_SELECTED_TEAMS",
   "WIDGETS_SPORTS_SET_WIDGET_STATE",
   "WIDGETS_SPORTS_WIDGET_SET",
@@ -6741,6 +6743,7 @@ const INITIAL_STATE = {
     initialized: false,
     widgetState: "sports-intro",
     selectedTeams: [],
+    matchesTab: "upcoming",
   },
 };
 
@@ -7737,6 +7740,8 @@ function SportsWidget(prevState = INITIAL_STATE.SportsWidget, action) {
       return { ...prevState, widgetState: action.data };
     case actionTypes.WIDGETS_SPORTS_SET_SELECTED_TEAMS:
       return { ...prevState, selectedTeams: action.data };
+    case actionTypes.WIDGETS_SPORTS_SET_MATCHES_TAB:
+      return { ...prevState, matchesTab: action.data };
     default:
       return prevState;
   }
@@ -15790,8 +15795,23 @@ function WidgetsRowFeatureHighlight({
 
 const WIDGET_STATES = {
   INTRO: "sports-intro",
-  FOLLOW_TEAMS: "sports-follow-state"
+  FOLLOW_TEAMS: "sports-follow-state",
+  MATCHES: "sports-matches"
 };
+const MATCHES_TABS = {
+  RESULTS: "results",
+  NOW: "now",
+  UPCOMING: "upcoming"
+};
+function getVisibleMatchesTabs(hasLiveGames, hasPreviousResults) {
+  return Object.values(MATCHES_TABS)
+  // Only show the Now tab when there are live games.
+  .filter(id => id !== MATCHES_TABS.NOW || hasLiveGames).map(id => ({
+    id,
+    // Disable the Results tab until previous match data is available.
+    disabled: id === MATCHES_TABS.RESULTS && !hasPreviousResults
+  }));
+}
 const COUNTRIES = [{
   id: "CA",
   name: "Canada"
@@ -15849,6 +15869,14 @@ function SportsWidget_SportsWidget({
   const widgetState = sportsWidgetData.widgetState || WIDGET_STATES.INTRO;
   const displaySize = widgetState === WIDGET_STATES.FOLLOW_TEAMS ? "large" : widgetSize;
   const selectedTeams = sportsWidgetData.selectedTeams || [];
+  const {
+    matchesTab
+  } = sportsWidgetData;
+  const hasLiveGames = sportsWidgetData?.data?.current?.length > 0;
+  const hasPreviousResults = sportsWidgetData?.data?.previous?.length > 0;
+  const tournamentStarted = hasLiveGames || hasPreviousResults;
+  const hasUserSelectedTab = (0,external_React_namespaceObject.useRef)(false);
+  const activeTab = hasLiveGames && !hasUserSelectedTab.current ? MATCHES_TABS.NOW : matchesTab;
   const impressionFired = (0,external_React_namespaceObject.useRef)(false);
   const sizeSubmenuRef = (0,external_React_namespaceObject.useRef)(null);
   const handleIntersection = (0,external_React_namespaceObject.useCallback)(() => {
@@ -15894,6 +15922,14 @@ function SportsWidget_SportsWidget({
           widget_size: widgetSize
         }
       }));
+      dispatch(actionCreators.AlsoToMain({
+        type: actionTypes.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
+        data: WIDGET_STATES.MATCHES
+      }));
+      dispatch(actionCreators.AlsoToMain({
+        type: actionTypes.WIDGETS_SPORTS_CHANGE_MATCHES_TAB,
+        data: MATCHES_TABS.UPCOMING
+      }));
     });
     handleInteraction();
   }
@@ -15907,6 +15943,14 @@ function SportsWidget_SportsWidget({
           user_action: SportsWidget_USER_ACTION_TYPES.VIEW_RESULTS,
           widget_size: widgetSize
         }
+      }));
+      dispatch(actionCreators.AlsoToMain({
+        type: actionTypes.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
+        data: WIDGET_STATES.MATCHES
+      }));
+      dispatch(actionCreators.AlsoToMain({
+        type: actionTypes.WIDGETS_SPORTS_CHANGE_MATCHES_TAB,
+        data: MATCHES_TABS.RESULTS
       }));
     });
     handleInteraction();
@@ -15968,15 +16012,21 @@ function SportsWidget_SportsWidget({
     return () => el.removeEventListener("click", listener);
   }, [handleChangeSize]);
   function handleViewSchedule() {
-    dispatch(actionCreators.OnlyToMain({
-      type: actionTypes.WIDGETS_USER_EVENT,
-      data: {
-        widget_name: "sports_widget",
-        widget_source: "widget",
-        user_action: SportsWidget_USER_ACTION_TYPES.VIEW_SCHEDULE,
-        widget_size: widgetSize
-      }
-    }));
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "sports_widget",
+          widget_source: "widget",
+          user_action: SportsWidget_USER_ACTION_TYPES.VIEW_SCHEDULE,
+          widget_size: widgetSize
+        }
+      }));
+      dispatch(actionCreators.AlsoToMain({
+        type: actionTypes.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
+        data: WIDGET_STATES.MATCHES
+      }));
+    });
     handleInteraction();
   }
   function handleLearnMore() {
@@ -16005,6 +16055,17 @@ function SportsWidget_SportsWidget({
     type: actionTypes.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
     data: WIDGET_STATES.INTRO
   })), [dispatch]);
+  const handleViewIntro = (0,external_React_namespaceObject.useCallback)(() => dispatch(actionCreators.AlsoToMain({
+    type: actionTypes.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
+    data: WIDGET_STATES.INTRO
+  })), [dispatch]);
+  const handleMatchesTabChange = (0,external_React_namespaceObject.useCallback)(tab => {
+    hasUserSelectedTab.current = true;
+    dispatch(actionCreators.AlsoToMain({
+      type: actionTypes.WIDGETS_SPORTS_CHANGE_MATCHES_TAB,
+      data: tab
+    }));
+  }, [dispatch]);
 
   // @nova-cleanup(remove-gate): Remove this guard and PREF_NOVA_ENABLED after Nova ships
   if (!prefs[SportsWidget_PREF_NOVA_ENABLED]) {
@@ -16025,7 +16086,31 @@ function SportsWidget_SportsWidget({
     "data-l10n-args": JSON.stringify({
       number: 3
     })
-  }), widgetState === WIDGET_STATES.INTRO && /*#__PURE__*/external_React_default().createElement("div", {
+  }), widgetState === WIDGET_STATES.MATCHES && /*#__PURE__*/external_React_default().createElement("moz-button", {
+    className: "sports-back-button",
+    type: "icon ghost",
+    iconsrc: "chrome://global/skin/icons/arrow-left.svg",
+    "data-l10n-id": "newtab-sports-widget-back-button",
+    onClick: handleViewIntro,
+    style: {
+      visibility: tournamentStarted ? "hidden" : "visible"
+    },
+    "aria-hidden": tournamentStarted
+  }), widgetState === WIDGET_STATES.MATCHES && /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sports-matches-tabs",
+    role: "tablist"
+  }, getVisibleMatchesTabs(hasLiveGames, hasPreviousResults).map(({
+    id,
+    disabled
+  }) => /*#__PURE__*/external_React_default().createElement("button", {
+    key: id,
+    role: "tab",
+    "aria-selected": activeTab === id,
+    disabled: disabled,
+    className: `sports-matches-tab${activeTab === id ? " is-active" : ""}${disabled ? " is-disabled" : ""}`,
+    onClick: () => handleMatchesTabChange(id),
+    "data-l10n-id": `newtab-sports-widget-${id}`
+  }))), widgetState === WIDGET_STATES.INTRO && /*#__PURE__*/external_React_default().createElement("div", {
     className: "sports-intro-wrapper"
   }, /*#__PURE__*/external_React_default().createElement("h2", {
     className: "sports-intro-title",
@@ -16054,7 +16139,8 @@ function SportsWidget_SportsWidget({
     onClick: handleViewUpcoming
   }), /*#__PURE__*/external_React_default().createElement("panel-item", {
     "data-l10n-id": "newtab-sports-widget-menu-view-results",
-    onClick: handleViewResults
+    onClick: handleViewResults,
+    disabled: !hasPreviousResults
   }), widgetsMayBeMaximized && /*#__PURE__*/external_React_default().createElement("panel-item", {
     submenu: "sports-size-submenu"
   }, /*#__PURE__*/external_React_default().createElement("span", {
@@ -16077,11 +16163,14 @@ function SportsWidget_SportsWidget({
     onClick: handleLearnMore
   })))), /*#__PURE__*/external_React_default().createElement("div", {
     className: "sports-body"
-  }, widgetState === WIDGET_STATES.FOLLOW_TEAMS ? /*#__PURE__*/external_React_default().createElement(SportsWidgetFollowTeams, {
+  }, widgetState === WIDGET_STATES.FOLLOW_TEAMS && /*#__PURE__*/external_React_default().createElement(SportsWidgetFollowTeams, {
     initialSelectedTeams: selectedTeams,
     dispatch: dispatch,
     onClose: handleCancelSelection
-  }) : /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("div", {
+  }), widgetState === WIDGET_STATES.MATCHES && /*#__PURE__*/external_React_default().createElement(SportsMatchesView, {
+    matchesTab: activeTab,
+    hasLiveGames: hasLiveGames
+  }), widgetState === WIDGET_STATES.INTRO && /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("div", {
     className: "sports-buttons-wrapper"
   }, /*#__PURE__*/external_React_default().createElement("moz-button", {
     type: "primary",
@@ -16143,6 +16232,20 @@ function SportsWidgetFollowTeams({
     type: "primary",
     size: "small",
     onClick: handleDoneSelection
+  }));
+}
+function SportsMatchesView({
+  matchesTab,
+  hasLiveGames
+}) {
+  return /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sports-matches-view"
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    hidden: matchesTab !== MATCHES_TABS.RESULTS
+  }), hasLiveGames && /*#__PURE__*/external_React_default().createElement("div", {
+    hidden: matchesTab !== MATCHES_TABS.NOW
+  }), /*#__PURE__*/external_React_default().createElement("div", {
+    hidden: matchesTab !== MATCHES_TABS.UPCOMING
   }));
 }
 
