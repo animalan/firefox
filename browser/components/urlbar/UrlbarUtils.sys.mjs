@@ -2360,9 +2360,9 @@ export var UrlbarUtils = {
    *   The result.
    *
    * @typedef {object} ParseDateResult
-   * @property {typeof Temporal.ZonedDateTime} zonedNow
+   * @property {Temporal.ZonedDateTime} zonedNow
    *   The "now" date as a `ZonedDateTime`.
-   * @property {typeof Temporal.ZonedDateTime} zonedDate
+   * @property {Temporal.ZonedDateTime} zonedDate
    *   The passed-in date as a `ZonedDateTime`.
    * @property {boolean} isFuture
    *   Whether the date is in the future.
