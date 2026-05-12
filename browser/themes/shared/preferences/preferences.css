@@ -1499,6 +1499,11 @@ setting-group[groupid="aiStatesDescription"] {
 .hidden-category {
   display: none;
 }
+
+.nav-separator {
+  width: 100%;
+}
+
 /* Platform-specific tweaks & overrides */
 
 @media (-moz-platform: macos) {
