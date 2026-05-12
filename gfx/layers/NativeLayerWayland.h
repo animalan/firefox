@@ -90,7 +90,7 @@ class NativeLayerRootWayland final : public NativeLayerRoot {
   }
   void SetDRMFormat(widget::DRMFormat* aFormat);
 
-  void VSyncCallbackHandler(uint32_t aTime, bool aEmulated);
+  void FrameCallbackHandler(uint32_t aTime);
 
   RefPtr<widget::WaylandBuffer> BorrowExternalBuffer(
       RefPtr<DMABufSurface> aDMABufSurface);
@@ -225,7 +225,6 @@ class NativeLayerWayland : public NativeLayer {
   //
   // Also Unmap() needs to be finished on main thread.
   bool IsMapped();
-  bool IsVisible();
   bool Map(widget::WaylandSurfaceLock* aParentWaylandSurfaceLock);
   void Unmap();
 
