@@ -268,8 +268,6 @@ def accept_raptor_android_build(platform):
         return False
     if "shippable" not in platform:
         return False
-    if "p5" in platform and "aarch64" in platform:
-        return False
     if "p6" in platform and "aarch64" in platform:
         return True
     if "s24" in platform and "aarch64" in platform:
