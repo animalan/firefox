@@ -31,10 +31,8 @@
 #include "vm/JSContext.h"               // CHECK_THREAD, JSContext
 #include "vm/JSObject.h"                // JSObject
 #include "vm/JSONParser.h"              // JSONParser
-#include "vm/JSScript.h"                // js::ScriptSourceObject
 #include "vm/List.h"                    // ListObject
 #include "vm/Runtime.h"                 // JSRuntime
-#include "wasm/WasmCompile.h"
 
 #include "builtin/HandlerFunction-inl.h"  // js::ExtraValueFromHandler, js::NewHandler{,WithExtraValue}, js::TargetFromHandler
 #include "vm/JSAtomUtils-inl.h"           // AtomToId
@@ -112,21 +110,6 @@ JS_PUBLIC_API bool JS::FinishLoadingImportedModule(
   MOZ_ASSERT(moduleRequest->is<ModuleRequestObject>());
   MOZ_ASSERT(result);
   Rooted<ModuleObject*> module(cx, &result->as<ModuleObject>());
-
-#ifdef ENABLE_SOURCE_PHASE_IMPORTS
-  // TODO: Until we support evaluation phase imports of wasm modules, we need to
-  // guard against first importing a wasm module as source, and then
-  // subsequently as evaluation phase. The module will be retrieved from the
-  // module map, and then we'll attempt to link it, which isn't currently
-  // supported. See Bug 2030454.
-  if (moduleRequest->as<ModuleRequestObject>().phase() ==
-          ImportPhase::Evaluation &&
-      module->moduleSource()) {
-    JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
-                              JSMSG_WASM_ESM_EVAL_NOT_SUPPORTED);
-    return FinishLoadingImportedModuleFailedWithPendingException(cx, payload);
-  }
-#endif
 
   if (referrer && referrer->isModule()) {
     // |loadedModules| is only required to be stored on modules.
@@ -322,61 +305,17 @@ JS_PUBLIC_API JSObject* JS::CreateDefaultExportSyntheticModule(
   return moduleObject;
 }
 
-// https://webassembly.github.io/esm-integration/js-api/index.html#esm-integration
 JS_PUBLIC_API JSObject* JS::CompileWasmModule(
     JSContext* cx, const ReadOnlyCompileOptions& options,
     js::Vector<uint8_t, 0, js::MallocAllocPolicy>& srcBuf) {
   // TODO: Compilation of wasm modules will be added in
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=2030454.
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1997621.
   // For now, we fail unconditionally.
   JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                            JSMSG_WASM_COMPILE_ERROR,
                            "Compilation of wasm modules not implemented.");
 
   return nullptr;
-}
-
-// https://webassembly.github.io/esm-integration/js-api/index.html#esm-integration
-JS_PUBLIC_API JSObject* JS::CompileWasmModuleAsSource(
-    JSContext* cx, const ReadOnlyCompileOptions& options,
-    js::Vector<uint8_t, 0, js::MallocAllocPolicy>& srcBuf) {
-#ifdef ENABLE_SOURCE_PHASE_IMPORTS
-  MOZ_ASSERT(!cx->zone()->isAtomsZone());
-  AssertHeapIsIdle();
-  CHECK_THREAD(cx);
-
-  wasm::BytecodeSource source(srcBuf.begin(), srcBuf.length());
-  RootedObject wasmModuleObject(cx);
-  if (!wasm::CompileForESM(cx, options, source, &wasmModuleObject)) {
-    return nullptr;
-  }
-
-  Rooted<ModuleObject*> moduleObject(cx, ModuleObject::create(cx));
-  if (!moduleObject) {
-    return nullptr;
-  }
-
-  moduleObject->initModuleSourceSlot(wasmModuleObject);
-
-  Rooted<ScriptSourceObject*> sso(cx,
-                                  ScriptSourceObject::createForWasmModule(cx));
-  if (!sso) {
-    return nullptr;
-  }
-  moduleObject->initScriptSourceObject(sso);
-
-  if (!ModuleObject::createWasmEnvironment(cx, moduleObject)) {
-    return nullptr;
-  }
-
-  return moduleObject;
-#else
-  JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                           JSMSG_WASM_COMPILE_ERROR,
-                           "Compilation of wasm modules not enabled.");
-
-  return nullptr;
-#endif
 }
 
 JS_PUBLIC_API void JS::SetModulePrivate(JSObject* module, const Value& value) {
@@ -494,12 +433,8 @@ JS_PUBLIC_API JSScript* JS::GetModuleScript(JS::HandleObject moduleRecord) {
 
   auto& module = moduleRecord->as<ModuleObject>();
 
-  // Synthetic modules and source phase modules do not have a script.
-  if (module.hasSyntheticModuleFields()
-#ifdef ENABLE_SOURCE_PHASE_IMPORTS
-      || module.isSourcePhaseModule()
-#endif
-  ) {
+  // A synthetic module does not have a script associated with it.
+  if (module.hasSyntheticModuleFields()) {
     return nullptr;
   }
 
@@ -559,16 +494,6 @@ JS_PUBLIC_API JS::ModuleType JS::GetModuleRequestType(
   cx->check(moduleRequestArg);
 
   return moduleRequestArg->as<ModuleRequestObject>().moduleType();
-}
-
-JS_PUBLIC_API bool JS::ModuleRequestIsSourcePhase(
-    JSContext* cx, Handle<JSObject*> moduleRequestArg) {
-  AssertHeapIsIdle();
-  CHECK_THREAD(cx);
-  cx->check(moduleRequestArg);
-
-  return moduleRequestArg->as<ModuleRequestObject>().phase() ==
-         ImportPhase::Source;
 }
 
 JS_PUBLIC_API void JS::ClearModuleEnvironment(JSObject* moduleObj) {
@@ -1459,7 +1384,7 @@ static bool ModuleInitializeEnvironment(JSContext* cx,
       // https://tc39.es/ecma262/#sec-source-text-module-record-initialize-environment
       // Step 7.c. Else if in.[[ImportName]] is source, then
       // Step 7.c.i. Let moduleSourceObject be importedModule.[[ModuleSource]].
-      JSObject* moduleSourceObject = importedModule->moduleSource();
+      ModuleSourceObject* moduleSourceObject = importedModule->moduleSource();
 
       // Step 7.c.ii. If moduleSourceObject is empty, throw a SyntaxError
       //              exception.
@@ -2835,7 +2760,7 @@ static bool TryStartDynamicModuleImport(JSContext* cx, HandleScript script,
     // Step 8. Let moduleRequest be a new ModuleRequest Record { [[Specifier]]:
     //         specifierString, [[Phase]]: source }.
     moduleRequest = ModuleRequestObject::create(
-        cx, specifierAtom, JS::ModuleType::JavaScriptOrWasm, phase);
+        cx, specifierAtom, JS::ModuleType::JavaScript, phase);
   } else
 #endif
   {
@@ -3033,7 +2958,7 @@ bool ContinueDynamicImport(JSContext* cx, Handle<JSScript*> referrer,
   // Step 3. If phase is source, then
   if (phase == ImportPhase::Source) {
     // Step 3.a. Let moduleSource be module.[[ModuleSource]].
-    JSObject* moduleSource = module->moduleSource();
+    ModuleSourceObject* moduleSource = module->moduleSource();
 
     // Step 3.b. If moduleSource is empty, then
     if (!moduleSource) {

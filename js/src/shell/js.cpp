@@ -13309,9 +13309,7 @@ bool InitOptionParser(OptionParser& op) {
           '\0', "enable-source-phase-imports-test262-module-source",
           "Support <module source> specifier for test262 tests") ||
       !op.addBoolOption('\0', "enable-legacy-regexp",
-                        "Enable Legacy RegExp features") ||
-      !op.addBoolOption('\0', "enable-wasm-esm-integration",
-                        "Enable wasm/esm integration")) {
+                        "Enable Legacy RegExp features")) {
     return false;
   }
 
@@ -13414,13 +13412,10 @@ bool SetGlobalOptionsPreJSInit(const OptionParser& op) {
   if (op.getBoolOption("enable-intl-locale-info")) {
     JS::Prefs::setAtStartup_experimental_intl_locale_info(true);
   }
-  if (op.getBoolOption("enable-wasm-esm-integration")) {
-    JS::Prefs::set_experimental_wasm_esm_integration(true);
-  }
 #endif
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
   if (op.getBoolOption("enable-source-phase-imports")) {
-    JS::Prefs::set_experimental_source_phase_imports(true);
+    JS::Prefs::setAtStartup_experimental_source_phase_imports(true);
   }
   if (op.getBoolOption("enable-source-phase-imports-test262-module-source")) {
     JS::Prefs::

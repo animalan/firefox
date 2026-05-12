@@ -245,14 +245,8 @@ nsresult ModuleLoader::CompileJavaScriptOrWasmModule(
 #ifdef NIGHTLY_BUILD
   if (aRequest->HasWasmMimeTypeEssence()) {
     MOZ_ASSERT(aRequest->IsWasmBytes());
-    JS::Rooted<JSObject*> moduleReq(aCx, aRequest->mModuleRequestObj);
-    JSObject* wasmModule;
-    if (moduleReq && JS::ModuleRequestIsSourcePhase(aCx, moduleReq)) {
-      wasmModule =
-          JS::CompileWasmModuleAsSource(aCx, aOptions, aRequest->WasmBytes());
-    } else {
-      wasmModule = JS::CompileWasmModule(aCx, aOptions, aRequest->WasmBytes());
-    }
+    auto* wasmModule =
+        JS::CompileWasmModule(aCx, aOptions, aRequest->WasmBytes());
     if (!wasmModule) {
       return NS_ERROR_FAILURE;
     }

@@ -688,9 +688,7 @@ void JSScript::resetScriptCounts() {
 void ScriptSourceObject::finalize(JS::GCContext* gcx, JSObject* obj) {
   MOZ_ASSERT(gcx->onMainThread());
   ScriptSourceObject* sso = &obj->as<ScriptSourceObject>();
-  if (sso->hasSource()) {
-    sso->source()->Release();
-  }
+  sso->source()->Release();
 
   // Clear the private value, calling the release hook if necessary.
   sso->setPrivate(gcx->runtime(), UndefinedValue());
@@ -739,18 +737,6 @@ ScriptSourceObject* ScriptSourceObject::create(JSContext* cx,
   return obj;
 }
 
-/* static */
-ScriptSourceObject* ScriptSourceObject::createForWasmModule(JSContext* cx) {
-  ScriptSourceObject* obj =
-      NewObjectWithGivenProto<ScriptSourceObject>(cx, nullptr);
-  if (!obj) {
-    return nullptr;
-  }
-
-  // Wasm modules have no ScriptSource, so we leave SOURCE_SLOT undefined.
-  return obj;
-}
-
 [[nodiscard]] static bool MaybeValidateFilename(
     JSContext* cx, Handle<ScriptSourceObject*> sso,
     const JS::InstantiateOptions& options) {
@@ -787,7 +773,6 @@ bool ScriptSourceObject::initFromOptions(
       source->getReservedSlot(ELEMENT_PROPERTY_SLOT).isMagic(JS_GENERIC_MAGIC));
   MOZ_ASSERT(source->getReservedSlot(INTRODUCTION_SCRIPT_SLOT)
                  .isMagic(JS_GENERIC_MAGIC));
-  MOZ_ASSERT(source->hasSource());
 
   if (!MaybeValidateFilename(cx, source, options)) {
     return false;
@@ -3385,7 +3370,6 @@ BaseScript::BaseScript(uint8_t* stubEntry, JSFunction* function,
   MOZ_ASSERT(extent_.toStringStart <= extent_.sourceStart);
   MOZ_ASSERT(extent_.sourceStart <= extent_.sourceEnd);
   MOZ_ASSERT(extent_.sourceEnd <= extent_.toStringEnd);
-  MOZ_ASSERT(sourceObject->hasSource());
 }
 
 /* static */

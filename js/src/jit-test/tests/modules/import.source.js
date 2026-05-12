@@ -17,13 +17,14 @@ drainJobQueue();
 const AbstractModuleSource = getAbstractModuleSource();
 
 assertEq(result instanceof AbstractModuleSource, true);
+assertEq(Object.getPrototypeOf(result), AbstractModuleSource.prototype);
 
 // Calling the AbstractModuleSource constructor should throw a TypeError.
 assertThrowsInstanceOf(() => new AbstractModuleSource(), TypeError);
 assertThrowsInstanceOf(() => AbstractModuleSource(), TypeError);
 
 const toStringTag = Object.getOwnPropertyDescriptor(AbstractModuleSource.prototype, Symbol.toStringTag).get;
-assertEq(toStringTag.call(result), "WebAssembly.Module");
+assertEq(toStringTag.call(result), "Module");
 assertEq(toStringTag.call({}), undefined);
 assertEq(toStringTag.call(42), undefined);
 
