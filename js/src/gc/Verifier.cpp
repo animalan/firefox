@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/Maybe.h"
 #include "mozilla/Sprintf.h"
 
 #include <algorithm>
@@ -538,19 +539,23 @@ bool js::gc::MarkingValidator::nonIncrementalMark(AutoGCSession& session) {
   /* Save existing mark bits. */
   {
     AutoLockGC lock(gc);
-    for (auto chunk = gc->allNonEmptyChunks(lock); !chunk.done();
-         chunk.next()) {
+    bool ok = true;
+    gc->forEachNonEmptyChunk(lock, [&](ArenaChunk* chunk) {
       // Bug 1842582: Allocate mark bit buffer in two stages to avoid alignment
       // restriction which we currently can't support.
       void* buffer = js_malloc(sizeof(ChunkMarkBitmap));
       if (!buffer) {
-        return false;
+        ok = false;
+        return;
       }
       UniquePtr<ChunkMarkBitmap> entry(new (buffer) ChunkMarkBitmap);
       entry->copyFrom(chunk->markBits);
       if (!map.putNew(chunk, std::move(entry))) {
-        return false;
+        ok = false;
       }
+    });
+    if (!ok) {
+      return false;
     }
   }
 
@@ -654,8 +659,7 @@ bool js::gc::MarkingValidator::nonIncrementalMark(AutoGCSession& session) {
   /* Take a copy of the non-incremental mark state and restore the original. */
   {
     AutoLockGC lock(gc);
-    for (auto chunk = gc->allNonEmptyChunks(lock); !chunk.done();
-         chunk.next()) {
+    gc->forEachNonEmptyChunk(lock, [&](ArenaChunk* chunk) {
       ChunkMarkBitmap* bitmap = &chunk->markBits;
       auto ptr = map.lookup(chunk);
       MOZ_RELEASE_ASSERT(ptr, "Chunk not found in map");
@@ -664,7 +668,7 @@ bool js::gc::MarkingValidator::nonIncrementalMark(AutoGCSession& session) {
       temp.copyFrom(*entry);
       entry->copyFrom(*bitmap);
       bitmap->copyFrom(temp);
-    }
+    });
   }
 
   for (GCZonesIter zone(gc); !zone.done(); zone.next()) {
@@ -708,10 +712,11 @@ void js::gc::MarkingValidator::validate() {
 
   bool ok = true;
   AutoLockGC lock(gc->rt);
-  for (auto chunk = gc->allNonEmptyChunks(lock); !chunk.done(); chunk.next()) {
+
+  gc->forEachNonEmptyChunk(lock, [&](ArenaChunk* chunk) {
     BitmapMap::Ptr ptr = map.lookup(chunk);
     if (!ptr) {
-      continue; /* Allocated after we did the non-incremental mark. */
+      return;  // Allocated after we did the non-incremental mark.
     }
 
     ChunkMarkBitmap* bitmap = ptr->value().get();
@@ -789,7 +794,7 @@ void js::gc::MarkingValidator::validate() {
         thing += Arena::thingSize(kind);
       }
     }
-  }
+  });
 
   MOZ_RELEASE_ASSERT(ok, "Incremental marking verification failed");
 }
@@ -1272,20 +1277,25 @@ void GCRuntime::checkHeapBeforeMinorGC(AutoHeapSession& session) {
 // traceKind. Only for assertions and js::debug::* APIs.
 bool GCRuntime::isPointerWithinTenuredCell(void* ptr, JS::TraceKind traceKind) {
   AutoLockGC lock(this);
-  for (auto chunk = allNonEmptyChunks(lock); !chunk.done(); chunk.next()) {
+
+  mozilla::Maybe<bool> result;
+  forEachNonEmptyChunk(lock, [&](ArenaChunk* chunk) {
+    if (result.isSome()) {
+      return;
+    }
     MOZ_ASSERT(!chunk->isNurseryChunk());
     if (ptr >= &chunk->arenas[0] && ptr < &chunk->arenas[ArenasPerChunk]) {
+      bool found = false;
       auto* arena = reinterpret_cast<Arena*>(uintptr_t(ptr) & ~ArenaMask);
-      if (!arena->allocated()) {
-        return false;
+      if (arena->allocated()) {
+        found = traceKind == JS::TraceKind::Null ||
+                MapAllocToTraceKind(arena->getAllocKind()) == traceKind;
       }
-
-      return traceKind == JS::TraceKind::Null ||
-             MapAllocToTraceKind(arena->getAllocKind()) == traceKind;
+      result.emplace(found);
     }
-  }
+  });
 
-  return false;
+  return result.valueOr(false);
 }
 
 bool GCRuntime::isPointerWithinBufferAlloc(void* ptr) {

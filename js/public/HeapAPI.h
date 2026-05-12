@@ -166,6 +166,9 @@ struct ArenaChunkInfo {
 
   /* Whether this chunk is the chunk currently being allocated from. */
   bool isCurrentChunk = false;
+
+  // The zone this chunk is associated with, or nullptr for empty chunks.
+  JS::Zone* zone = nullptr;
 };
 
 /*
