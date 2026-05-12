@@ -54,7 +54,7 @@ work = "2.11.2"
 
 # Google other
 accompanist = "0.37.3"
-firebase-messaging = "25.0.1"
+firebase-messaging = "25.0.2"
 installreferrer = "2.2"
 ksp = "2.3.7"
 material = "1.13.0"
