@@ -134,8 +134,6 @@ class AssemblerRISCVI : public AssemblerRiscvBase {
   static inline Instr SetLoadOffset(int32_t offset, Instr instr) {
 #if JS_CODEGEN_RISCV64
     MOZ_ASSERT(IsLd(instr));
-#elif JS_CODEGEN_RISCV32
-    MOZ_ASSERT(IsLw(instr));
 #endif
     MOZ_ASSERT(is_int12(offset));
     instr &= ~kImm12Mask;

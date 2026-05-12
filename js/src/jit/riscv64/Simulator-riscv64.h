@@ -214,12 +214,7 @@ const uint32_t kFCSRExceptionFlagMask = kFCSRFlagMask ^ kFCSRInexactFlagMask;
 
 // -----------------------------------------------------------------------------
 // Utility types and functions for RISCV
-#  ifdef JS_CODEGEN_RISCV32
-using sreg_t = int32_t;
-using reg_t = uint32_t;
-using freg_t = uint64_t;
-using sfreg_t = int64_t;
-#  elif JS_CODEGEN_RISCV64
+#  ifdef JS_CODEGEN_RISCV64
 using sreg_t = int64_t;
 using reg_t = uint64_t;
 using freg_t = uint64_t;
@@ -234,9 +229,6 @@ using sfreg_t = int64_t;
 #  ifdef JS_CODEGEN_RISCV64
 #    define sext_xlen(x) (((sreg_t)(x) << (64 - xlen)) >> (64 - xlen))
 #    define zext_xlen(x) (((reg_t)(x) << (64 - xlen)) >> (64 - xlen))
-#  elif JS_CODEGEN_RISCV32
-#    define sext_xlen(x) (((sreg_t)(x) << (32 - xlen)) >> (32 - xlen))
-#    define zext_xlen(x) (((reg_t)(x) << (32 - xlen)) >> (32 - xlen))
 #  endif
 
 #  define BIT(n) (0x1LL << (n))
@@ -261,24 +253,6 @@ inline int64_t mulh(int64_t a, int64_t b) {
 inline int64_t mulhsu(int64_t a, uint64_t b) {
   __int128_t full_result = ((__int128_t)a) * ((__uint128_t)b);
   return full_result >> 64;
-}
-#  elif JS_CODEGEN_RISCV32
-inline uint32_t mulhu(uint32_t a, uint32_t b) {
-  uint64_t full_result = ((uint64_t)a) * ((uint64_t)b);
-  uint64_t upper_part = full_result >> 32;
-  return (uint32_t)upper_part;
-}
-
-inline int32_t mulh(int32_t a, int32_t b) {
-  int64_t full_result = ((int64_t)a) * ((int64_t)b);
-  int64_t upper_part = full_result >> 32;
-  return (int32_t)upper_part;
-}
-
-inline int32_t mulhsu(int32_t a, uint32_t b) {
-  int64_t full_result = ((int64_t)a) * ((uint64_t)b);
-  int64_t upper_part = full_result >> 32;
-  return (int32_t)upper_part;
 }
 #  endif
 
@@ -720,10 +694,7 @@ class Simulator {
   // Helper for debugging memory access.
   inline void DieOrDebug();
 
-#  if JS_CODEGEN_RISCV32
-  template <typename T>
-  void TraceRegWr(T value, TraceType t = WORD);
-#  elif JS_CODEGEN_RISCV64
+#  if JS_CODEGEN_RISCV64
   void TraceRegWr(sreg_t value, TraceType t = DWORD);
 #  endif
   void TraceMemWr(sreg_t addr, sreg_t value, TraceType t);
@@ -747,8 +718,6 @@ class Simulator {
     setRegister(rd_reg(), value);
 #  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rd_reg()), DWORD);
-#  elif JS_CODEGEN_RISCV32
-    if (trace) TraceRegWr(getRegister(rd_reg()), WORD);
 #  endif
   }
   inline void set_frd(float value, bool trace = true) {
@@ -771,24 +740,18 @@ class Simulator {
     setRegister(rvc_rd_reg(), value);
 #  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rvc_rd_reg()), DWORD);
-#  elif JS_CODEGEN_RISCV32
-    if (trace) TraceRegWr(getRegister(rvc_rd_reg()), WORD);
 #  endif
   }
   inline void set_rvc_rs1s(sreg_t value, bool trace = true) {
     setRegister(rvc_rs1s_reg(), value);
 #  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rvc_rs1s_reg()), DWORD);
-#  elif JS_CODEGEN_RISCV32
-    if (trace) TraceRegWr(getRegister(rvc_rs1s_reg()), WORD);
 #  endif
   }
   inline void set_rvc_rs2(sreg_t value, bool trace = true) {
     setRegister(rvc_rs2_reg(), value);
 #  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rvc_rs2_reg()), DWORD);
-#  elif JS_CODEGEN_RISCV32
-    if (trace) TraceRegWr(getRegister(rvc_rs2_reg()), WORD);
 #  endif
   }
   inline void set_rvc_drd(double value, bool trace = true) {
@@ -807,8 +770,6 @@ class Simulator {
     setRegister(rvc_rs2s_reg(), value);
 #  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rvc_rs2s_reg()), DWORD);
-#  elif JS_CODEGEN_RISCV32
-    if (trace) TraceRegWr(getRegister(rvc_rs2s_reg()), WORD);
 #  endif
   }
   inline void set_rvc_drs2s(double value, bool trace = true) {

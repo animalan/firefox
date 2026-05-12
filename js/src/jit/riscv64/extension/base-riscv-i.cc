@@ -282,8 +282,6 @@ bool AssemblerRISCVI::IsLw(Instr instr) {
 int AssemblerRISCVI::LoadOffset(Instr instr) {
 #if JS_CODEGEN_RISCV64
   MOZ_ASSERT(IsLd(instr));
-#elif V8_TARGET_ARCH_RISCV32
-  MOZ_ASSERT(IsLw(instr));
 #endif
   int32_t imm12 = static_cast<int32_t>(instr & kImm12Mask) >> 20;
   return imm12;
