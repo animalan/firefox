@@ -153,7 +153,7 @@ use style::values::specified::intersection_observer::IntersectionObserverMargin;
 use style::values::specified::position::PositionTryFallbacksItem;
 use style::values::specified::source_size_list::SourceSizeList;
 use style::values::specified::svg_path::PathCommand;
-use style::values::specified::{AbsoluteLength, NoCalcLength};
+use style::values::specified::{LengthUnit, NoCalcLength};
 use style::values::{specified, AtomIdent, CustomIdent, KeyframesName};
 use style_traits::{
     CssWriter, NumericValue, ParseError, ParsingMode, SpecifiedValueInfo, ToCss, ToTyped,
@@ -6371,62 +6371,33 @@ pub extern "C" fn Servo_DeclarationBlock_SetLengthValue(
     use style::properties::PropertyDeclaration;
     use style::values::generics::length::{LengthPercentageOrAuto, Size};
     use style::values::generics::NonNegative;
-    use style::values::specified::length::{
-        FontRelativeLength, LengthPercentage, ViewportPercentageLength,
-    };
+    use style::values::specified::length::LengthPercentage;
     use style::values::specified::FontSize;
 
     let long = get_longhand_from_id!(property);
-    let nocalc = match unit {
-        structs::nsCSSUnit::eCSSUnit_EM => {
-            NoCalcLength::FontRelative(FontRelativeLength::Em(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_XHeight => {
-            NoCalcLength::FontRelative(FontRelativeLength::Ex(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_RootEM => {
-            NoCalcLength::FontRelative(FontRelativeLength::Rem(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_Char => {
-            NoCalcLength::FontRelative(FontRelativeLength::Ch(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_Ideographic => {
-            NoCalcLength::FontRelative(FontRelativeLength::Ic(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_CapHeight => {
-            NoCalcLength::FontRelative(FontRelativeLength::Cap(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_LineHeight => {
-            NoCalcLength::FontRelative(FontRelativeLength::Lh(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_RootLineHeight => {
-            NoCalcLength::FontRelative(FontRelativeLength::Rlh(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_Pixel => NoCalcLength::Absolute(AbsoluteLength::Px(value)),
-        structs::nsCSSUnit::eCSSUnit_Inch => NoCalcLength::Absolute(AbsoluteLength::In(value)),
-        structs::nsCSSUnit::eCSSUnit_Centimeter => {
-            NoCalcLength::Absolute(AbsoluteLength::Cm(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_Millimeter => {
-            NoCalcLength::Absolute(AbsoluteLength::Mm(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_Point => NoCalcLength::Absolute(AbsoluteLength::Pt(value)),
-        structs::nsCSSUnit::eCSSUnit_Pica => NoCalcLength::Absolute(AbsoluteLength::Pc(value)),
-        structs::nsCSSUnit::eCSSUnit_Quarter => NoCalcLength::Absolute(AbsoluteLength::Q(value)),
-        structs::nsCSSUnit::eCSSUnit_VW => {
-            NoCalcLength::ViewportPercentage(ViewportPercentageLength::Vw(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_VH => {
-            NoCalcLength::ViewportPercentage(ViewportPercentageLength::Vh(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_VMin => {
-            NoCalcLength::ViewportPercentage(ViewportPercentageLength::Vmin(value))
-        },
-        structs::nsCSSUnit::eCSSUnit_VMax => {
-            NoCalcLength::ViewportPercentage(ViewportPercentageLength::Vmax(value))
-        },
+    let length_unit = match unit {
+        structs::nsCSSUnit::eCSSUnit_EM => LengthUnit::Em,
+        structs::nsCSSUnit::eCSSUnit_XHeight => LengthUnit::Ex,
+        structs::nsCSSUnit::eCSSUnit_RootEM => LengthUnit::Rem,
+        structs::nsCSSUnit::eCSSUnit_Char => LengthUnit::Ch,
+        structs::nsCSSUnit::eCSSUnit_Ideographic => LengthUnit::Ic,
+        structs::nsCSSUnit::eCSSUnit_CapHeight => LengthUnit::Cap,
+        structs::nsCSSUnit::eCSSUnit_LineHeight => LengthUnit::Lh,
+        structs::nsCSSUnit::eCSSUnit_RootLineHeight => LengthUnit::Rlh,
+        structs::nsCSSUnit::eCSSUnit_Pixel => LengthUnit::Px,
+        structs::nsCSSUnit::eCSSUnit_Inch => LengthUnit::In,
+        structs::nsCSSUnit::eCSSUnit_Centimeter => LengthUnit::Cm,
+        structs::nsCSSUnit::eCSSUnit_Millimeter => LengthUnit::Mm,
+        structs::nsCSSUnit::eCSSUnit_Point => LengthUnit::Pt,
+        structs::nsCSSUnit::eCSSUnit_Pica => LengthUnit::Pc,
+        structs::nsCSSUnit::eCSSUnit_Quarter => LengthUnit::Q,
+        structs::nsCSSUnit::eCSSUnit_VW => LengthUnit::Vw,
+        structs::nsCSSUnit::eCSSUnit_VH => LengthUnit::Vh,
+        structs::nsCSSUnit::eCSSUnit_VMin => LengthUnit::Vmin,
+        structs::nsCSSUnit::eCSSUnit_VMax => LengthUnit::Vmax,
         _ => unreachable!("Unknown unit passed to SetLengthValue"),
     };
+    let nocalc = NoCalcLength::new(length_unit, value);
 
     let mut source_declarations = SourcePropertyDeclaration::with_one(match_wrap_declared! { long,
         Width => Size::LengthPercentage(NonNegative(LengthPercentage::Length(nocalc))),
