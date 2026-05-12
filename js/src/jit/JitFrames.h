@@ -181,13 +181,34 @@ struct VMFunctionData;
  * simple ICs like Int32Add. The diagram on the right corresponds to
  * BaselineStubFrameLayout.
  *
- * ## Special frames
+ * ## Entry and exit frames
  *
- * Two special frame types exist:
- * - Entry frames begin a JitActivation, and therefore there is exactly one
- *   per activation of EnterJit or EnterBaseline. These reuse JitFrameLayout.
- * - Exit frames are necessary to leave JIT code and enter C++, and thus,
- *   C++ code will always begin iterating from the topmost exit frame.
+ * A sequence of JS JIT frames on the stack always begins with an entry frame.
+ * Unless it's currently executing, it ends with an exit frame. To walk the
+ * stack from C++, an exit frame must exist.
+ *
+ * When walking the stack from newest to oldest frames, an entry frame marks the
+ * point where the frame iterator does something different. There are two types
+ * of entry frames: CPPToJSJit and WasmToJSJit.
+ * - CPPToJSJit frames begin a JitActivation. There is at most one of them per
+ *   JitActivation, which corresponds with a call to the EnterJit or
+ *   EnterBaseline trampolines. The trampolines construct a JitFrameLayout for
+ *   the callee's frame. When encountering a CPPToJSJit frame, an iterator
+ *   can advance to the next JitActivation.
+ * - WasmToJSJit frames mark the point within a JitActivation where we switch
+ *   from Wasm to JS code. There can be an arbitrary number of such frames
+ *   within a single JitActivation. When encountering a WasmToJSJit frame, an
+ *   iterator will start walking Wasm frames (see WasmFrameIter).
+ *
+ * There are many different ExitFrame types. Most of them represent a call into
+ * C++, and terminate a JitActivation. There are also two types of exit frames
+ * to represent a call from JS into Wasm:
+ * - ExitFrameType::DirectWasmJitCall is used for calls from Ion directly into
+ *   Wasm, using the Wasm ABI.
+ * - ExitFrameType::WasmGenericJitEntry calls a generated JitEntry stub that
+ *   uses the JS ABI and internally converts it to the Wasm ABI. This is less
+ *   efficient, but allows us to call Wasm functions in all places where we
+ *   can call JS functions.
  *
  * [SMDOC] Frame Descriptor Layout
  *
