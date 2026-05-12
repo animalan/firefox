@@ -25,7 +25,7 @@ with Files('jsmin/**'):
     BUG_COMPONENT = ('GeckoView', 'General')
 
 with Files('mohawk/**'):
-    BUG_COMPONENT = ('Taskcluster', 'Platform Libraries')
+    BUG_COMPONENT = ('Taskcluster', 'General')
 
 with Files('mozilla_version/**'):
     BUG_COMPONENT = ('Release Engineering', 'General')
@@ -49,10 +49,10 @@ with Files('rsa/**'):
     BUG_COMPONENT = ('Core', 'Security: PSM')
 
 with Files('slugid/**'):
-    BUG_COMPONENT = ('Taskcluster', 'Platform Libraries')
+    BUG_COMPONENT = ('Taskcluster', 'General')
 
 with Files('taskcluster/**'):
-    BUG_COMPONENT = ('Taskcluster', 'Platform Libraries')
+    BUG_COMPONENT = ('Taskcluster', 'General')
 
 with Files('voluptuous/**'):
     BUG_COMPONENT = ('Firefox Build System', 'Task Configuration')
