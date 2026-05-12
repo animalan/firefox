@@ -1003,15 +1003,6 @@ features:
         value:
           opening_animation_enabled: true
 
-  tab-search:
-    description: Control the visibility of the tab search feature.
-    variables:
-      enabled:
-        description: >
-          Whether or not to enable the tab search feature.
-        type: Boolean
-        default: true
-
   tab-groups:
     description: Control the visibility of the tab groups feature.
     variables:

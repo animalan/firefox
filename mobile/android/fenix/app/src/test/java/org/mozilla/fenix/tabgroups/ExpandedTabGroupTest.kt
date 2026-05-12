@@ -33,7 +33,6 @@ class ExpandedTabGroupTest {
 
     private val tabManagementFeatureHelper = object : TabManagementFeatureHelper {
         override val openingAnimationEnabled: Boolean = false
-        override val tabSearchEnabled: Boolean = false
         override val tabGroupsEnabled: Boolean = true
         override val tabGroupsDragAndDropEnabled: Boolean = false
         override val shareTabGroupEnabled: Boolean = true

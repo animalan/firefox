@@ -19,11 +19,6 @@ interface TabManagementFeatureHelper {
     val openingAnimationEnabled: Boolean
 
     /**
-     * Whether the Tab Search feature is enabled.
-     */
-    val tabSearchEnabled: Boolean
-
-    /**
      * Whether the Tab Groups feature is enabled.
      */
     val tabGroupsEnabled: Boolean
@@ -47,21 +42,13 @@ data object DefaultTabManagementFeatureHelper : TabManagementFeatureHelper {
     override val openingAnimationEnabled: Boolean
         get() = Config.channel.isDebug || FxNimbus.features.tabManagementEnhancements.value().openingAnimationEnabled
 
-    override val tabSearchEnabled: Boolean
-        get() = when {
-            Config.channel.isNightlyOrDebug -> true
-            Config.channel.isBeta -> FxNimbus.features.tabSearch.value().enabled
-            Config.channel.isRelease -> FxNimbus.features.tabSearch.value().enabled
-            else -> false
-        }
-
     override val tabGroupsEnabled: Boolean
         get() = FxNimbus.features.tabGroups.value().enabled
 
     override val tabGroupsDragAndDropEnabled: Boolean
         get() = when {
             Config.channel.isDebug -> true
-            else -> FxNimbus.features.tabSearch.value().enabled
+            else -> FxNimbus.features.tabGroups.value().enabled
         }
 
     override val shareTabGroupEnabled: Boolean

@@ -468,12 +468,6 @@ class SecretSettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFra
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
 
-        requirePreference<SwitchPreferenceCompat>(R.string.pref_key_tab_search).apply {
-            isVisible = true
-            isChecked = context.settings().tabSearchEnabled
-            onPreferenceChangeListener = SharedPreferenceUpdater()
-        }
-
         requirePreference<SwitchPreferenceCompat>(R.string.pref_key_tab_groups).apply {
             isVisible = Config.channel.isNightlyOrDebug
             isChecked = context.settings().tabGroupsEnabled

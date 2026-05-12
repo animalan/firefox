@@ -185,9 +185,6 @@
     <!-- Toast shown when the user denies the camera permission requested by the Lens camera screen -->
     <string name="lens_camera_permission_denied">Permission denied</string>
 
-    <!-- Label for toggling the Tab Search feature -->
-    <string name="preferences_tab_search_feature" translatable="false">Enable Tab Search</string>
-
     <!-- Label for toggling the Tab Groups feature -->
     <string name="preferences_tab_groups_feature" translatable="false">Enable Tab Groups</string>
     <string name="preferences_tab_groups_drag_and_drop" translatable="false">Enable Tab Groups Drag and Drop</string>

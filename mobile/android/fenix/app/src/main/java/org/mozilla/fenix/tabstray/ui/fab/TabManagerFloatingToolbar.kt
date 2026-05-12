@@ -425,9 +425,6 @@ private class TabManagerFloatingToolbarParameterProvider :
             TabManagerFloatingToolbarPreviewModel(
                 state = TabsTrayState(
                     selectedPage = Page.NormalTabs,
-                    config = TabsTrayState.TabsTrayConfig(
-                        tabSearchEnabled = false,
-                    ),
                     normalTabsState = TabsTrayState.NormalTabsState(
                         items = listOf(createTab(url = "url")),
                     ),
@@ -436,9 +433,6 @@ private class TabManagerFloatingToolbarParameterProvider :
             TabManagerFloatingToolbarPreviewModel(
                 state = TabsTrayState(
                     selectedPage = Page.NormalTabs,
-                    config = TabsTrayState.TabsTrayConfig(
-                        tabSearchEnabled = true,
-                    ),
                     normalTabsState = TabsTrayState.NormalTabsState(
                         items = emptyList(),
                     ),
@@ -447,9 +441,6 @@ private class TabManagerFloatingToolbarParameterProvider :
             TabManagerFloatingToolbarPreviewModel(
                 state = TabsTrayState(
                     selectedPage = Page.PrivateTabs,
-                    config = TabsTrayState.TabsTrayConfig(
-                        tabSearchEnabled = true,
-                    ),
                     privateBrowsing = TabsTrayState.PrivateBrowsingState(
                         tabs = listOf(createTab(url = "url")),
                     ),
@@ -458,9 +449,6 @@ private class TabManagerFloatingToolbarParameterProvider :
             TabManagerFloatingToolbarPreviewModel(
                 state = TabsTrayState(
                     selectedPage = Page.PrivateTabs,
-                    config = TabsTrayState.TabsTrayConfig(
-                        tabSearchEnabled = true,
-                    ),
                     privateBrowsing = TabsTrayState.PrivateBrowsingState(
                         tabs = emptyList(),
                     ),
@@ -469,18 +457,12 @@ private class TabManagerFloatingToolbarParameterProvider :
             TabManagerFloatingToolbarPreviewModel(
                 state = TabsTrayState(
                     selectedPage = Page.SyncedTabs,
-                    config = TabsTrayState.TabsTrayConfig(
-                        tabSearchEnabled = true,
-                    ),
                 ),
                 isSignedIn = true,
             ),
             TabManagerFloatingToolbarPreviewModel(
                 state = TabsTrayState(
                     selectedPage = Page.SyncedTabs,
-                    config = TabsTrayState.TabsTrayConfig(
-                        tabSearchEnabled = true,
-                    ),
                 ),
                 isSignedIn = false,
             ),

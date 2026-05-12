@@ -177,7 +177,6 @@ data class TabsTrayState(
      * @property tabGroupsDragAndDropEnabled:  Whether drag and drop is enabled for Tab Groups.
      * @property isInDebugMode Whether the app is in a debug state or has secret menu enabled.
      * @property showTabAutoCloseBanner Whether the banner for the tab auto-closer feature is visible.
-     * @property tabSearchEnabled Whether the tab search feature is globally enabled.
      */
     data class TabsTrayConfig(
         val displayTabsInGrid: Boolean = false,
@@ -185,7 +184,6 @@ data class TabsTrayState(
         val tabGroupsDragAndDropEnabled: Boolean = false,
         val isInDebugMode: Boolean = false,
         val showTabAutoCloseBanner: Boolean = false,
-        val tabSearchEnabled: Boolean = false,
     )
 
     /**
@@ -203,7 +201,7 @@ data class TabsTrayState(
      * Whether the Tab Search button is visible.
      */
     val searchIconVisible: Boolean
-        get() = config.tabSearchEnabled && selectedPage != Page.SyncedTabs
+        get() = selectedPage != Page.SyncedTabs
 
     /**
      * Whether the Tab Search button is enabled.
