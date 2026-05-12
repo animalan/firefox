@@ -106,8 +106,6 @@ import org.mozilla.fenix.components.menu.share.QRCodeDialogFragment
 import org.mozilla.fenix.components.metrics.BreadcrumbsRecorder
 import org.mozilla.fenix.components.metrics.GrowthDataWorker
 import org.mozilla.fenix.components.metrics.InstallReferrerHandlingService
-import org.mozilla.fenix.components.metrics.MarketingAttributionHandler
-import org.mozilla.fenix.components.metrics.RtamoAttributionHandler
 import org.mozilla.fenix.components.metrics.fonts.FontEnumerationWorker
 import org.mozilla.fenix.components.share.QR_CODE_URI_KEY
 import org.mozilla.fenix.components.share.SEND_TO_DEVICES_ACTION
@@ -166,11 +164,9 @@ import org.mozilla.fenix.session.PrivateNotificationService
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.shortcut.NewTabShortcutIntentProcessor.Companion.ACTION_OPEN_PRIVATE_TAB
 import org.mozilla.fenix.splashscreen.ApplyExperimentsOperation
-import org.mozilla.fenix.splashscreen.CompositeSplashScreenOperation
 import org.mozilla.fenix.splashscreen.DefaultExperimentsOperationStorage
 import org.mozilla.fenix.splashscreen.DefaultSplashScreenStorage
 import org.mozilla.fenix.splashscreen.FetchExperimentsOperation
-import org.mozilla.fenix.splashscreen.RtamoSplashScreenOperation
 import org.mozilla.fenix.splashscreen.SplashScreenManager
 import org.mozilla.fenix.splashscreen.SplashScreenOperation
 import org.mozilla.fenix.tabhistory.TabHistoryDialogFragment
@@ -1237,22 +1233,11 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, Crash
             )
         }
 
-        if (!shouldShowOnboarding) return nimbusOperation
+        if (shouldShowOnboarding) {
+            InstallReferrerHandlingService(applicationContext).start()
+        }
 
-        val rtamoHandler = RtamoAttributionHandler(settings(), components.addonsProvider)
-        val installReferrerHandlingService = InstallReferrerHandlingService(
-            context = applicationContext,
-            handlers = listOf(
-                rtamoHandler,
-                MarketingAttributionHandler(settings(), components.distributionIdManager),
-            ),
-        )
-        return CompositeSplashScreenOperation(
-            listOf(
-                nimbusOperation,
-                RtamoSplashScreenOperation(installReferrerHandlingService, rtamoHandler),
-            ),
-        )
+        return nimbusOperation
     }
 
     private fun setupTheme() {

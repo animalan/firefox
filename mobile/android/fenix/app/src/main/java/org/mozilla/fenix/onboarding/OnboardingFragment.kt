@@ -40,6 +40,8 @@ import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.SupportedMenuNotifications
 import org.mozilla.fenix.components.initializeGlean
 import org.mozilla.fenix.components.metrics.Event
+import org.mozilla.fenix.components.metrics.InstallReferrerHandlingService
+import org.mozilla.fenix.components.metrics.RtamoAttributionHandler
 import org.mozilla.fenix.components.metrics.installSourcePackage
 import org.mozilla.fenix.components.startMetricsIfEnabled
 import org.mozilla.fenix.ext.application
@@ -77,6 +79,10 @@ class OnboardingFragment : Fragment() {
 
     private val removeMarketingFeature = ViewBoundFeatureWrapper<MarketingPageRemovalSupport>()
 
+    private val rtamoAttributionHandler by lazy {
+        RtamoAttributionHandler(requireContext().settings(), requireComponents.addonsProvider)
+    }
+
     private val termsOfServiceEventHandler by lazy {
         DefaultOnboardingTermsOfServiceEventHandler(
             telemetryRecorder = telemetryRecorder,
@@ -89,23 +95,13 @@ class OnboardingFragment : Fragment() {
 
     private val pagesToDisplay by lazy {
         with(requireContext()) {
-            if (settings().rtamoAddonDownloadUrl.isNotBlank()) {
-                pagesToDisplay(
-                    showDefaultBrowserPage = false,
-                    showNotificationPage = false,
-                    showAddWidgetPage = false,
-                ).filter {
-                    it.type == OnboardingPageUiData.Type.TERMS_OF_SERVICE
-                }.toMutableList()
-            } else {
-                pagesToDisplay(
-                    showDefaultBrowserPage = displayDefaultBrowserPage(this),
-                    showNotificationPage = canShowNotificationPage(this),
-                    showAddWidgetPage = AppWidgetManager.getInstance(requireContext())
-                        ?.let { canShowAddSearchWidgetPrompt(it) }
-                        ?: false,
-                ).toMutableList()
-            }
+            pagesToDisplay(
+                showDefaultBrowserPage = displayDefaultBrowserPage(this),
+                showNotificationPage = canShowNotificationPage(this),
+                showAddWidgetPage = AppWidgetManager.getInstance(requireContext())
+                    ?.let { canShowAddSearchWidgetPrompt(it) }
+                    ?: false,
+            ).toMutableList()
         }
     }
 
@@ -483,6 +479,8 @@ class OnboardingFragment : Fragment() {
             Pings.onboardingOptOut.setEnabled(true)
             Pings.onboardingOptOut.submit()
         }
+
+        rtamoAttributionHandler.handleReferrer(InstallReferrerHandlingService.response)
 
         // The marketing telemetry may be enabled after finishing onboarding.
         startMetricsIfEnabled(

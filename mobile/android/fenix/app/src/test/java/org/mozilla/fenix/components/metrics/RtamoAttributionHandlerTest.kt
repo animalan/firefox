@@ -6,6 +6,7 @@ package org.mozilla.fenix.components.metrics
 
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,7 +17,7 @@ import mozilla.components.feature.addons.AddonsProvider
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,6 +41,11 @@ class RtamoAttributionHandlerTest {
     private val settings: Settings = mockk(relaxed = true)
     private val addonsProvider: AddonsProvider = mockk(relaxed = true)
 
+    @Before
+    fun setup() {
+        every { settings.isTelemetryEnabled } returns true
+    }
+
     @Test
     fun `GIVEN a valid RTAMO referrer WHEN handleReferrer is called THEN the addon download url is stored in settings`() = runTest {
         coEvery { addonsProvider.getAddonByID(ADDON_RTA_TOKEN) } returns Addon(id = "test", downloadUrl = ADDON_DOWNLOAD_URL)
@@ -58,7 +64,6 @@ class RtamoAttributionHandlerTest {
             ADDON_DOWNLOAD_URL,
             Addons.rtamoIdentified.testGetValue()?.last()?.extra?.get("addon_download_url"),
         )
-        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -76,7 +81,6 @@ class RtamoAttributionHandlerTest {
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
         assertNull(Addons.rtamoFailed.testGetValue())
         assertNull(Addons.rtamoIdentified.testGetValue())
-        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -94,7 +98,6 @@ class RtamoAttributionHandlerTest {
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
         assertNull(Addons.rtamoFailed.testGetValue())
         assertNull(Addons.rtamoIdentified.testGetValue())
-        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -112,7 +115,6 @@ class RtamoAttributionHandlerTest {
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
         assertEquals("invalid_id", Addons.rtamoFailed.testGetValue()?.last()?.extra?.get("reason"))
         assertNull(Addons.rtamoIdentified.testGetValue())
-        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -131,7 +133,6 @@ class RtamoAttributionHandlerTest {
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
         assertNull(Addons.rtamoFailed.testGetValue())
         assertNull(Addons.rtamoIdentified.testGetValue())
-        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     @Test
@@ -150,7 +151,6 @@ class RtamoAttributionHandlerTest {
         verify(exactly = 0) { settings.rtamoAddonDownloadUrl = any() }
         assertEquals("unknown_url", Addons.rtamoFailed.testGetValue()?.last()?.extra?.get("reason"))
         assertNull(Addons.rtamoIdentified.testGetValue())
-        assertTrue(handler.rtamoCheckComplete.isCompleted)
     }
 
     private fun rtamoReferrer(
