@@ -7,27 +7,21 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 export const DEFAULT_WINDOWS_LAUNCH_ON_LOGIN_NIMBUS_FEATURE_ID =
   "defaultWindowsLaunchOnLogin";
 
-export const DEFAULT_WINDOWS_LAUNCH_ON_LOGIN_PREF =
-  "browser.startup.windowsLaunchOnLogin.defaultEnabled";
-
 const lazy = XPCOMUtils.declareLazy({
   ClientEnvironmentBase:
     "resource://gre/modules/components-utils/ClientEnvironment.sys.mjs",
+  WindowsLaunchOnLogin: "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
 });
 
 export var DefaultWindowsLaunchOnLogin = {
-  // Called once per new install to give Nimbus a chance to override the
-  // default-enabled launch-on-login behavior in either direction by setting
-  // the defaultEnabled pref. The actual registry write to enable
-  // launch-on-login happens later in StartupOSIntegration.onStartupIdle.
-  async applyExperimentOverride() {
+  async firstStartupNewProfile() {
     if (!lazy.ClientEnvironmentBase.os.isWindows) {
       return;
     }
 
     this.logger.debug(
-      "New install - checking Nimbus for launch on login override"
+      "First startup with a new profile - checking to enable launch on login by default"
     );
 
     const nimbusFeature =
@@ -39,19 +33,25 @@ export var DefaultWindowsLaunchOnLogin = {
       return;
     }
 
-    // Use the pref's default value as the Nimbus fallback so that an
-    // enrolled-but-variable-unset state behaves the same as not being
-    // enrolled at all (no override).
-    let prefDefault = Services.prefs
-      .getDefaultBranch("")
-      .getBoolPref(DEFAULT_WINDOWS_LAUNCH_ON_LOGIN_PREF, true);
+    let approval = await lazy.WindowsLaunchOnLogin.getLaunchOnLoginApproved();
+    if (!approval) {
+      this.logger.debug("   - Windows policy denied");
+      return;
+    }
+
+    nimbusFeature.recordExposureEvent({ once: true });
 
     const { enabled } = nimbusFeature.getAllVariables({
-      defaultValues: { enabled: prefDefault },
+      defaultValues: { enabled: false },
     });
 
-    Services.prefs.setBoolPref(DEFAULT_WINDOWS_LAUNCH_ON_LOGIN_PREF, enabled);
-    this.logger.debug(`   - Nimbus set default to ${enabled}`);
+    if (!enabled) {
+      this.logger.debug("   - Nimbus said no");
+      return;
+    }
+
+    await lazy.WindowsLaunchOnLogin.createLaunchOnLogin();
+    this.logger.debug("   - enabled");
   },
 
   logger: console.createInstance({
