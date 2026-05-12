@@ -1560,11 +1560,26 @@ pub extern "C" fn Servo_Element_ReferencesAttribute(
     let Some(data) = element.borrow_data() else {
         return false;
     };
-    let Some(ref attrs) = data.styles.primary().attribute_references else {
-        return false;
-    };
+    if let Some(ref attrs) = data.styles.primary().attribute_references {
+        if unsafe { Atom::with(attr, |attr| attrs.contains_key(AtomIdent::cast(attr))) } {
+            return true;
+        }
+    }
 
-    unsafe { Atom::with(attr, |attr| attrs.contains_key(AtomIdent::cast(attr))) }
+    // Some eager pseudos (::first-letter, ::first-line) lack Gecko element nodes,
+    // so check them for attr() dependency through the originating element here.
+    for pseudo_styles in data.styles.pseudos.as_array() {
+        let Some(ref styles) = pseudo_styles else {
+            continue;
+        };
+        let Some(ref attrs) = styles.attribute_references else {
+            continue;
+        };
+        if unsafe { Atom::with(attr, |attr| attrs.contains_key(AtomIdent::cast(attr))) } {
+            return true;
+        }
+    }
+    false
 }
 
 fn mode_to_origin(mode: SheetParsingMode) -> Origin {

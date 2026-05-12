@@ -113,20 +113,7 @@ const nsINode* Gecko_GetFlattenedTreeParentNode(const nsINode* aNode) {
 void Gecko_GetAnonymousContentForElement(const Element* aElement,
                                          nsTArray<nsIContent*>* aArray) {
   MOZ_ASSERT(aElement->MayHaveAnonymousChildren());
-  if (aElement->HasProperties()) {
-    if (auto* backdrop = nsLayoutUtils::GetBackdropPseudo(aElement)) {
-      aArray->AppendElement(backdrop);
-    }
-    if (auto* marker = nsLayoutUtils::GetMarkerPseudo(aElement)) {
-      aArray->AppendElement(marker);
-    }
-    if (auto* before = nsLayoutUtils::GetBeforePseudo(aElement)) {
-      aArray->AppendElement(before);
-    }
-    if (auto* after = nsLayoutUtils::GetAfterPseudo(aElement)) {
-      aArray->AppendElement(after);
-    }
-  }
+  nsLayoutUtils::AppendGeneratedContentPseudos(aElement, *aArray);
   nsContentUtils::AppendNativeAnonymousChildren(
       aElement, *aArray, nsIContent::eSkipDocumentLevelNativeAnonymousContent);
 }
