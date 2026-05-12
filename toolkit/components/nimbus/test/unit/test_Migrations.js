@@ -1617,6 +1617,7 @@ add_task(async function testGraduateFirefoxLabsAutoPip() {
     },
     {
       isFirefoxLabsOptIn: true,
+      isRollout: true,
       firefoxLabsTitle: "experimental-features-auto-pip",
       firefoxLabsDescription: "experimental-features-auto-pip-description",
       firefoxLabsDescriptionLink: null,

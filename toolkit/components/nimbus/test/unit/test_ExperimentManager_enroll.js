@@ -102,16 +102,14 @@ add_task(async function test_enroll_optin_recipe_branch_selection() {
   await manager.store.init();
   await manager.onStartup();
 
-  const optInRecipe = NimbusTestUtils.factories.recipe("opt-in-recipe", {
-    isFirefoxLabsOptIn: true,
-    branches: [
-      {
-        slug: "opt-in-recipe-branch-slug",
-        ratio: 1,
-        features: [{ featureId: "optin", value: {} }],
-      },
-    ],
-  });
+  const optInRecipe = NimbusTestUtils.factories.recipe.withFeatureConfig(
+    "opt-in-recipe",
+    { featureId: "optin" },
+    {
+      isFirefoxLabsOptIn: true,
+      isRollout: true,
+    }
+  );
 
   // Call with missing optInRecipeBranchSlug argument
   await Assert.rejects(

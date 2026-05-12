@@ -254,11 +254,7 @@ add_task(async function test_onRecipe_isFirefoxLabsOptin_recipe() {
 
   const optInRecipe = NimbusTestUtils.factories.recipe("opt-in", {
     isFirefoxLabsOptIn: true,
-    firefoxLabsTitle: "title",
-    firefoxLabsDescription: "description",
-    firefoxLabsDescriptionLinks: null,
-    firefoxLabsGroup: "group",
-    requiresRestart: false,
+    isRollout: true,
   });
   const recipe = NimbusTestUtils.factories.recipe("recipe");
 
