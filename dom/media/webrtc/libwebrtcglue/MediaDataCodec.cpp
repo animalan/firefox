@@ -15,8 +15,13 @@ namespace mozilla {
 /* static */
 media::EncodeSupportSet MediaDataCodec::SupportsEncoderCodec(
     const webrtc::SdpVideoFormat& aFormat) {
-  return WebrtcMediaDataEncoder::SupportsCodec(
-      webrtc::PayloadStringToCodecType(aFormat.name));
+  const auto codecType = webrtc::PayloadStringToCodecType(aFormat.name);
+  auto support = WebrtcMediaDataEncoder::SupportsCodec(codecType);
+  if (codecType == webrtc::VideoCodecType::kVideoCodecH264 &&
+      !StaticPrefs::media_webrtc_hw_h264_enabled()) {
+    support -= media::EncodeSupport::HardwareEncode;
+  }
+  return support;
 }
 
 /* static */
@@ -59,7 +64,12 @@ media::DecodeSupportSet MediaDataCodec::SupportsDecoderCodec(
     case webrtc::VideoCodecType::kVideoCodecH264:
       if (StaticPrefs::media_navigator_mediadatadecoder_h264_enabled()) {
         RefPtr<PDMFactory> pdm = new PDMFactory();
-        return pdm->SupportsMimeType(MimeTypeFor(aCodecType));
+        media::DecodeSupportSet support;
+        support = pdm->SupportsMimeType(MimeTypeFor(aCodecType));
+        if (!StaticPrefs::media_webrtc_hw_h264_enabled()) {
+          support -= media::DecodeSupport::HardwareDecode;
+        }
+        return support;
       }
       break;
     case webrtc::VideoCodecType::kVideoCodecGeneric:
