@@ -449,8 +449,8 @@ UiaTextRange::FindAttribute(TEXTATTRIBUTEID aAttributeId, VARIANT aVal,
       } else if (matchingRangeEnd) {
         // We fell out of a matching range. We're moving backward, so the
         // matching range is [endPoint, matchingRangeEnd).
-        auto uiaRange =
-          MakeRefPtr<UiaTextRange>(TextLeafRange{endPoint, matchingRangeEnd.value()});
+        auto uiaRange = MakeRefPtr<UiaTextRange>(
+            TextLeafRange{endPoint, matchingRangeEnd.value()});
         uiaRange.forget(aRetVal);
         return S_OK;
       }
