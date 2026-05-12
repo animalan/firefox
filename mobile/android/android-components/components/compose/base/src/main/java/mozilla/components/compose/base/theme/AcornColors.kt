@@ -22,7 +22,6 @@ import mozilla.components.ui.colors.PhotonColors
 @Suppress("LongParameterList")
 @Stable
 class AcornColors(
-    layer2: Color,
     layer3: Color,
     layerGradientStart: Color,
     layerGradientEnd: Color,
@@ -44,10 +43,6 @@ class AcornColors(
     surfaceDimVariant: Color,
 ) {
     // Layers
-
-    // Card background, Menu background, Dialog, Banner
-    var layer2 by mutableStateOf(layer2)
-        private set
 
     // Search
     var layer3 by mutableStateOf(layer3)
@@ -158,7 +153,6 @@ class AcornColors(
      */
     @Suppress("LongMethod")
     fun update(other: AcornColors) {
-        layer2 = other.layer2
         layer3 = other.layer3
         layerGradientStart = other.layerGradientStart
         layerGradientEnd = other.layerGradientEnd
@@ -185,7 +179,6 @@ class AcornColors(
      */
     @Suppress("LongMethod")
     fun copy(
-        layer2: Color = this.layer2,
         layer3: Color = this.layer3,
         layerGradientStart: Color = this.layerGradientStart,
         layerGradientEnd: Color = this.layerGradientEnd,
@@ -206,7 +199,6 @@ class AcornColors(
         onWarningContainer: Color = this.onWarningContainer,
         surfaceDimVariant: Color = this.surfaceDimVariant,
     ): AcornColors = AcornColors(
-        layer2 = layer2,
         layer3 = layer3,
         layerGradientStart = layerGradientStart,
         layerGradientEnd = layerGradientEnd,
@@ -230,7 +222,6 @@ class AcornColors(
 }
 
 val darkColorPalette = AcornColors(
-    layer2 = PhotonColors.DarkGrey30,
     layer3 = PhotonColors.DarkGrey80,
     layerGradientStart = PhotonColors.Violet70,
     layerGradientEnd = PhotonColors.Violet60,
@@ -253,7 +244,6 @@ val darkColorPalette = AcornColors(
 )
 
 val lightColorPalette = AcornColors(
-    layer2 = PhotonColors.White,
     layer3 = PhotonColors.LightGrey20,
     layerGradientStart = PhotonColors.Violet70,
     layerGradientEnd = PhotonColors.Violet60,
@@ -276,7 +266,6 @@ val lightColorPalette = AcornColors(
 )
 
 val privateColorPalette = darkColorPalette.copy(
-    layer2 = PhotonColors.Violet90,
     layer3 = PhotonColors.Ink90,
     tabActive = PhotonColors.Purple60,
     tabInactive = PhotonColors.Ink90,
