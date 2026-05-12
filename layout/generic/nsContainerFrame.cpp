@@ -2424,20 +2424,24 @@ bool nsContainerFrame::ShouldAvoidBreakInside(
 void nsContainerFrame::ConsiderChildOverflow(OverflowAreas& aOverflowAreas,
                                              nsIFrame* aChildFrame,
                                              OverflowAreaUnionFlags aFlags) {
-  if (StyleDisplay()->IsContainLayout() && SupportsContainLayoutAndPaint() &&
-      !(aFlags & OverflowAreaUnionFlags::AsIfScrolled)) {
-    // If we have layout containment and are not a non-atomic, inline-level
-    // principal box, we should only consider our child's ink overflow,
-    // leaving the scrollable regions of the parent unaffected.
-    // Note: scrollable overflow is a subset of ink overflow,
-    // so this has the same affect as unioning the child's ink and
-    // scrollable overflow with the parent's ink overflow.
-    const OverflowAreas childOverflows(aChildFrame->InkOverflowRect(),
-                                       nsRect());
-    aOverflowAreas.UnionWith(childOverflows + aChildFrame->GetPosition());
+  const OverflowAreas childOverflows = [&]() -> OverflowAreas {
+    if (StyleDisplay()->IsContainLayout() && SupportsContainLayoutAndPaint() &&
+        !(aFlags & OverflowAreaUnionFlags::AsIfScrolled)) {
+      // If we have layout containment and are not a non-atomic, inline-level
+      // principal box, we should only consider our child's ink overflow,
+      // leaving the scrollable regions of the parent unaffected.
+      // Note: scrollable overflow is a subset of ink overflow,
+      // so this has the same affect as unioning the child's ink and
+      // scrollable overflow with the parent's ink overflow.
+      return OverflowAreas(aChildFrame->InkOverflowRect(), nsRect()) +
+             aChildFrame->GetPosition();
+    }
+    return aChildFrame->GetActualAndNormalOverflowAreasRelativeToParent();
+  }();
+  if (aFlags & OverflowAreaUnionFlags::ChildIsAbsPos) {
+    aOverflowAreas.UnionWithAbsoluteOverflowAreas(childOverflows);
   } else {
-    aOverflowAreas.UnionWith(
-        aChildFrame->GetActualAndNormalOverflowAreasRelativeToParent());
+    aOverflowAreas.UnionWith(childOverflows);
   }
 }
 

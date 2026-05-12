@@ -31,6 +31,10 @@ enum class OverflowAreaUnionFlags : uint8_t {
   // Treat the frame as if it were a scroll container: bypass the contain:layout
   // check so the scrollable overflow of children still contributes.
   AsIfScrolled = 1 << 0,
+  // The child being considered is absolutely positioned. The child's overflow
+  // is unioned via OverflowAreas::UnionWithAbsoluteOverflowAreas (which skips
+  // empty overflow rects).
+  ChildIsAbsPos = 1 << 1,
 };
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(OverflowAreaUnionFlags)
 
