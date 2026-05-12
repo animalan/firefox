@@ -1388,7 +1388,7 @@ static bool ModuleInitializeEnvironment(JSContext* cx,
       // https://tc39.es/ecma262/#sec-source-text-module-record-initialize-environment
       // Step 7.c. Else if in.[[ImportName]] is source, then
       // Step 7.c.i. Let moduleSourceObject be importedModule.[[ModuleSource]].
-      ModuleSourceObject* moduleSourceObject = importedModule->moduleSource();
+      JSObject* moduleSourceObject = importedModule->moduleSource();
 
       // Step 7.c.ii. If moduleSourceObject is empty, throw a SyntaxError
       //              exception.
@@ -2962,7 +2962,7 @@ bool ContinueDynamicImport(JSContext* cx, Handle<JSScript*> referrer,
   // Step 3. If phase is source, then
   if (phase == ImportPhase::Source) {
     // Step 3.a. Let moduleSource be module.[[ModuleSource]].
-    ModuleSourceObject* moduleSource = module->moduleSource();
+    JSObject* moduleSource = module->moduleSource();
 
     // Step 3.b. If moduleSource is empty, then
     if (!moduleSource) {

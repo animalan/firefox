@@ -1170,12 +1170,12 @@ ScriptSourceObject* ModuleObject::scriptSourceObject() const {
 }
 
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
-ModuleSourceObject* ModuleObject::moduleSource() const {
+JSObject* ModuleObject::moduleSource() const {
   Value value = getReservedSlot(ModuleSourceSlot);
   if (value.isUndefined()) {
     return nullptr;
   }
-  return &value.toObject().as<ModuleSourceObject>();
+  return &value.toObject();
 }
 #endif
 
@@ -1194,8 +1194,7 @@ void ModuleObject::initScriptSlots(HandleScript script) {
 }
 
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
-void ModuleObject::initModuleSourceSlot(
-    Handle<ModuleSourceObject*> moduleSource) {
+void ModuleObject::initModuleSourceSlot(HandleObject moduleSource) {
   initReservedSlot(ModuleSourceSlot, ObjectValue(*moduleSource));
 }
 #endif
