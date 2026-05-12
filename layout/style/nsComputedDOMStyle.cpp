@@ -904,7 +904,7 @@ static bool PaddingNeedsUsedValue(const LengthPercentage& aValue,
 
 static bool HasPositionFallbacks(nsIFrame* aFrame) {
   return aFrame->HasAnyStateBits(NS_FRAME_OUT_OF_FLOW) &&
-         !aFrame->StylePosition()->mPositionTryFallbacks._0.IsEmpty();
+         !aFrame->StylePosition()->mPositionTryFallbacks.value._0.IsEmpty();
 }
 
 bool nsComputedDOMStyle::NeedsToFlushLayout(

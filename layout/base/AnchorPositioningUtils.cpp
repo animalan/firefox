@@ -1191,7 +1191,7 @@ static bool TriggerFallbackReflow(PresShell* aPresShell, nsIFrame* aPositioned,
                                   AnchorPosReferenceData& aReferencedAnchors,
                                   bool aEvaluateAllFallbacksIfNeeded) {
   auto totalFallbacks =
-      aPositioned->StylePosition()->mPositionTryFallbacks._0.Length();
+      aPositioned->StylePosition()->mPositionTryFallbacks.value._0.Length();
   if (!totalFallbacks) {
     // No fallbacks specified.
     return false;
