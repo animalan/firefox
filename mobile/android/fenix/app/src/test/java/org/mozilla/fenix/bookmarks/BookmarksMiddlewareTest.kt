@@ -3306,11 +3306,22 @@ class BookmarksMiddlewareTest {
     }
 
     @Test
-    fun `WHEN ImportFileClicked is dispatched THEN rootMenuShown is false and launchFilePicker is true`() = runTest {
+    fun `WHEN ImportFileClicked is dispatched from button THEN rootMenuShown is false and launchFilePicker is true`() = runTest {
         val store = buildMiddleware(this).makeStore(BookmarksState.default.copy(rootMenuShown = true))
         testScheduler.advanceUntilIdle()
 
-        store.dispatch(ImportAction.ImportFileClicked)
+        store.dispatch(ImportAction.ImportFileClicked.FromButton)
+        testScheduler.advanceUntilIdle()
+
+        assertFalse(store.state.rootMenuShown)
+    }
+
+    @Test
+    fun `WHEN ImportFileClicked is dispatched from menu THEN rootMenuShown is false and launchFilePicker is true`() = runTest {
+        val store = buildMiddleware(this).makeStore(BookmarksState.default.copy(rootMenuShown = true))
+        testScheduler.advanceUntilIdle()
+
+        store.dispatch(ImportAction.ImportFileClicked.FromMenu)
         testScheduler.advanceUntilIdle()
 
         assertFalse(store.state.rootMenuShown)

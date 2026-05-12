@@ -1323,11 +1323,19 @@ class BookmarksReducerTest {
     }
 
     @Test
-    fun `WHEN ImportFileClicked THEN rootMenuShown is false and launchFilePicker is true`() {
+    fun `WHEN ImportFileClicked from button THEN rootMenuShown is false and launchFilePicker is true`() {
         val state = BookmarksState.default.copy(rootMenuShown = true)
-        val result = bookmarksReducer(state, ImportAction.ImportFileClicked)
+        val result = bookmarksReducer(state, ImportAction.ImportFileClicked.FromButton)
         assertFalse(result.rootMenuShown)
     }
+
+    @Test
+    fun `WHEN ImportFileClicked from menu THEN rootMenuShown is false and launchFilePicker is true`() {
+        val state = BookmarksState.default.copy(rootMenuShown = true)
+        val result = bookmarksReducer(state, ImportAction.ImportFileClicked.FromMenu)
+        assertFalse(result.rootMenuShown)
+    }
+
     private fun generateBookmark(
         num: Int = 0,
         url: String = "url",

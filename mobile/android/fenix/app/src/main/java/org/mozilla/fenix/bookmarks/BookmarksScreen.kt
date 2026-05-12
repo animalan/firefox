@@ -970,7 +970,7 @@ private fun RootBookmarksOverflowMenu(store: BookmarksStore) {
     val menuItems = listOf(
         MenuItem.TextItem(
             text = Text.Resource(R.string.bookmark_import_menu_button),
-            onClick = { store.dispatch(ImportAction.ImportFileClicked) },
+            onClick = { store.dispatch(ImportAction.ImportFileClicked.FromMenu) },
         ),
     )
 
@@ -1057,7 +1057,7 @@ private fun RootEmptyContent(
     if (showBookmarksImport) {
         FilledButton(
             text = stringResource(R.string.bookmark_import_menu_button),
-            onClick = { dispatcher(ImportAction.ImportFileClicked) },
+            onClick = { dispatcher(ImportAction.ImportFileClicked.FromButton) },
             modifier = Modifier
                 .heightIn(40.dp)
                 .fillMaxWidth(),
