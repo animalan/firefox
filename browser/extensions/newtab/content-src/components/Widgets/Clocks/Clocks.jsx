@@ -14,7 +14,7 @@ import { actionCreators as ac, actionTypes as at } from "common/Actions.mjs";
 import {
   PREF_CLOCKS_SIZE,
   PREF_WIDGETS_CLOCKS_ENABLED,
-} from "../WidgetsRegistry.mjs";
+} from "common/WidgetsRegistry.mjs";
 import { useIntersectionObserver } from "../../../lib/utils";
 import { AddClockForm } from "./AddClockForm";
 import { ClocksRow } from "./ClocksRow";

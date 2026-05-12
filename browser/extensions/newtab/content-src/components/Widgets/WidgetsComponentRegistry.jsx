@@ -9,7 +9,7 @@ import { FocusTimer } from "./FocusTimer/FocusTimer";
 import { Weather as WeatherWidget } from "./Weather/Weather";
 import { SportsWidget } from "./SportsWidget/SportsWidget";
 import { Clocks } from "./Clocks/Clocks";
-import { WIDGET_REGISTRY, resolveWidgetSize } from "./WidgetsRegistry.mjs";
+import { WIDGET_REGISTRY, resolveWidgetSize } from "common/WidgetsRegistry.mjs";
 
 const weatherEntry = WIDGET_REGISTRY.find(w => w.id === "weather");
 const clocksEntry = WIDGET_REGISTRY.find(w => w.id === "clocks");
