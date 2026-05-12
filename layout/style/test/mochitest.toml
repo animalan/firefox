@@ -691,6 +691,8 @@ fail-if = [
 
 ["test_stylesheet_clone_font_face.html"]
 
+["test_stylesheet_deleteRule.html"]
+
 ["test_supports_rules.html"]
 
 ["test_system_font_serialization.html"]
