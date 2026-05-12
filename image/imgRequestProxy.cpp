@@ -1103,9 +1103,9 @@ already_AddRefed<imgRequestProxy> imgRequestProxy::GetStaticRequest(
   bool hadCrossOriginRedirects = true;
   GetHadCrossOriginRedirects(&hadCrossOriginRedirects);
   nsCOMPtr<nsIPrincipal> triggeringPrincipal = GetTriggeringPrincipal();
-  RefPtr<imgRequestProxy> req =
-      new imgRequestProxyStatic(frozenImage, currentPrincipal,
-                                triggeringPrincipal, hadCrossOriginRedirects);
+  auto req = MakeRefPtr<imgRequestProxyStatic>(frozenImage, currentPrincipal,
+                                               triggeringPrincipal,
+                                               hadCrossOriginRedirects);
   req->Init(nullptr, nullptr, mURI, nullptr);
 
   return req.forget();

@@ -283,13 +283,13 @@ nsAVIFDecoder::DecodeResult AVIFParser::GetImage(AVIFImage& aImage) {
     return AsVariant(nsAVIFDecoder::NonDecoderResult::NoSamples);
   }
 
-  RefPtr<MediaRawData> colorImage =
-      new MediaRawData(image.primary_image.data, image.primary_image.length);
+  auto colorImage = MakeRefPtr<MediaRawData>(image.primary_image.data,
+                                             image.primary_image.length);
   RefPtr<MediaRawData> alphaImage = nullptr;
 
   if (image.alpha_image.length) {
-    alphaImage =
-        new MediaRawData(image.alpha_image.data, image.alpha_image.length);
+    alphaImage = MakeRefPtr<MediaRawData>(image.alpha_image.data,
+                                          image.alpha_image.length);
   }
 
   aImage.mFrameNum = 0;
@@ -318,8 +318,8 @@ static Mp4parseStatus CreateSampleIterator(
   }
 
   UniquePtr<IndiceWrapper> wrapper = MakeUnique<IndiceWrapper>(data);
-  RefPtr<MP4SampleIndex> index = new MP4SampleIndex(
-      *wrapper, aBuffer, trackID, false, AssertedCast<uint32_t>(timescale));
+  auto index = MakeRefPtr<MP4SampleIndex>(*wrapper, aBuffer, trackID, false,
+                                          AssertedCast<uint32_t>(timescale));
   aIteratorOut = MakeUnique<SampleIterator>(index);
   return MP4PARSE_STATUS_OK;
 }

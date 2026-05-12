@@ -1239,10 +1239,10 @@ bool VectorImage::MaybeRestrictSVGContext(SVGImageContext& aSVGContext,
 
 already_AddRefed<gfxDrawable> VectorImage::CreateSVGDrawable(
     const SVGDrawingParameters& aParams) {
-  RefPtr<gfxDrawingCallback> cb = new SVGDrawingCallback(
+  auto cb = MakeRefPtr<SVGDrawingCallback>(
       mSVGDocumentWrapper, aParams.viewportSize, aParams.size, aParams.flags);
 
-  RefPtr<gfxDrawable> svgDrawable = new gfxCallbackDrawable(cb, aParams.size);
+  auto svgDrawable = MakeRefPtr<gfxCallbackDrawable>(cb, aParams.size);
   return svgDrawable.forget();
 }
 

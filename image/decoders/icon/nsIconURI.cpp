@@ -157,7 +157,7 @@ NS_IMPL_NSIURIMUTATOR_ISUPPORTS(nsMozIconURI::Mutator, nsIURISetters,
 
 NS_IMETHODIMP
 nsMozIconURI::Mutate(nsIURIMutator** aMutator) {
-  RefPtr<nsMozIconURI::Mutator> mutator = new nsMozIconURI::Mutator();
+  auto mutator = MakeRefPtr<nsMozIconURI::Mutator>();
   nsresult rv = mutator->InitFromURI(this);
   if (NS_FAILED(rv)) {
     return rv;

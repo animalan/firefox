@@ -672,9 +672,9 @@ nsProgressNotificationProxy::GetInterface(const nsIID& iid, void** result) {
 static void NewRequestAndEntry(bool aForcePrincipalCheckForCacheEntry,
                                imgLoader* aLoader, const ImageCacheKey& aKey,
                                imgRequest** aRequest, imgCacheEntry** aEntry) {
-  RefPtr<imgRequest> request = new imgRequest(aLoader, aKey);
-  RefPtr<imgCacheEntry> entry =
-      new imgCacheEntry(aLoader, request, aForcePrincipalCheckForCacheEntry);
+  auto request = MakeRefPtr<imgRequest>(aLoader, aKey);
+  auto entry = MakeRefPtr<imgCacheEntry>(aLoader, request,
+                                         aForcePrincipalCheckForCacheEntry);
   aLoader->AddToUncachedImages(request);
   request.forget(aRequest);
   entry.forget(aEntry);
@@ -1182,7 +1182,7 @@ nsresult imgLoader::CreateNewProxyForRequest(
      proxy calls to |aObserver|.
    */
 
-  RefPtr<imgRequestProxy> proxyRequest = new imgRequestProxy();
+  auto proxyRequest = MakeRefPtr<imgRequestProxy>();
 
   /* It is important to call |SetLoadFlags()| before calling |Init()| because
      |Init()| adds the request to the loadgroup.
@@ -1257,7 +1257,7 @@ already_AddRefed<imgLoader> imgLoader::CreateImageLoader() {
   // we hand out imgLoader instances and code starts using them.
   mozilla::image::EnsureModuleInitialized();
 
-  RefPtr<imgLoader> loader = new imgLoader();
+  auto loader = MakeRefPtr<imgLoader>();
   loader->Init();
 
   return loader.forget();
@@ -1858,15 +1858,10 @@ bool imgLoader::ValidateRequestWithNewChannel(
   }
 
   // Make sure that OnStatus/OnProgress calls have the right request set...
-  RefPtr<nsProgressNotificationProxy> progressproxy =
-      new nsProgressNotificationProxy(newChannel, req);
-  if (!progressproxy) {
-    return false;
-  }
-
-  RefPtr<imgCacheValidator> hvc =
-      new imgCacheValidator(progressproxy, this, request, aLoadingDocument,
-                            aInnerWindowId, forcePrincipalCheck);
+  auto progressproxy = MakeRefPtr<nsProgressNotificationProxy>(newChannel, req);
+  auto hvc = MakeRefPtr<imgCacheValidator>(progressproxy, this, request,
+                                           aLoadingDocument, aInnerWindowId,
+                                           forcePrincipalCheck);
 
   // Casting needed here to get past multiple inheritance.
   nsCOMPtr<nsIStreamListener> listener =
@@ -2833,12 +2828,12 @@ nsresult imgLoader::LoadImageWithChannel(nsIChannel* channel,
     NS_ENSURE_SUCCESS(rv, rv);
 
 #ifdef NIGHTLY_BUILD
-    RefPtr<ProxyListener> pl =
-        new ProxyListener(static_cast<nsIStreamListener*>(request.get()),
-                          ShouldEnableWAICT(aLoadingDocument));
+    auto pl = MakeRefPtr<ProxyListener>(
+        static_cast<nsIStreamListener*>(request.get()),
+        ShouldEnableWAICT(aLoadingDocument));
 #else
-    RefPtr<ProxyListener> pl =
-        new ProxyListener(static_cast<nsIStreamListener*>(request.get()));
+    auto pl = MakeRefPtr<ProxyListener>(
+        static_cast<nsIStreamListener*>(request.get()));
 #endif
     pl.forget(listener);
 

@@ -906,7 +906,7 @@ static NewPartResult PrepareForNewPart(nsIRequest* aRequest,
   // Create the new image and give it ownership of our ProgressTracker.
   if (aIsMultipart) {
     // Create the ProgressTracker and image for this part.
-    RefPtr<ProgressTracker> progressTracker = new ProgressTracker();
+    auto progressTracker = MakeRefPtr<ProgressTracker>();
     RefPtr<image::Image> partImage = image::ImageFactory::CreateImage(
         aRequest, progressTracker, result.mContentType, aURI,
         /* aIsMultipart = */ true, aInnerWindowId);

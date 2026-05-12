@@ -110,8 +110,8 @@ void WithBadBufferDecode(const ImageTestCase& aTestCase,
       decoderType, sourceBuffer, aOutputSize, DecoderFlags::FIRST_FRAME_ONLY,
       aTestCase.mSurfaceFlags);
   ASSERT_TRUE(decoder != nullptr);
-  RefPtr<IDecodingTask> task =
-      new AnonymousDecodingTask(WrapNotNull(decoder), /* aResumable */ false);
+  auto task = MakeRefPtr<AnonymousDecodingTask>(WrapNotNull(decoder),
+                                                /* aResumable */ false);
 
   // Run the full decoder synchronously on the main thread.
   task->Run();
@@ -214,8 +214,8 @@ void WithSingleChunkDecode(const ImageTestCase& aTestCase,
       decoderType, sourceBuffer, aOutputSize, decoderFlags,
       aTestCase.mSurfaceFlags);
   ASSERT_TRUE(decoder != nullptr);
-  RefPtr<MonitorAnonymousDecodingTask> task = new MonitorAnonymousDecodingTask(
-      WrapNotNull(decoder), /* aResumable */ false);
+  auto task = MakeRefPtr<MonitorAnonymousDecodingTask>(WrapNotNull(decoder),
+                                                       /* aResumable */ false);
 
   if (aUseDecodePool) {
     DecodePool::Singleton()->AsyncRun(task.get());
@@ -258,8 +258,8 @@ void WithDelayedChunkDecode(const ImageTestCase& aTestCase,
       decoderType, sourceBuffer, aOutputSize, DecoderFlags::FIRST_FRAME_ONLY,
       aTestCase.mSurfaceFlags);
   ASSERT_TRUE(decoder != nullptr);
-  RefPtr<IDecodingTask> task =
-      new AnonymousDecodingTask(WrapNotNull(decoder), /* aResumable */ true);
+  auto task = MakeRefPtr<AnonymousDecodingTask>(WrapNotNull(decoder),
+                                                /* aResumable */ true);
 
   // Run the full decoder synchronously. It should now be waiting on
   // the iterator to yield some data since we haven't written anything yet.
@@ -305,8 +305,8 @@ static void WithMultiChunkDecode(const ImageTestCase& aTestCase,
       decoderType, sourceBuffer, Nothing(), decoderFlags,
       aTestCase.mSurfaceFlags);
   ASSERT_TRUE(decoder != nullptr);
-  RefPtr<IDecodingTask> task =
-      new AnonymousDecodingTask(WrapNotNull(decoder), /* aResumable */ true);
+  auto task = MakeRefPtr<AnonymousDecodingTask>(WrapNotNull(decoder),
+                                                /* aResumable */ true);
 
   // Run the full decoder synchronously. It should now be waiting on
   // the iterator to yield some data since we haven't written anything yet.
@@ -525,9 +525,9 @@ static void WithSingleChunkAnimationDecode(const ImageTestCase& aTestCase,
   // and make this decoder's output available in the surface cache.
   SurfaceKey surfaceKey = RasterSurfaceKey(aTestCase.mOutputSize, surfaceFlags,
                                            PlaybackType::eAnimated);
-  RefPtr<AnimationSurfaceProvider> provider = new AnimationSurfaceProvider(
-      rasterImage, surfaceKey, WrapNotNull(decoder),
-      /* aCurrentFrame */ 0);
+  auto provider = MakeRefPtr<AnimationSurfaceProvider>(rasterImage, surfaceKey,
+                                                       WrapNotNull(decoder),
+                                                       /* aCurrentFrame */ 0);
 
   // Run the full decoder synchronously.
   provider->Run();
@@ -1220,8 +1220,8 @@ TEST_F(ImageDecoders, LongAnimatedJXL_IncrementalFrameCountUpdates) {
                                                      decoderFlags);
   ASSERT_TRUE(decoder != nullptr);
 
-  RefPtr<IDecodingTask> task =
-      new AnonymousDecodingTask(WrapNotNull(decoder), /* aResumable */ true);
+  auto task = MakeRefPtr<AnonymousDecodingTask>(WrapNotNull(decoder),
+                                                /* aResumable */ true);
   task->Run();
 
   // Feed only the first half of the data in fixed-size chunks, tracking how
