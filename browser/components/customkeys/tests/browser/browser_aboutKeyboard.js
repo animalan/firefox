@@ -3,9 +3,6 @@
 
 "use strict";
 
-const { CustomKeys } = ChromeUtils.importESModule(
-  "moz-src:///browser/components/customkeys/CustomKeys.sys.mjs"
-);
 const { PromptTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/PromptTestUtils.sys.mjs"
 );

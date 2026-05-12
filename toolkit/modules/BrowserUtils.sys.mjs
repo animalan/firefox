@@ -38,13 +38,8 @@ ChromeUtils.defineLazyGetter(lazy, "CatManListenerManager", () => {
       }
       let rv = Array.from(
         Services.catMan.enumerateCategory(categoryName),
-        ({ data: entry, value }) => {
+        ({ data: module, value }) => {
           try {
-            // Entry names are unique keys per category, so a `#…` suffix lets
-            // multiple consumers in the same module register without colliding.
-            // TODO bug 2038950: remove this once all common JS is ported to
-            // ES modules.
-            let module = entry.replace(/#.*$/, "");
             let [objName, method] = value.split(".");
             let fn = (jsGlobal, ...args) => {
               let obj;
@@ -86,7 +81,7 @@ ChromeUtils.defineLazyGetter(lazy, "CatManListenerManager", () => {
             return fn;
           } catch (ex) {
             console.error(
-              `Error processing category manifest for ${entry}: ${value}`,
+              `Error processing category manifest for ${module}: ${value}`,
               ex
             );
             return null;
