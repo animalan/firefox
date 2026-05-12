@@ -1648,8 +1648,9 @@ void AbsoluteContainingBlock::ReflowAbsoluteFrame(
   const WritingMode wm = aKidFrame->GetWritingMode();
 
   const bool isGrid = aFlags.contains(AbsPosReflowFlag::IsGridContainerCB);
-  auto fallbacks =
-      aKidFrame->StylePosition()->mPositionTryFallbacks.value._0.AsSpan();
+  const auto* kidStylePosition = aKidFrame->StylePosition();
+  auto fallbacks = kidStylePosition->mPositionTryFallbacks.value._0.AsSpan();
+  const auto fallbackScope = kidStylePosition->mPositionTryFallbacks.scope;
   Maybe<uint32_t> currentFallbackIndex;
   const StylePositionTryFallbacksItem* currentFallback = nullptr;
   RefPtr<ComputedStyle> currentFallbackStyle;
@@ -1665,7 +1666,7 @@ void AbsoluteContainingBlock::ReflowAbsoluteFrame(
   // exit the loop.
   bool finalizing = false;
 
-  auto tryOrder = aKidFrame->StylePosition()->mPositionTryOrder;
+  auto tryOrder = kidStylePosition->mPositionTryOrder;
   // If position-try-order is a logical value, resolve to physical using
   // the containing block's writing mode.
   switch (tryOrder) {
@@ -1701,7 +1702,8 @@ void AbsoluteContainingBlock::ReflowAbsoluteFrame(
     while (true) {
       nextFallback = &fallbacks[index];
       nextFallbackStyle = aPresContext->StyleSet()->ResolvePositionTry(
-          *aKidFrame->GetContent()->AsElement(), *baseStyle, *nextFallback);
+          fallbackScope, *aKidFrame->GetContent()->AsElement(), *baseStyle,
+          *nextFallback);
       if (nextFallbackStyle) {
         break;
       }

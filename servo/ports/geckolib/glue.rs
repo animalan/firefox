@@ -96,7 +96,7 @@ use style::properties::{
 };
 use style::properties_and_values::registry::PropertyRegistration;
 use style::rule_cache::RuleCacheConditions;
-use style::rule_tree::{RuleCascadeFlags, StrongRuleNode};
+use style::rule_tree::{CascadeLevel, RuleCascadeFlags, StrongRuleNode};
 use style::selector_parser::PseudoElementCascadeType;
 use style::shared_lock::{
     Locked, SharedRwLock, SharedRwLockReadGuard, StylesheetGuards, ToCssWithGuard,
@@ -4468,6 +4468,7 @@ pub unsafe extern "C" fn Servo_ComputedValues_GetForPageContent(
 pub unsafe extern "C" fn Servo_ComputedValues_GetForPositionTry(
     raw_data: &PerDocumentStyleData,
     style: &ComputedValues,
+    scope: CascadeLevel,
     element: &RawGeckoElement,
     fallback_item: &PositionTryFallbacksItem,
 ) -> Strong<ComputedValues> {
@@ -4477,7 +4478,7 @@ pub unsafe extern "C" fn Servo_ComputedValues_GetForPositionTry(
     let element = GeckoElement(element);
     let data = raw_data.borrow();
     data.stylist
-        .resolve_position_try(style, &guards, element, fallback_item)
+        .resolve_position_try(style, &guards, scope, element, fallback_item)
         .into()
 }
 
