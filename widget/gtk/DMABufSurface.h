@@ -170,7 +170,12 @@ class DMABufSurface {
 
   void FenceSet();
   void FenceWait();
+  static void FenceWait(RefPtr<mozilla::gl::GLContext> aGL,
+                        RefPtr<mozilla::gfx::FileHandleWrapper> aSyncFd);
   void FenceDelete();
+  static void FenceDelete(RefPtr<mozilla::gl::GLContext> aGL, EGLSyncKHR aSync);
+  void FenceDeleteLocked(const mozilla::MutexAutoLock& aProofOfLock)
+      MOZ_REQUIRES(mSurfaceLock);
 
   void MaybeSemaphoreWait(GLuint aGlTexture);
   void SetSemaphoreFd(int aDuppedRawFd, bool aIsSyncFd = false);
