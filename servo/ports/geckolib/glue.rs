@@ -6337,7 +6337,7 @@ pub extern "C" fn Servo_DeclarationBlock_SetPixelValue(
         PaddingLeft => NonNegative(lp),
         BorderSpacing => {
             let v = NonNegativeLength::from(nocalc);
-            Box::new(BorderSpacing::new(v.clone(), v))
+            BorderSpacing::new(v.clone(), v)
         },
         BorderTopLeftRadius => {
             let length = NonNegativeLengthPercentage::from(nocalc);
