@@ -1665,7 +1665,10 @@ void ModuleLoaderBase::ProcessDynamicImport(ModuleLoadRequest* aRequest) {
   LOG(("ScriptLoadRequest (%p): ProcessDynamicImport", aRequest));
   FinishLoadingImportedModule(cx, aRequest);
 
-  (void)mLoader->MaybePrepareModuleForDiskCacheAfterExecute(aRequest, NS_OK);
+  // TODO: Implement caching for wasm modules (Bug 1998240).
+  if (!aRequest->IsWasmBytes()) {
+    (void)mLoader->MaybePrepareModuleForDiskCacheAfterExecute(aRequest, NS_OK);
+  }
 
   mLoader->MaybeUpdateDiskCache();
 }
@@ -1769,7 +1772,10 @@ nsresult ModuleLoaderBase::EvaluateModuleInContext(
     }
   }
 
-  rv = mLoader->MaybePrepareModuleForDiskCacheAfterExecute(aRequest, NS_OK);
+  // TODO: Implement caching for wasm modules (Bug 1998240).
+  if (!aRequest->IsWasmBytes()) {
+    rv = mLoader->MaybePrepareModuleForDiskCacheAfterExecute(aRequest, NS_OK);
+  }
 
   mLoader->MaybeUpdateDiskCache();
 
