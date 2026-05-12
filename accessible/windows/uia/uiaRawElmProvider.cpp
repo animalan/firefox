@@ -548,15 +548,13 @@ uiaRawElmProvider::GetPatternProvider(
       return S_OK;
     case UIA_TextPatternId:
       if (HasTextPattern(acc)) {
-        RefPtr<ITextProvider> text =
-            new UiaText(static_cast<MsaaAccessible*>(this));
+        auto text = MakeRefPtr<UiaText>(static_cast<MsaaAccessible*>(this));
         text.forget(aPatternProvider);
       }
       return S_OK;
     case UIA_TextPattern2Id:
       if (HasTextPattern(acc)) {
-        RefPtr<ITextProvider2> text =
-            new UiaText(static_cast<MsaaAccessible*>(this));
+        auto text = MakeRefPtr<UiaText>(static_cast<MsaaAccessible*>(this));
         text.forget(aPatternProvider);
       }
       return S_OK;

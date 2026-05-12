@@ -219,8 +219,7 @@ mozilla::ipc::IPCResult DocAccessibleParent::ProcessShowEvent(
   xpcAccessibleGeneric* xpcAcc = GetXPCAccessible(root);
   xpcAccessibleDocument* doc = GetAccService()->GetXPCDocument(this);
   nsINode* node = nullptr;
-  RefPtr<xpcAccEvent> event =
-      new xpcAccEvent(type, xpcAcc, doc, node, aFromUser);
+  auto event = MakeRefPtr<xpcAccEvent>(type, xpcAcc, doc, node, aFromUser);
   nsCoreUtils::DispatchAccEvent(std::move(event));
 
   return IPC_OK();
@@ -469,8 +468,7 @@ void DocAccessibleParent::FireEvent(RemoteAccessible* aAcc,
   xpcAccessibleDocument* doc = GetAccService()->GetXPCDocument(this);
   nsINode* node = nullptr;
   bool fromUser = true;  // XXX fix me
-  RefPtr<xpcAccEvent> event =
-      new xpcAccEvent(aEventType, xpcAcc, doc, node, fromUser);
+  auto event = MakeRefPtr<xpcAccEvent>(aEventType, xpcAcc, doc, node, fromUser);
   nsCoreUtils::DispatchAccEvent(std::move(event));
 }
 
@@ -505,7 +503,7 @@ mozilla::ipc::IPCResult DocAccessibleParent::RecvStateChangeEvent(
   uint32_t state = nsAccUtils::To32States(aState, &extra);
   bool fromUser = true;     // XXX fix this
   nsINode* node = nullptr;  // XXX can we do better?
-  RefPtr<xpcAccStateChangeEvent> event = new xpcAccStateChangeEvent(
+  auto event = MakeRefPtr<xpcAccStateChangeEvent>(
       type, xpcAcc, doc, node, fromUser, state, extra, aEnabled);
   nsCoreUtils::DispatchAccEvent(std::move(event));
 
@@ -557,7 +555,7 @@ mozilla::ipc::IPCResult DocAccessibleParent::RecvCaretMoveEvent(
   nsINode* node = nullptr;
   bool fromUser = true;  // XXX fix me
   uint32_t type = nsIAccessibleEvent::EVENT_TEXT_CARET_MOVED;
-  RefPtr<xpcAccCaretMoveEvent> event = new xpcAccCaretMoveEvent(
+  auto event = MakeRefPtr<xpcAccCaretMoveEvent>(
       type, xpcAcc, doc, node, fromUser, aOffset, aIsSelectionCollapsed,
       aIsAtEndOfLine, aGranularity);
   nsCoreUtils::DispatchAccEvent(std::move(event));
@@ -587,7 +585,7 @@ mozilla::ipc::IPCResult DocAccessibleParent::ProcessTextChangeEvent(
   uint32_t type = aIsInsert ? nsIAccessibleEvent::EVENT_TEXT_INSERTED
                             : nsIAccessibleEvent::EVENT_TEXT_REMOVED;
   nsINode* node = nullptr;
-  RefPtr<xpcAccTextChangeEvent> event = new xpcAccTextChangeEvent(
+  auto event = MakeRefPtr<xpcAccTextChangeEvent>(
       type, xpcAcc, doc, node, aFromUser, aStart, aLen, aIsInsert, aStr);
   nsCoreUtils::DispatchAccEvent(std::move(event));
 
@@ -690,8 +688,8 @@ mozilla::ipc::IPCResult DocAccessibleParent::RecvSelectionEvent(
   }
   xpcAccessibleGeneric* xpcTarget = GetXPCAccessible(target);
   xpcAccessibleDocument* xpcDoc = GetAccService()->GetXPCDocument(this);
-  RefPtr<xpcAccEvent> event =
-      new xpcAccEvent(aType, xpcTarget, xpcDoc, nullptr, false);
+  auto event =
+      MakeRefPtr<xpcAccEvent>(aType, xpcTarget, xpcDoc, nullptr, false);
   nsCoreUtils::DispatchAccEvent(std::move(event));
 
   return IPC_OK();
@@ -731,9 +729,9 @@ mozilla::ipc::IPCResult DocAccessibleParent::RecvScrollingEvent(
   xpcAccessibleDocument* doc = GetAccService()->GetXPCDocument(this);
   nsINode* node = nullptr;
   bool fromUser = true;  // XXX: Determine if this was from user input.
-  RefPtr<xpcAccScrollingEvent> event =
-      new xpcAccScrollingEvent(aType, xpcAcc, doc, node, fromUser, aScrollX,
-                               aScrollY, aMaxScrollX, aMaxScrollY);
+  auto event = MakeRefPtr<xpcAccScrollingEvent>(aType, xpcAcc, doc, node,
+                                                fromUser, aScrollX, aScrollY,
+                                                aMaxScrollX, aMaxScrollY);
   nsCoreUtils::DispatchAccEvent(std::move(event));
 
   return IPC_OK();
@@ -835,7 +833,7 @@ mozilla::ipc::IPCResult DocAccessibleParent::RecvAnnouncementEvent(
 
   xpcAccessibleGeneric* xpcAcc = GetXPCAccessible(target);
   xpcAccessibleDocument* doc = GetAccService()->GetXPCDocument(this);
-  RefPtr<xpcAccAnnouncementEvent> event = new xpcAccAnnouncementEvent(
+  auto event = MakeRefPtr<xpcAccAnnouncementEvent>(
       nsIAccessibleEvent::EVENT_ANNOUNCEMENT, xpcAcc, doc, nullptr, false,
       aAnnouncement, aPriority);
   nsCoreUtils::DispatchAccEvent(std::move(event));
@@ -874,9 +872,9 @@ mozilla::ipc::IPCResult DocAccessibleParent::RecvTextSelectionChangeEvent(
   xpcAccessibleDocument* doc = nsAccessibilityService::GetXPCDocument(this);
   nsINode* node = nullptr;
   bool fromUser = true;  // XXX fix me
-  RefPtr<xpcAccEvent> event =
-      new xpcAccEvent(nsIAccessibleEvent::EVENT_TEXT_SELECTION_CHANGED, xpcAcc,
-                      doc, node, fromUser);
+  auto event =
+      MakeRefPtr<xpcAccEvent>(nsIAccessibleEvent::EVENT_TEXT_SELECTION_CHANGED,
+                              xpcAcc, doc, node, fromUser);
   nsCoreUtils::DispatchAccEvent(std::move(event));
 
   return IPC_OK();
@@ -1245,8 +1243,8 @@ mozilla::ipc::IPCResult DocAccessibleParent::RecvFocusEvent(
   xpcAccessibleDocument* doc = GetAccService()->GetXPCDocument(this);
   nsINode* node = nullptr;
   bool fromUser = true;  // XXX fix me
-  RefPtr<xpcAccEvent> event = new xpcAccEvent(nsIAccessibleEvent::EVENT_FOCUS,
-                                              xpcAcc, doc, node, fromUser);
+  auto event = MakeRefPtr<xpcAccEvent>(nsIAccessibleEvent::EVENT_FOCUS, xpcAcc,
+                                       doc, node, fromUser);
   nsCoreUtils::DispatchAccEvent(std::move(event));
 
   return IPC_OK();

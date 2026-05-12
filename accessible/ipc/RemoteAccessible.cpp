@@ -1717,7 +1717,7 @@ already_AddRefed<AccAttributes> RemoteAccessible::DefaultTextAttributes() {
     return nullptr;
   }
 
-  RefPtr<AccAttributes> result = new AccAttributes();
+  auto result = MakeRefPtr<AccAttributes>();
   for (RemoteAccessible* parent = this; parent;
        parent = parent->RemoteParent()) {
     if (!parent->IsHyperText()) {
@@ -1828,7 +1828,7 @@ uint64_t RemoteAccessible::State() {
 }
 
 already_AddRefed<AccAttributes> RemoteAccessible::Attributes() {
-  RefPtr<AccAttributes> attributes = new AccAttributes();
+  auto attributes = MakeRefPtr<AccAttributes>();
   if (RequestDomainsIfInactive(CacheDomain::ARIA |  // GetCachedARIAAttributes
                                CacheDomain::NameAndDescription |  // Name
                                CacheDomain::Text |                // Name

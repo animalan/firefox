@@ -656,7 +656,7 @@ void nsAccessibilityService::NotifyOfResolutionChange(
   DocAccessible* document = aPresShell->GetDocAccessible();
   if (document && document->IPCDoc()) {
     AutoTArray<mozilla::a11y::CacheData, 1> data;
-    RefPtr<AccAttributes> fields = new AccAttributes();
+    auto fields = MakeRefPtr<AccAttributes>();
     fields->SetAttribute(CacheKey::Resolution, aResolution);
     data.AppendElement(mozilla::a11y::CacheData(0, fields));
     document->IPCDoc()->SendCache(CacheUpdateType::Update, data);
@@ -668,7 +668,7 @@ void nsAccessibilityService::NotifyOfDevPixelRatioChange(
   DocAccessible* document = aPresShell->GetDocAccessible();
   if (document && document->IPCDoc()) {
     AutoTArray<mozilla::a11y::CacheData, 1> data;
-    RefPtr<AccAttributes> fields = new AccAttributes();
+    auto fields = MakeRefPtr<AccAttributes>();
     fields->SetAttribute(CacheKey::AppUnitsPerDevPixel, aAppUnitsPerDevPixel);
     data.AppendElement(mozilla::a11y::CacheData(0, fields));
     document->IPCDoc()->SendCache(CacheUpdateType::Update, data);
@@ -806,8 +806,8 @@ void nsAccessibilityService::NotifyOfTabPanelVisibilityChange(
   }
 
   if (LocalAccessible* acc = document->GetAccessible(aPanel)) {
-    RefPtr<AccEvent> event =
-        new AccStateChangeEvent(acc, states::OFFSCREEN, aNowVisible);
+    auto event =
+        MakeRefPtr<AccStateChangeEvent>(acc, states::OFFSCREEN, aNowVisible);
     document->FireDelayedEvent(event);
   }
 }
@@ -1046,7 +1046,7 @@ void nsAccessibilityService::GetStringStates(uint32_t aState,
 
 already_AddRefed<DOMStringList> nsAccessibilityService::GetStringStates(
     uint64_t aStates) const {
-  RefPtr<DOMStringList> stringStates = new DOMStringList();
+  auto stringStates = MakeRefPtr<DOMStringList>();
 
   if (aStates & states::UNAVAILABLE) {
     stringStates->Add(u"unavailable"_ns);

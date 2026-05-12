@@ -636,7 +636,7 @@ void DocManager::RemoteDocAdded(DocAccessibleParent* aDoc) {
   // Fire a reorder event on the OuterDocAccessible.
   if (LocalAccessible* outerDoc = aDoc->OuterDocOfRemoteBrowser()) {
     MOZ_ASSERT(outerDoc->Document());
-    RefPtr<AccReorderEvent> reorder = new AccReorderEvent(outerDoc);
+    auto reorder = MakeRefPtr<AccReorderEvent>(outerDoc);
     outerDoc->Document()->FireDelayedEvent(reorder);
   }
 }
