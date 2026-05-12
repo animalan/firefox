@@ -25,6 +25,8 @@ import org.mozilla.fenix.distributions.DistributionIdManager
 import org.mozilla.fenix.distributions.DistributionProviderChecker
 import org.mozilla.fenix.distributions.DistributionSettings
 import org.mozilla.fenix.ext.settings
+import org.mozilla.fenix.nimbus.FxNimbus
+import org.mozilla.fenix.nimbus.MarketingOnboardingCard
 
 @RunWith(AndroidJUnit4::class)
 internal class InstallReferrerHandlingServiceTest {
@@ -68,6 +70,7 @@ internal class InstallReferrerHandlingServiceTest {
     fun setUp() {
         InstallReferrerHandlingService.response = null
         testContext.settings().shouldShowMarketingOnboarding = true
+        FxNimbus.features.marketingOnboardingCard.withCachedValue(MarketingOnboardingCard(enabled = true))
     }
 
     @Test
@@ -149,6 +152,19 @@ internal class InstallReferrerHandlingServiceTest {
             )
         }
     }
+
+    @Test
+    fun `WHEN the marketing onboarding Nimbus flag is disabled THEN we should not show marketing onboarding`() =
+        runBlocking {
+            FxNimbus.features.marketingOnboardingCard.withCachedValue(MarketingOnboardingCard(enabled = false))
+            assertFalse(InstallReferrerHandlingService.shouldShowMarketingOnboarding("gclid=12345", distributionIdManager))
+        }
+
+    @Test
+    fun `WHEN the marketing onboarding Nimbus flag is enabled THEN we should show marketing onboarding`() =
+        runBlocking {
+            assertTrue(InstallReferrerHandlingService.shouldShowMarketingOnboarding("gclid=12345", distributionIdManager))
+        }
 
     @Test
     fun `WHEN installReferrerResponse is empty or null THEN we should not show marketing onboarding`() =
