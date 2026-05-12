@@ -81,7 +81,7 @@ class UIHelper {
 }
 
 const authProvider = Services.prefs.getBoolPref(
-  "browser.ipProtection.fxa.useActivateFlow",
+  "toolkit.ipProtection.fxa.useActivateFlow",
   false
 )
   ? lazy.IPPFxaActivateAuthProvider
