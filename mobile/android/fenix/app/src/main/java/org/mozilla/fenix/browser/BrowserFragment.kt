@@ -574,8 +574,4 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
     internal fun updateLastBrowseActivity() {
         requireContext().settings().lastBrowseActivity = System.currentTimeMillis()
     }
-
-    companion object {
-        const val SHARE_WEIGHT = 4
-    }
 }
