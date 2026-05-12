@@ -4252,15 +4252,15 @@ HttpBaseChannel::GetFetchCacheMode(uint32_t* aFetchCacheMode) {
 
 namespace {
 
-void SetCacheFlags(uint32_t& aLoadFlags, uint32_t aFlags) {
-  // First, clear any possible cache related flags.
+void SetCacheFlags(Atomic<uint32_t, Relaxed>& aLoadFlags, uint32_t aFlags) {
+  // First, clear any possible cache related flags
   uint32_t allPossibleFlags =
       nsIRequest::INHIBIT_CACHING | nsIRequest::LOAD_BYPASS_CACHE |
       nsIRequest::VALIDATE_ALWAYS | nsIRequest::LOAD_FROM_CACHE |
       nsICachingChannel::LOAD_ONLY_FROM_CACHE;
   aLoadFlags &= ~allPossibleFlags;
 
-  // Then set the new flags.
+  // Then set the new flags
   aLoadFlags |= aFlags;
 }
 
