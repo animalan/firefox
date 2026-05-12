@@ -1309,6 +1309,7 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
                 settings = requireComponents.settings,
                 navController = findNavController(),
                 fenixBrowserUseCases = requireComponents.useCases.fenixBrowserUseCases,
+                browserStore = requireComponents.core.store,
             ),
         )
     }
