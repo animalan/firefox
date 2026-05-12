@@ -380,6 +380,7 @@ void MediaController::NotifyMediaAudibleChanged(uint64_t aBrowsingContextId,
     return;
   }
   UpdateActivatedStateIfNeeded();
+  DispatchAsyncEvent(u"audiblechange"_ns);
 
   // Request the audio focus amongs different controllers that could cause
   // pausing other audible controllers if we enable the audio focus management.
@@ -588,7 +589,11 @@ void MediaController::DispatchAsyncEvent(already_AddRefed<Event> aEvent) {
   MOZ_ASSERT(event);
   nsAutoString eventType;
   event->GetType(eventType);
-  if (!mIsActive && !eventType.EqualsLiteral("deactivated")) {
+  // 'audiblechange' must fire even on inactive controllers because
+  // uncontrollable sources never activate the controller, but their
+  // audibility still matters to listeners.
+  if (!mIsActive && !eventType.EqualsLiteral("deactivated") &&
+      !eventType.EqualsLiteral("audiblechange")) {
     LOG("Only 'deactivated' can be dispatched on a deactivated controller, not "
         "'%s'",
         NS_ConvertUTF16toUTF8(eventType).get());

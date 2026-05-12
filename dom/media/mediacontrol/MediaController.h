@@ -93,6 +93,7 @@ class MediaController final : public DOMEventTargetHelper,
   void GetMetadata(MediaMetadataInit& aMetadata, ErrorResult& aRv);
   IMPL_EVENT_HANDLER(activated);
   IMPL_EVENT_HANDLER(deactivated);
+  IMPL_EVENT_HANDLER(audiblechange);
   IMPL_EVENT_HANDLER(metadatachange);
   IMPL_EVENT_HANDLER(supportedkeyschange);
   IMPL_EVENT_HANDLER(playbackstatechange);

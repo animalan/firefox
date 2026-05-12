@@ -2461,6 +2461,7 @@ STATIC_ATOMS = [
     Atom("onboundary", "onboundary"),
     # Media Controller
     Atom("onactivated", "onactivated"),
+    Atom("onaudiblechange", "onaudiblechange"),
     Atom("ondeactivated", "ondeactivated"),
     Atom("onmetadatachange", "onmetadatachange"),
     Atom("onplaybackstatechange", "onplaybackstatechange"),
