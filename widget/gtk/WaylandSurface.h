@@ -40,20 +40,28 @@ class WaylandSurface final {
   void SetLoggingWidget(void* aWidget) { mLoggingWidget = aWidget; }
 #endif
 
+  // Fire VSync handler registered to this surface.
   void VSyncCallbackHandler(struct wl_callback* aCallback, uint32_t aTime,
-                            bool aRoutedFromChildSurface);
+                            bool aEmulated, bool aRoutedFromChildSurface);
 
-  // Run frame callback repeatedly. Callback is removed on Unmap.
-  // If aEmulateVSyncCallback is set to true and WaylandSurface is mapped and
-  // ready to draw and we don't have buffer attached yet,
-  // fire aVSyncCallbackHandler without frame callback from
-  // compositor in sFrameCheckTimeoutMs.
-  void SetVSyncCallbackLocked(
+  // Set VSync handler which is fired when it's good time for painting
+  // and WalandSurface is visible and VSync is enabled.
+  //
+  // If aEmulateVSyncCallback is set to true, we file VSync handler even
+  // if WaylandSurface is not visible. It's used for painting to hidden
+  // surface.
+  //
+  // Once set, the aVSyncCallbackHandler is preserved between unmap/map.
+  //
+  // It's VSync source responsibility to disable emulated VSync events
+  // by SetVSyncCallbackStateLocked().
+  void SetVSyncCallbackHandlerLocked(
       const WaylandSurfaceLock& aProofOfLock,
-      const std::function<void(wl_callback*, uint32_t)>& aVSyncCallbackHandler,
+      const std::function<void(wl_callback*, uint32_t, bool)>&
+          aVSyncCallbackHandler,
       bool aEmulateVSyncCallback = false);
 
-  // Clears frame callback handler. It's used if frame callback handler
+  // Clears VSync callback handler. It's used if frame callback handler
   // contains strong reference to WaylandSurface class owner
   // which we want to clear.
   void ClearVSyncCallbackHandlerLocked(const WaylandSurfaceLock& aProofOfLock);
@@ -61,6 +69,8 @@ class WaylandSurface final {
   // Enable/Disable any frame callback emission (includes emulated ones).
   void SetVSyncCallbackStateLocked(const WaylandSurfaceLock& aProofOfLock,
                                    bool aEnabled);
+  // Register handler which is called on VSync state change set by
+  // SetVSyncCallbackStateLocked().
   void SetVSyncCallbackStateHandlerLocked(
       const WaylandSurfaceLock& aProofOfLock,
       const std::function<void(bool)>& aVSyncCallbackStateHandler);
@@ -302,7 +312,7 @@ class WaylandSurface final {
   // Force release/detele all transactions and wl_buffers attached to them.
   void ReleaseAllWaylandTransactionsLocked(WaylandSurfaceLock& aSurfaceLock);
 
-  void SetVSyncCallbacksLocked(const WaylandSurfaceLock& aProofOfLock);
+  void SetVSyncCallbackLocked(const WaylandSurfaceLock& aProofOfLock);
   void ClearVSyncCallbackLocked(const WaylandSurfaceLock& aProofOfLock);
   bool HasEmulatedVSyncCallbackLocked(
       const WaylandSurfaceLock& aProofOfLock) const;
@@ -390,20 +400,21 @@ class WaylandSurface final {
   // Frame callback for mIsVisible flag
   wl_callback* mVisibleFrameCallback = nullptr;
 
-  // VSync frame callback handler called every frame
-  // TODO -> Call vsync directly?? USe VSyncSource directly??
+  // VSync callback handler called every frame or by time for emulated ones.
   struct VSyncCallback {
-    std::function<void(wl_callback*, uint32_t)> mCb = nullptr;
+    std::function<void(wl_callback*, uint32_t, bool)> mCb = nullptr;
     bool mEmulated = false;
     bool IsSet() const { return !!mCb; }
   };
   VSyncCallback mVSyncCallbackHandler;
 
-  // Frame callbacks of this surface
   wl_callback* mVSyncFrameCallback = nullptr;
 
   bool mVSyncCallbackEnabled = true;
   std::function<void(bool)> mVSyncCallbackStateHandler = nullptr;
+
+  guint mEmulatedVSyncCallbackTimerID = 0;
+  constexpr static int sEmulatedVSyncCallbackTimeoutMs = (int)(1000.0 / 60.0);
 
   // Frame callback used to set opaque region to wl_surface.
   wl_region* mPendingOpaqueRegion = nullptr;
@@ -422,8 +433,6 @@ class WaylandSurface final {
                                                      struct wl_surface*);
   static void (*sGdkWaylandWindowRemoveCallbackSurface)(GdkWindow*,
                                                         struct wl_surface*);
-  guint mEmulatedVSyncCallbackTimerID = 0;
-  constexpr static int sEmulatedVSyncCallbackTimeoutMs = (int)(1000.0 / 60.0);
 
   // We use two scale systems in Firefox/Wayland. Ceiled (integer) scale and
   // fractional scale. Ceiled scale is easy to implement but comes with
