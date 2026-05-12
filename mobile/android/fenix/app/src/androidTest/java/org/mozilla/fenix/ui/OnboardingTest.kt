@@ -5,8 +5,6 @@ import androidx.test.filters.SdkSuppress
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
-import org.mozilla.fenix.helpers.AppAndSystemHelper.dismissSetAsDefaultBrowserOnboardingDialog
-import org.mozilla.fenix.helpers.AppAndSystemHelper.runWithCondition
 import org.mozilla.fenix.helpers.AppAndSystemHelper.runWithLauncherIntent
 import org.mozilla.fenix.helpers.FenixTestRule
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
@@ -16,12 +14,11 @@ import org.mozilla.fenix.helpers.TestHelper.restartApp
 import org.mozilla.fenix.helpers.perf.DetectMemoryLeaksRule
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
-import kotlin.test.Ignore
 import androidx.compose.ui.test.junit4.v2.AndroidComposeTestRule as AndroidComposeTestRuleV2
 
 class OnboardingTest {
     @get:Rule(order = 0)
-    val fenixTestRule: FenixTestRule = FenixTestRule()
+    val fenixTestRule: FenixTestRule = FenixTestRule(grantNotifications = false)
 
     private val mockWebServer get() = fenixTestRule.mockWebServer
 
@@ -90,7 +87,6 @@ class OnboardingTest {
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3349496
-    @Ignore("Disabled, see: https://bugzilla.mozilla.org/show_bug.cgi?id=2037831")
     @SdkSuppress(minSdkVersion = 29)
     @SmokeTest
     @Test
@@ -121,7 +117,6 @@ class OnboardingTest {
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3349498
     // If the device is running on Android version higher or equal to 13 the "Turn on notifications" onboarding card is displayed
-    @Ignore("Disabled, see: https://bugzilla.mozilla.org/show_bug.cgi?id=2037831")
     @SdkSuppress(minSdkVersion = 33)
     @SmokeTest
     @Test
@@ -145,7 +140,6 @@ class OnboardingTest {
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3349499
-    @Ignore("Disabled, see: https://bugzilla.mozilla.org/show_bug.cgi?id=2037831")
     @SdkSuppress(minSdkVersion = 29)
     @SmokeTest
     @Test
@@ -181,7 +175,6 @@ class OnboardingTest {
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3349492
-    @Ignore("Disabled, see: https://bugzilla.mozilla.org/show_bug.cgi?id=2037831")
     @SdkSuppress(minSdkVersion = 29)
     @Test
     fun verifyTheOnboardingCardOrderTest() {
