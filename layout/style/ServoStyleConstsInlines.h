@@ -607,7 +607,7 @@ const StylePercentage& LengthPercentage::AsPercentage() const {
 StyleCalcLengthPercentage& LengthPercentage::AsCalc() {
   MOZ_ASSERT(IsCalc());
 #ifdef SERVO_32_BITS
-  return *reinterpret_cast<StyleCalcLengthPercentage*>(aLP._0._0.boxed.ptr);
+  return *reinterpret_cast<StyleCalcLengthPercentage*>(_0._0.boxed.ptr);
 #else
   return *reinterpret_cast<StyleCalcLengthPercentage*>(
       NativeEndian::swapFromLittleEndian(_0._0.boxed.ptr));
