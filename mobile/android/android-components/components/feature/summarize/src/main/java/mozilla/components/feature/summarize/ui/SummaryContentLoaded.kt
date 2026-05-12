@@ -39,7 +39,7 @@ import mozilla.components.ui.richtext.ir.RichDocument
 import mozilla.components.ui.icons.R as iconsR
 
 /**
- *  Content being shown after the page summary has been generated
+ * Content being shown after the page summary has been generated
  */
 @Composable
 internal fun SummaryContentLoaded(
@@ -130,7 +130,7 @@ private fun ModelInformation(
                 stringResource(info.nameRes),
             ),
             fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
         )
 
         Spacer(Modifier.width(8.dp))
@@ -152,6 +152,6 @@ private fun DisclaimerMessage() {
         modifier = Modifier
             .height(24.dp)
             .width(AcornTheme.layout.size.containerMaxWidth),
-        color = AcornTheme.colors.iconPrimaryInactive,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
