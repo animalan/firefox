@@ -43,6 +43,7 @@ import mozilla.components.compose.base.button.IconButton
 import mozilla.components.concept.engine.utils.ABOUT_HOME_URL
 import mozilla.components.support.base.utils.MAX_URI_LENGTH
 import org.mozilla.fenix.R
+import org.mozilla.fenix.compose.Favicon
 import org.mozilla.fenix.compose.SwipeToDismissBox2
 import org.mozilla.fenix.compose.SwipeToDismissState2
 import org.mozilla.fenix.compose.TabThumbnail
@@ -249,11 +250,10 @@ private fun TabIcon(
             modifier = Modifier.size(TabHeaderFaviconSize),
         )
     } else {
-        Icon(
-            painter = painterResource(id = iconsR.drawable.mozac_ic_globe_24),
-            contentDescription = null,
-            modifier = Modifier.size(TabHeaderFaviconSize),
-            tint = MaterialTheme.colorScheme.onSurface,
+        Favicon(
+            url = tab.url,
+            size = TabHeaderFaviconSize,
+            isPrivate = tab.private,
         )
     }
 }
