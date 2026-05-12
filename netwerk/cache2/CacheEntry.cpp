@@ -527,7 +527,12 @@ NS_IMETHODIMP CacheEntry::OnFileReady(nsresult aResult, bool aIsNew) {
 }
 
 NS_IMETHODIMP CacheEntry::OnFileDoomed(nsresult aResult) {
-  if (mDoomCallback) {
+  bool doomCallback = false;
+  {
+    mozilla::MutexAutoLock lock(mLock);
+    doomCallback = bool(mDoomCallback);
+  }
+  if (doomCallback) {
     RefPtr<DoomCallbackRunnable> event =
         new DoomCallbackRunnable(this, aResult);
     NS_DispatchToMainThread(event);
