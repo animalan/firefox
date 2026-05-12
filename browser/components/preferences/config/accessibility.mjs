@@ -492,7 +492,7 @@ SettingGroupManager.registerGroups({
       },
       {
         id: "zoomWarning",
-        l10nId: "preferences-text-zoom-override-warning",
+        l10nId: "preferences-text-zoom-override-warning2",
         control: "moz-message-bar",
         controlAttrs: {
           type: "warning",
