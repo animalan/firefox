@@ -48,6 +48,9 @@ DocAccessibleParent::DocAccessibleParent()
 #if defined(XP_WIN)
       mEmulatedWindowHandle(nullptr),
 #endif  // defined(XP_WIN)
+#ifdef MOZ_WIDGET_COCOA
+      mFocusedAccBounds(Nothing()),
+#endif
       mTopLevel(false),
       mTopLevelInContentProcess(false),
       mShutdown(false),
@@ -1233,6 +1236,11 @@ mozilla::ipc::IPCResult DocAccessibleParent::RecvFocusEvent(
 
   mFocus = aID;
   mCaretRect = aCaretRect;
+#ifdef MOZ_WIDGET_COCOA
+  if (PlatformShouldTrackFocusedAccLocation()) {
+    mFocusedAccBounds = Some(proxy->Bounds());
+  }
+#endif
   PlatformFocusEvent(proxy);
 
   if (!nsCoreUtils::AccEventObserversExist()) {
