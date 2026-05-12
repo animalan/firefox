@@ -45,7 +45,7 @@ export class SportsFeed {
   // On startup, read whatever was saved to disk and send it to the UI.
   async syncState() {
     const cachedData = (await this.cache.get()) || {};
-    const { widgetState, selectedTeams, sportsData } = cachedData;
+    const { widgetState, selectedTeams, sportsData, matchesTab } = cachedData;
     const { teams, matches } = sportsData || {};
 
     if (widgetState) {
@@ -62,6 +62,15 @@ export class SportsFeed {
         ac.BroadcastToContent({
           type: at.WIDGETS_SPORTS_SET_SELECTED_TEAMS,
           data: selectedTeams,
+        })
+      );
+    }
+
+    if (matchesTab) {
+      this.store.dispatch(
+        ac.BroadcastToContent({
+          type: at.WIDGETS_SPORTS_SET_MATCHES_TAB,
+          data: matchesTab,
         })
       );
     }
@@ -171,6 +180,16 @@ export class SportsFeed {
         this.store.dispatch(
           ac.BroadcastToContent({
             type: at.WIDGETS_SPORTS_SET_SELECTED_TEAMS,
+            data: action.data,
+          })
+        );
+        break;
+      // User changed the matches tab — save it and broadcast to the UI.
+      case at.WIDGETS_SPORTS_CHANGE_MATCHES_TAB:
+        await this.cache.set("matchesTab", action.data);
+        this.store.dispatch(
+          ac.BroadcastToContent({
+            type: at.WIDGETS_SPORTS_SET_MATCHES_TAB,
             data: action.data,
           })
         );
