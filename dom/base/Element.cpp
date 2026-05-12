@@ -4794,6 +4794,10 @@ already_AddRefed<Promise> Element::RequestFullscreen(
 already_AddRefed<Promise> Element::RequestPointerLock(
     const PointerLockOptions& aOptions, CallerType aCallerType,
     ErrorResult& aRv) {
+  if (aOptions.mUnadjustedMovement) {
+    OwnerDoc()->SetUseCounter(
+        eUseCounter_custom_RequestedPointerLockUnadjustedMovement);
+  }
   RefPtr<Promise> promise = Promise::CreateInfallible(GetRelevantGlobal());
   PointerLockManager::RequestLock(this, aOptions, aCallerType, promise);
   return promise.forget();
