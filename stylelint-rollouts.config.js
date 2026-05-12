@@ -83,7 +83,6 @@ module.exports = [
       "browser/components/screenshots/overlay/overlay.css",
       "browser/components/screenshots/screenshots-buttons.css",
       "browser/components/screenshots/screenshots-preview.css",
-      "browser/components/search/content/addEngine.css",
       "browser/components/search/test/browser/telemetry/serp.css",
       "browser/components/security/unexpectedScriptLoad.css",
       "browser/components/sidebar/sidebar-customize.css",
