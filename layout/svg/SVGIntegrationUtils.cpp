@@ -1219,8 +1219,8 @@ already_AddRefed<gfxDrawable> SVGIntegrationUtils::DrawableFromPaintServer(
 
   // We don't want to paint into a surface as long as we don't need to, so we
   // set up a drawing callback.
-  RefPtr<gfxDrawingCallback> cb =
-      new PaintFrameCallback(aFrame, aPaintServerSize, aRenderSize, aFlags);
+  auto cb = MakeRefPtr<PaintFrameCallback>(aFrame, aPaintServerSize,
+                                           aRenderSize, aFlags);
   return MakeAndAddRef<gfxCallbackDrawable>(cb, aRenderSize);
 }
 

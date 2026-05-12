@@ -1936,10 +1936,10 @@ Result<Loader::LoadSheetResult, nsresult> Loader::LoadStyleLink(
     // load.
     if (aInfo.mContent && !mDocument->IsLoadedAsData()) {
       // Fire an async error event on it.
-      RefPtr<AsyncEventDispatcher> loadBlockingAsyncDispatcher =
-          new LoadBlockingAsyncEventDispatcher(aInfo.mContent, u"error"_ns,
-                                               CanBubble::eNo,
-                                               ChromeOnlyDispatch::eNo);
+      auto loadBlockingAsyncDispatcher =
+          MakeRefPtr<LoadBlockingAsyncEventDispatcher>(
+              aInfo.mContent, u"error"_ns, CanBubble::eNo,
+              ChromeOnlyDispatch::eNo);
       loadBlockingAsyncDispatcher->PostDOMEvent();
     }
     return Err(rv);
