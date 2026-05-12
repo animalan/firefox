@@ -86,7 +86,6 @@ class BrowserFragmentTest {
         every { browserFragment.view } returns view
         every { browserFragment.isAdded } returns true
         every { browserFragment.browserToolbarView } returns mockk<BrowserToolbarComposable>(relaxed = true)
-        every { browserFragment.browserToolbarInteractor } returns mockk(relaxed = true)
         every { browserFragment.childFragmentManager } returns mockk(relaxed = true)
         every { browserFragment.activity } returns homeActivity
         every { browserFragment.lifecycle } returns lifecycleOwner.lifecycle

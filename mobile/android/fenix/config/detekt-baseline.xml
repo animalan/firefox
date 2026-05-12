@@ -20,8 +20,6 @@
     <ID>ForbiddenSuppress:BookmarksScreen.kt$@Suppress("LongMethod", "CognitiveComplexMethod", "CyclomaticComplexMethod")</ID>
     <ID>ForbiddenSuppress:BookmarksTelemetryMiddleware.kt$BookmarksTelemetryMiddleware$@Suppress("CyclomaticComplexMethod")</ID>
     <ID>ForbiddenSuppress:BrowserToolbarCFRPresenter.kt$BrowserToolbarCFRPresenter$@Suppress("MagicNumber")</ID>
-    <ID>ForbiddenSuppress:BrowserToolbarMenuController.kt$DefaultBrowserToolbarMenuController$@Suppress("CognitiveComplexMethod", "LongMethod")</ID>
-    <ID>ForbiddenSuppress:BrowserToolbarMenuController.kt$DefaultBrowserToolbarMenuController$@Suppress("CognitiveComplexMethod", "LongMethod", "CyclomaticComplexMethod")</ID>
     <ID>ForbiddenSuppress:BrowserToolbarMiddleware.kt$BrowserToolbarMiddleware$@Suppress("LongMethod", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:BrowserToolbarMiddleware.kt$BrowserToolbarMiddleware$@Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:BrowserToolbarMiddleware.kt$BrowserToolbarMiddleware$@Suppress("LongMethod", "CyclomaticComplexMethod", "NestedBlockDepth", "ReturnCount", "CognitiveComplexMethod")</ID>
@@ -487,8 +485,6 @@
     <ID>UndocumentedPublicClass:AppViewHolder.kt$AppViewHolder : ViewHolder</ID>
     <ID>UndocumentedPublicClass:BrowserFragmentStore.kt$BrowserFragmentAction : Action</ID>
     <ID>UndocumentedPublicClass:BrowserFragmentStore.kt$BrowserFragmentStore : Store</ID>
-    <ID>UndocumentedPublicClass:BrowserToolbarController.kt$DefaultBrowserToolbarController : BrowserToolbarController</ID>
-    <ID>UndocumentedPublicClass:BrowserToolbarMenuController.kt$DefaultBrowserToolbarMenuController : BrowserToolbarMenuController</ID>
     <ID>UndocumentedPublicClass:BrowsingModeManager.kt$BrowsingModeManager</ID>
     <ID>UndocumentedPublicClass:CollectionCreationController.kt$CollectionCreationController</ID>
     <ID>UndocumentedPublicClass:CollectionCreationFragment.kt$CollectionCreationFragment : DialogFragment</ID>
@@ -708,16 +704,6 @@
     <ID>UndocumentedPublicFunction:BackgroundServices.kt$BackgroundServices$@VisibleForTesting(otherwise = PRIVATE) fun makeAccountManager( context: Context, serverConfig: ServerConfig, deviceConfig: DeviceConfig, syncConfig: SyncConfig?, crashReporter: CrashReporter?, )</ID>
     <ID>UndocumentedPublicFunction:BackgroundServices.kt$BackgroundServices$fun defaultDeviceName(context: Context): String</ID>
     <ID>UndocumentedPublicFunction:BrowserIcons.kt$fun BrowserIcons.loadIntoView(view: ImageView, url: String)</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarController.kt$BrowserToolbarController$fun handleReaderModePressed(enabled: Boolean)</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarController.kt$BrowserToolbarController$fun handleScroll(offset: Int)</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarController.kt$BrowserToolbarController$fun handleTabCounterClick()</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarController.kt$BrowserToolbarController$fun handleTabCounterItemInteraction(item: TabCounterMenu.Item)</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarInteractor.kt$BrowserToolbarInteractor$fun onBrowserToolbarMenuItemTapped(item: ToolbarMenu.Item)</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarInteractor.kt$BrowserToolbarInteractor$fun onReaderModePressed(enabled: Boolean)</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarInteractor.kt$BrowserToolbarInteractor$fun onScrolled(offset: Int)</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarInteractor.kt$BrowserToolbarInteractor$fun onTabCounterClicked()</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarInteractor.kt$BrowserToolbarInteractor$fun onTabCounterMenuItemTapped(item: TabCounterMenu.Item)</ID>
-    <ID>UndocumentedPublicFunction:BrowserToolbarMenuController.kt$BrowserToolbarMenuController$fun handleToolbarItemInteraction(item: ToolbarMenu.Item)</ID>
     <ID>UndocumentedPublicFunction:ClearSiteDataView.kt$ClearSiteDataView$fun update(webInfoState: WebsiteInfoState)</ID>
     <ID>UndocumentedPublicFunction:CollectionCreationBottomBarView.kt$CollectionCreationBottomBarView$fun update(step: SaveCollectionStep, state: CollectionCreationState)</ID>
     <ID>UndocumentedPublicFunction:CollectionCreationController.kt$CollectionCreationController$fun addNewCollection()</ID>

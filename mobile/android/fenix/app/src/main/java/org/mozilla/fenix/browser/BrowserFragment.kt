@@ -37,6 +37,7 @@ import mozilla.components.lib.shake.detectShakes
 import mozilla.components.support.base.feature.UserInteractionHandler
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
 import mozilla.components.support.ktx.kotlin.isContentUrl
+import org.mozilla.fenix.GleanMetrics.Translations
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.store.BrowserScreenAction.ReaderModeStatusUpdated
 import org.mozilla.fenix.components.Components
@@ -46,6 +47,7 @@ import org.mozilla.fenix.components.TabCollectionStorage
 import org.mozilla.fenix.components.VoiceSearchFeature
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.components.appstate.AppAction
+import org.mozilla.fenix.components.appstate.AppAction.SnackbarAction
 import org.mozilla.fenix.components.metrics.installSourcePackage
 import org.mozilla.fenix.components.toolbar.gestures.ToolbarHorizontalGesturesHandler
 import org.mozilla.fenix.components.toolbar.gestures.ToolbarVerticalGesturesHandler
@@ -352,13 +354,22 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
                     browserScreenStore = browserScreenStore,
                     appStore = rootView.context.components.appStore,
                     onTranslationStatusUpdate = {},
-                    onShowTranslationsDialog = browserToolbarInteractor::onTranslationsButtonClicked,
+                    onShowTranslationsDialog = ::openTranslationsDialogFromToolbar,
                     navController = findNavController(),
                 ),
                 owner = this,
                 view = rootView,
             )
         }
+    }
+
+    private fun openTranslationsDialogFromToolbar() {
+        Translations.action.record(Translations.ActionExtra("main_flow_toolbar"))
+        requireComponents.appStore.dispatch(SnackbarAction.SnackbarDismissed)
+        findNavController().navigateSafe(
+            R.id.browserFragment,
+            BrowserFragmentDirections.actionBrowserFragmentToTranslationsDialogFragment(),
+        )
     }
 
     override fun onStart() {
