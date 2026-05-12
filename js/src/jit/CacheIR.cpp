@@ -6125,7 +6125,7 @@ AttachDecision OptimizeSpreadCallIRGenerator::tryAttachArguments() {
 
   Rooted<Shape*> shape(cx_, GlobalObject::getArrayShapeWithDefaultProto(cx_));
   if (!shape) {
-    cx_->clearPendingException();
+    cx_->recoverFromResourceExhaustion();
     return AttachDecision::NoAction;
   }
 
@@ -7583,7 +7583,7 @@ AttachDecision InlinableNativeIRGenerator::tryAttachCanOptimizeArraySpecies() {
 
   SharedShape* shape = GlobalObject::getArrayShapeWithDefaultProto(cx_);
   if (!shape) {
-    cx_->recoverFromOutOfMemory();
+    cx_->recoverFromResourceExhaustion();
     return AttachDecision::NoAction;
   }
 
@@ -7820,8 +7820,7 @@ static JitCode* GetOrCreateRegExpStub(JSContext* cx, InlinableNative native) {
   // shape.
   if (!GlobalObject::getRegExpStatics(cx, cx->global()) ||
       !cx->global()->regExpRealm().getOrCreateMatchResultShape(cx)) {
-    MOZ_ASSERT(cx->isThrowingOutOfMemory() || cx->isThrowingOverRecursed());
-    cx->clearPendingException();
+    cx->recoverFromResourceExhaustion();
     return nullptr;
   }
   JitZone::StubKind kind;
@@ -7845,8 +7844,7 @@ static JitCode* GetOrCreateRegExpStub(JSContext* cx, InlinableNative native) {
   }
   JitCode* code = cx->zone()->jitZone()->ensureStubExists(cx, kind);
   if (!code) {
-    MOZ_ASSERT(cx->isThrowingOutOfMemory() || cx->isThrowingOverRecursed());
-    cx->clearPendingException();
+    cx->recoverFromResourceExhaustion();
     return nullptr;
   }
   return code;
@@ -10471,7 +10469,7 @@ AttachDecision InlinableNativeIRGenerator::tryAttachObjectKeys() {
   Shape* expectedObjKeysShape =
       GlobalObject::getArrayShapeWithDefaultProto(cx_);
   if (!expectedObjKeysShape) {
-    cx_->recoverFromOutOfMemory();
+    cx_->recoverFromResourceExhaustion();
     return AttachDecision::NoAction;
   }
 
