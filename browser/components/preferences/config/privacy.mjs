@@ -951,8 +951,8 @@ SettingGroupManager.registerGroups({
         ],
         controlAttrs: {
           "search-l10n-ids": `
-            history-remember-description3,
-            history-dontremember-description3,
+            history-remember-description4,
+            history-dontremember-description4,
             history-private-browsing-permanent.label,
             history-remember-browser-option.label,
             history-remember-search-option.label,
