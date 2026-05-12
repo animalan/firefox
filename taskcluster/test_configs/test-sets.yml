@@ -461,6 +461,8 @@ macosx1500-aarch64-tests:
     - jsreftest
     - marionette-integration
     - marionette-unittest
+    - crashtest
+    - jittest
     - mochitest-a11y
     - mochitest-browser-a11y
     - mochitest-browser-media
@@ -482,6 +484,7 @@ macosx1500-aarch64-tests:
     - test-verify-gpu
     - test-verify-wpt
     - web-platform-tests
+    - xpcshell
 
 # Test set for ARM64 VMs (VirtualMac2,1). No GPU, no display, no perf hardware.
 # Limited to suites empirically validated on these workers; tests that need
