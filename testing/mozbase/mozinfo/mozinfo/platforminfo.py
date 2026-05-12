@@ -17,7 +17,9 @@ OptTestSettings = Optional[DictAny]
 # Loaded from the YAML file that is the single source of truth shared with
 # tools/lint/mozcheck (Rust, via include_str!). See the YAML file's header
 # for the documentation links.
-with (Path(__file__).parent / "android_os_to_api_map.yaml").open() as _f:
+with (Path(__file__).parent / "android_os_to_api_map.yaml").open(
+    encoding="utf-8"
+) as _f:
     android_os_to_api_map: DictStr = yaml.safe_load(_f)["android_os_to_api_map"]
 
 
