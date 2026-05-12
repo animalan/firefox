@@ -68,15 +68,7 @@ inline Dest bit_cast(const Source& source) {
 #define ASSERT_TRIVIALLY_COPYABLE(T)                  \
   static_assert(std::is_trivially_copyable<T>::value, \
                 #T " should be trivially copyable")
-#define ASSERT_NOT_TRIVIALLY_COPYABLE(T)               \
-  static_assert(!std::is_trivially_copyable<T>::value, \
-                #T " should not be trivially copyable")
 
-constexpr uint32_t kHoleNanUpper32 = 0xFFF7FFFF;
-constexpr uint32_t kHoleNanLower32 = 0xFFF7FFFF;
-
-constexpr uint64_t kHoleNanInt64 =
-    (static_cast<uint64_t>(kHoleNanUpper32) << 32) | kHoleNanLower32;
 // Safety wrapper for a 32-bit floating-point value to make sure we don't lose
 // the exact bit pattern during deoptimization when passing this value.
 class Float32 {
@@ -95,16 +87,6 @@ class Float32 {
   uint32_t get_bits() const { return bit_pattern_; }
 
   float get_scalar() const { return bit_cast<float>(bit_pattern_); }
-
-  bool is_nan() const {
-    // Even though {get_scalar()} might flip the quiet NaN bit, it's ok here,
-    // because this does not change the is_nan property.
-    return std::isnan(get_scalar());
-  }
-
-  // Return a pointer to the field storing the bit pattern. Used in code
-  // generation tests to store generated values there directly.
-  uint32_t* get_bits_address() { return &bit_pattern_; }
 
   static constexpr Float32 FromBits(uint32_t bits) { return Float32(bits); }
 
@@ -135,16 +117,6 @@ class Float64 {
 
   uint64_t get_bits() const { return bit_pattern_; }
   double get_scalar() const { return bit_cast<double>(bit_pattern_); }
-  bool is_hole_nan() const { return bit_pattern_ == kHoleNanInt64; }
-  bool is_nan() const {
-    // Even though {get_scalar()} might flip the quiet NaN bit, it's ok here,
-    // because this does not change the is_nan property.
-    return std::isnan(get_scalar());
-  }
-
-  // Return a pointer to the field storing the bit pattern. Used in code
-  // generation tests to store generated values there directly.
-  uint64_t* get_bits_address() { return &bit_pattern_; }
 
   static constexpr Float64 FromBits(uint64_t bits) { return Float64(bits); }
 
@@ -157,12 +129,9 @@ class Float64 {
 
 ASSERT_TRIVIALLY_COPYABLE(Float64);
 
-class JitActivation;
-
 class Simulator;
 class Redirection;
 class CachePage;
-class AutoLockSimulator;
 
 // When the SingleStepCallback is called, the simulator is about to execute
 // sim->get_pc() and the current machine state represents the completed
@@ -175,45 +144,8 @@ const intptr_t kPointerAlignmentMask = kPointerAlignment - 1;
 const intptr_t kDoubleAlignment = 8;
 const intptr_t kDoubleAlignmentMask = kDoubleAlignment - 1;
 
-// Number of general purpose registers.
-const int kNumRegisters = 32;
-
-// In the simulator, the PC register is simulated as the 34th register.
-const int kPCRegister = 32;
-
 // Number coprocessor registers.
 const int kNumFPURegisters = 32;
-
-// FPU (coprocessor 1) control registers. Currently only FCSR is implemented.
-const int kFCSRRegister = 31;
-const int kInvalidFPUControlRegister = -1;
-const uint32_t kFPUInvalidResult = static_cast<uint32_t>(1 << 31) - 1;
-const uint64_t kFPUInvalidResult64 = static_cast<uint64_t>(1ULL << 63) - 1;
-
-// FCSR constants.
-const uint32_t kFCSRInexactFlagBit = 2;
-const uint32_t kFCSRUnderflowFlagBit = 3;
-const uint32_t kFCSROverflowFlagBit = 4;
-const uint32_t kFCSRDivideByZeroFlagBit = 5;
-const uint32_t kFCSRInvalidOpFlagBit = 6;
-
-const uint32_t kFCSRInexactCauseBit = 12;
-const uint32_t kFCSRUnderflowCauseBit = 13;
-const uint32_t kFCSROverflowCauseBit = 14;
-const uint32_t kFCSRDivideByZeroCauseBit = 15;
-const uint32_t kFCSRInvalidOpCauseBit = 16;
-
-const uint32_t kFCSRInexactFlagMask = 1 << kFCSRInexactFlagBit;
-const uint32_t kFCSRUnderflowFlagMask = 1 << kFCSRUnderflowFlagBit;
-const uint32_t kFCSROverflowFlagMask = 1 << kFCSROverflowFlagBit;
-const uint32_t kFCSRDivideByZeroFlagMask = 1 << kFCSRDivideByZeroFlagBit;
-const uint32_t kFCSRInvalidOpFlagMask = 1 << kFCSRInvalidOpFlagBit;
-
-const uint32_t kFCSRFlagMask =
-    kFCSRInexactFlagMask | kFCSRUnderflowFlagMask | kFCSROverflowFlagMask |
-    kFCSRDivideByZeroFlagMask | kFCSRInvalidOpFlagMask;
-
-const uint32_t kFCSRExceptionFlagMask = kFCSRFlagMask ^ kFCSRInexactFlagMask;
 
 // -----------------------------------------------------------------------------
 // Utility types and functions for RISCV
