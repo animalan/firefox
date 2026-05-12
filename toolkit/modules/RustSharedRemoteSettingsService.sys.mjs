@@ -6,7 +6,7 @@
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { Region } from "resource://gre/modules/Region.sys.mjs";
 import {
-  RemoteSettingsConfig2,
+  RemoteSettingsConfig,
   RemoteSettingsContext,
   RemoteSettingsServer,
   RemoteSettingsService,
@@ -35,7 +35,7 @@ class _SharedRemoteSettingsService {
       "remote-settings"
     );
 
-    this.#config = new RemoteSettingsConfig2({
+    this.#config = new RemoteSettingsConfig({
       server: this.#makeServer(Utils.SERVER_URL),
       bucketName: Utils.actualBucketName("main"),
       appContext: new RemoteSettingsContext({
