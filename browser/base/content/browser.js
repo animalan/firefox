@@ -4064,8 +4064,16 @@ var MousePosTracker = {
       return;
     }
 
-    this._x = event.screenX - window.mozInnerScreenX;
-    this._y = event.screenY - window.mozInnerScreenY;
+    // event.screenX is in CSS pixels of the event target's document, which may
+    // be zoomed independently of the chrome window (e.g. devtools). Rescale to
+    // chrome CSS pixels so the comparison with chrome-side rects is valid.
+    const sourceWin = event.target.documentGlobal;
+    const scale =
+      sourceWin !== window
+        ? sourceWin.devicePixelRatio / window.devicePixelRatio
+        : 1;
+    this._x = event.screenX * scale - window.mozInnerScreenX;
+    this._y = event.screenY * scale - window.mozInnerScreenY;
 
     this._listeners.forEach(listener => {
       try {
