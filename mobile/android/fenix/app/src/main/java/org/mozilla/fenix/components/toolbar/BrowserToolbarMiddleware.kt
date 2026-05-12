@@ -750,7 +750,7 @@ class BrowserToolbarMiddleware(
     private fun buildEndPageActions(): List<Action> {
         val isWideScreen = isWideScreen()
         val tabStripEnabled = settings.isTabStripEnabled
-        val simpleShortcut = ShortcutType.fromValue(settings.toolbarSimpleShortcut)
+        val simpleShortcut = ShortcutType.fromValue(settings.toolbarSimpleShortcutKey)
         val translateShortcutEnabled = simpleShortcut == ShortcutType.TRANSLATE
         val shareShortcutEnabled = simpleShortcut == ShortcutType.SHARE
 
@@ -777,7 +777,7 @@ class BrowserToolbarMiddleware(
         val isWideWindow = isWideScreen()
         val isTallWindow = isTallScreen()
         val shouldUseExpandedToolbar = settings.shouldUseExpandedToolbar
-        val primarySlotAction = ShortcutType.fromValue(settings.toolbarSimpleShortcut)?.toToolbarAction()
+        val primarySlotAction = ShortcutType.fromValue(settings.toolbarSimpleShortcutKey)?.toToolbarAction()
 
         val configs = listOfNotNull(
             primarySlotAction?.let {
@@ -814,7 +814,7 @@ class BrowserToolbarMiddleware(
         val isWideWindow = isWideScreen()
         val isTallWindow = isTallScreen()
         val shouldUseExpandedToolbar = settings.shouldUseExpandedToolbar
-        val primarySlotAction = ShortcutType.fromValue(settings.toolbarExpandedShortcut)
+        val primarySlotAction = ShortcutType.fromValue(settings.toolbarExpandedShortcutKey)
             ?.toToolbarAction() ?: getBookmarkAction()
 
         return listOf(
@@ -1025,10 +1025,10 @@ class BrowserToolbarMiddleware(
             distinctUntilChangedBy { it.pageTranslationStatus }
                 .collect {
                     updateEndPageActions(store)
-                    if (ShortcutType.fromValue(settings.toolbarSimpleShortcut) == ShortcutType.TRANSLATE) {
+                    if (ShortcutType.fromValue(settings.toolbarSimpleShortcutKey) == ShortcutType.TRANSLATE) {
                         updateEndBrowserActions(store)
                     }
-                    if (ShortcutType.fromValue(settings.toolbarExpandedShortcut) == ShortcutType.TRANSLATE) {
+                    if (ShortcutType.fromValue(settings.toolbarExpandedShortcutKey) == ShortcutType.TRANSLATE) {
                         updateNavigationActions(store)
                     }
                 }
@@ -1044,10 +1044,10 @@ class BrowserToolbarMiddleware(
                 )
             }.collect {
                 updateStartBrowserActions(store)
-                if (ShortcutType.fromValue(settings.toolbarSimpleShortcut) == ShortcutType.BACK) {
+                if (ShortcutType.fromValue(settings.toolbarSimpleShortcutKey) == ShortcutType.BACK) {
                     updateEndBrowserActions(store)
                 }
-                if (ShortcutType.fromValue(settings.toolbarExpandedShortcut) == ShortcutType.BACK) {
+                if (ShortcutType.fromValue(settings.toolbarExpandedShortcutKey) == ShortcutType.BACK) {
                     updateNavigationActions(store)
                 }
             }
@@ -1078,10 +1078,10 @@ class BrowserToolbarMiddleware(
                 it.snackbarState is SnackbarState.BookmarkAdded ||
                         it.snackbarState is SnackbarState.BookmarkDeleted
             }.collect { isBookmarked ->
-                if (ShortcutType.fromValue(settings.toolbarSimpleShortcut) == ShortcutType.BOOKMARK) {
+                if (ShortcutType.fromValue(settings.toolbarSimpleShortcutKey) == ShortcutType.BOOKMARK) {
                     updateEndBrowserActions(store)
                 }
-                if (ShortcutType.fromValue(settings.toolbarExpandedShortcut) == ShortcutType.BOOKMARK) {
+                if (ShortcutType.fromValue(settings.toolbarExpandedShortcutKey) == ShortcutType.BOOKMARK) {
                     updateNavigationActions(store)
                 }
             }

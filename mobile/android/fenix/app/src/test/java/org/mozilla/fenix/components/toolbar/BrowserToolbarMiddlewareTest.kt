@@ -1296,7 +1296,6 @@ class BrowserToolbarMiddlewareTest {
     fun `GIVEN the current tab shows a content page WHEN the share shortcut is clicked THEN record telemetry and start sharing the local resource`() = runTest(testDispatcher) {
         settings.isTabStripEnabled = true
         settings.shouldUseExpandedToolbar = false
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
         val browserScreenStore = buildBrowserScreenStore()
         val captureMiddleware = CaptureActionsMiddleware<BrowserState, BrowserAction>()
@@ -1331,7 +1330,6 @@ class BrowserToolbarMiddlewareTest {
     fun `GIVEN the current tab shows a remote PDF WHEN the share shortcut is clicked THEN record telemetry and start sharing the remote resource`() {
         settings.isTabStripEnabled = true
         settings.shouldUseExpandedToolbar = false
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
         val browserScreenStore = buildBrowserScreenStore()
         val captureMiddleware = CaptureActionsMiddleware<BrowserState, BrowserAction>()
@@ -1376,7 +1374,6 @@ class BrowserToolbarMiddlewareTest {
     fun `GIVEN the current tab shows a normal webpage WHEN the share shortcut is clicked THEN record telemetry and open the share dialog`() {
         settings.isTabStripEnabled = true
         settings.shouldUseExpandedToolbar = false
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
         every { navController.currentDestination?.id } returns R.id.browserFragment
         every { navController.navigate(any<NavDirections>(), null) } just Runs
@@ -3108,7 +3105,6 @@ class BrowserToolbarMiddlewareTest {
     @Test
     fun `GIVEN share shortcut is selected THEN update end page actions without share action`() = runTest(testDispatcher) {
         settings.isTabStripEnabled = false
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
         val browserScreenStore = buildBrowserScreenStore()
         val middleware = buildMiddleware(
@@ -3123,7 +3119,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN translate shortcut is selected THEN update end page actions without translate action`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.TRANSLATE.value
         val browserScreenStore = buildBrowserScreenStore()
         val middleware = buildMiddleware(
@@ -3149,7 +3144,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `WHEN clicking the homepage button THEN navigate to application's home screen`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.HOMEPAGE.value
 
         val middleware = buildMiddleware()
@@ -3163,7 +3157,6 @@ class BrowserToolbarMiddlewareTest {
     @Test
     fun `GIVEN homepage as new tab is enabled WHEN clicking the homepage button THEN navigate to homepage`() = runTest(testDispatcher) {
         settings.enableHomepageAsNewTab = true
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.HOMEPAGE.value
 
         val middleware = buildMiddleware()
@@ -3176,7 +3169,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN expanded toolbar is used and navbar is hidden WHEN building end browser actions THEN use simple toolbar shortcuts`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.shouldUseExpandedToolbar = true
         settings.toolbarSimpleShortcutKey = ShortcutType.HOMEPAGE.value
 
@@ -3193,7 +3185,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN simple toolbar use add bookmark shortcut AND the current page is not bookmarked WHEN initializing toolbar THEN show Bookmark in end browser actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.BOOKMARK.value
         val toolbarStore = buildStore()
 
@@ -3203,7 +3194,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN simple toolbar use add bookmark shortcut AND the current page is bookmarked WHEN initializing toolbar THEN show ACTIVE EditBookmark in end browser actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.BOOKMARK.value
 
         val tab = createTab("https://example.com")
@@ -3232,7 +3222,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN simple toolbar use translate shortcut AND current page is not translated WHEN initializing toolbar THEN show Translate in end browser actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.TRANSLATE.value
 
         val pageTranslationStatus: PageTranslationStatus = mockk(relaxed = true) {
@@ -3251,7 +3240,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN simple toolbar use translate shortcut AND current page is translated WHEN initializing toolbar THEN show ACTIVE Translate in end browser actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.TRANSLATE.value
 
         val pageTranslationStatus: PageTranslationStatus = mockk(relaxed = true) {
@@ -3270,7 +3258,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN simple toolbar use homepage shortcut WHEN initializing toolbar THEN show Homepage in end browser actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.HOMEPAGE.value
 
         val toolbarStore = buildStore()
@@ -3281,7 +3268,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN simple toolbar use back shortcut AND current page has no history WHEN initializing toolbar THEN show DISABLED Back in end browser actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.BACK.value
 
         val toolbarStore = buildStore()
@@ -3292,7 +3278,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN simple toolbar use back shortcut AND current page has history WHEN initializing toolbar THEN show ACTIVE Back in end browser actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.BACK.value
 
         val tab = createTab(url = "https://example.com").let {
@@ -3316,7 +3301,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN simple toolbar use share shortcut AND wide window with tabstrip enabled WHEN initializing toolbar THEN only show one Share in end browser actions`() {
-        settings.shouldShowToolbarCustomization = true
         settings.isTabStripEnabled = true
         settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
 
@@ -3339,7 +3323,6 @@ class BrowserToolbarMiddlewareTest {
     @Test
     fun `GIVEN simple toolbar set to use no custom shortcut WHEN initializing toolbar THEN don't show any custom shortcut in end browser actions`() = runTest {
         settings.shouldUseBottomToolbar = true
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarSimpleShortcutKey = ShortcutType.NONE.value
 
         val toolbarStore = buildStore()
@@ -3352,7 +3335,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN expanded toolbar use translate shortcut AND current page is not translated WHEN initializing toolbar THEN show Translate in navigation actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.shouldUseExpandedToolbar = true
         settings.toolbarExpandedShortcutKey = ShortcutType.TRANSLATE.value
 
@@ -3372,7 +3354,6 @@ class BrowserToolbarMiddlewareTest {
 
     @Test
     fun `GIVEN expanded toolbar use translate shortcut AND current page is translated WHEN initializing toolbar THEN show ACTIVE Translate in navigation actions`() = runTest(testDispatcher) {
-        settings.shouldShowToolbarCustomization = true
         settings.shouldUseExpandedToolbar = true
         settings.toolbarExpandedShortcutKey = ShortcutType.TRANSLATE.value
 
@@ -3393,7 +3374,6 @@ class BrowserToolbarMiddlewareTest {
     @Test
     fun `GIVEN expanded toolbar use homepage shortcut WHEN initializing toolbar THEN show Homepage in navigation actions`() = runTest(testDispatcher) {
         settings.shouldUseExpandedToolbar = true
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarExpandedShortcutKey = ShortcutType.HOMEPAGE.value
 
         val toolbarStore = buildStore()
@@ -3405,7 +3385,6 @@ class BrowserToolbarMiddlewareTest {
     @Test
     fun `GIVEN expanded toolbar use back shortcut AND current page has no history WHEN initializing toolbar THEN show DISABLED Back in navigation actions`() = runTest(testDispatcher) {
         settings.shouldUseExpandedToolbar = true
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarExpandedShortcutKey = ShortcutType.BACK.value
 
         val toolbarStore = buildStore()
@@ -3417,7 +3396,6 @@ class BrowserToolbarMiddlewareTest {
     @Test
     fun `GIVEN expanded toolbar use back shortcut AND current page has history WHEN initializing toolbar THEN show ACTIVE Back in navigation actions`() = runTest(testDispatcher) {
         settings.shouldUseExpandedToolbar = true
-        settings.shouldShowToolbarCustomization = true
         settings.toolbarExpandedShortcutKey = ShortcutType.BACK.value
 
         val tab = createTab(url = "https://example.com").let {

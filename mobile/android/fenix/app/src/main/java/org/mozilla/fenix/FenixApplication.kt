@@ -1169,10 +1169,8 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
                 },
             )
 
-            if (settings.shouldShowToolbarCustomization) {
-                toolbarSimpleShortcut.set(settings.toolbarSimpleShortcut)
-                toolbarExpandedShortcut.set(settings.toolbarExpandedShortcut)
-            }
+            toolbarSimpleShortcut.set(settings.toolbarSimpleShortcutKey)
+            toolbarExpandedShortcut.set(settings.toolbarExpandedShortcutKey)
 
             enhancedTrackingProtection.set(
                 when {

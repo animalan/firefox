@@ -157,41 +157,6 @@ class SecretSettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFra
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
 
-        requirePreference<SwitchPreferenceCompat>(R.string.pref_key_enable_toolbar_customization).apply {
-            isChecked = context.settings().shouldShowToolbarCustomization
-            val newOption = context.settings().toolbarRedesignEnabled
-            isEnabled = newOption
-            summary = when (newOption) {
-                true -> null
-                false -> getString(R.string.preferences_debug_settings_toolbar_customization_summary)
-            }
-            onPreferenceChangeListener = SharedPreferenceUpdater()
-        }
-
-        requirePreference<SwitchPreferenceCompat>(R.string.pref_key_enable_toolbar_redesign).apply {
-            isChecked = context.settings().toolbarRedesignEnabled
-            onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-                (newValue as? Boolean)?.let { newOption ->
-                    context.settings().toolbarRedesignEnabled = newOption
-                    if (!newOption) {
-                        context.settings().shouldUseExpandedToolbar = false
-                    }
-                    requirePreference<SwitchPreferenceCompat>(R.string.pref_key_enable_toolbar_customization).apply {
-                        isEnabled = newOption
-                        summary = when (newOption) {
-                            true -> null
-                            false -> getString(R.string.preferences_debug_settings_toolbar_customization_summary)
-                        }
-                        if (!newOption && isChecked) {
-                            isChecked = false
-                            context.settings().shouldShowToolbarCustomization = false
-                        }
-                    }
-                }
-                true
-            }
-        }
-
         requirePreference<Preference>(R.string.pref_key_search_optimization).apply {
             isVisible = Config.channel.isNightlyOrDebug
         }

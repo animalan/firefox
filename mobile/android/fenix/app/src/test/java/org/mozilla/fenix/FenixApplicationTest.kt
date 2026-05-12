@@ -160,9 +160,8 @@ class FenixApplicationTest {
         every { settings.mobileBookmarksSize } returns 5
         every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
         every { settings.shouldUseExpandedToolbar } returns true
-        every { settings.shouldShowToolbarCustomization } returns true
-        every { settings.toolbarSimpleShortcut } returns ShortcutType.SHARE.value
-        every { settings.toolbarExpandedShortcut } returns ShortcutType.HOMEPAGE.value
+        every { settings.toolbarSimpleShortcutKey } returns ShortcutType.SHARE.value
+        every { settings.toolbarExpandedShortcutKey } returns ShortcutType.HOMEPAGE.value
         every { settings.getTabViewPingString() } returns "test"
         every { settings.getTabTimeoutPingString() } returns "test"
         every { settings.shouldShowSearchSuggestions } returns true
