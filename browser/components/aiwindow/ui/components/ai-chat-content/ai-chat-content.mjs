@@ -772,7 +772,7 @@ export class AIChatContent extends MozLitElement {
         rel="stylesheet"
         href="chrome://browser/content/aiwindow/components/ai-chat-content.css"
       />
-      <div class="chat-content-wrapper">
+      <div class="chat-content-wrapper" tabindex="-1">
         <div class="chat-inner-wrapper">
           ${this.#renderMessages()} ${this.#renderFollowUpSuggestions()}
           ${this.#renderLoader()} ${this.#renderError()}
