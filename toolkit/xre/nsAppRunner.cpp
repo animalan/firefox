@@ -4302,6 +4302,13 @@ int XREMain::XRE_mainInit(bool* aExitFlag,
   nsCOMPtr<nsIFile> xreBinDirectory;
   xreBinDirectory = mDirProvider.GetGREBinDir();
 
+  // Unconditionally set the ServerURL exception before we launch the crash
+  // helper or set the exception handler. This guarantees that the annotation
+  // will be populated when we need it.
+  if (mAppData->crashReporterURL) {
+    CrashReporter::SetServerURL(nsDependentCString(mAppData->crashReporterURL));
+  }
+
   if ((mAppData->flags & NS_XRE_ENABLE_CRASH_REPORTER) &&
       NS_FAILED(CrashReporter::OOPInit(xreBinDirectory))) {
     NS_WARNING("Could not launch the crash helper");
@@ -4313,10 +4320,6 @@ int XREMain::XRE_mainInit(bool* aExitFlag,
     rv = nsXREDirProvider::GetUserAppDataDirectory(getter_AddRefs(file));
     if (NS_SUCCEEDED(rv)) {
       CrashReporter::SetUserAppDataDirectory(file);
-    }
-    if (mAppData->crashReporterURL) {
-      CrashReporter::SetServerURL(
-          nsDependentCString(mAppData->crashReporterURL));
     }
 
     // We overwrite this once we finish starting up.
