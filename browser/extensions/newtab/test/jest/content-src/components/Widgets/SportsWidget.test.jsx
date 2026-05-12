@@ -472,7 +472,7 @@ describe("<SportsWidget> matches view", () => {
     );
     fireEvent.click(
       container.querySelector(
-        "[data-l10n-id='newtab-sports-widget-view-schedule']"
+        "[data-l10n-id='newtab-sports-widget-view-matches']"
       )
     );
     expect(dispatch).toHaveBeenCalledWith(
