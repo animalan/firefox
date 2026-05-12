@@ -110,7 +110,7 @@ static StyleViewTransitionClass DocumentScopedClassListFor(
   const auto& classInfo = aFrame->StyleUIReset()->mViewTransitionClass;
   nsIContent* content = aFrame->GetContent();
   if (!content || AnchorPositioningUtils::GetShadowRootForTreeScope(
-                      *content, classInfo.scope)) {
+                      *content->AsElement(), classInfo.scope)) {
     return StyleViewTransitionClass();
   }
 
@@ -1907,7 +1907,7 @@ already_AddRefed<nsAtom> ViewTransition::DocumentScopedTransitionNameFor(
   // https://drafts.csswg.org/css-view-transitions-1/#document-scoped-view-transition-name
   nsIContent* content = aFrame->GetContent();
   if (MOZ_UNLIKELY(!content) ||
-      AnchorPositioningUtils::GetShadowRootForTreeScope(*content,
+      AnchorPositioningUtils::GetShadowRootForTreeScope(*content->AsElement(),
                                                         computed.scope)) {
     return nullptr;
   }

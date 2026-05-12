@@ -65,8 +65,8 @@ use style::gecko_bindings::bindings::{
     Gecko_HaveSeenPtr, IterationCompositeOperation, Loader, LoaderReusableStyleSheets,
     MallocSizeOf as GeckoMallocSizeOf, NonCustomCSSPropertyId, OriginFlags, PropertyValuePair,
     PseudoStyleType, SeenPtrs, ServoElementSnapshotTable, ServoStyleSetSizes, ServoTraversalFlags,
-    SheetLoadData, SheetLoadDataHolder, SheetParsingMode, StyleRuleInclusion,
-    StyleSheet as DomStyleSheet, URLExtraData,
+    ShadowRoot as RawShadowRoot, SheetLoadData, SheetLoadDataHolder, SheetParsingMode,
+    StyleRuleInclusion, StyleSheet as DomStyleSheet, URLExtraData,
 };
 use style::gecko_bindings::structs;
 use style::gecko_bindings::sugar::ownership::Strong;
@@ -11044,4 +11044,15 @@ pub extern "C" fn Servo_ResolvePositionAreaSelfAlignment(
         return;
     };
     *out = align;
+}
+
+#[no_mangle]
+pub extern "C" fn Servo_GetShadowRootForScoped(
+    element: &RawGeckoElement,
+    scope: CascadeLevel,
+) -> *const RawShadowRoot {
+    let element = GeckoElement(element);
+    scope
+        .get_shadow_root_for_scoped(element)
+        .map_or(ptr::null(), |sr| sr.0 as *const _)
 }

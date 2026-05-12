@@ -433,8 +433,8 @@ struct AnchorPositioningUtils {
                                      const nsIFrame* aContainingBlock);
 
   // Helper to get shadow root for a property's tree scope
-  static dom::ShadowRoot* GetShadowRootForTreeScope(
-      const nsIContent& aContent, const StyleCascadeLevel& aTreeScope);
+  static const dom::ShadowRoot* GetShadowRootForTreeScope(
+      const dom::Element& aElement, const StyleCascadeLevel& aTreeScope);
 };
 
 }  // namespace mozilla

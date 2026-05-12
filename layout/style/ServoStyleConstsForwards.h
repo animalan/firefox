@@ -213,6 +213,7 @@ using StyleDomStyleSheet = StyleSheet;
 
 using StyleRawGeckoNode = nsINode;
 using StyleRawGeckoElement = dom::Element;
+using StyleRawShadowRoot = dom::ShadowRoot;
 using StyleDocument = dom::Document;
 using StyleComputedValues = ComputedStyle;
 using StyleIterationCompositeOperation = dom::IterationCompositeOperation;
