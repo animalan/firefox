@@ -1630,6 +1630,20 @@ bool ModuleObject::createSyntheticEnvironment(JSContext* cx,
   return true;
 }
 
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+/* static */
+bool ModuleObject::createWasmEnvironment(JSContext* cx,
+                                         Handle<ModuleObject*> self) {
+  Rooted<ModuleEnvironmentObject*> env(
+      cx, ModuleEnvironmentObject::createForWasmModule(cx, self));
+  if (!env) {
+    return false;
+  }
+  self->setInitialEnvironment(env);
+  return true;
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////
 // GraphLoadingStateRecordObject
 
