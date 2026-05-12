@@ -5368,7 +5368,9 @@ button.arrow-button:dir(rtl) {
 }
 .lists .empty-list .empty-list-illustration {
   height: auto;
-  width: 68px;
+  width: 75px;
+  -moz-context-properties: fill;
+  fill: light-dark(#DADBDF, #3B3B43);
 }
 .lists .completed-task-wrapper {
   display: flex;

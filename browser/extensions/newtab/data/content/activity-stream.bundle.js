@@ -12467,7 +12467,7 @@ const PREF_WIDGETS_LISTS_BADGE_ENABLED = "widgets.lists.badge.enabled";
 const PREF_WIDGETS_LISTS_BADGE_LABEL = "widgets.lists.badge.label";
 const PREF_WIDGETS_LISTS_SIZE = "widgets.lists.size";
 const Lists_PREF_NOVA_ENABLED = "nova.enabled";
-const LISTS_EMPTY_STATE_ILLUSTRATION = "chrome://newtab/content/data/content/assets/firefox-pictorgram-pencil-rgb.svg";
+const LISTS_EMPTY_STATE_ILLUSTRATION = "chrome://newtab/content/data/content/assets/lists-empty-state-comet.svg";
 const LISTS_CELEBRATION = {
   headlineL10nId: "newtab-widget-lists-celebration-headline",
   illustrationSrc: "chrome://newtab/content/data/content/assets/firefox-motion-head-pop-up-no-bg.svg",
@@ -13340,11 +13340,11 @@ function Lists({
   }, showEmptyState ? /*#__PURE__*/external_React_default().createElement("div", {
     className: "empty-list"
   }, /*#__PURE__*/external_React_default().createElement("img", {
+    alt: "",
     className: "empty-list-illustration",
+    height: "66",
     src: LISTS_EMPTY_STATE_ILLUSTRATION,
-    width: "68",
-    height: "68",
-    alt: ""
+    width: "75"
   })) : /*#__PURE__*/external_React_default().createElement("moz-reorderable-list", {
     ref: reorderListRef,
     itemSelector: "fieldset .task-type-tasks",

@@ -40,7 +40,7 @@ const PREF_WIDGETS_LISTS_BADGE_LABEL = "widgets.lists.badge.label";
 const PREF_WIDGETS_LISTS_SIZE = "widgets.lists.size";
 const PREF_NOVA_ENABLED = "nova.enabled";
 const LISTS_EMPTY_STATE_ILLUSTRATION =
-  "chrome://newtab/content/data/content/assets/firefox-pictorgram-pencil-rgb.svg";
+  "chrome://newtab/content/data/content/assets/lists-empty-state-comet.svg";
 const LISTS_CELEBRATION = {
   headlineL10nId: "newtab-widget-lists-celebration-headline",
   illustrationSrc:
@@ -1130,11 +1130,11 @@ function Lists({
         {showEmptyState ? (
           <div className="empty-list">
             <img
-              className="empty-list-illustration"
-              src={LISTS_EMPTY_STATE_ILLUSTRATION}
-              width="68"
-              height="68"
               alt=""
+              className="empty-list-illustration"
+              height="66"
+              src={LISTS_EMPTY_STATE_ILLUSTRATION}
+              width="75"
             />
           </div>
         ) : (

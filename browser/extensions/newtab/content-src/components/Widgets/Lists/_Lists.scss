@@ -564,7 +564,10 @@
 
     .empty-list-illustration {
       height: auto;
-      width: 68px;
+      width: 75px;
+      -moz-context-properties: fill;
+      // stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens, declaration-property-value-disallowed-list
+      fill: light-dark(#DADBDF, #3B3B43);
     }
   }
 
