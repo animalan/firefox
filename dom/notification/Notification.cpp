@@ -114,8 +114,7 @@ class GetPermissionRunnable final : public WorkerMainThreadRunnable {
 }  // anonymous namespace
 
 NS_IMPL_CYCLE_COLLECTION_INHERITED(NotificationPermissionRequest,
-                                   ContentPermissionRequestBase, mCallback,
-                                   mPromise)
+                                   ContentPermissionRequestBase, mCallback)
 NS_IMPL_ADDREF_INHERITED(NotificationPermissionRequest,
                          ContentPermissionRequestBase)
 NS_IMPL_RELEASE_INHERITED(NotificationPermissionRequest,
