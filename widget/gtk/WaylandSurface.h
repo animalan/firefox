@@ -75,7 +75,7 @@ class WaylandSurface final {
       const WaylandSurfaceLock& aProofOfLock,
       const std::function<void(bool)>& aVSyncCallbackStateHandler);
 
-  // Set a a routine which return if whether we should run emulated callback
+  // Set a routine which returns whether we should run emulated callback
   // or not. Don't overwrite existing one unless aForce is set.
   void SetVSyncEmulateCheckLocked(
       const WaylandSurfaceLock& aProofOfLock,
