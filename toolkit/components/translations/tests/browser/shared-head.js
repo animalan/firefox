@@ -3797,6 +3797,7 @@ async function setupAboutPreferences(
       ["browser.translations.enable", true],
       ["browser.translations.logLevel", "All"],
       [USE_LEXICAL_SHORTLIST_PREF, false],
+      ["browser.settings-redesign.enabled", true],
       ...prefs,
     ],
   });
