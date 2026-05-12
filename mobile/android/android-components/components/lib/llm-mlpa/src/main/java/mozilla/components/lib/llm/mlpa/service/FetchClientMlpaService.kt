@@ -53,23 +53,29 @@ class FetchClientMlpaService(
     override suspend fun verify(
         request: AuthenticationService.Request,
     ): Result<AuthenticationService.Response> = withContext(dispatcher) {
-            val fetchRequest = Request(
-                url = "${config.baseUrl}/verify/play",
-                method = Request.Method.POST,
-                headers = MutableHeaders(),
-                body = Request.Body.fromString(json.encodeToString(request)),
-            )
+        val fetchRequest = Request(
+            url = "${config.baseUrl}/verify/play",
+            method = Request.Method.POST,
+            headers = MutableHeaders(),
+            body = Request.Body.fromString(json.encodeToString(request)),
+        )
 
-            return@withContext Result.runCatching {
-                client.fetch(fetchRequest).use { httpResponse ->
-                    if (httpResponse.isClientError) {
-                        throw VerificationServiceFailed("Received status code ${httpResponse.status}")
-                    }
-
-                    json.decodeFromString(httpResponse.body.string(Charsets.UTF_8))
+        return@withContext Result.runCatching {
+            client.fetch(fetchRequest).use { httpResponse ->
+                if (httpResponse.isClientError) {
+                    throw VerificationServiceFailed("Received status code ${httpResponse.status}")
                 }
+                json.decodeFromString<AuthenticationService.Response>(httpResponse.body.string(Charsets.UTF_8))
+            }
+        }.recoverCatching { e ->
+            throw when (e) {
+                is IOException -> ChatServiceError.VerificationNetworkError(e)
+                is SerializationException ->
+                    ChatServiceError.VerificationResponseParseError(e)
+                else -> e
             }
         }
+    }
 
     /**
      * Calls the `/chat/completions` endpoint to request a chat completion.
@@ -103,7 +109,7 @@ class FetchClientMlpaService(
             val httpResponse = try {
                 client.fetch(fetchRequest)
             } catch (e: IOException) {
-                throw ChatServiceError.NetworkError(e)
+                throw ChatServiceError.ChatNetworkError(e)
             }
             httpResponse.use {
                 it.error?.also { error -> throw error }

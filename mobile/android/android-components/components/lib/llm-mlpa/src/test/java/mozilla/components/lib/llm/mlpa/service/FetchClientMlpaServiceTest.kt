@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.MissingFieldException
 import mozilla.components.concept.fetch.MutableHeaders
 import mozilla.components.concept.fetch.Response
 import mozilla.components.concept.integrity.IntegrityToken
@@ -26,6 +25,7 @@ import org.junit.Test
 import kotlin.test.assertIs
 
 class FetchClientMlpaServiceTest {
+
     @Test
     fun `GIVEN a successful response WHEN try to verify an integrity token THEN return a constructed Response`() =
         runTest {
@@ -83,7 +83,26 @@ class FetchClientMlpaServiceTest {
             assertTrue(response.isFailure)
 
             response.onFailure {
-                assertIs<MissingFieldException>(it)
+                assertIs<ChatServiceError.VerificationResponseParseError>(it)
+            }
+        }
+
+    @Test
+    fun `GIVEN a network failure WHEN try to verify THEN return a NetworkError`() =
+        runTest {
+            val mlpaService = FetchClientMlpaService(FakeClient.throwing(), MlpaConfig.prodProd)
+
+            val response = mlpaService.verify(
+                request = AuthenticationService.Request(
+                    userId = UserId("my-user-id"),
+                    integrityToken = IntegrityToken("my-integrity-token"),
+                    packageName = PackageName("my.package.name"),
+                ),
+            )
+
+            assertTrue(response.isFailure)
+            response.onFailure {
+                assertIs<ChatServiceError.VerificationNetworkError>(it)
             }
         }
 
@@ -307,7 +326,7 @@ class FetchClientMlpaServiceTest {
             response
                 .onEach { fail("Should immediately throw") }
                 .catch {
-                    assertIs<ChatServiceError.NetworkError>(it)
+                    assertIs<ChatServiceError.ChatNetworkError>(it)
                     assertEquals(ErrorCode(1011), it.errorCode)
                 }
                 .firstOrNull()
