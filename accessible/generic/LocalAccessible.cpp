@@ -4270,7 +4270,7 @@ already_AddRefed<AccAttributes> LocalAccessible::BundleFieldsForCache(
     aria::AttrIterator attrIt(mContent);
     while (attrIt.Next()) {
       if (!ariaAttrs) {
-        ariaAttrs = new AccAttributes();
+        ariaAttrs = MakeRefPtr<AccAttributes>();
       }
       attrIt.ExposeAttr(ariaAttrs);
     }

@@ -516,7 +516,8 @@ void DocAccessible::Init() {
 #endif
 
   // Initialize notification controller.
-  mNotificationController = new NotificationController(this, mPresShell);
+  mNotificationController =
+      MakeRefPtr<NotificationController>(this, mPresShell);
 
   // Mark the DocAccessible as loaded if its DOM document is already loaded at
   // this point. This can happen for one of three reasons:
@@ -1095,8 +1096,8 @@ void DocAccessible::ElementStateChanged(dom::Document* aDocument,
     FireDelayedEvent(event);
     if (accessible == this || aElement->IsHTMLElement(nsGkAtoms::article)) {
       // We want <article> to behave like a document in terms of readonly state.
-      event =
-          new AccStateChangeEvent(accessible, states::READONLY, !isEditable);
+      event = MakeRefPtr<AccStateChangeEvent>(accessible, states::READONLY,
+                                              !isEditable);
       FireDelayedEvent(event);
     }
 
@@ -1187,10 +1188,10 @@ void DocAccessible::ElementStateChanged(dom::Document* aDocument,
     auto event =
         MakeRefPtr<AccStateChangeEvent>(accessible, states::UNAVAILABLE);
     FireDelayedEvent(event);
-    event = new AccStateChangeEvent(accessible, states::ENABLED);
+    event = MakeRefPtr<AccStateChangeEvent>(accessible, states::ENABLED);
     FireDelayedEvent(event);
     // This likely changes focusability as well.
-    event = new AccStateChangeEvent(accessible, states::FOCUSABLE);
+    event = MakeRefPtr<AccStateChangeEvent>(accessible, states::FOCUSABLE);
     FireDelayedEvent(event);
   }
 
