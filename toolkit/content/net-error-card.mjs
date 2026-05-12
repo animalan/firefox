@@ -39,6 +39,7 @@ const FELT_PRIVACY_REFRESH = RPMGetBoolPref(
   "security.certerrors.felt-privacy-v1",
   false
 );
+const EXPERT_BAD_CERT = getCSSClass() === "expertBadCert";
 
 export class NetErrorCard extends MozLitElement {
   static properties = {
@@ -458,8 +459,10 @@ export class NetErrorCard extends MozLitElement {
     );
 
     return html`<div class="advanced-container">
-      <h2 data-l10n-id="fp-certerror-advanced-title"></h2>
-      ${content}
+      ${EXPERT_BAD_CERT
+        ? null
+        : html`<h2 data-l10n-id="fp-certerror-advanced-title"></h2>`}
+      ${EXPERT_BAD_CERT ? this.certErrorCodeTemplate() : null} ${content}
     </div>`;
   }
 
@@ -506,6 +509,23 @@ export class NetErrorCard extends MozLitElement {
 
   getNSSErrorWhyDangerousL10nId(errorString) {
     return errorString.toLowerCase().replace(/_/g, "-");
+  }
+
+  certErrorCodeTemplate() {
+    if (!this.errorConfig?.errorCode || !gIsCertError) {
+      return null;
+    }
+    return html`<p>
+      <a
+        id="errorCode"
+        data-l10n-id="fp-cert-error-code"
+        data-l10n-name="error-code-link"
+        data-telemetry-id="error_code_link"
+        data-l10n-args='{"error": "${this.errorConfig.errorCode}"}'
+        @click=${this.toggleCertErrorDebugInfoShowing}
+        href="#certificateErrorDebugInformation"
+      ></a>
+    </p>`;
   }
 
   advancedSectionTemplate(params) {
@@ -565,19 +585,7 @@ export class NetErrorCard extends MozLitElement {
             ></a>
           </p>`
         : null}
-      ${this.errorConfig?.errorCode && gIsCertError
-        ? html`<p>
-            <a
-              id="errorCode"
-              data-l10n-id="fp-cert-error-code"
-              data-l10n-name="error-code-link"
-              data-telemetry-id="error_code_link"
-              data-l10n-args='{"error": "${this.errorConfig.errorCode}"}'
-              @click=${this.toggleCertErrorDebugInfoShowing}
-              href="#certificateErrorDebugInformation"
-            ></a>
-          </p>`
-        : null}
+      ${EXPERT_BAD_CERT ? null : this.certErrorCodeTemplate()}
       ${this.errorConfig?.errorCode && !gIsCertError
         ? html`<p
             data-l10n-id="fp-cert-error-code"
@@ -1082,15 +1090,17 @@ export class NetErrorCard extends MozLitElement {
             : html`<h1 id="error-title" data-l10n-id=${title}></h1>
                 ${this.introContentTemplate()}
                 <moz-button-group
-                  >${this.returnButtonTemplate()}<moz-button
-                    id="advanced-button"
-                    data-l10n-id=${this.advancedShowing
-                      ? "fp-certerror-hide-advanced-button"
-                      : "fp-certerror-advanced-button"}
-                    data-telemetry-id="advanced_button"
-                    @click=${this.toggleAdvancedShowing}
-                  ></moz-button
-                ></moz-button-group>
+                  >${this.returnButtonTemplate()}${EXPERT_BAD_CERT
+                    ? null
+                    : html`<moz-button
+                        id="advanced-button"
+                        data-l10n-id=${this.advancedShowing
+                          ? "fp-certerror-hide-advanced-button"
+                          : "fp-certerror-advanced-button"}
+                        data-telemetry-id="advanced_button"
+                        @click=${this.toggleAdvancedShowing}
+                      ></moz-button>`}</moz-button-group
+                >
                 ${this.advancedContainerTemplate()}
                 ${this.certErrorDebugInfoTemplate()}`}
         </div>
