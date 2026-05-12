@@ -518,6 +518,9 @@ bool MediaStatusManager::IsInPrivateBrowsing() const {
   if (!element) {
     return false;
   }
+  if (StaticPrefs::media_privatebrowsing_metadata_enabled()) {
+    return false;
+  }
   return element->OwnerDoc()->IsInPrivateBrowsing();
 }
 
