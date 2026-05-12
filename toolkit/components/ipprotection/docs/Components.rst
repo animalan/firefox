@@ -202,7 +202,9 @@ IPPFxaAuthProvider
 IPPFxaActivateAuthProvider
   Alternative FxA provider that extends ``IPPFxaBaseAuthProvider``.  Enrolls the
   user by sending the FxA Bearer token directly to Guardian's activate endpoint,
-  without using a hidden tab or window.
+  without using a hidden tab or window.  On desktop, the choice between
+  ``IPPFxaAuthProvider`` and ``IPPFxaActivateAuthProvider`` is controlled by
+  ``browser.ipProtection.fxa.useActivateFlow``.
 
 IPPSignInWatcher
   Observes user authentication state.  It informs the state machine when the
@@ -221,10 +223,8 @@ selected at initialisation time by ``GeckoViewIPProtection`` based on the FxA
 sign-in state stored in ``toolkit.ipProtection.android.authProvider``.
 
 IPPAndroidAuthProvider
-  Android variant of the FxA provider.  Extends either ``IPPFxaAuthProvider``
-  or ``IPPFxaActivateAuthProvider`` (controlled by
-  ``toolkit.ipProtection.fxa.useActivateFlow``) and uses
-  ``IPPAndroidSignInWatcher`` to track the FxA sign-in state.
+  Android variant of the FxA provider.  Extends ``IPPFxaActivateAuthProvider``
+  and uses ``IPPAndroidSignInWatcher`` to track the FxA sign-in state.
 
 IPPGpiAuthProvider
   Google Play Integrity implementation of ``IPPAuthProvider``.  Used when the
