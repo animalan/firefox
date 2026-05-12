@@ -26,9 +26,6 @@ import "chrome://global/content/elements/moz-support-link.mjs";
  *   not match any button. When true, a non-matching currentView is allowed to
  *   persist without forcing a selection — used by about:preferences to support
  *   sub-pages and search-results states where no category should be highlighted.
- * @property {Array} pageNavButtons - The array of all page nav buttons
- * @property {Array} secondaryNavButtons - The array of all secondary nav buttons
- * @property {Array} visiblePageNavButtons - The array of visible page nav buttons
  * @slot [default] - Used to append moz-page-nav-button elements to the navigation.
  * @slot [subheading] - Used to append page specific search input or notification to the nav.
  */
@@ -38,9 +35,6 @@ export default class MozPageNav extends MozLitElement {
     heading: { type: String, fluent: true },
     type: { type: String, reflect: true },
     allowNoSelection: { type: Boolean },
-    pageNavButtons: { type: Array, state: true },
-    secondaryNavButtons: { type: Array, state: true },
-    visiblePageNavButtons: { type: Array, state: true },
   };
 
   static queries = {
@@ -56,15 +50,24 @@ export default class MozPageNav extends MozLitElement {
      */
     this.type = "default";
     this.allowNoSelection = false;
-    this.pageNavButtons = [];
-    this.secondaryNavButtons = [];
-    this.visiblePageNavButtons = [];
   }
 
-  getSlottedChildren(el) {
+  get pageNavButtons() {
+    return this.getVisibleSlottedChildren(this.primaryNavGroupSlot);
+  }
+
+  get secondaryNavButtons() {
+    return this.getVisibleSlottedChildren(this.secondaryNavGroupSlot);
+  }
+
+  getVisibleSlottedChildren(el) {
     return el
       ?.assignedElements()
-      .filter(element => element?.localName === "moz-page-nav-button");
+      .filter(
+        element =>
+          element?.localName === "moz-page-nav-button" &&
+          this.checkElementVisibility(element)
+      );
   }
 
   checkElementVisibility(element) {
@@ -92,7 +95,7 @@ export default class MozPageNav extends MozLitElement {
   }
 
   focusPreviousView() {
-    let pageNavButtons = this.visiblePageNavButtons;
+    let pageNavButtons = this.pageNavButtons;
     let currentIndex = pageNavButtons.findIndex(b => b.selected);
     let prev = pageNavButtons[currentIndex - 1];
     if (prev) {
@@ -102,7 +105,7 @@ export default class MozPageNav extends MozLitElement {
   }
 
   focusNextView() {
-    let pageNavButtons = this.visiblePageNavButtons;
+    let pageNavButtons = this.pageNavButtons;
     let currentIndex = pageNavButtons.findIndex(b => b.selected);
     let next = pageNavButtons[currentIndex + 1];
     if (next) {
@@ -111,16 +114,11 @@ export default class MozPageNav extends MozLitElement {
     }
   }
 
-  onPrimaryNavChange(event) {
-    this.pageNavButtons = this.getSlottedChildren(event.target);
-    this.visiblePageNavButtons = this.pageNavButtons.filter(
-      this.checkElementVisibility
-    );
+  onPrimaryNavChange() {
     this.updateNavButtonsState();
   }
 
   onSecondaryNavChange(event) {
-    this.secondaryNavButtons = this.getSlottedChildren(event.target);
     let secondaryNavElements = event.target.assignedElements();
     this.hasSecondaryNav = !!secondaryNavElements.length;
   }
