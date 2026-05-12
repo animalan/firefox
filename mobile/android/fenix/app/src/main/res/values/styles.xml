@@ -511,8 +511,8 @@
     </style>
 
     <style name="DestructiveButton" parent="NeutralButton">
-        <item name="iconTint">@color/fx_mobile_icon_color_critical_button</item>
-        <item name="android:textColor">@color/fx_mobile_text_color_critical_button</item>
+        <item name="iconTint">?attr/colorError</item>
+        <item name="android:textColor">?attr/colorError</item>
     </style>
 
     <style name="PositiveButton" parent="NeutralButton">
