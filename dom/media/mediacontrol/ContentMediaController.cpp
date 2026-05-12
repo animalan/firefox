@@ -374,20 +374,20 @@ void ContentMediaController::HandleMediaKey(
       PauseOrStopMedia();
       return;
     case MediaControlKey::Play:
-    case MediaControlKey::Stop:
     case MediaControlKey::Seekto:
     case MediaControlKey::Seekforward:
     case MediaControlKey::Seekbackward:
-      // When receiving `Stop`, the amount of receiver would vary during the
-      // iteration, so we use the backward iteration to avoid accessing the
-      // index which is over the array length.
       for (auto& receiver : Reversed(mControllableReceivers)) {
         receiver->HandleMediaKey(aKey, aParams);
       }
       return;
+    case MediaControlKey::Stop:
     case MediaControlKey::Setvolume:
     case MediaControlKey::Mute:
     case MediaControlKey::Unmute:
+      // Audio focus loss arrives as Stop and must silence uncontrollable
+      // sources too; volume/mute always target both lists. Iterate backward
+      // because Stop can shrink the controllable list during iteration.
       for (auto& receiver : Reversed(mControllableReceivers)) {
         receiver->HandleMediaKey(aKey, aParams);
       }

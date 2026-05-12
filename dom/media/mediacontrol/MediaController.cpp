@@ -230,9 +230,14 @@ bool MediaController::ShouldPropagateActionToAllContexts(
 
 void MediaController::UpdateMediaControlActionToContentMediaIfNeeded(
     const MediaControlAction& aAction) {
-  // If the controller isn't active or it has been shutdown, we don't need to
-  // update media action to the content process.
-  if (!mIsActive || mShutdown) {
+  if (mShutdown) {
+    return;
+  }
+  // Stop must be allowed through on inactive controllers because uncontrollable
+  // receivers need to silence on audio focus loss even though they never
+  // activate the controller. For all other actions an inactive controller has
+  // nothing to dispatch.
+  if (!mIsActive && aAction.mKey != Some(MediaControlKey::Stop)) {
     return;
   }
 
