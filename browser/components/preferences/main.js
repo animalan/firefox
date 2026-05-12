@@ -803,26 +803,12 @@ var gMainPane = {
     });
 
     setEventListener("chooseLanguage", "command", gMainPane.showLanguages);
-    // TODO (Bug 1817084) Remove this code when we disable the extension
-    setEventListener(
-      "fxtranslateButton",
-      "command",
-      gMainPane.showTranslationExceptions
-    );
 
     document
       .getElementById("migrationWizardDialog")
       .addEventListener("MigrationWizard:Close", function (e) {
         e.currentTarget.close();
       });
-
-    // Firefox Translations settings panel
-    // TODO (Bug 1817084) Remove this code when we disable the extension
-    const fxtranslationsDisabledPrefName = "extensions.translations.disabled";
-    if (!Services.prefs.getBoolPref(fxtranslationsDisabledPrefName, true)) {
-      let fxtranslationRow = document.getElementById("fxtranslationsBox");
-      fxtranslationRow.hidden = false;
-    }
 
     // Initilize Application section.
 
@@ -1672,17 +1658,6 @@ var gMainPane = {
       });
       checkbox.hidden = false;
     }
-  },
-
-  /**
-   * Displays the translation exceptions dialog where specific site and language
-   * translation preferences can be set.
-   */
-  // TODO (Bug 1817084) Remove this code when we disable the extension
-  showTranslationExceptions() {
-    gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/translationExceptions.xhtml"
-    );
   },
 
   showTranslationsSettings() {
