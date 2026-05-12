@@ -27,6 +27,7 @@ import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination
 import org.mozilla.fenix.tabstray.redux.action.TabGroupAction
 import org.mozilla.fenix.tabstray.redux.action.TabSearchAction
 import org.mozilla.fenix.tabstray.redux.action.TabsTrayAction
+import org.mozilla.fenix.tabstray.redux.state.Page
 import org.mozilla.fenix.tabstray.redux.state.TabGroupFormState
 import org.mozilla.fenix.tabstray.redux.state.TabsTrayState
 import org.mozilla.fenix.tabstray.redux.store.TabsTrayStore
@@ -353,8 +354,63 @@ class TabsTrayTelemetryMiddlewareTest {
      * [TabsTray.tabGroupOpened] coverage
      */
     @Test
-    fun `GIVEN normal mode WHEN TabGroupClicked is dispatched THEN the tab group opened metric is reported`() {
+    fun `GIVEN tab groups page WHEN TabGroupClicked is dispatched THEN the tab group opened metric is reported with group_screen source`() {
         assertNull(TabsTray.tabGroupOpened.testGetValue())
+
+        store = TabsTrayStore(
+            middlewares = listOf(tabsTrayTelemetryMiddleware),
+            initialState = TabsTrayState(
+                selectedPage = Page.TabGroups,
+            ),
+        )
+
+        val tabGroup = TabsTrayItem.TabGroup(
+            id = "test group",
+            title = "Test",
+            theme = TabGroupTheme.default,
+            tabs = mutableListOf(),
+        )
+        store.dispatch(TabGroupAction.TabGroupClicked(tabGroup))
+
+        assertNotNull(TabsTray.tabGroupOpened.testGetValue())
+        val snapshot = TabsTray.tabGroupOpened.testGetValue()!!
+
+        assertEquals(1, snapshot.size)
+        assertEquals("group_screen", snapshot.single().extra?.getValue("source"))
+    }
+
+    @Test
+    fun `GIVEN normal tabs page WHEN TabGroupClicked is dispatched THEN the tab group opened metric is reported with tab_screen source`() {
+        assertNull(TabsTray.tabGroupOpened.testGetValue())
+
+        store = TabsTrayStore(
+            middlewares = listOf(tabsTrayTelemetryMiddleware),
+            initialState = TabsTrayState(
+                selectedPage = Page.NormalTabs,
+            ),
+        )
+
+        val tabGroup = TabsTrayItem.TabGroup(
+            id = "test group",
+            title = "Test",
+            theme = TabGroupTheme.default,
+            tabs = mutableListOf(),
+        )
+        store.dispatch(TabGroupAction.TabGroupClicked(tabGroup))
+
+        assertNotNull(TabsTray.tabGroupOpened.testGetValue())
+        val snapshot = TabsTray.tabGroupOpened.testGetValue()!!
+
+        assertEquals(1, snapshot.size)
+        assertEquals("tab_screen", snapshot.single().extra?.getValue("source"))
+    }
+
+    /**
+     * [TabsTray.tabGroupClosed] coverage
+     */
+    @Test
+    fun `WHEN a tab group is closed THEN the tab group closed metric is reported`() {
+        assertNull(TabsTray.tabGroupClosed.testGetValue())
 
         val mockGroup = TabsTrayItem.TabGroup(
             id = "test group",
@@ -362,9 +418,9 @@ class TabsTrayTelemetryMiddlewareTest {
             theme = TabGroupTheme.default,
             tabs = mutableListOf(),
         )
-        store.dispatch(TabGroupAction.TabGroupClicked(mockGroup))
+        store.dispatch(TabGroupAction.CloseTabGroupClicked(mockGroup))
 
-        assertNotNull(TabsTray.tabGroupOpened.testGetValue())
+        assertNotNull(TabsTray.tabGroupClosed.testGetValue())
     }
 
     /**
@@ -377,5 +433,57 @@ class TabsTrayTelemetryMiddlewareTest {
         store.dispatch(TabGroupAction.AddToNewTabGroup)
 
         assertEquals(1, Metrics.tabGroupCreationMode["menu"].testGetValue())
+    }
+
+    @Test
+    fun `GIVEN a target tab WHEN DragAndDropCompleted is dispatched THEN the drag_and_drop metric is reported`() {
+        assertNull(Metrics.tabGroupCreationMode["drag_and_drop"].testGetValue())
+
+        val mockTargetTab = createTab(url = "www.example.com").copy(id = "target_id")
+        store = TabsTrayStore(
+            middlewares = listOf(tabsTrayTelemetryMiddleware),
+            initialState = TabsTrayState(
+                normalTabsState = TabsTrayState.NormalTabsState(
+                    items = listOf(mockTargetTab),
+                ),
+            ),
+        )
+
+        store.dispatch(TabGroupAction.DragAndDropCompleted(sourceId = "source_id", destinationId = "target_id"))
+
+        assertEquals(1, Metrics.tabGroupCreationMode["drag_and_drop"].testGetValue())
+    }
+
+    /**
+     * [TabsTray.tabGroupScreenOpened] coverage
+     */
+    @Test
+    fun `WHEN the Tab Groups page is selected THEN the group screen show metric is reported`() {
+        assertNull(TabsTray.tabGroupScreenOpened.testGetValue())
+
+        store.dispatch(
+            TabsTrayAction.PageSelected(Page.TabGroups),
+        )
+
+        assertNotNull(TabsTray.tabGroupScreenOpened.testGetValue())
+    }
+
+    /**
+     * [TabsTray.tabGroupCreateCancel] coverage
+     */
+    @Test
+    fun `GIVEN AddToTabGroup destination WHEN NavigateBackInvoked is dispatched THEN the cancel metric is reported`() {
+        assertNull(TabsTray.tabGroupCreateCancel.testGetValue())
+
+        store = TabsTrayStore(
+            middlewares = listOf(tabsTrayTelemetryMiddleware),
+            initialState = TabsTrayState(
+                backStack = listOf(TabManagerNavDestination.AddToTabGroup),
+            ),
+        )
+
+        store.dispatch(TabsTrayAction.NavigateBackInvoked)
+
+        assertNotNull(TabsTray.tabGroupCreateCancel.testGetValue())
     }
 }

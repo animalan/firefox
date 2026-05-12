@@ -13,10 +13,12 @@ import org.mozilla.fenix.GleanMetrics.TabSearch
 import org.mozilla.fenix.GleanMetrics.TabsTray
 import org.mozilla.fenix.components.metrics.MetricsUtils
 import org.mozilla.fenix.components.metrics.MetricsUtils.BookmarkAction.Source
+import org.mozilla.fenix.tabstray.data.TabsTrayItem
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination
 import org.mozilla.fenix.tabstray.redux.action.TabGroupAction
 import org.mozilla.fenix.tabstray.redux.action.TabSearchAction
 import org.mozilla.fenix.tabstray.redux.action.TabsTrayAction
+import org.mozilla.fenix.tabstray.redux.state.Page
 import org.mozilla.fenix.tabstray.redux.state.TabsTrayState
 
 /**
@@ -35,13 +37,26 @@ class TabsTrayTelemetryMiddleware(
         next: (TabsTrayAction) -> Unit,
         action: TabsTrayAction,
     ) {
-        when (action) {
-            is TabGroupAction -> handleTabGroupAction(store = store, action = action)
-            is TabSearchAction -> handleTabSearchAction(action = action)
-            is TabsTrayAction.NavigateBackInvoked -> handleNavigateBackInvoked(state = store.state)
-            else -> handleGeneralTabsTrayAction(action = action)
+        val topDestination = store.state.backStack.lastOrNull()
+        val isEditing = store.state.tabGroupState.formState?.inEditState == true
+
+        requireNotNull(topDestination) { "The backstack cannot be empty" }
+
+        if (action is TabGroupAction) {
+            handleTabGroupAction(store, action)
         }
+
         next(action)
+
+        when (action) {
+            is TabSearchAction -> handleTabSearchAction(action)
+            is TabsTrayAction.NavigateBackInvoked -> handleNavigateBackInvoked(topDestination, isEditing)
+            else -> {
+                if (action !is TabGroupAction) {
+                    handleGeneralTabsTrayAction(action)
+                }
+            }
+        }
     }
 
     private fun handleGeneralTabsTrayAction(action: TabsTrayAction) {
@@ -94,6 +109,12 @@ class TabsTrayTelemetryMiddleware(
                 TabSearch.tabSearchIconClicked.record(NoExtras())
             }
 
+            is TabsTrayAction.PageSelected -> {
+                if (action.page == Page.TabGroups) {
+                    TabsTray.tabGroupScreenOpened.record(NoExtras())
+                }
+            }
+
             else -> {
                 // no-op
             }
@@ -104,6 +125,13 @@ class TabsTrayTelemetryMiddleware(
         store: Store<TabsTrayState, TabsTrayAction>,
         action: TabGroupAction,
     ) {
+        val selectedTabsCount = store.state.mode.selectedTabs.size
+        val isDraggingOntoTab = if (action is TabGroupAction.DragAndDropCompleted) {
+            store.state.normalTabsState.items.find { it.id == action.destinationId } is TabsTrayItem.Tab
+        } else {
+            false
+        }
+
         when (action) {
             is TabGroupAction.SaveClicked -> {
                 val isEditing = store.state.tabGroupState.formState?.inEditState == true
@@ -124,18 +152,36 @@ class TabsTrayTelemetryMiddleware(
 
             is TabGroupAction.SelectedTabsAddedToGroup -> {
                 TabsTray.tabAddedToGroup.record(
-                    TabsTray.TabAddedToGroupExtra(tabCount = store.state.mode.selectedTabs.size),
+                    TabsTray.TabAddedToGroupExtra(tabCount = selectedTabsCount),
                 )
             }
 
             is TabGroupAction.TabGroupClicked -> {
                 if (store.state.mode is TabsTrayState.Mode.Normal) {
-                    TabsTray.tabGroupOpened.record(NoExtras())
+                    val sourceScreen = if (store.state.selectedPage == Page.TabGroups) {
+                        "group_screen"
+                    } else {
+                        "tab_screen"
+                    }
+
+                    TabsTray.tabGroupOpened.record(
+                        TabsTray.TabGroupOpenedExtra(source = sourceScreen),
+                    )
                 }
             }
 
             is TabGroupAction.AddToNewTabGroup -> {
                 Metrics.tabGroupCreationMode["menu"].add()
+            }
+
+            is TabGroupAction.CloseTabGroupClicked -> {
+                TabsTray.tabGroupClosed.record(NoExtras())
+            }
+
+            is TabGroupAction.DragAndDropCompleted -> {
+                if (isDraggingOntoTab) {
+                    Metrics.tabGroupCreationMode["drag_and_drop"].add()
+                }
             }
 
             else -> {
@@ -157,12 +203,9 @@ class TabsTrayTelemetryMiddleware(
     }
 
     private fun handleNavigateBackInvoked(
-        state: TabsTrayState,
+        topDestination: TabManagerNavDestination,
+        isEditing: Boolean,
     ) {
-        val topDestination = state.backStack.lastOrNull()
-        val isEditing = state.tabGroupState.formState?.inEditState == true
-        requireNotNull(topDestination) { "The backstack cannot be empty" }
-
         when (topDestination) {
             is TabManagerNavDestination.TabSearch -> {
                 TabSearch.navigateBackIconClicked.record(NoExtras())

@@ -7059,6 +7059,20 @@ tabs_tray:
       - android-probes@mozilla.com
     expires: never
 
+  tab_group_closed:
+    type: event
+    description: |
+      Fired when a user closes or collapses a tab group in the tabs tray.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2029226
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2029226
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+
   tab_added_to_group:
     type: event
     description: |
@@ -7081,6 +7095,10 @@ tabs_tray:
     type: event
     description: |
       Fired when user opens/expands a tab group
+    extra_keys:
+      source:
+        description: The screen where the group was opened from (tab screen or group screen).
+        type: string
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=2029221
     data_reviews:
@@ -7099,6 +7117,20 @@ tabs_tray:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=2029221
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=2029221
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+
+  tab_group_screen_opened:
+    type: event
+    description: |
+      Fired when the user navigates to the Tab Groups screen within the tabs tray.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2029226
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2029226
     data_sensitivity:
       - interaction
     notification_emails:
