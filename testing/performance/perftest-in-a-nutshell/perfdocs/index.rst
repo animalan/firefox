@@ -283,7 +283,8 @@ Each video includes an annotated description containing the visual metrics provi
 Adding Performance Tests
 ------------------------
 
-This section is under construction.
+See the dedicated `Adding Performance Tests <adding-tests.html>`__ guide for
+help choosing a framework and writing your first performance test.
 
 
 Additional Help
