@@ -409,8 +409,7 @@ const size_t ChunkStoreBufferOffset = offsetof(ChunkBase, storeBuffer);
 const size_t ChunkMarkBitmapOffset = offsetof(ArenaChunkBase, markBits);
 
 // Hardcoded offsets into Arena class.
-const size_t ArenaZoneOffset = 2 * sizeof(uint32_t);
-const size_t ArenaHeaderSize = ArenaZoneOffset + 2 * sizeof(uintptr_t) +
+const size_t ArenaHeaderSize = 2 * sizeof(uint32_t) + 1 * sizeof(uintptr_t) +
                                sizeof(size_t) + sizeof(uintptr_t);
 
 // The first word of a GC thing has certain requirements from the GC and is used
@@ -666,9 +665,9 @@ static MOZ_ALWAYS_INLINE ArenaChunkBase* GetCellChunkBase(
 static MOZ_ALWAYS_INLINE JS::Zone* GetTenuredGCThingZone(const void* ptr) {
   // This takes a void* because the compiler can't see type relationships in
   // this header. |ptr| must be a pointer to a tenured GC thing.
-  MOZ_ASSERT(ptr);
-  const uintptr_t zone_addr = (uintptr_t(ptr) & ~ArenaMask) | ArenaZoneOffset;
-  return *reinterpret_cast<JS::Zone**>(zone_addr);
+  ChunkBase* chunk = GetGCAddressChunkBase(ptr);
+  MOZ_ASSERT(chunk->kind == ChunkKind::TenuredArenas);
+  return static_cast<ArenaChunkBase*>(chunk)->info.zone;
 }
 
 static MOZ_ALWAYS_INLINE bool TenuredCellIsMarkedBlack(

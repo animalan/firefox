@@ -422,7 +422,7 @@ retry_loop:
     return nullptr;
   }
 
-  arena->init(gc, zone_, thingKind);
+  arena->init(gc, thingKind);
 
   ArenaList& al = arenaList(thingKind);
   MOZ_ASSERT(!al.hasNonFullArenas());
