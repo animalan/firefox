@@ -23,13 +23,9 @@ namespace mozilla::dom {
 
 CSSStyleRuleDeclaration::CSSStyleRuleDeclaration(
     already_AddRefed<StyleLockedDeclarationBlock> aDecls)
-    : mDecls(new DeclarationBlock(std::move(aDecls))) {
-  mDecls->SetOwningRule(Rule());
-}
+    : mDecls(new DeclarationBlock(std::move(aDecls))) {}
 
-CSSStyleRuleDeclaration::~CSSStyleRuleDeclaration() {
-  mDecls->SetOwningRule(nullptr);
-}
+CSSStyleRuleDeclaration::~CSSStyleRuleDeclaration() = default;
 
 // QueryInterface implementation for CSSStyleRuleDeclaration
 NS_INTERFACE_MAP_BEGIN(CSSStyleRuleDeclaration)
@@ -70,9 +66,7 @@ DeclarationBlock* CSSStyleRuleDeclaration::GetOrCreateCSSDeclaration(
 void CSSStyleRuleDeclaration::SetRawAfterClone(
     RefPtr<StyleLockedDeclarationBlock> aRaw) {
   auto block = MakeRefPtr<DeclarationBlock>(aRaw.forget());
-  mDecls->SetOwningRule(nullptr);
   mDecls = std::move(block);
-  mDecls->SetOwningRule(Rule());
 }
 
 void CSSStyleRule::SetRawAfterClone(RefPtr<StyleLockedStyleRule> aRaw) {
@@ -91,10 +85,8 @@ nsresult CSSStyleRuleDeclaration::SetCSSDeclaration(
   RefPtr<DeclarationBlock> oldDecls;
   if (aDecl != mDecls) {
     oldDecls = std::move(mDecls);
-    oldDecls->SetOwningRule(nullptr);
     Servo_StyleRule_SetStyle(rule->Raw(), aDecl->Raw());
     mDecls = aDecl;
-    mDecls->SetOwningRule(rule);
   }
   if (StyleSheet* sheet = rule->GetStyleSheet()) {
     sheet->RuleChanged(rule, {StyleRuleChangeKind::StyleRuleDeclarations,

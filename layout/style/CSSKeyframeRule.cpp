@@ -16,11 +16,10 @@ namespace mozilla::dom {
 
 class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
  public:
-  explicit CSSKeyframeDeclaration(CSSKeyframeRule* aRule) : mRule(aRule) {
-    mDecls =
-        new DeclarationBlock(Servo_Keyframe_GetStyle(aRule->Raw()).Consume());
-    mDecls->SetOwningRule(aRule);
-  }
+  explicit CSSKeyframeDeclaration(CSSKeyframeRule* aRule)
+      : mRule(aRule),
+        mDecls(new DeclarationBlock(
+            Servo_Keyframe_GetStyle(aRule->Raw()).Consume())) {}
 
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS_AMBIGUOUS(CSSKeyframeDeclaration,
@@ -28,10 +27,7 @@ class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
 
   css::Rule* GetParentRule() final { return mRule; }
 
-  void DropReference() {
-    mRule = nullptr;
-    mDecls->SetOwningRule(nullptr);
-  }
+  void DropReference() { mRule = nullptr; }
 
   DeclarationBlock* GetOrCreateCSSDeclaration(
       Operation aOperation, DeclarationBlock** aCreated) final {
@@ -49,9 +45,7 @@ class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
     }
     mRule->UpdateRule([this, aDecls]() {
       if (mDecls != aDecls) {
-        mDecls->SetOwningRule(nullptr);
         mDecls = aDecls;
-        mDecls->SetOwningRule(mRule);
         Servo_Keyframe_SetStyle(mRule->Raw(), mDecls->Raw());
       }
     });
@@ -77,9 +71,7 @@ class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
   }
 
   void SetRawAfterClone(StyleLockedKeyframe* aKeyframe) {
-    mDecls->SetOwningRule(nullptr);
     mDecls = new DeclarationBlock(Servo_Keyframe_GetStyle(aKeyframe).Consume());
-    mDecls->SetOwningRule(mRule);
   }
 
  private:

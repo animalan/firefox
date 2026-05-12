@@ -2616,7 +2616,7 @@ pub extern "C" fn Servo_NestedDeclarationsRule_SetStyle(
 }
 
 #[no_mangle]
-pub extern "C" fn Servo_DeclarationBlock_MayBeInRuleTree(
+pub extern "C" fn Servo_DeclarationBlock_IsImmutable(
     declarations: &LockedDeclarationBlock,
 ) -> bool {
     use std::sync::atomic::Ordering;
@@ -2625,8 +2625,23 @@ pub extern "C" fn Servo_DeclarationBlock_MayBeInRuleTree(
     unsafe {
         declarations
             .read_unchecked()
-            .may_be_in_rule_tree
+            .immutable
             .load(Ordering::Relaxed)
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn Servo_DeclarationBlock_SetImmutable(
+    declarations: &LockedDeclarationBlock,
+) {
+    use std::sync::atomic::Ordering;
+    // SAFETY: See StyleSource::mark_in_rule_tree. This boolean is conceptually not part of the
+    // locked data, and it's a relaxed atomic, so it's sound to read.
+    unsafe {
+        declarations
+            .read_unchecked()
+            .immutable
+            .store(true, Ordering::Relaxed);
     }
 }
 

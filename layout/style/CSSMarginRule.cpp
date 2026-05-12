@@ -14,13 +14,9 @@ namespace mozilla::dom {
 
 CSSMarginRuleDeclaration::CSSMarginRuleDeclaration(
     already_AddRefed<StyleLockedDeclarationBlock> aDecls)
-    : mDecls(new DeclarationBlock(std::move(aDecls))) {
-  mDecls->SetOwningRule(Rule());
-}
+    : mDecls(new DeclarationBlock(std::move(aDecls))) {}
 
-CSSMarginRuleDeclaration::~CSSMarginRuleDeclaration() {
-  mDecls->SetOwningRule(nullptr);
-}
+CSSMarginRuleDeclaration::~CSSMarginRuleDeclaration() = default;
 
 // QueryInterface implementation for CSSMarginRuleDeclaration
 NS_INTERFACE_MAP_BEGIN(CSSMarginRuleDeclaration)
@@ -59,24 +55,18 @@ DeclarationBlock* CSSMarginRuleDeclaration::GetOrCreateCSSDeclaration(
 
 void CSSMarginRuleDeclaration::SetRawAfterClone(
     RefPtr<StyleLockedDeclarationBlock> aDeclarationBlock) {
-  mDecls->SetOwningRule(nullptr);
   mDecls = new DeclarationBlock(aDeclarationBlock.forget());
-  mDecls->SetOwningRule(Rule());
 }
 
 nsresult CSSMarginRuleDeclaration::SetCSSDeclaration(
     DeclarationBlock* aDecl, MutationClosureData* aClosureData) {
   MOZ_ASSERT(aDecl, "must be non-null");
-  CSSMarginRule* rule = Rule();
-
   if (aDecl != mDecls) {
-    mDecls->SetOwningRule(nullptr);
     RefPtr<DeclarationBlock> decls = aDecl;
     // TODO alaskanemily: bug 1890418 for implementing this and margin-rule
     // style properties in general.
     // Servo_MarginRule_SetStyle(rule->Raw(), decls->Raw());
     mDecls = std::move(decls);
-    mDecls->SetOwningRule(rule);
   }
 
   return NS_OK;
@@ -122,7 +112,6 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(CSSMarginRule)
   //
   // Note that this has to happen before unlinking css::Rule.
   tmp->UnlinkDeclarationWrapper(tmp->mDecls);
-  tmp->mDecls.mDecls->SetOwningRule(nullptr);
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END_INHERITED(css::Rule)
 
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(CSSMarginRule, css::Rule)

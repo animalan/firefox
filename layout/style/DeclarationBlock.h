@@ -26,17 +26,12 @@ class Rule;
 
 class DeclarationBlock final {
   DeclarationBlock(const DeclarationBlock& aCopy)
-      : mRaw(Servo_DeclarationBlock_Clone(aCopy.mRaw).Consume()),
-        mImmutable(false) {
-    mContainer.mRaw = 0;
-  }
+      : mRaw(Servo_DeclarationBlock_Clone(aCopy.mRaw).Consume()) {}
 
  public:
   explicit DeclarationBlock(
       already_AddRefed<const StyleLockedDeclarationBlock> aRaw)
-      : mRaw(aRaw), mImmutable(false) {
-    mContainer.mRaw = 0;
-  }
+      : mRaw(aRaw) {}
 
   DeclarationBlock()
       : DeclarationBlock(Servo_DeclarationBlock_CreateEmpty().Consume()) {}
@@ -50,70 +45,45 @@ class DeclarationBlock final {
   /**
    * Return whether |this| may be modified.
    */
-  bool IsMutable() const { return !mImmutable; }
+  bool IsMutable() const { return !IsImmutable(); }
 
   /**
    * Crash in debug builds if |this| cannot be modified.
    */
   void AssertMutable() const {
     MOZ_ASSERT(IsMutable(), "someone forgot to call EnsureMutable");
-    MOZ_ASSERT(!OwnerIsReadOnly(), "User Agent sheets shouldn't be modified");
   }
 
   /**
    * Mark this declaration as unmodifiable.
    */
-  void SetImmutable() { mImmutable = true; }
+  void SetImmutable() { Servo_DeclarationBlock_SetImmutable(mRaw.get()); }
 
   /**
    * Copy |this|, if necessary to ensure that it can be modified.
    */
   already_AddRefed<DeclarationBlock> EnsureMutable() {
-    MOZ_ASSERT(!OwnerIsReadOnly());
-    if (!IsMutable() || InnerMayBeInRuleTree()) {
+    if (IsImmutable()) {
       return Clone();
     }
     return do_AddRef(this);
   }
 
   // Returns whether our raw block might be referenced from an existing style.
-  // FIXME(emilio): This is needed so that animation-only traversals and
+  // FIXME(emilio): Some of this is needed so that animation-only traversals and
   // ::first-line reparenting don't get the wrong style by reusing a mutated
   // rule node, but ideally should go away, see bug 1606413.
-  bool InnerMayBeInRuleTree() const {
-    return Servo_DeclarationBlock_MayBeInRuleTree(mRaw.get());
-  }
-
-  void SetOwningRule(css::Rule* aRule) {
-    MOZ_ASSERT(!mContainer.mOwningRule || !aRule,
-               "should never overwrite one rule with another");
-    mContainer.mOwningRule = aRule;
-  }
-
-  css::Rule* GetOwningRule() const {
-    if (mContainer.mRaw & 0x1) {
-      return nullptr;
-    }
-    return mContainer.mOwningRule;
+  bool IsImmutable() const {
+    return Servo_DeclarationBlock_IsImmutable(mRaw.get());
   }
 
   void SetAttributeStyles(AttributeStyles* aAttributeStyles) {
-    MOZ_ASSERT(!mContainer.mAttributeStyles || !aAttributeStyles,
+    MOZ_ASSERT(!mAttributeStyles || !aAttributeStyles,
                "should never overwrite one sheet with another");
-    mContainer.mAttributeStyles = aAttributeStyles;
-    if (aAttributeStyles) {
-      mContainer.mRaw |= uintptr_t(1);
-    }
+    mAttributeStyles = aAttributeStyles;
   }
 
-  AttributeStyles* GetAttributeStyles() const {
-    if (!(mContainer.mRaw & 0x1)) {
-      return nullptr;
-    }
-    auto c = mContainer;
-    c.mRaw &= ~uintptr_t(1);
-    return c.mAttributeStyles;
-  }
+  AttributeStyles* GetAttributeStyles() const { return mAttributeStyles; }
 
   bool IsReadOnly() const;
 
@@ -191,29 +161,11 @@ class DeclarationBlock final {
  private:
   ~DeclarationBlock() = default;
 
-  bool OwnerIsReadOnly() const;
-
-  union {
-    // We only ever have one of these since we have a AttributeStyles only for
-    // style attributes, and style attributes never have an owning rule. It's a
-    // AttributeStyles if the low bit is set.
-
-    uintptr_t mRaw;
-
-    // The style rule that owns this declaration.  May be null.
-    css::Rule* mOwningRule;
-
-    // The AttributeStyles that is responsible for this declaration. Only
-    // non-null for style attributes.
-    AttributeStyles* mAttributeStyles;
-  } mContainer;
+  // The AttributeStyles that is responsible for this declaration. Only
+  // non-null for style attributes.
+  AttributeStyles* mAttributeStyles = nullptr;
 
   RefPtr<const StyleLockedDeclarationBlock> mRaw;
-
-  // Set when a declaration is shared across elements and needs to be copied,
-  // even when not in the rule tree, e.g. via the style attribute or the XUL
-  // prototype caches.
-  bool mImmutable;
 };
 
 }  // namespace mozilla

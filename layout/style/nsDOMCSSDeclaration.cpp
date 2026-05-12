@@ -275,13 +275,12 @@ nsresult nsDOMCSSDeclaration::ModifyDeclaration(
   // between when we mutate the declaration and when we set the new
   // rule (see stack in bug 209575).
   mozAutoDocUpdate autoUpdate(DocToUpdate(), true);
-  RefPtr<DeclarationBlock> decl = olddecl->EnsureMutable();
-
   ParsingEnvironment servoEnv = GetParsingEnvironment(aSubjectPrincipal);
   if (!servoEnv.mUrlExtraData) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 
+  RefPtr<DeclarationBlock> decl = olddecl->EnsureMutable();
   bool changed = MOZ_TRY(aFunc(decl, servoEnv));
   if (!changed) {
     return NS_OK;

@@ -15,13 +15,9 @@ namespace mozilla::dom {
 
 CSSPageRuleDeclaration::CSSPageRuleDeclaration(
     already_AddRefed<StyleLockedDeclarationBlock> aDecls)
-    : mDecls(new DeclarationBlock(std::move(aDecls))) {
-  mDecls->SetOwningRule(Rule());
-}
+    : mDecls(new DeclarationBlock(std::move(aDecls))) {}
 
-CSSPageRuleDeclaration::~CSSPageRuleDeclaration() {
-  mDecls->SetOwningRule(nullptr);
-}
+CSSPageRuleDeclaration::~CSSPageRuleDeclaration() = default;
 
 // QueryInterface implementation for CSSPageRuleDeclaration
 NS_INTERFACE_MAP_BEGIN(CSSPageRuleDeclaration)
@@ -66,9 +62,7 @@ DeclarationBlock* CSSPageRuleDeclaration::GetOrCreateCSSDeclaration(
 
 void CSSPageRuleDeclaration::SetRawAfterClone(
     RefPtr<StyleLockedDeclarationBlock> aDeclarationBlock) {
-  mDecls->SetOwningRule(nullptr);
   mDecls = new DeclarationBlock(aDeclarationBlock.forget());
-  mDecls->SetOwningRule(Rule());
 }
 
 nsresult CSSPageRuleDeclaration::SetCSSDeclaration(
@@ -77,11 +71,9 @@ nsresult CSSPageRuleDeclaration::SetCSSDeclaration(
   CSSPageRule* rule = Rule();
 
   if (aDecl != mDecls) {
-    mDecls->SetOwningRule(nullptr);
     RefPtr<DeclarationBlock> decls = aDecl;
     Servo_PageRule_SetStyle(rule->Raw(), decls->Raw());
     mDecls = std::move(decls);
-    mDecls->SetOwningRule(rule);
   }
 
   return NS_OK;
@@ -127,7 +119,6 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(CSSPageRule)
   //
   // Note that this has to happen before unlinking css::Rule.
   tmp->UnlinkDeclarationWrapper(tmp->mDecls);
-  tmp->mDecls.mDecls->SetOwningRule(nullptr);
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END_INHERITED(css::GroupRule)
 
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(CSSPageRule, css::GroupRule)
