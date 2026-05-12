@@ -1416,12 +1416,13 @@ void TISInputSourceWrapper::WillDispatchKeyboardEvent(
     AlternativeCharCode altCharCodes(cmdedChar, cmdedShiftChar);
     aKeyEvent.mAlternativeCharCodes.AppendElement(altCharCodes);
   }
-  MOZ_LOG(gKeyLog, LogLevel::Info,
-          ("%p   TISInputSourceWrapper::WillDispatchKeyboardEvent, "
-           "hasCmdShiftOnlyChar=%s, isCmdSwitchLayout=%s, isDvorakQWERTY=%s, "
-           "cmdedChar=U+%X, cmdedShiftChar=U+%X",
-           this, TrueOrFalse(hasCmdShiftOnlyChar), TrueOrFalse(isDvorakQWERTY),
-           TrueOrFalse(isDvorakQWERTY), cmdedChar, cmdedShiftChar));
+  MOZ_LOG(
+      gKeyLog, LogLevel::Info,
+      ("%p   TISInputSourceWrapper::WillDispatchKeyboardEvent, "
+       "hasCmdShiftOnlyChar=%s, isCmdSwitchLayout=%s, isDvorakQWERTY=%s, "
+       "cmdedChar=U+%X, cmdedShiftChar=U+%X",
+       this, TrueOrFalse(hasCmdShiftOnlyChar), TrueOrFalse(isCmdSwitchLayout),
+       TrueOrFalse(isDvorakQWERTY), cmdedChar, cmdedShiftChar));
   // Special case for 'SS' key of German layout. See the comment of
   // hasCmdShiftOnlyChar definition for the detail.
   if (hasCmdShiftOnlyChar && originalCmdedShiftChar) {
@@ -1953,7 +1954,6 @@ bool TextInputHandler::HandleKeyDownEvent(NSEvent* aNativeEvent,
                                                    currentKeyEvent);
       currentKeyEvent->mKeyPressHandled =
           (status == nsEventStatus_eConsumeNoDefault);
-      currentKeyEvent->mKeyPressDispatched = true;
       MOZ_LOG_KEY_OR_IME(
           LogLevel::Info,
           ("%p TextInputHandler::HandleKeyDownEvent, eKeyPress event has been "
