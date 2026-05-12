@@ -209,7 +209,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
                     activity = requireActivity(),
                     contentLayout = binding.browserLayout,
                     tabPreview = binding.tabPreview,
-                    toolbarLayout = browserToolbarView.layout,
+                    toolbarLayout = browserToolbar.layout,
                     navBarLayout = browserNavigationBar?.layout,
                     store = components.core.store,
                     selectTabUseCase = components.useCases.tabsUseCases.selectTab,
@@ -224,7 +224,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler, SystemIns
             binding.gestureLayout.addGestureListener(
                 ToolbarVerticalGesturesHandler(
                     appStore = components.appStore,
-                    toolbarLayout = browserToolbarView.layout,
+                    toolbarLayout = browserToolbar.layout,
                     navBarLayout = browserNavigationBar?.layout,
                     toolbarPosition = settings.toolbarPosition,
                     navController = findNavController(),

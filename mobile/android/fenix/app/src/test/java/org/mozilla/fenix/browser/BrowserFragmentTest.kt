@@ -85,7 +85,7 @@ class BrowserFragmentTest {
         browserFragment = spyk(BrowserFragment())
         every { browserFragment.view } returns view
         every { browserFragment.isAdded } returns true
-        every { browserFragment.browserToolbarView } returns mockk<BrowserToolbarComposable>(relaxed = true)
+        every { browserFragment.browserToolbar } returns mockk<BrowserToolbarComposable>(relaxed = true)
         every { browserFragment.childFragmentManager } returns mockk(relaxed = true)
         every { browserFragment.activity } returns homeActivity
         every { browserFragment.lifecycle } returns lifecycleOwner.lifecycle
@@ -176,7 +176,7 @@ class BrowserFragmentTest {
         )
 
         val toolbar: BrowserToolbarComposable = mockk(relaxed = true)
-        every { browserFragment.browserToolbarView } returns toolbar
+        every { browserFragment.browserToolbar } returns toolbar
 
         val newSelectedTab = createTab("https://firefox.com")
         addAndSelectTab(newSelectedTab)

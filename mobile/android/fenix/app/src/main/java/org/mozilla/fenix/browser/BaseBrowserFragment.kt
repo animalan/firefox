@@ -267,12 +267,12 @@ abstract class BaseBrowserFragment :
 
     @VisibleForTesting
     @Suppress("VariableNaming")
-    internal var _browserToolbarView: BrowserToolbarComposable? = null
+    internal var _browserToolbar: BrowserToolbarComposable? = null
     private var awesomeBarComposable: AwesomeBarComposable? = null
 
     @VisibleForTesting
-    internal val browserToolbarView: BrowserToolbarComposable
-        get() = _browserToolbarView!!
+    internal val browserToolbar: BrowserToolbarComposable
+        get() = _browserToolbar!!
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     internal var browserNavigationBar: BrowserNavigationBar? = null
@@ -536,7 +536,7 @@ abstract class BaseBrowserFragment :
             launchFindInPageFeature(view, store)
         }
 
-        _browserToolbarView = initializeBrowserToolbar(activity, store, readerMenuController)
+        _browserToolbar = initializeBrowserToolbar(activity, store, readerMenuController)
 
         if (context.settings().microsurveyFeatureEnabled) {
             listenForMicrosurveyMessage(context)
@@ -549,7 +549,7 @@ abstract class BaseBrowserFragment :
                 settings = context.settings(),
                 browserLayout = getSwipeRefreshLayout(),
                 engineView = getEngineView(),
-                toolbar = browserToolbarView,
+                toolbar = browserToolbar,
                 topToolbarHeight = {
                     getTopToolbarHeight(
                         includeTabStripIfAvailable = customTabSessionId == null,
@@ -860,7 +860,7 @@ abstract class BaseBrowserFragment :
                 downloadState = downloadState,
                 downloadJobStatus = downloadJobStatus,
                 browserToolbars = listOfNotNull(
-                    browserToolbarView,
+                    browserToolbar,
                     _bottomToolbarContainerView?.toolbarContainerView,
                 ),
                 downloadFileUtils = downloadFileUtils,
@@ -1142,7 +1142,7 @@ abstract class BaseBrowserFragment :
             feature = CrashContentIntegration(
                 browserStore = requireComponents.core.store,
                 appStore = requireComponents.appStore,
-                toolbar = browserToolbarView,
+                toolbar = browserToolbar,
                 components = requireComponents,
                 settings = context.settings(),
                 navController = findNavController(),
@@ -1654,11 +1654,11 @@ abstract class BaseBrowserFragment :
         val view = requireView()
 
         val isToolbarAtBottom = context.isToolbarAtBottom()
-        val browserToolbar = browserToolbarView.layout
+        val browserToolbarLayout = browserToolbar.layout
         val navigationBar = browserNavigationBar?.layout
         // The toolbar view has already been added directly to the container.
         if (isToolbarAtBottom) {
-            binding.browserLayout.removeView(browserToolbar)
+            binding.browserLayout.removeView(browserToolbarLayout)
         } else if (navigationBar != null) {
             binding.browserLayout.removeView(navigationBar)
         }
@@ -1702,7 +1702,7 @@ abstract class BaseBrowserFragment :
                         }
 
                         if (isToolbarAtBottom) {
-                            AndroidView(factory = { _ -> browserToolbar })
+                            AndroidView(factory = { _ -> browserToolbarLayout })
                         } else if (navigationBar != null) {
                             AndroidView(factory = { _ -> navigationBar })
                         }
@@ -1732,7 +1732,7 @@ abstract class BaseBrowserFragment :
     }
 
     private fun removeBottomToolbarDivider() {
-        browserToolbarView.layout.elevation = 0.0f
+        browserToolbar.layout.elevation = 0.0f
     }
 
     private var currentMicrosurvey: MicrosurveyUIData? = null
@@ -1858,7 +1858,7 @@ abstract class BaseBrowserFragment :
         if (browserInitialized) {
             view?.let {
                 fullScreenChanged(false)
-                browserToolbarView.expand()
+                browserToolbar.expand()
 
                 @Suppress("DEPRECATION")
                 it.announceForAccessibility(selectedTab.toDisplayTitle())
@@ -2168,7 +2168,7 @@ abstract class BaseBrowserFragment :
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     internal fun expandBrowserView() {
-        browserToolbarView.apply {
+        browserToolbar.apply {
             collapse()
             gone()
         }
@@ -2199,11 +2199,11 @@ abstract class BaseBrowserFragment :
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     internal fun collapseBrowserView() {
         if (webAppToolbarShouldBeVisible) {
-            browserToolbarView.visible()
+            browserToolbar.visible()
             browserNavigationBar?.visible()
             _bottomToolbarContainerView?.toolbarContainerView?.isVisible = true
             reinitializeEngineView()
-            browserToolbarView.expand()
+            browserToolbar.expand()
             _bottomToolbarContainerView?.toolbarContainerView?.expand()
         }
     }
@@ -2267,7 +2267,7 @@ abstract class BaseBrowserFragment :
         _menuButtonView = null
 
         _bottomToolbarContainerView = null
-        _browserToolbarView = null
+        _browserToolbar = null
         awesomeBarComposable = null
         browserNavigationBar = null
         _binding = null
@@ -2307,8 +2307,8 @@ abstract class BaseBrowserFragment :
     }
 
     override fun onAccessibilityStateChanged(enabled: Boolean) {
-        if (_browserToolbarView != null) {
-            browserToolbarView.setToolbarBehavior(requireContext().settings().toolbarPosition, enabled)
+        if (_browserToolbar != null) {
+            browserToolbar.setToolbarBehavior(requireContext().settings().toolbarPosition, enabled)
         }
     }
 
@@ -2318,7 +2318,7 @@ abstract class BaseBrowserFragment :
         if (findInPageIntegration.get()?.isFeatureActive != true &&
             fullScreenFeature.get()?.isFullScreen != true
         ) {
-            _browserToolbarView?.let {
+            _browserToolbar?.let {
                 onUpdateToolbarForConfigurationChange(it)
             }
         }
@@ -2407,7 +2407,7 @@ abstract class BaseBrowserFragment :
                         expandBrowserView()
                     },
                     toolbarsResetCallback = {
-                        onUpdateToolbarForConfigurationChange(browserToolbarView)
+                        onUpdateToolbarForConfigurationChange(browserToolbar)
                         collapseBrowserView()
                     },
                 ),
@@ -2428,7 +2428,7 @@ abstract class BaseBrowserFragment :
             ToolbarPosition.BOTTOM -> {
                 val toolbar = listOf(
                     _bottomToolbarContainerView?.toolbarContainerView,
-                    _browserToolbarView?.layout,
+                    _browserToolbar?.layout,
                 ).firstOrNull { it != null } ?: return
 
                 // Ensure the toolbar is anchored to the bottom of the screen.
