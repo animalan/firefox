@@ -944,6 +944,80 @@ add_task(async function test_IPPProxyManager_rotateProxyPass_changes_pass() {
   sandbox.restore();
 });
 
+add_task(async function test_IPPProxyManager_stop_during_rotation() {
+  let sandbox = sinon.createSandbox();
+  setupStubs(sandbox, { validProxyPass: true });
+
+  const readyEvent = waitForEvent(
+    IPProtectionService,
+    "IPProtectionService:StateChanged",
+    () => IPProtectionService.state === IPProtectionStates.READY
+  );
+  IPProtectionService.init();
+  await readyEvent;
+
+  const activeEvent = waitForEvent(
+    IPPProxyManager,
+    "IPPProxyManager:StateChanged",
+    () => IPPProxyManager.state === IPPProxyStates.ACTIVE
+  );
+  await IPPProxyManager.start();
+  await activeEvent;
+
+  let resolveFetch;
+  IPPFxaAuthProvider.fetchProxyPass.callsFake(
+    () =>
+      new Promise(resolve => {
+        resolveFetch = resolve;
+      })
+  );
+
+  const resumeSpy = sandbox.spy(
+    IPPChannelFilter.prototype,
+    "replaceAuthTokenAndResume"
+  );
+
+  const rotationPromise = IPPProxyManager.rotateProxyPass();
+
+  await IPPProxyManager.stop();
+
+  Assert.equal(
+    IPPProxyManager.state,
+    IPPProxyStates.READY,
+    "State should be READY after stop while a rotation is in flight"
+  );
+
+  resolveFetch({
+    status: 200,
+    error: undefined,
+    pass: new ProxyPass(createProxyPassToken()),
+    usage: new ProxyUsage(
+      "5368709120",
+      "4294967296",
+      "3026-02-01T00:00:00.000Z"
+    ),
+  });
+
+  await rotationPromise;
+
+  Assert.ok(
+    !resumeSpy.called,
+    "replaceAuthTokenAndResume should not be called when rotation resolves after stop"
+  );
+  Assert.equal(
+    IPPProxyManager.state,
+    IPPProxyStates.READY,
+    "State should remain READY after the late rotation result is discarded"
+  );
+  Assert.ok(
+    !IPPProxyManager.active,
+    "Connection should remain inactive after the late rotation result is discarded"
+  );
+
+  IPProtectionService.uninit();
+  sandbox.restore();
+});
+
 add_task(async function test_IPPProxyManager_restores_cached_usage() {
   Services.prefs.setBoolPref("browser.ipProtection.cacheDisabled", false);
 
@@ -1541,7 +1615,7 @@ add_task(async function test_IPPProxyManager_switch_from_active() {
   setupStubs(sandbox);
 
   const getLocationSpy = sandbox.spy(IPProtectionServerlist, "getLocation");
-  const uninitSpy = sandbox.spy(IPPChannelFilter.prototype, "uninitialize");
+  const suspendSpy = sandbox.spy(IPPChannelFilter.prototype, "suspend");
   const initSpy = sandbox.spy(IPPChannelFilter.prototype, "initialize");
 
   const readyEvent = waitForEvent(
@@ -1576,8 +1650,8 @@ add_task(async function test_IPPProxyManager_switch_from_active() {
   );
 
   Assert.ok(
-    uninitSpy.calledBefore(initSpy.lastCall),
-    "uninitialize must be called before the re-initialize"
+    suspendSpy.calledBefore(initSpy.lastCall),
+    "suspend must be called before the re-initialize"
   );
 
   await IPPProxyManager.stop();

@@ -145,8 +145,9 @@ class IPPProxyManagerSingleton extends EventTarget {
   /**@type {import("./IPPChannelFilter.sys.mjs").IPPChannelFilter | null} */
   #connection = null;
   #networkErrorObserver = null;
-  // If this is set, we're awaiting a proxy pass rotation
-  #rotateProxyPassPromise = null;
+  // If this is set, we're awaiting a proxy pass rotation.
+  /** @type {{ promise: Promise<void>, controller: AbortController } | null} */
+  #rotation = null;
   #activatedAt = 0;
 
   #rotationTimer = 0;
@@ -154,7 +155,6 @@ class IPPProxyManagerSingleton extends EventTarget {
   /** @type {string | null} */
   #errorType = null;
   #refreshUsageAbortController = null;
-  #rotateProxyPassAbortController = null;
 
   constructor() {
     super();
@@ -455,6 +455,8 @@ class IPPProxyManagerSingleton extends EventTarget {
       lazy.clearTimeout(this.#rotationTimer);
       this.#rotationTimer = 0;
 
+      this.#rotation?.controller.abort();
+
       this.networkErrorObserver.stop();
     }
 
@@ -497,7 +499,7 @@ class IPPProxyManagerSingleton extends EventTarget {
 
     lazy.logConsole.debug("Switching to server:", server?.hostname);
 
-    this.#connection.uninitialize();
+    this.#connection.suspend();
     this.#connection.initialize(this.#pass.asBearerToken(), server);
 
     this.networkErrorObserver.addIsolationKey(this.#connection.isolationKey);
@@ -510,7 +512,7 @@ class IPPProxyManagerSingleton extends EventTarget {
    */
   async reset() {
     this.#refreshUsageAbortController?.abort();
-    this.#rotateProxyPassAbortController?.abort();
+    this.#rotation?.controller.abort();
 
     this.#pass = null;
     this.#usage = null;
@@ -536,13 +538,15 @@ class IPPProxyManagerSingleton extends EventTarget {
    * Usage refresh will still be attempted at the reset time.
    */
   #setPausedState() {
+    this.#rotation?.controller.abort();
+
     const wasActive = this.#state === IPPProxyStates.ACTIVE;
     this.#pass = null;
     lazy.clearTimeout(this.#rotationTimer);
     this.#rotationTimer = 0;
 
     if (wasActive) {
-      this.#connection?.uninitialize();
+      this.#connection?.suspend();
     } else {
       this.cancelChannelFilter();
     }
@@ -619,7 +623,7 @@ class IPPProxyManagerSingleton extends EventTarget {
       if (!this.#connection?.active) {
         return;
       }
-      lazy.logConsole.debug(`Statrting scheduled ProxyPass rotation`);
+      lazy.logConsole.debug(`Starting scheduled ProxyPass rotation`);
       let newPass = await this.rotateProxyPass();
       if (newPass) {
         this.#schedulePassRotation(newPass);
@@ -634,21 +638,32 @@ class IPPProxyManagerSingleton extends EventTarget {
    * When it's called again while a rotation is in progress, it will return the existing promise.
    */
   async rotateProxyPass() {
-    if (this.#rotateProxyPassPromise) {
-      return this.#rotateProxyPassPromise;
+    if (this.#rotation) {
+      return this.#rotation.promise;
     }
-    this.#rotateProxyPassAbortController = new AbortController();
+    const controller = new AbortController();
     let { promise, resolve } = Promise.withResolvers();
+    this.#rotation = { promise, controller };
+    let resumed = false;
     using scopeGuard = new DisposableStack();
     scopeGuard.defer(() => {
+      if (!resumed) {
+        this.#connection?.abortPendingChannels();
+      }
       resolve();
-      this.#rotateProxyPassPromise = null;
-      this.#rotateProxyPassAbortController = null;
+      this.#rotation = null;
     });
-    this.#rotateProxyPassPromise = promise;
+
+    if (this.#connection?.active) {
+      this.#connection.suspend();
+    }
+
     const { pass, usage, error } = await this.#getPassAndUsage(
-      this.#rotateProxyPassAbortController.signal
+      controller.signal
     );
+    if (controller.signal.aborted) {
+      return null;
+    }
     if (usage) {
       this.#setUsage(usage);
       if (this.#usage.remaining <= 0) {
@@ -664,12 +679,14 @@ class IPPProxyManagerSingleton extends EventTarget {
 
     if (!pass) {
       lazy.logConsole.debug("Failed to rotate token!");
+      this.#setErrorState("missing_pass");
       return null;
     }
     // Inject the new token in the current connection
     if (this.#connection?.active) {
-      this.#connection.replaceAuthToken(pass.asBearerToken());
+      this.#connection.replaceAuthTokenAndResume(pass.asBearerToken());
       this.networkErrorObserver.addIsolationKey(this.#connection.isolationKey);
+      resumed = true;
     }
     lazy.logConsole.debug("Successfully rotated token!");
     this.#pass = pass;
@@ -764,6 +781,8 @@ class IPPProxyManagerSingleton extends EventTarget {
    * @param {string} error - the error message that occurred.
    */
   #setErrorState(error) {
+    this.#rotation?.controller.abort();
+
     this.#errorType = error;
     if (this.#state === IPPProxyStates.ACTIVE) {
       // If the proxy is active, switch to the error state.
