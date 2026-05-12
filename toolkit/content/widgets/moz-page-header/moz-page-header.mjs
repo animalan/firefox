@@ -17,7 +17,6 @@ window.MozXULElement?.insertFTLIfNeeded("toolkit/global/mozPageHeader.ftl");
  * @property {string} supportPage - Optional URL for a related support article.
  * @property {boolean} backButton - Whether or not the header should include a back button.
  * @property {"beta" | "new" | undefined} badge - Include a badge of this type with matching text.
- * @property {number} headingLevel - Heading level to render (1-6). Defaults to 2.
  * @slot breadcrumbs - Container for a <moz-breadcrumb-group, shown above the heading.
  * @fires navigate-back
  *  Event indicating the backwards navigation should occur.
@@ -30,11 +29,10 @@ export class MozPageHeader extends MozLitElement {
     supportPage: { type: String, attribute: "support-page" },
     backButton: { type: Boolean },
     badge: { type: String },
-    headingLevel: { type: Number },
   };
 
   static queries = {
-    headingEl: "#heading",
+    headingEl: "h1",
     backButtonEl: "moz-button",
   };
 
@@ -47,7 +45,6 @@ export class MozPageHeader extends MozLitElement {
     this.backButton = false;
     /** @type {"beta" | "new" | undefined} */
     this.badge = undefined;
-    this.headingLevel = 2;
   }
 
   backButtonTemplate() {
@@ -104,24 +101,6 @@ export class MozPageHeader extends MozLitElement {
     this.dispatchEvent(new Event("navigate-back"));
   }
 
-  headingTemplate() {
-    switch (this.headingLevel) {
-      case 1:
-        return html`<h1 id="heading">${this.heading}</h1>`;
-      case 3:
-        return html`<h3 id="heading">${this.heading}</h3>`;
-      case 4:
-        return html`<h4 id="heading">${this.heading}</h4>`;
-      case 5:
-        return html`<h5 id="heading">${this.heading}</h5>`;
-      case 6:
-        return html`<h6 id="heading">${this.heading}</h6>`;
-      case 2:
-      default:
-        return html`<h2 id="heading">${this.heading}</h2>`;
-    }
-  }
-
   render() {
     return html`
       <link
@@ -136,7 +115,8 @@ export class MozPageHeader extends MozLitElement {
         <slot name="breadcrumbs"></slot>
         <div class="heading">
           ${this.backButtonTemplate()}${this.iconTemplate()}
-          ${this.headingTemplate()} ${this.badgeTemplate()}
+          <h1 id="heading">${this.heading}</h1>
+          ${this.badgeTemplate()}
           ${!this.description ? this.supportLinkTemplate() : ""}
         </div>
         ${this.descriptionTemplate()}

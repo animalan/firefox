@@ -30,8 +30,6 @@ support-files = [
 
 ["browser_searchShowSuggestionsFirst.js"]
 
-["browser_search_category_filter.js"]
-
 ["browser_search_engineList.js"]
 fail-if = [
   "a11y_checks", # Bug 1854636 clicked treechildren#engineChildren may not be focusable
