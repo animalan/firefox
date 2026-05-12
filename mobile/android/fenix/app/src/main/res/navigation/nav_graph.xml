@@ -1565,8 +1565,7 @@
         </fragment>
         <fragment
             android:id="@+id/searchShortcutsFragment"
-            android:name="org.mozilla.fenix.settings.search.SearchShortcutsFragment"
-            tools:layout="@layout/fragment_search_shortcuts">
+            android:name="org.mozilla.fenix.settings.search.SearchShortcutsFragment">
             <action
                 android:id="@+id/action_searchShortcutsFragment_to_saveSearchEngineFragment"
                 app:destination="@+id/saveSearchEngineFragment" />
