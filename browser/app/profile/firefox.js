@@ -2091,10 +2091,11 @@ pref("browser.aboutwelcome.enabled", true);
 // Used to set multistage welcome UX
 pref("browser.aboutwelcome.screens", "");
 // Whether to gate loading about:welcome on Nimbus experiments having loaded.
-// Currently limited to Mac where a blocking preonboarding modal is shown with a
-// splash screen that advances after experiments load. On non-MSIX Windows,
-// experiments are loaded early enough that this isn't required.
-#if defined(XP_MACOSX)
+// Enable the Nimbus experiments gate on Mac and Windows. The gate shows a splash
+// screen while experiments load, then auto-advances. On platforms where experiments
+// are already loaded when the modal opens, skipSplashIfLoaded (true by default)
+// causes the splash to be skipped via screen targeting.
+#if defined(XP_MACOSX) || defined(XP_WIN)
   pref("browser.aboutwelcome.experimentsGate.enabled", true);
 #endif
 // Whether to skip showing the experiment loading splash screen if Nimbus is
