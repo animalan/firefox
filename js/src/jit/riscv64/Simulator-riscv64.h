@@ -41,6 +41,7 @@
 #include "jit/riscv64/constant/Constant-riscv64.h"
 #include "jit/riscv64/constant/util-riscv64.h"
 #include "jit/riscv64/disasm/Disasm-riscv64.h"
+#include "jit/riscv64/extension/base-assembler-riscv.h"
 #include "js/ProfilingFrameIterator.h"
 #include "js/Utility.h"
 #include "js/Vector.h"
@@ -146,11 +147,19 @@ using reg_t = uint64_t;
 using freg_t = uint64_t;
 using sfreg_t = int64_t;
 
-#define sext32(x) ((sreg_t)(int32_t)(x))
-#define zext32(x) ((reg_t)(uint32_t)(x))
+inline constexpr sreg_t sext32(sreg_t x) { return sreg_t(int32_t(x)); }
 
-#define sext_xlen(x) (((sreg_t)(x) << (64 - xlen)) >> (64 - xlen))
-#define zext_xlen(x) (((reg_t)(x) << (64 - xlen)) >> (64 - xlen))
+inline constexpr reg_t zext32(reg_t x) { return reg_t(uint32_t(x)); }
+
+inline constexpr sreg_t sext_xlen(sreg_t x) {
+  static_assert(xlen == 64);
+  return x;
+}
+
+inline constexpr reg_t zext_xlen(reg_t x) {
+  static_assert(xlen == 64);
+  return x;
+}
 
 inline bool isSnan(float fp) {
   return !(bit_cast<int32_t>(fp) & (int32_t(1) << 22));
