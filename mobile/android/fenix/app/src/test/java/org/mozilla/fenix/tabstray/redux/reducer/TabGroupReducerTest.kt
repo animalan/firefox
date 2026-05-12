@@ -11,6 +11,7 @@ import org.mozilla.fenix.tabstray.data.createTab
 import org.mozilla.fenix.tabstray.data.createTabGroup
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination.AddToTabGroup
+import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination.CloseTabAndDeleteGroupConfirmationDialog
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination.DeleteTabGroupConfirmationDialog
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination.EditTabGroup
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination.ExpandedTabGroup
@@ -548,6 +549,68 @@ class TabGroupReducerTest {
         )
 
         assertEquals(expectedState, resultState)
+    }
+
+    @Test
+    fun `WHEN TabClosed is dispatched AND group has 1 tab THEN navigate to the confirmation dialog`() {
+        val tab = createTab(url = "")
+        val group = createTabGroup(tabs = mutableListOf(tab))
+        val initialState = TabsTrayState(
+            backStack = listOf(
+                TabsTrayState().backStack.first(),
+                ExpandedTabGroup(group = group),
+            ),
+        )
+
+        val resultState = TabGroupActionReducer.reduce(
+            state = initialState,
+            action = TabGroupAction.TabClosed(tab = tab, group = group),
+        )
+
+        val expectedState = initialState.copy(
+            backStack = initialState.backStack + CloseTabAndDeleteGroupConfirmationDialog(group = group),
+        )
+
+        assertEquals(expectedState, resultState)
+    }
+
+    @Test
+    fun `WHEN TabClosed is dispatched AND group has multiple tabs THEN state is unchanged`() {
+        val tab1 = createTab(url = "")
+        val tab2 = createTab(url = "")
+        val group = createTabGroup(tabs = mutableListOf(tab1, tab2))
+        val initialState = TabsTrayState(
+            backStack = listOf(
+                TabsTrayState().backStack.first(),
+                ExpandedTabGroup(group = group),
+            ),
+        )
+
+        val resultState = TabGroupActionReducer.reduce(
+            state = initialState,
+            action = TabGroupAction.TabClosed(tab = tab1, group = group),
+        )
+
+        assertEquals(initialState, resultState)
+    }
+
+    @Test
+    fun `WHEN close tab and delete group is confirmed THEN pop the confirmation dialog and expanded tab group`() {
+        val group = createTabGroup()
+        val initialState = TabsTrayState(
+            backStack = listOf(
+                TabsTrayState().backStack.first(),
+                ExpandedTabGroup(group = group),
+                CloseTabAndDeleteGroupConfirmationDialog(group = group),
+            ),
+        )
+
+        val resultState = TabGroupActionReducer.reduce(
+            state = initialState,
+            action = TabGroupAction.CloseTabAndDeleteGroupConfirmed(group = group),
+        )
+
+        assertEquals(TabsTrayState().backStack, resultState.backStack)
     }
 
     @Test

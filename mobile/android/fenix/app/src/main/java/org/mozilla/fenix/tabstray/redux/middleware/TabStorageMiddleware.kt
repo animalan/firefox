@@ -193,6 +193,18 @@ class TabStorageMiddleware(
                     store = store,
                 )
             }
+
+            is TabGroupAction.CloseTabAndDeleteGroupConfirmed -> {
+                handleDeleteClicked(action.group)
+            }
+
+            is TabGroupAction.TabClosed -> {
+                if (action.group.tabs.size > 1) {
+                    scope.launch {
+                        removeTabsUseCase.invoke(ids = listOf(action.tab.id))
+                    }
+                }
+            }
         }
     }
 

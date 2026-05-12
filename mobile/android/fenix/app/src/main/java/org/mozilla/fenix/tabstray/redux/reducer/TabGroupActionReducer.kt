@@ -6,6 +6,7 @@ package org.mozilla.fenix.tabstray.redux.reducer
 
 import org.mozilla.fenix.tabstray.data.TabsTrayItem
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination
+import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination.CloseTabAndDeleteGroupConfirmationDialog
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination.DeleteTabGroupConfirmationDialog
 import org.mozilla.fenix.tabstray.navigation.TabManagerNavDestination.ExpandedTabGroup
 import org.mozilla.fenix.tabstray.redux.action.TabGroupAction
@@ -29,73 +30,89 @@ object TabGroupActionReducer {
         action: TabGroupAction,
     ): TabsTrayState {
         return when (action) {
-            is TabGroupAction.AddToTabGroup -> if (state.tabGroupState.groups.isEmpty()) {
-                state.navigateToCreateTabGroup()
-            } else {
-                state.copy(backStack = state.backStack + TabManagerNavDestination.AddToTabGroup)
-            }
-
+            is TabGroupAction.AddToTabGroup -> reduceAddToTabGroup(state)
             is TabGroupAction.AddToNewTabGroup -> state.navigateToCreateTabGroup()
-
-            is TabGroupAction.DragAndDropTwoTabs -> {
-                state.navigateToCreateTabGroup().copy(
-                    mode = TabsTrayState.Mode.DragAndDrop(
-                        sourceId = action.sourceTabId,
-                        destinationId = action.destinationTabId,
-                    ),
-                )
-            }
-
-            is TabGroupAction.NameChanged -> {
-                handleNameChange(state = state, action = action)
-            }
-
-            is TabGroupAction.ThemeChanged -> {
-                handleThemeChange(state = state, action = action)
-            }
-
+            is TabGroupAction.DragAndDropTwoTabs -> reduceDragAndDropTwoTabs(state, action)
+            is TabGroupAction.NameChanged -> handleNameChange(state, action)
+            is TabGroupAction.ThemeChanged -> handleThemeChange(state, action)
             is TabGroupAction.SaveClicked -> state.copy(
                 mode = TabsTrayState.Mode.Normal,
                 backStack = state.backStack.popTabGroupFlow(),
             )
-
-            is TabGroupAction.TabGroupClicked -> processTabGroupClick(
-                currentState = state,
-                group = action.group,
-            )
-
+            is TabGroupAction.TabGroupClicked -> processTabGroupClick(state, action.group)
             is TabGroupAction.TabAddedToGroup -> state
-
             is TabGroupAction.SelectedTabsAddedToGroup -> state.copy(
                 mode = TabsTrayState.Mode.Normal,
                 backStack = state.backStack.popTabGroupFlow(),
             )
-
             is TabGroupAction.DeleteClicked -> state.copy(
                 backStack = state.backStack + DeleteTabGroupConfirmationDialog(group = action.group),
             )
-
             is TabGroupAction.DeleteConfirmed -> state.copy(
                 backStack = state.backStack.popDeleteTabGroupFlow(),
             )
-
-            is TabGroupAction.EditTabGroupClicked -> state.copy(
-                tabGroupState = state.tabGroupState.copy(
-                    formState = action.group.initializeTabGroupForm(),
-                ),
-                backStack = state.navigateToEditTabGroup(),
-            )
-
-            is TabGroupAction.OpenTabGroupClicked -> state.copy(
-                selectedPage = Page.NormalTabs,
-                backStack = state.backStack + ExpandedTabGroup(group = action.group.copy(closed = false)),
-            )
-
+            is TabGroupAction.EditTabGroupClicked -> reduceEditTabGroupClicked(state, action)
+            is TabGroupAction.OpenTabGroupClicked -> reduceOpenTabGroupClicked(state, action)
             is TabGroupAction.CloseTabGroupClicked -> state.copy(
                 backStack = listOf(TabManagerNavDestination.Root),
             )
-
             is TabGroupAction.DragAndDropCompleted -> state
+            is TabGroupAction.TabClosed -> reduceTabClosed(state, action)
+            is TabGroupAction.CloseTabAndDeleteGroupConfirmed -> state.copy(
+                backStack = state.backStack.popDeleteTabGroupFlow(),
+            )
+        }
+    }
+
+    private fun reduceAddToTabGroup(state: TabsTrayState): TabsTrayState {
+        return if (state.tabGroupState.groups.isEmpty()) {
+            state.navigateToCreateTabGroup()
+        } else {
+            state.copy(backStack = state.backStack + TabManagerNavDestination.AddToTabGroup)
+        }
+    }
+
+    private fun reduceDragAndDropTwoTabs(
+        state: TabsTrayState,
+        action: TabGroupAction.DragAndDropTwoTabs,
+    ): TabsTrayState {
+        return state.navigateToCreateTabGroup().copy(
+            mode = TabsTrayState.Mode.DragAndDrop(
+                sourceId = action.sourceTabId,
+                destinationId = action.destinationTabId,
+            ),
+        )
+    }
+
+    private fun reduceEditTabGroupClicked(
+        state: TabsTrayState,
+        action: TabGroupAction.EditTabGroupClicked,
+    ): TabsTrayState {
+        return state.copy(
+            tabGroupState = state.tabGroupState.copy(
+                formState = action.group.initializeTabGroupForm(),
+            ),
+            backStack = state.navigateToEditTabGroup(),
+        )
+    }
+
+    private fun reduceOpenTabGroupClicked(
+        state: TabsTrayState,
+        action: TabGroupAction.OpenTabGroupClicked,
+    ): TabsTrayState {
+        return state.copy(
+            selectedPage = Page.NormalTabs,
+            backStack = state.backStack + ExpandedTabGroup(group = action.group.copy(closed = false)),
+        )
+    }
+
+    private fun reduceTabClosed(state: TabsTrayState, action: TabGroupAction.TabClosed): TabsTrayState {
+        return if (action.group.tabs.size <= 1) {
+            state.copy(
+                backStack = state.backStack + CloseTabAndDeleteGroupConfirmationDialog(group = action.group),
+            )
+        } else {
+            state
         }
     }
 
@@ -141,6 +158,7 @@ object TabGroupActionReducer {
 
     private fun List<TabManagerNavDestination>.popDeleteTabGroupFlow(): List<TabManagerNavDestination> = filterNot {
         it is DeleteTabGroupConfirmationDialog ||
+            it is CloseTabAndDeleteGroupConfirmationDialog ||
             it is ExpandedTabGroup
     }
 

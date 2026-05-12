@@ -79,6 +79,7 @@ import org.mozilla.fenix.settings.biometric.ext.isAuthenticatorAvailable
 import org.mozilla.fenix.settings.biometric.ext.isHardwareAvailable
 import org.mozilla.fenix.share.ShareFragment
 import org.mozilla.fenix.tabgroups.AddToTabGroup
+import org.mozilla.fenix.tabgroups.CloseLastTabAndDeleteTabGroupConfirmationDialog
 import org.mozilla.fenix.tabgroups.DeleteTabGroupConfirmationDialog
 import org.mozilla.fenix.tabgroups.EditTabGroup
 import org.mozilla.fenix.tabgroups.ExpandedTabGroup
@@ -432,8 +433,10 @@ class TabManagementFragment : Fragment() {
                                             else -> {}
                                         }
                                     },
-                                    onTabClose = {
-                                        tabManagerInteractor.onTabClosed(tab = it, source = TAB_MANAGER_FEATURE_NAME)
+                                    onTabClose = { tab ->
+                                        tabsTrayStore.dispatch(
+                                            TabGroupAction.TabClosed(tab = tab, group = expandedGroup),
+                                        )
                                     },
                                     onDeleteTabGroupClick = {
                                         tabsTrayStore.dispatch(TabGroupAction.DeleteClicked(expandedGroup))
@@ -493,6 +496,21 @@ class TabManagementFragment : Fragment() {
                                         tabsTrayStore.dispatch(
                                             TabGroupAction.SelectedTabsAddedToGroup(groupId = group.id),
                                         )
+                                    },
+                                )
+                            }
+
+                            entry<TabManagerNavDestination.CloseTabAndDeleteGroupConfirmationDialog>(
+                                metadata = DialogSceneStrategy.dialog(),
+                            ) { args ->
+                                CloseLastTabAndDeleteTabGroupConfirmationDialog(
+                                    onConfirmDelete = {
+                                        tabsTrayStore.dispatch(
+                                            TabGroupAction.CloseTabAndDeleteGroupConfirmed(args.group),
+                                        )
+                                    },
+                                    onCancel = {
+                                        tabsTrayStore.dispatch(TabsTrayAction.NavigateBackInvoked)
                                     },
                                 )
                             }
