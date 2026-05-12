@@ -56,7 +56,7 @@
         <item name="mozacProtectionsDashboardProgressBar" tools:ignore="UnusedResources">@color/protections_dashboard_progress_bar</item>
 
         <!-- Material3 -->
-        <item name="colorPrimarySurface">@color/fx_mobile_primary</item>
+        <item name="colorPrimary">@color/fx_mobile_primary</item>
         <item name="colorOnPrimary">@color/fx_mobile_on_primary</item>
         <item name="colorPrimaryContainer">@color/fx_mobile_primary_container</item>
         <item name="colorOnPrimaryContainer">@color/fx_mobile_on_primary_container</item>
@@ -113,8 +113,6 @@
         <item name="scrim">@color/fx_mobile_layer_color_scrim</item>
 
         <!-- Action -->
-        <!-- Primary button, Snackbar, Floating action button, Chip selected -->
-        <item name="actionPrimary">@color/fx_mobile_action_color_primary</item>
         <!-- Primary button in a disabled state -->
         <item name="actionPrimaryDisabled">@color/fx_mobile_action_color_primary_disabled</item>
 
@@ -123,8 +121,6 @@
         <item name="textDisabled">@color/fx_mobile_text_color_disabled</item>
         <!-- Text Inverted/On Color -->
         <item name="textOnColorPrimary">@color/fx_mobile_text_color_oncolor_primary</item>
-        <!-- Action Primary text -->
-        <item name="textActionPrimary">@color/fx_mobile_text_color_action_primary</item>
         <!-- Action Primary disabled text -->
         <item name="textActionPrimaryDisabled">@color/fx_mobile_text_color_action_primary_disabled</item>
 
@@ -347,7 +343,7 @@
         <item name="mozacProtectionsDashboardProgressBar" tools:ignore="UnusedResources">@color/protections_dashboard_progress_bar_private</item>
 
         <!-- Material3 -->
-        <item name="colorPrimarySurface">@color/fx_mobile_private_primary</item>
+        <item name="colorPrimary">@color/fx_mobile_private_primary</item>
         <item name="colorOnPrimary">@color/fx_mobile_private_on_primary</item>
         <item name="colorPrimaryContainer">@color/fx_mobile_private_primary_container</item>
         <item name="colorOnPrimaryContainer">@color/fx_mobile_private_on_primary_container</item>
@@ -404,8 +400,6 @@
         <item name="scrim">@color/fx_mobile_private_layer_color_scrim</item>
 
         <!-- Action -->
-        <!-- Primary button, Snackbar, Floating action button, Chip selected -->
-        <item name="actionPrimary">@color/fx_mobile_private_action_color_primary</item>
         <!-- Primary button in a disabled state -->
         <item name="actionPrimaryDisabled">@color/fx_mobile_private_action_color_primary_disabled</item>
 
@@ -414,8 +408,6 @@
         <item name="textDisabled">@color/fx_mobile_private_text_color_disabled</item>
         <!-- Text Inverted/On Color -->
         <item name="textOnColorPrimary">@color/fx_mobile_private_text_color_oncolor_primary</item>
-        <!-- Action Primary text -->
-        <item name="textActionPrimary">@color/fx_mobile_private_text_color_action_primary</item>
         <!-- Action Primary disabled text -->
         <item name="textActionPrimaryDisabled">@color/fx_mobile_private_text_color_action_primary_disabled</item>
 
@@ -516,9 +508,9 @@
     </style>
 
     <style name="PositiveButton" parent="NeutralButton">
-        <item name="backgroundTint">?actionPrimary</item>
-        <item name="iconTint">?iconOnColor</item>
-        <item name="android:textColor">?textActionPrimary</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="iconTint">?attr/colorOnPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
     </style>
 
     <style name="DialogStyleBase" parent="NormalTheme">

@@ -42,6 +42,7 @@ import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.pixelSizeFor
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.theme.ThemeManager
+import androidx.appcompat.R as appcompatR
 import com.google.android.material.R as materialR
 import mozilla.components.feature.addons.R as addonsR
 
@@ -287,11 +288,11 @@ class WebExtensionPromptFeature(
                 gravity = Gravity.BOTTOM,
                 shouldWidthMatchParent = true,
                 confirmButtonBackgroundColor = ThemeManager.resolveAttribute(
-                    R.attr.actionPrimary,
+                    appcompatR.attr.colorPrimary,
                     context,
                 ),
                 confirmButtonTextColor = ThemeManager.resolveAttribute(
-                    R.attr.textActionPrimary,
+                    materialR.attr.colorOnPrimary,
                     context,
                 ),
                 confirmButtonDisabledBackgroundColor = ThemeManager.resolveAttribute(
@@ -447,11 +448,11 @@ class WebExtensionPromptFeature(
                     gravity = Gravity.BOTTOM,
                     shouldWidthMatchParent = true,
                     confirmButtonBackgroundColor = ThemeManager.resolveAttribute(
-                        R.attr.actionPrimary,
+                        appcompatR.attr.colorPrimary,
                         context,
                     ),
                     confirmButtonTextColor = ThemeManager.resolveAttribute(
-                        R.attr.textActionPrimary,
+                        materialR.attr.colorOnPrimary,
                         context,
                     ),
                     confirmButtonRadius = context.pixelSizeFor(R.dimen.tab_corner_radius).toFloat(),

@@ -255,6 +255,7 @@ import org.mozilla.fenix.utils.allowUndo
 import org.mozilla.fenix.wifi.SitePermissionsWifiIntegration
 import java.lang.ref.WeakReference
 import kotlin.coroutines.cancellation.CancellationException
+import androidx.appcompat.R as appcompatR
 import com.google.android.material.R as materialR
 import mozilla.components.feature.downloads.R as downloadsR
 import mozilla.components.ui.widgets.R as widgetsR
@@ -1289,9 +1290,6 @@ abstract class BaseBrowserFragment :
             view = view,
         )
 
-        val accentHighContrastColor =
-            ThemeManager.resolveAttribute(R.attr.actionPrimary, context)
-
         sitePermissionsFeature.set(
             feature = SitePermissionsFeature(
                 context = context,
@@ -1300,8 +1298,10 @@ abstract class BaseBrowserFragment :
                 promptsStyling = SitePermissionsFeature.PromptsStyling(
                     gravity = getAppropriateLayoutGravity(),
                     shouldWidthMatchParent = true,
-                    positiveButtonBackgroundColor = accentHighContrastColor,
-                    positiveButtonTextColor = R.color.fx_mobile_text_color_action_primary,
+                    positiveButtonBackgroundColor =
+                        ThemeManager.resolveAttribute(appcompatR.attr.colorPrimary, context),
+                    positiveButtonTextColor =
+                        ThemeManager.resolveAttribute(materialR.attr.colorOnPrimary, context),
                 ),
                 sessionId = customTabSessionId,
                 onNeedToRequestPermissions = { permissions ->
