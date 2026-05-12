@@ -695,7 +695,8 @@ class TabManagementFragment : Fragment() {
             trackersBlockedFeature.set(
                 feature = TrackersBlockedFeature(
                     appStore = requireComponents.appStore,
-                    protectionsStorage = requireComponents.core.protectionsStorage,
+                    fetchTotalTrackersBlocked = requireComponents.useCases
+                        .trackingProtectionUseCases.fetchTotalTrackersBlocked,
                 ),
                 owner = this,
                 view = view,
