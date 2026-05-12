@@ -5993,7 +5993,7 @@ UniquePtr<ScrollMetadata> nsDisplayScrollInfoLayer::ComputeScrollMetadata(
     aBuilder->AddScrollContainerFrameToNotify(scrollContainerFrame);
   }
 
-  return UniquePtr<ScrollMetadata>(new ScrollMetadata(metadata));
+  return MakeUnique<ScrollMetadata>(metadata);
 }
 
 bool nsDisplayScrollInfoLayer::UpdateScrollData(
