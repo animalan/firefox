@@ -433,6 +433,7 @@ class ModuleObject : public NativeObject {
   void initScriptSlots(HandleScript script);
 #ifdef ENABLE_SOURCE_PHASE_IMPORTS
   void initModuleSourceSlot(HandleObject moduleSource);
+  void initScriptSourceObject(ScriptSourceObject* sso);
 #endif
 
   void setInitialEnvironment(

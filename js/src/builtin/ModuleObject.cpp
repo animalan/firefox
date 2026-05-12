@@ -1197,6 +1197,10 @@ void ModuleObject::initScriptSlots(HandleScript script) {
 void ModuleObject::initModuleSourceSlot(HandleObject moduleSource) {
   initReservedSlot(ModuleSourceSlot, ObjectValue(*moduleSource));
 }
+
+void ModuleObject::initScriptSourceObject(ScriptSourceObject* sso) {
+  cyclicModuleFields()->scriptSourceObject = sso;
+}
 #endif
 
 void ModuleObject::setInitialEnvironment(
