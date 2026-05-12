@@ -111,7 +111,7 @@ private fun SummarizationScreen(
 
     val loadingAlpha by animateFloatAsState(
         targetValue = if (state.isLoading && useGradient) 1f else 0f,
-        animationSpec = if (state.isLoading) snap() else state.tween,
+        animationSpec = if (state.isLoading) state.tween else snap(),
         label = "gradientAlpha",
     )
 
