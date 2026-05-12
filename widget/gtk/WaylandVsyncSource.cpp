@@ -103,6 +103,12 @@ void WaylandVsyncSource::Init() {
         SetHiddenWindowVSync();
       },
       /* aEmulateFrameCallback */ true);
+
+  // Set a condition when we should run the emulated VSync.
+  mWaylandSurface->SetVSyncEmulateCheckLocked(
+      surfaceLock, [surface = RefPtr{mWaylandSurface}]() -> bool {
+        return !surface->IsMapped() || !surface->HasBufferAttached();
+      });
 }
 
 WaylandVsyncSource::WaylandVsyncSource(nsWindow* aWindow)
@@ -351,6 +357,14 @@ void WaylandVsyncSource::Shutdown() {
   MutexAutoLock lock(mMutex);
 
   LOG("WaylandVsyncSource::Shutdown fps %f\n", GetFPS(mVsyncRate));
+
+  {
+    // Remove all references from callbacks
+    WaylandSurfaceLock surfaceLock(mWaylandSurface);
+    mWaylandSurface->ClearVSyncCallbackHandlerLocked(surfaceLock);
+    mWaylandSurface->SetVSyncEmulateCheckLocked(surfaceLock, nullptr,
+                                                /* aForce */ true);
+  }
 
   mWaylandSurface = nullptr;
   mWindow = nullptr;
