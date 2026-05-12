@@ -1889,6 +1889,9 @@ class PresShell final : public nsStubDocumentObserver,
 
   void CleanupFullscreenState();
 
+  void MaybeExitKeyboardLockedFullscreen(WidgetKeyboardEvent* aKeyboardEvent,
+                                         Document* aFullscreenRoot);
+
  private:
   ~PresShell();
 

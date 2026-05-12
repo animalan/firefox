@@ -9413,6 +9413,27 @@ void PresShell::EventHandler::FinalizeHandlingEvent(
   }
 }
 
+void PresShell::MaybeExitKeyboardLockedFullscreen(
+    WidgetKeyboardEvent* aKeyboardEvent, Document* aFullscreenRoot) {
+  // No recorded keydown?
+  if (mFirstUnmatchedEscapeKeyDownForFullscreen.IsNull()) {
+    return;
+  }
+  const bool escapeKeyDeltaLargeEnough =
+      (aKeyboardEvent->mTimeStamp -
+       mFirstUnmatchedEscapeKeyDownForFullscreen) >=
+      TimeDuration::FromMilliseconds(
+          StaticPrefs::dom_fullscreen_keyboard_lock_long_press_interval());
+
+  if (escapeKeyDeltaLargeEnough) {
+    Document::AsyncExitFullscreen(aFullscreenRoot);
+    if (XRE_IsParentProcess() && (PointerLockManager::GetLockedRemoteTarget() ||
+                                  PointerLockManager::IsLocked())) {
+      PointerLockManager::Unlock("EscapeKey");
+    }
+  }
+}
+
 void PresShell::EventHandler::MaybeHandleKeyboardEventBeforeDispatch(
     WidgetKeyboardEvent* aKeyboardEvent) {
   MOZ_ASSERT(aKeyboardEvent);
@@ -9451,33 +9472,19 @@ void PresShell::EventHandler::MaybeHandleKeyboardEventBeforeDispatch(
         }
 
         MOZ_ASSERT(aKeyboardEvent->mIsRepeat);
-        if (mPresShell->mFirstUnmatchedEscapeKeyDownForFullscreen) {
-          if (mPresShell->ShouldShowFullscreenKeyboardLockWarning(
-                  *aKeyboardEvent)) {
-            nsContentUtils::DispatchEventOnlyToChrome(
-                root, root, u"MozDOMFullscreen:WarnAboutKeyboardLock"_ns,
-                CanBubble::eYes, Cancelable::eNo, /* DefaultAction */ nullptr);
-          }
-
-          const bool escapeHasBeenHeldLongEnough =
-              (aKeyboardEvent->mTimeStamp -
-               mPresShell->mFirstUnmatchedEscapeKeyDownForFullscreen) >=
-              TimeDuration::FromMilliseconds(
-                  StaticPrefs::
-                      dom_fullscreen_keyboard_lock_long_press_interval());
-          if (escapeHasBeenHeldLongEnough) {
-            mPresShell->mFirstUnmatchedEscapeKeyDownForFullscreen = TimeStamp();
-            MOZ_LOG_FMT(gLog, LogLevel::Debug,
-                        "Exiting fullscreen from Escape key long-press");
-            Document::AsyncExitFullscreen(root);
-
-            if (XRE_IsParentProcess() &&
-                (PointerLockManager::GetLockedRemoteTarget() ||
-                 PointerLockManager::IsLocked())) {
-              PointerLockManager::Unlock("EscapeKey");
-            }
-          }
+        if (mPresShell->ShouldShowFullscreenKeyboardLockWarning(
+                *aKeyboardEvent)) {
+          nsContentUtils::DispatchEventOnlyToChrome(
+              root, root, u"MozDOMFullscreen:WarnAboutKeyboardLock"_ns,
+              CanBubble::eYes, Cancelable::eNo, /* DefaultAction */ nullptr);
         }
+
+        mPresShell->MaybeExitKeyboardLockedFullscreen(aKeyboardEvent, root);
+      } else if (aKeyboardEvent->mMessage == eKeyUp) {
+        // When keyboard key repeat is disabled by the OS, no repeat keydown
+        // events are generated while holding Escape. Check on keyup whether the
+        // key was held long enough to exit fullscreen.
+        mPresShell->MaybeExitKeyboardLockedFullscreen(aKeyboardEvent, root);
       }
 
       // If fullscreen keyboard-lock is enabled, return here, as we don't allow
