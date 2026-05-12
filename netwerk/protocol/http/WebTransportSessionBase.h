@@ -7,7 +7,6 @@
 
 #include <functional>
 
-#include "mozilla/Mutex.h"
 #include "nsISupportsImpl.h"
 #include "nsTArray.h"
 
@@ -42,12 +41,7 @@ class WebTransportSessionBase {
  protected:
   virtual ~WebTransportSessionBase() = default;
 
-  already_AddRefed<WebTransportSessionEventListener> GetListener();
-  already_AddRefed<WebTransportSessionEventListener> TakeListener();
-
-  Mutex mListenerLock{"WebTransportSessionBase::mListenerLock"};
-  RefPtr<WebTransportSessionEventListener> mListener
-      MOZ_GUARDED_BY(mListenerLock);
+  RefPtr<WebTransportSessionEventListener> mListener;
 };
 
 }  // namespace mozilla::net

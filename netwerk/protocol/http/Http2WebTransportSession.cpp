@@ -365,12 +365,9 @@ bool Http2WebTransportSessionImpl::OnCapsule(Capsule&& aCapsule) {
       LOG(("Handling DATAGRAM\n"));
       WebTransportDatagramCapsule& datagram =
           aCapsule.GetWebTransportDatagramCapsule();
-      if (RefPtr<WebTransportSessionEventListener> baseListener =
-              GetListener()) {
-        if (nsCOMPtr<WebTransportSessionEventListenerInternal> listener =
-                do_QueryInterface(baseListener)) {
-          listener->OnDatagramReceivedInternal(std::move(datagram.mPayload));
-        }
+      if (nsCOMPtr<WebTransportSessionEventListenerInternal> listener =
+              do_QueryInterface(mListener)) {
+        listener->OnDatagramReceivedInternal(std::move(datagram.mPayload));
       }
       break;
     }
@@ -435,8 +432,8 @@ bool Http2WebTransportSessionImpl::HandleStreamStopSendingCapsule(
 
   uint8_t wtError = Http3ErrorToWebTransportError(stopSending.mErrorCode);
   nsresult rv = GetNSResultFromWebTransportError(wtError);
-  if (RefPtr<WebTransportSessionEventListener> listener = GetListener()) {
-    listener->OnStopSending(aId, rv);
+  if (mListener) {
+    mListener->OnStopSending(aId, rv);
   }
   return true;
 }
@@ -457,8 +454,8 @@ bool Http2WebTransportSessionImpl::HandleStreamResetCapsule(
 
   uint8_t wtError = Http3ErrorToWebTransportError(reset.mErrorCode);
   nsresult rv = GetNSResultFromWebTransportError(wtError);
-  if (RefPtr<WebTransportSessionEventListener> listener = GetListener()) {
-    listener->OnResetReceived(aId, rv);
+  if (mListener) {
+    mListener->OnResetReceived(aId, rv);
   }
 
   return true;
@@ -514,11 +511,9 @@ bool Http2WebTransportSessionImpl::ProcessIncomingStreamCapsule(
       return false;
     }
     mIncomingStreams.InsertOrUpdate(newStreamID, stream);
-    if (RefPtr<WebTransportSessionEventListener> baseListener = GetListener()) {
-      if (nsCOMPtr<WebTransportSessionEventListenerInternal> listener =
-              do_QueryInterface(baseListener)) {
-        listener->OnIncomingStreamAvailableInternal(stream);
-      }
+    if (nsCOMPtr<WebTransportSessionEventListenerInternal> listener =
+            do_QueryInterface(mListener)) {
+      listener->OnIncomingStreamAvailableInternal(stream);
     }
   }
 
