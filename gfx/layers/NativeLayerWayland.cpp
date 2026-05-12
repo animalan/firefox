@@ -162,9 +162,9 @@ void NativeLayerRootWayland::Init() {
 
   // Propagate frame callback state (enabled/disabled) to all layers
   // to save resources.
-  mRootSurface->SetFrameCallbackStateHandlerLocked(
+  mRootSurface->SetVSyncCallbackStateHandlerLocked(
       lock, [this, self = RefPtr{this}](bool aState) -> void {
-        LOGVERBOSE("FrameCallbackStateHandler()");
+        LOGVERBOSE("VSyncCallbackStateHandler()");
         mRootSurface->AssertCurrentThreadOwnsMutex();
         for (RefPtr<NativeLayerWayland>& layer : mSublayers) {
           layer->SetFrameCallbackState(aState);
@@ -620,7 +620,7 @@ void NativeLayerRootWayland::FrameCallbackHandler(uint32_t aTime) {
   mLastFrameCallbackTime = aTime;
 
   LOGVERBOSE("NativeLayerRootWayland::FrameCallbackHandler() time %d", aTime);
-  mRootSurface->FrameCallbackHandler(nullptr, aTime,
+  mRootSurface->VSyncCallbackHandler(nullptr, aTime,
                                      /* aRoutedFromChildSurface */ true);
 }
 
@@ -950,7 +950,7 @@ bool NativeLayerWayland::Map(WaylandSurfaceLock* aParentWaylandSurfaceLock) {
   //
   // aTime param is used to identify duplicate events.
   //
-  mSurface->SetFrameCallbackLocked(
+  mSurface->SetVSyncCallbackLocked(
       surfaceLock,
       [this, self = RefPtr{this}](wl_callback* aCallback,
                                   uint32_t aTime) -> void {
@@ -995,7 +995,7 @@ bool NativeLayerWayland::Map(WaylandSurfaceLock* aParentWaylandSurfaceLock) {
 void NativeLayerWayland::SetFrameCallbackState(bool aState) {
   LOGVERBOSE("NativeLayerWayland::SetFrameCallbackState() %d", aState);
   WaylandSurfaceLock lock(mSurface);
-  mSurface->SetFrameCallbackStateLocked(lock, aState);
+  mSurface->SetVSyncCallbackStateLocked(lock, aState);
 }
 
 void NativeLayerWayland::MainThreadMap() {
@@ -1026,7 +1026,7 @@ void NativeLayerWayland::Unmap() {
   mSurface->UnmapLocked(surfaceLock);
   // Clear reference to this added at NativeLayerWayland::Map() by
   // callback handler.
-  mSurface->ClearFrameCallbackHandlerLocked(surfaceLock);
+  mSurface->ClearVSyncCallbackHandlerLocked(surfaceLock);
   mState.mMutatedStackingOrder = true;
   mState.mMutatedVisibility = true;
   mState.mIsRendered = false;
