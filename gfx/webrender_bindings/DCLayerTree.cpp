@@ -2143,13 +2143,33 @@ void DCSurfaceDCompositionTextureOverlay::Present() {
   }
 
   const auto textureHost = mRenderTextureHost->AsRenderDXGITextureHost();
+
+  auto start = TimeStamp::Now();
   RefPtr<IDCompositionTexture> dcompTexture =
       textureHost->GetDCompositionTexture();
+  auto end = TimeStamp::Now();
   if (!dcompTexture) {
     gfxCriticalNote << "Failed to get DCompTexture";
     RenderThread::Get()->NotifyWebRenderError(
         WebRenderError::DCOMP_TEXTURE_OVERLAY);
     return;
+  }
+
+  const auto maxGetWaitDurationMs = 2;
+  const auto maxSlowGetCount = 5;
+
+  const auto getDurationMs =
+      static_cast<uint32_t>((end - start).ToMilliseconds());
+
+  if (getDurationMs > maxGetWaitDurationMs) {
+    mSlowGetCount++;
+  } else {
+    mSlowGetCount = 0;
+  }
+
+  if (mSlowGetCount > maxSlowGetCount) {
+    RenderThread::Get()->NotifyWebRenderError(
+        WebRenderError::DCOMP_TEXTURE_OVERLAY);
   }
 
   const auto alphaMode =
