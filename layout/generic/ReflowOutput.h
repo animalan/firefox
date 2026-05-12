@@ -8,6 +8,7 @@
 #define mozilla_ReflowOutput_h
 
 #include "mozilla/EnumeratedRange.h"
+#include "mozilla/TypedEnumBits.h"
 #include "mozilla/WritingModes.h"
 #include "nsBoundingMetrics.h"
 #include "nsRect.h"
@@ -22,6 +23,16 @@ constexpr auto AllOverflowTypes() {
   return MakeInclusiveEnumeratedRange(OverflowType::Ink,
                                       OverflowType::Scrollable);
 }
+
+// Flags controlling how a child's overflow areas are unioned into a parent's
+// overflow areas.
+enum class OverflowAreaUnionFlags : uint8_t {
+  None = 0,
+  // Treat the frame as if it were a scroll container: bypass the contain:layout
+  // check so the scrollable overflow of children still contributes.
+  AsIfScrolled = 1 << 0,
+};
+MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(OverflowAreaUnionFlags)
 
 struct OverflowAreas {
  public:

@@ -2581,9 +2581,12 @@ void nsBlockFrame::UnionChildOverflow(OverflowAreas& aOverflowAreas,
     nsRect bounds = line.GetPhysicalBounds();
     OverflowAreas lineAreas(bounds, bounds);
 
+    const OverflowAreaUnionFlags flags =
+        aAsIfScrolled ? OverflowAreaUnionFlags::AsIfScrolled
+                      : OverflowAreaUnionFlags::None;
     for (nsIFrame* lineFrame : line.ChildFrames()) {
       // Ensure this is called for each frame in the line
-      ConsiderChildOverflow(lineAreas, lineFrame, aAsIfScrolled);
+      ConsiderChildOverflow(lineAreas, lineFrame, flags);
 
       if (inkOverflowOnly || !isScrolled) {
         continue;
@@ -2598,7 +2601,7 @@ void nsBlockFrame::UnionChildOverflow(OverflowAreas& aOverflowAreas,
     // Consider the overflow areas of the floats attached to the line as well
     if (line.HasFloats()) {
       for (nsIFrame* f : line.Floats()) {
-        ConsiderChildOverflow(lineAreas, f, aAsIfScrolled);
+        ConsiderChildOverflow(lineAreas, f, flags);
         if (inkOverflowOnly || !isScrolled) {
           continue;
         }
