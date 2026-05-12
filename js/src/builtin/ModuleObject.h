@@ -315,14 +315,6 @@ class AbstractModuleSourceObject : public NativeObject {
  public:
   static const JSClass class_;
 };
-
-// https://tc39.es/proposal-source-phase-imports/#sec-module-source-objects
-class ModuleSourceObject : public NativeObject {
- public:
-  static const JSClass class_;
-  static bool isInstance(HandleValue value);
-  [[nodiscard]] static ModuleSourceObject* create(JSContext* cx);
-};
 #endif
 
 // Value types of [[Status]] in a Cyclic Module Record
