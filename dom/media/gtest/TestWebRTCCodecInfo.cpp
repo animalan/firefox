@@ -239,7 +239,6 @@ TEST_F(WebRTCCodecInfoTest, CaseInsensitiveMimeTypes) {
 }
 
 // Test that H.264-specific WebRTC pref blocks HW encode/decode if false
-#if !defined(XP_MACOSX)
 TEST_F(WebRTCCodecInfoTest, H264HWBlockedByWebRTCPref) {
   const ScopedPrefSetter h264Pref("media.webrtc.hw.h264.enabled", false);
   const auto codecInfo = WebrtcCodecInfo::Create();
@@ -251,7 +250,6 @@ TEST_F(WebRTCCodecInfoTest, H264HWBlockedByWebRTCPref) {
   // Audio shouldn't be affected
   TestAudioDecodeEncodeSWHW(codecInfo.get());
 }
-#endif
 
 // Test that AV1 WebRTC pref disables AV1 support if false
 TEST_F(WebRTCCodecInfoTest, AV1BlockedByWebRTCPref) {
