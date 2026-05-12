@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 6.0.40
- * pdfjsBuild = a5e9940d1
+ * pdfjsVersion = 6.0.65
+ * pdfjsBuild = 6bbcb46db
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -72,6 +72,7 @@ const AnnotationMode = {
   ENABLE_FORMS: 2,
   ENABLE_STORAGE: 3
 };
+const AnnotationPrefix = "pdfjs_internal_id_";
 const AnnotationEditorPrefix = "pdfjs_internal_editor_";
 const AnnotationEditorType = {
   DISABLE: -1,
@@ -821,13 +822,6 @@ function isArrayEqual(arr1, arr2) {
   }
   return true;
 }
-function getModificationDate(date = new Date()) {
-  if (!(date instanceof Date)) {
-    date = new Date(date);
-  }
-  const buffer = [date.getUTCFullYear().toString(), (date.getUTCMonth() + 1).toString().padStart(2, "0"), date.getUTCDate().toString().padStart(2, "0"), date.getUTCHours().toString().padStart(2, "0"), date.getUTCMinutes().toString().padStart(2, "0"), date.getUTCSeconds().toString().padStart(2, "0")];
-  return buffer.join("");
-}
 let NormalizeRegex = null;
 let NormalizationMap = null;
 function normalizeUnicode(str) {
@@ -840,7 +834,6 @@ function normalizeUnicode(str) {
 function getUuid() {
   return crypto.randomUUID();
 }
-const AnnotationPrefix = "pdfjs_internal_id_";
 function _isValidExplicitDest(validRef, validName, dest) {
   if (!Array.isArray(dest) || dest.length < 2) {
     return false;
@@ -1723,6 +1716,13 @@ function stringToUTF16String(str, bigEndian = false) {
     buf.push(String.fromCharCode(char >> 8 & 0xff), String.fromCharCode(char & 0xff));
   }
   return buf.join("");
+}
+function getModificationDate(date = new Date()) {
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+  const buffer = [date.getUTCFullYear().toString(), (date.getUTCMonth() + 1).toString().padStart(2, "0"), date.getUTCDate().toString().padStart(2, "0"), date.getUTCHours().toString().padStart(2, "0"), date.getUTCMinutes().toString().padStart(2, "0"), date.getUTCSeconds().toString().padStart(2, "0")];
+  return buffer.join("");
 }
 function getRotationMatrix(rotation, width, height) {
   switch (rotation) {
@@ -33994,7 +33994,7 @@ class PartialEvaluator {
     }
     return transferMaps;
   }
-  handleTilingType(fn, color, resources, pattern, patternDict, operatorList, task, localTilingPatternCache) {
+  handleTilingType(fn, color, resources, pattern, patternDict, operatorList, task, localTilingPatternCache, seenRefs) {
     const tilingOpList = new CheckedOperatorList();
     const patternResources = Dict.merge({
       xref: this.xref,
@@ -34004,7 +34004,8 @@ class PartialEvaluator {
       stream: pattern,
       task,
       resources: patternResources,
-      operatorList: tilingOpList
+      operatorList: tilingOpList,
+      prevRefs: seenRefs
     }).then(function () {
       const operatorListIR = tilingOpList.getIR();
       const {
@@ -34031,9 +34032,9 @@ class PartialEvaluator {
       throw reason;
     });
   }
-  async handleSetFont(resources, fontArgs, fontRef, operatorList, task, state, fallbackFontDict = null, cssFontInfo = null) {
+  async handleSetFont(resources, fontArgs, fontRef, operatorList, task, state, fallbackFontDict = null, cssFontInfo = null, seenRefs = null) {
     const fontName = fontArgs?.[0] instanceof Name ? fontArgs[0].name : null;
-    const translated = await this.loadFont(fontName, fontRef, resources, task, fallbackFontDict, cssFontInfo);
+    const translated = await this.loadFont(fontName, fontRef, resources, task, fallbackFontDict, cssFontInfo, seenRefs);
     if (translated.font.isType3Font) {
       operatorList.addDependencies(translated.type3Dependencies);
     }
@@ -34101,7 +34102,7 @@ class PartialEvaluator {
           break;
         case "Font":
           isSimpleGState = false;
-          promise = promise.then(() => this.handleSetFont(resources, null, value[0], operatorList, task, stateManager.state).then(function (loadedName) {
+          promise = promise.then(() => this.handleSetFont(resources, null, value[0], operatorList, task, stateManager.state, null, null, seenRefs).then(function (loadedName) {
             operatorList.addDependency(loadedName);
             gStateObj.push([key, [loadedName, value[1]]]);
           }));
@@ -34154,7 +34155,7 @@ class PartialEvaluator {
       localGStateCache.set(cacheKey, gStateRef, gStateObj);
     }
   }
-  loadFont(fontName, font, resources, task, fallbackFontDict = null, cssFontInfo = null) {
+  loadFont(fontName, font, resources, task, fallbackFontDict = null, cssFontInfo = null, seenRefs = null) {
     const errorFont = async () => new TranslatedFont({
       loadedName: "g_font_error",
       font: new ErrorFont(`Font "${fontName}" is not available.`),
@@ -34249,7 +34250,7 @@ class PartialEvaluator {
       });
       if (translatedFont.isType3Font) {
         try {
-          await translated.loadType3Data(this, resources, task);
+          await translated.loadType3Data(this, resources, task, seenRefs);
         } catch (reason) {
           throw new Error(`Type3 font load error: ${reason}`);
         }
@@ -34404,7 +34405,7 @@ class PartialEvaluator {
     }
     return id;
   }
-  handleColorN(operatorList, fn, args, cs, patterns, resources, task, localColorSpaceCache, localTilingPatternCache, localShadingPatternCache) {
+  handleColorN(operatorList, fn, args, cs, patterns, resources, task, localColorSpaceCache, localTilingPatternCache, localShadingPatternCache, seenRefs) {
     const patternName = args.pop();
     if (patternName instanceof Name) {
       const rawPattern = patterns.getRaw(patternName.name);
@@ -34423,7 +34424,7 @@ class PartialEvaluator {
         const typeNum = dict.get("PatternType");
         if (typeNum === PatternType.TILING) {
           const color = cs.base ? cs.base.getRgbHex(args, 0) : null;
-          return this.handleTilingType(fn, color, resources, pattern, dict, operatorList, task, localTilingPatternCache);
+          return this.handleTilingType(fn, color, resources, pattern, dict, operatorList, task, localTilingPatternCache, seenRefs);
         } else if (typeNum === PatternType.SHADING) {
           const shading = dict.get("Shading");
           const objId = this.parseShading({
@@ -34667,7 +34668,7 @@ class PartialEvaluator {
             return;
           case OPS.setFont:
             const fontSize = args[1];
-            next(self.handleSetFont(resources, args, null, operatorList, task, stateManager.state, fallbackFontDict).then(function (loadedName) {
+            next(self.handleSetFont(resources, args, null, operatorList, task, stateManager.state, fallbackFontDict, null, seenRefs).then(function (loadedName) {
               operatorList.addDependency(loadedName);
               operatorList.addOp(OPS.setFont, [loadedName, fontSize]);
             }));
@@ -34814,7 +34815,7 @@ class PartialEvaluator {
               break;
             }
             if (cs.name === "Pattern") {
-              next(self.handleColorN(operatorList, OPS.setFillColorN, args, cs, patterns, resources, task, localColorSpaceCache, localTilingPatternCache, localShadingPatternCache));
+              next(self.handleColorN(operatorList, OPS.setFillColorN, args, cs, patterns, resources, task, localColorSpaceCache, localTilingPatternCache, localShadingPatternCache, seenRefs));
               return;
             }
             args = [cs.getRgbHex(args, 0)];
@@ -34833,7 +34834,7 @@ class PartialEvaluator {
               break;
             }
             if (cs.name === "Pattern") {
-              next(self.handleColorN(operatorList, OPS.setStrokeColorN, args, cs, patterns, resources, task, localColorSpaceCache, localTilingPatternCache, localShadingPatternCache));
+              next(self.handleColorN(operatorList, OPS.setStrokeColorN, args, cs, patterns, resources, task, localColorSpaceCache, localTilingPatternCache, localShadingPatternCache, seenRefs));
               return;
             }
             args = [cs.getRgbHex(args, 0)];
@@ -35254,7 +35255,7 @@ class PartialEvaluator {
       };
     }
     async function handleSetFont(fontName, fontRef) {
-      const translated = await self.loadFont(fontName, fontRef, resources, task);
+      const translated = await self.loadFont(fontName, fontRef, resources, task, null, null, seenRefs);
       textState.loadedName = translated.loadedName;
       textState.font = translated.font;
       textState.fontMatrix = translated.font.fontMatrix || FONT_IDENTITY_MATRIX;
@@ -36792,7 +36793,7 @@ class TranslatedFont {
     this.font.disableFontFace = true;
     PartialEvaluator.buildFontPaths(this.font, this.font.glyphCacheValues, handler, evaluatorOptions);
   }
-  loadType3Data(evaluator, resources, task) {
+  loadType3Data(evaluator, resources, task, seenRefs = null) {
     if (this.#type3Loaded) {
       return this.#type3Loaded;
     }
@@ -36825,7 +36826,8 @@ class TranslatedFont {
           stream: glyphStream,
           task,
           resources: fontResources,
-          operatorList
+          operatorList,
+          prevRefs: seenRefs
         }).then(() => {
           switch (operatorList.fnArray[0]) {
             case OPS.setCharWidthAndBounds:
@@ -37986,8 +37988,8 @@ class NameOrNumberTree {
       processed.put(this.root);
     }
     const queue = [this.root];
-    while (queue.length > 0) {
-      const obj = xref.fetchIfRef(queue.shift());
+    for (const node of queue) {
+      const obj = xref.fetchIfRef(node);
       if (!(obj instanceof Dict)) {
         continue;
       }
@@ -62289,7 +62291,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "6.0.40";
+    const workerVersion = "6.0.65";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }

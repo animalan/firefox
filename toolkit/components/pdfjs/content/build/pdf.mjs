@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 6.0.40
- * pdfjsBuild = a5e9940d1
+ * pdfjsVersion = 6.0.65
+ * pdfjsBuild = 6bbcb46db
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -72,6 +72,7 @@ const AnnotationMode = {
   ENABLE_FORMS: 2,
   ENABLE_STORAGE: 3
 };
+const AnnotationPrefix = "pdfjs_internal_id_";
 const AnnotationEditorPrefix = "pdfjs_internal_editor_";
 const AnnotationEditorType = {
   DISABLE: -1,
@@ -821,13 +822,6 @@ function isArrayEqual(arr1, arr2) {
   }
   return true;
 }
-function getModificationDate(date = new Date()) {
-  if (!(date instanceof Date)) {
-    date = new Date(date);
-  }
-  const buffer = [date.getUTCFullYear().toString(), (date.getUTCMonth() + 1).toString().padStart(2, "0"), date.getUTCDate().toString().padStart(2, "0"), date.getUTCHours().toString().padStart(2, "0"), date.getUTCMinutes().toString().padStart(2, "0"), date.getUTCSeconds().toString().padStart(2, "0")];
-  return buffer.join("");
-}
 let NormalizeRegex = null;
 let NormalizationMap = null;
 function normalizeUnicode(str) {
@@ -840,7 +834,6 @@ function normalizeUnicode(str) {
 function getUuid() {
   return crypto.randomUUID();
 }
-const AnnotationPrefix = "pdfjs_internal_id_";
 function _isValidExplicitDest(validRef, validName, dest) {
   if (!Array.isArray(dest) || dest.length < 2) {
     return false;
@@ -10518,18 +10511,19 @@ class CanvasGraphics {
     } = this.ctx.canvas;
     const maskArea = maskCanvas.width * maskCanvas.height;
     const useLayerSize = layerW * layerH < SMASK_LAYER_TO_MASK_AREA_RATIO * maskArea;
-    let filterUrl = null;
-    if (hasFilter) {
-      filterUrl = subtype === "Alpha" ? this.filterFactory.addAlphaFilter(transferMap) : this.filterFactory.addLuminosityFilter(transferMap);
-    }
+    const filterSpec = hasFilter ? {
+      url: subtype === "Alpha" ? this.filterFactory.addAlphaFilter(transferMap) : this.filterFactory.addLuminosityFilter(transferMap),
+      subtype,
+      transferMap
+    } : null;
     const bakedBackdrop = subtype === "Luminosity" ? backdrop : null;
     let preparedEntry, offsetX, offsetY;
     if (useLayerSize) {
-      preparedEntry = this._bakeSMaskCanvas(maskCanvas, smask.offsetX, smask.offsetY, layerW, layerH, bakedBackdrop, filterUrl);
+      preparedEntry = this._bakeSMaskCanvas(maskCanvas, smask.offsetX, smask.offsetY, layerW, layerH, bakedBackdrop, filterSpec);
       offsetX = 0;
       offsetY = 0;
     } else {
-      preparedEntry = this._bakeSMaskCanvas(maskCanvas, 0, 0, maskCanvas.width, maskCanvas.height, bakedBackdrop, filterUrl);
+      preparedEntry = this._bakeSMaskCanvas(maskCanvas, 0, 0, maskCanvas.width, maskCanvas.height, bakedBackdrop, filterSpec);
       offsetX = smask.offsetX;
       offsetY = smask.offsetY;
     }
@@ -10539,8 +10533,8 @@ class CanvasGraphics {
     this.smaskPreparedOffsetY = offsetY;
     this.smaskPreparedOOBAlpha = !useLayerSize && filteredOOBAlpha !== 0 ? filteredOOBAlpha : null;
   }
-  _bakeSMaskCanvas(maskCanvas, drawX, drawY, w, h, backdrop, filterUrl) {
-    if (!backdrop && !filterUrl) {
+  _bakeSMaskCanvas(maskCanvas, drawX, drawY, w, h, backdrop, filterSpec) {
+    if (!backdrop && !filterSpec) {
       unreachable("_bakeSMaskCanvas with neither backdrop nor filter");
     }
     const srcEntry = this.canvasFactory.create(w, h);
@@ -10551,14 +10545,39 @@ class CanvasGraphics {
       sCtx.fillStyle = backdrop;
       sCtx.fillRect(0, 0, w, h);
     }
-    if (!filterUrl) {
+    if (!filterSpec) {
       return srcEntry;
     }
     const preparedEntry = this.canvasFactory.create(w, h);
     const pCtx = preparedEntry.context;
-    pCtx.filter = filterUrl;
+    const filterSupported = pCtx.filter !== undefined;
+    pCtx.filter = filterSpec.url;
+    const filterApplied = filterSupported && pCtx.filter !== "none" && pCtx.filter !== "";
     pCtx.drawImage(srcEntry.canvas, 0, 0);
-    pCtx.filter = "none";
+    if (filterSupported) {
+      pCtx.filter = "none";
+    }
+    if (!filterApplied) {
+      const img = pCtx.getImageData(0, 0, w, h);
+      const {
+        data
+      } = img;
+      const {
+        transferMap
+      } = filterSpec;
+      if (filterSpec.subtype === "Luminosity") {
+        for (let i = 0, ii = data.length; i < ii; i += 4) {
+          const a = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2] + 0.5 | 0;
+          data[i] = data[i + 1] = data[i + 2] = 0;
+          data[i + 3] = transferMap?.[a] ?? a;
+        }
+      } else {
+        for (let i = 3, ii = data.length; i < ii; i += 4) {
+          data[i] = transferMap[data[i]];
+        }
+      }
+      pCtx.putImageData(img, 0, 0);
+    }
     this.canvasFactory.destroy(srcEntry);
     return preparedEntry;
   }
@@ -13778,7 +13797,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "6.0.40",
+    apiVersion: "6.0.65",
     data,
     password,
     disableAutoFetch,
@@ -14025,9 +14044,6 @@ class PDFDocumentProxy {
   }
   cleanup(keepLoadedFonts = false) {
     return this._transport.startCleanup(keepLoadedFonts || this.isPureXfa);
-  }
-  destroy() {
-    return this.loadingTask.destroy();
   }
   cachedPageNumber(ref) {
     return this._transport.cachedPageNumber(ref);
@@ -15409,8 +15425,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "6.0.40";
-const build = "a5e9940d1";
+const version = "6.0.65";
+const build = "6bbcb46db";
 
 ;// ./src/display/editor/color_picker.js
 
