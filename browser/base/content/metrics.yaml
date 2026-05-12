@@ -416,12 +416,12 @@ networking:
       scalar networking.captive_portal_banner_displayed.
     bugs:
       - https://bugzil.la/1868145
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2037081
     data_reviews:
       - https://bugzil.la/1868145
     notification_emails:
       - necko@mozilla.com
     expires: never
-    telemetry_mirror: NETWORKING_CAPTIVE_PORTAL_BANNER_DISPLAYED
 
   captive_portal_banner_display_time:
     type: labeled_counter
@@ -435,6 +435,7 @@ networking:
       scalar networking.captive_portal_banner_display_time.
     bugs:
       - https://bugzil.la/1868145
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2037081
     data_reviews:
       - https://bugzil.la/1868145
     notification_emails:
@@ -444,7 +445,6 @@ networking:
       - success
       - abort
       - dismiss
-    telemetry_mirror: NETWORKING_CAPTIVE_PORTAL_BANNER_DISPLAY_TIME
 
 browser.timings:
   tab_click:

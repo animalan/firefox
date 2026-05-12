@@ -291,19 +291,16 @@ perf:
       The time from a top-level document's HTTP channel open to the first byte
       of the reply is received (ms). Keyed by TRR domain for DoH or 'Native'
       otherwise
-
-      This metric was generated to correspond to the Legacy Telemetry
-      exponential histogram DNS_PERF_FIRST_BYTE_MS.
     time_unit: millisecond
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1803671
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2037081
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1803671
     notification_emails:
       - necko@mozilla.com
       - acreskey@mozilla.com
     expires: never
-    telemetry_mirror: DNS_PERF_FIRST_BYTE_MS
 
   cold_applink_process_launch_to_load_uri:
     type: timing_distribution
@@ -573,13 +570,11 @@ performance.time:
     type: timing_distribution
     description: >
       Time in milliseconds from navigationStart to domLoading.
-
-      This metric was generated to correspond to the Legacy Telemetry
-      exponential histogram TIME_TO_DOM_LOADING_MS.
     time_unit: millisecond
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1344893
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1489524
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2037081
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1344893
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1489524
@@ -587,7 +582,6 @@ performance.time:
       - vgosu@mozilla.com
       - necko@mozilla.com
     expires: never
-    telemetry_mirror: TIME_TO_DOM_LOADING_MS
 
 performance.page:
   non_blank_paint:
