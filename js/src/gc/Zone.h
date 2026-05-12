@@ -415,7 +415,7 @@ class Zone : public js::ZoneAllocator, public js::gc::GraphNodeBase<JS::Zone> {
 
   // The chunk currently being allocated from. If non-null this has
   // isCurrentChunk set to true. Can be accessed without taking the GC lock.
-  js::MainThreadData<js::gc::ArenaChunk*> currentChunk_;
+  js::MainThreadOrGCTaskData<js::gc::ArenaChunk*> currentChunk_;
 
   // Bitmap for arenas in the current chunk that have been freed by background
   // sweeping but not yet merged into the chunk's freeCommittedArenas.

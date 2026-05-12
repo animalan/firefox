@@ -96,13 +96,10 @@ class BackgroundMarkTask : public GCParallelTask {
 class BackgroundUnmarkTask : public GCParallelTask {
  public:
   explicit BackgroundUnmarkTask(GCRuntime* gc);
-  void initZones();
   void run(AutoLockHelperThreadState& lock) override;
 
  private:
   void unmark();
-
-  ZoneVector zones;
 };
 
 class BackgroundSweepTask : public GCParallelTask {

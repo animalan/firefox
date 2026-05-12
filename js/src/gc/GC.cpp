@@ -2926,16 +2926,18 @@ bool GCRuntime::prepareZonesForCollection(bool* isFullOut) {
   bool any = false;
 
   for (ZonesIter zone(this, WithAtoms); !zone.done(); zone.next()) {
-    /* Set up which zones will be collected. */
+    // Set up which zones will be collected.
     bool shouldCollect = ShouldCollectZone(zone, sliceReason);
-    if (shouldCollect) {
-      any = true;
-      zone->changeGCState(this, Zone::NoGC, Zone::Prepare);
-    } else {
+    zone->setWasCollected(shouldCollect);
+    if (!shouldCollect) {
       *isFullOut = false;
+      continue;
     }
 
-    zone->setWasCollected(shouldCollect);
+    any = true;
+    zone->changeGCState(this, Zone::NoGC, Zone::Prepare);
+    zone->arenas.clearFreeLists();
+    zone->arenas.moveArenasToCollectingLists();
   }
 
   /* Check that at least one zone is scheduled for collection. */
@@ -3065,7 +3067,6 @@ bool GCRuntime::beginPreparePhase(AutoGCSession& session) {
    * can be slow. This usually happens concurrently with the mutator and GC
    * proper does not start until this is complete.
    */
-  unmarkTask.initZones();
   if (useBackgroundThreads) {
     unmarkTask.start();
   } else {
@@ -3089,44 +3090,80 @@ bool GCRuntime::beginPreparePhase(AutoGCSession& session) {
 BackgroundUnmarkTask::BackgroundUnmarkTask(GCRuntime* gc)
     : GCParallelTask(gc, gcstats::PhaseKind::UNMARK) {}
 
-void BackgroundUnmarkTask::initZones() {
-  MOZ_ASSERT(isIdle());
-  MOZ_ASSERT(zones.empty());
-  MOZ_ASSERT(!isCancelled());
-
-  // We can't safely iterate the zones vector from another thread so we copy the
-  // zones to be collected into another vector.
-  AutoEnterOOMUnsafeRegion oomUnsafe;
-  for (GCZonesIter zone(gc); !zone.done(); zone.next()) {
-    if (!zones.append(zone.get())) {
-      oomUnsafe.crash("BackgroundUnmarkTask::initZones");
-    }
-
-    zone->arenas.clearFreeLists();
-    zone->arenas.moveArenasToCollectingLists();
-  }
-}
-
 void BackgroundUnmarkTask::run(AutoLockHelperThreadState& lock) {
   {
     AutoUnlockHelperThreadState unlock(lock);
     unmark();
-    zones.clear();
   }
 
   gc->maybeRequestGCAfterBackgroundTask(lock);
 }
 
 void BackgroundUnmarkTask::unmark() {
-  for (Zone* zone : zones) {
-    for (auto kind : AllAllocKinds()) {
-      ArenaList& arenas = zone->arenas.collectingArenaList(kind);
-      for (auto arena = arenas.iter(); !arena.done(); arena.next()) {
-        arena->unmarkAll();
-        if (isCancelled()) {
-          return;
-        }
+  // Unmark all chunks in a zone.
+  //
+  // The mutator takes chunks from the available list, uses them as the current
+  // chunk and then moves them to the full list.
+  //
+  // We don't have to unmark new chunks as they have their mark bits cleared on
+  // initialization. We start with the first chunk and advance through the list,
+  // taking account of the fact that the chunk may move between lists while the
+  // lock is released. Chunks may only move in one direction while we are
+  // running: from the available pool to the the current chunk to the full list.
+
+  MOZ_ASSERT(gc->state() == gc::State::Prepare);
+  MOZ_ASSERT(!gc->isBackgroundSweeping());
+
+  AutoLockGC lock(gc);
+  for (size_t i = 0; i < gc->zones().length(); i++) {
+    Zone* zone = gc->zones()[i];  // Use index in case vector grows.
+    if (!zone->wasGCStarted()) {
+      continue;
+    }
+    MOZ_ASSERT(zone->isGCPreparing());
+
+    // Unmark available chunks.
+    //
+    // The mutator may remove chunks from the front of this list while this is
+    // happening. Ignore this and continue processing available chunks; the
+    // removed chunks will end up as the current chunk or on the full list and
+    // will be unmarked below.
+    ArenaChunk* chunk = zone->availableChunks(lock).maybeHead();
+    while (chunk) {
+      {
+        AutoUnlockGC unlock(lock);
+        chunk->markBits.clear();
       }
+      // Check whether this chunk is still in the available list. If it was
+      // removed we restart unmarking for the remaining available chunks.
+      if (chunk->info.isCurrentChunk || !chunk->hasAvailableArenas()) {
+        chunk = zone->availableChunks(lock).maybeHead();
+      } else {
+        chunk = chunk->next();
+      }
+    }
+
+    // Unmark the current chunk.
+    chunk = zone->currentChunk_;
+    if (chunk) {
+      chunk->markBits.clear();
+    }
+
+    // Unmark full chunks.
+    //
+    // The mutator may insert chunks at the front of this list while this is
+    // happening. Those chunks were either unmarked already or are freshly
+    // allocated which means we can ignore this.
+    chunk = zone->fullChunks(lock).maybeHead();
+    while (chunk) {
+      {
+        AutoUnlockGC unlock(lock);
+        chunk->markBits.clear();
+      }
+      // Chunk must still be full.
+      MOZ_ASSERT(!chunk->info.isCurrentChunk);
+      MOZ_ASSERT(!chunk->hasAvailableArenas());
+      chunk = chunk->next();
     }
   }
 }

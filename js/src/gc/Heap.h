@@ -547,6 +547,8 @@ class ArenaChunk : public ArenaChunkBase {
   // Merge arenas freed by background sweeping into the main free arenas bitmap.
   void mergePendingFreeArenas(GCRuntime* gc, const AutoLockGC& lock);
 
+  ArenaChunk* next() const { return info.next; }
+
 #ifdef DEBUG
   void verify() const;
 #else
