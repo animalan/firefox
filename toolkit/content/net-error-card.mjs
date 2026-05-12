@@ -656,7 +656,9 @@ export class NetErrorCard extends MozLitElement {
       whatCanYouDoItems: customNetError.whatCanYouDoItems,
       learnMoreL10nId: customNetError.learnMoreL10nId,
       learnMoreSupportPage: customNetError.learnMoreSupportPage,
-      errorCode: customNetError.showErrorCode ? config.errorCode : null,
+      errorCode:
+        this.errorInfo?.errorCodeString ||
+        (customNetError.showErrorCode ? config.errorCode : null),
       buttons: {
         tryAgain: config.buttons?.showTryAgain,
         goBack: config.buttons?.showGoBack && window.self === window.top,
