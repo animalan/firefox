@@ -20,6 +20,8 @@ import mozilla.components.feature.summarize.settings.SummarizationSettings
 import mozilla.components.lib.state.Middleware
 import mozilla.components.lib.state.Store
 
+const val TAG = "SummarizationMiddleware"
+
 /** The initial middleware for the summarization feature */
 class SummarizationMiddleware(
     private val settings: SummarizationSettings,
@@ -57,7 +59,7 @@ class SummarizationMiddleware(
                 observePrompt(store, action.llm)
             }
             is SummarizationFailed -> scope.launch {
-                errorReporter.report(action.throwable)
+                errorReporter.report(TAG, action.throwable)
             }
         }
 

@@ -39,6 +39,7 @@ import mozilla.components.feature.summarize.settings.SummarizeSettingsMiddleware
 import mozilla.components.feature.summarize.settings.SummarizeSettingsState
 import mozilla.components.feature.summarize.settings.SummarizeSettingsStore
 import mozilla.components.feature.summarize.settings.summarizeSettingsReducer
+import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.ktx.android.view.setNavigationBarColorCompat
 import mozilla.components.support.utils.ext.top
 import org.mozilla.fenix.R
@@ -123,7 +124,10 @@ class SummarizationFragment : BottomSheetDialogFragment() {
             settings = SummarizationSettings.dataStore(requireContext()),
             pageContentExtractor = engineSession.asPageContentExtractor(),
             pageMetadataExtractor = engineSession.asPageMetadataExtractor(),
-            errorReporter = { requireComponents.analytics.crashReporter.submitCaughtException(it) },
+            errorReporter = { tag, exception ->
+                requireComponents.analytics.crashReporter.submitCaughtException(exception)
+                Logger(tag).error(exception.message ?: "", exception)
+            },
         )
     }
 

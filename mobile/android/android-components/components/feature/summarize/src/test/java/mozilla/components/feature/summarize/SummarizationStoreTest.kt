@@ -40,8 +40,8 @@ import kotlin.time.Duration.Companion.seconds
 class SummarizationStoreTest {
 
     private val reportedErrors = mutableListOf<Throwable>()
-    private val errorReporter = ErrorReporter { reportedErrors.add(it) }
-    private val noopReporter = ErrorReporter { }
+    private val errorReporter = ErrorReporter { _, exception -> reportedErrors.add(exception) }
+    private val noopReporter = ErrorReporter { _, _ -> }
     private val parser = Parser()
 
     @Before
