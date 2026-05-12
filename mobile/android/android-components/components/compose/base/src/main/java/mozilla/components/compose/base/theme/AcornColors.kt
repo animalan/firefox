@@ -28,7 +28,6 @@ class AcornColors(
     actionInformation: Color,
     formDefault: Color,
     textOnColorPrimary: Color,
-    iconPrimaryInactive: Color,
     iconOnColor: Color,
     ripple: Color,
     tabActive: Color,
@@ -73,10 +72,6 @@ class AcornColors(
         private set
 
     // Icon
-
-    // Inactive tab
-    var iconPrimaryInactive by mutableStateOf(iconPrimaryInactive)
-        private set
 
     // Icon inverted (on color)
     var iconOnColor by mutableStateOf(iconOnColor)
@@ -159,7 +154,6 @@ class AcornColors(
         actionInformation = other.actionInformation
         formDefault = other.formDefault
         textOnColorPrimary = other.textOnColorPrimary
-        iconPrimaryInactive = other.iconPrimaryInactive
         iconOnColor = other.iconOnColor
         ripple = other.ripple
         tabActive = other.tabActive
@@ -185,7 +179,6 @@ class AcornColors(
         actionInformation: Color = this.actionInformation,
         formDefault: Color = this.formDefault,
         textOnColorPrimary: Color = this.textOnColorPrimary,
-        iconPrimaryInactive: Color = this.iconPrimaryInactive,
         iconOnColor: Color = this.iconOnColor,
         ripple: Color = this.ripple,
         tabActive: Color = this.tabActive,
@@ -205,7 +198,6 @@ class AcornColors(
         actionInformation = actionInformation,
         formDefault = formDefault,
         textOnColorPrimary = textOnColorPrimary,
-        iconPrimaryInactive = iconPrimaryInactive,
         iconOnColor = iconOnColor,
         ripple = ripple,
         tabActive = tabActive,
@@ -228,7 +220,6 @@ val darkColorPalette = AcornColors(
     actionInformation = PhotonColors.Blue60,
     formDefault = PhotonColors.LightGrey05,
     textOnColorPrimary = PhotonColors.LightGrey05,
-    iconPrimaryInactive = PhotonColors.LightGrey05A60,
     iconOnColor = PhotonColors.LightGrey05,
     ripple = PhotonColors.White,
     tabActive = PhotonColors.DarkGrey30,
@@ -250,7 +241,6 @@ val lightColorPalette = AcornColors(
     actionInformation = PhotonColors.Blue50,
     formDefault = PhotonColors.DarkGrey90,
     textOnColorPrimary = PhotonColors.LightGrey05,
-    iconPrimaryInactive = PhotonColors.DarkGrey90A60,
     iconOnColor = PhotonColors.LightGrey05,
     ripple = PhotonColors.Black,
     tabActive = PhotonColors.LightGrey10,
