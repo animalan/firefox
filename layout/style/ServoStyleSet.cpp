@@ -609,10 +609,11 @@ already_AddRefed<ComputedStyle> ServoStyleSet::ResolveXULTreePseudoStyle(
 }
 
 already_AddRefed<ComputedStyle> ServoStyleSet::ResolvePositionTry(
-    StyleCascadeLevel aScope, dom::Element& aElement, const ComputedStyle& aStyle,
+    StyleCascadeLevel aScope, dom::Element& aElement,
+    const ComputedStyle& aStyle,
     const StylePositionTryFallbacksItem& aFallback) {
-  return Servo_ComputedValues_GetForPositionTry(mRawData.get(), &aStyle,
-                                                aScope, &aElement, &aFallback)
+  return Servo_ComputedValues_GetForPositionTry(mRawData.get(), &aStyle, aScope,
+                                                &aElement, &aFallback)
       .Consume();
 }
 
