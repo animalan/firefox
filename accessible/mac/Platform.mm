@@ -163,15 +163,7 @@ void PlatformTextChangeEvent(Accessible* aTarget, const nsAString& aStr,
   }
 }
 
-void PlatformShowHideEvent(Accessible* aTarget, Accessible* aParent,
-                           bool aIsInsert, bool aFromUser) {
-  mozAccessible* wrapper = GetNativeFromGeckoAccessible(aTarget);
-  if (wrapper) {
-    [wrapper
-        handleAccessibleEvent:(aIsInsert ? nsIAccessibleEvent::EVENT_SHOW
-                                         : nsIAccessibleEvent::EVENT_HIDE)];
-  }
-}
+void PlatformShowHideEvent(Accessible*, Accessible*, bool, bool) {}
 
 void PlatformSelectionEvent(Accessible* aTarget, Accessible* aWidget,
                             uint32_t aEventType) {

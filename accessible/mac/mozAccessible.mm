@@ -33,7 +33,6 @@
 
 #include "nsRect.h"
 #include "nsCocoaUtils.h"
-#include "nsCocoaWindow.h"
 #include "nsCoord.h"
 #include "nsObjCExceptions.h"
 #include "nsWhitespaceTokenizer.h"
@@ -323,26 +322,6 @@ using namespace mozilla::a11y;
       [NSValue valueWithSize:NSMakeSize(frame.size.width, frame.size.height)];
 }
 
-static bool IsNonNativePopover(Accessible* aAccessible) {
-  if (!aAccessible->IsLocal()) {
-    return false;
-  }
-
-  NSView* view =
-      static_cast<AccessibleWrap*>(aAccessible->AsLocal())->GetNativeWidget();
-  if (!view) {
-    return false;
-  }
-
-  NSWindow* window = [view window];
-  if ([window isKindOfClass:[PopupWindow class]] &&
-      ![(PopupWindow*)window usePopover]) {
-    return true;
-  }
-
-  return false;
-}
-
 - (NSString*)moxRole {
   if (mRole == roles::ENTRY ||
       (mGeckoAccessible->IsGeneric() && mGeckoAccessible->IsEditableRoot())) {
@@ -353,10 +332,6 @@ static bool IsNonNativePopover(Accessible* aAccessible) {
     }
 
     return NSAccessibilityTextFieldRole;
-  }
-
-  if (IsNonNativePopover(mGeckoAccessible)) {
-    return NSAccessibilityPopoverRole;
   }
 
 #define ROLE(geckoRole, stringRole, ariaRole, atkRole, macRole, macSubrole, \
@@ -1231,12 +1206,6 @@ static bool ProvidesTitle(const Accessible* aAccessible, nsString& aName) {
         [self moxPostNotification:@"AXValidationErrorChanged"];
       }
 
-      break;
-    }
-    case nsIAccessibleEvent::EVENT_SHOW: {
-      if (IsNonNativePopover(mGeckoAccessible)) {
-        [self moxPostNotification:@"AXCreated"];
-      }
       break;
     }
   }

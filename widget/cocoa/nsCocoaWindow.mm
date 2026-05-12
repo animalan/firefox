@@ -4415,23 +4415,12 @@ nsresult nsCocoaWindow::RestoreHiDPIMode() {
 - (id<mozAccessible>)accessible {
   if (!mGeckoChild) return nil;
 
-  NSWindow* window = [self window];
-  if ([window isKindOfClass:[PopupWindow class]]) {
-    if (![(PopupWindow*)window usePopover]) {
-      // Don't create represented view relationship for non-native popovers.
-      // Rely on the gecko heirarchy instead.
-      return nil;
-    }
-  }
-
   id<mozAccessible> nativeAccessible = nil;
 
   nsAutoRetainCocoaObject kungFuDeathGrip(self);
   RefPtr<nsCocoaWindow> geckoChild(mGeckoChild);
   RefPtr<a11y::LocalAccessible> accessible = geckoChild->GetWindowAccessible();
-  if (!accessible) {
-    return nil;
-  }
+  if (!accessible) return nil;
 
   accessible->GetNativeInterface((void**)&nativeAccessible);
 
@@ -8244,8 +8233,6 @@ static const NSString* kStateCollectionBehavior = @"collectionBehavior";
   [self tryToPerform:aSelector with:nil];
 }
 
-#ifdef ACCESSIBILITY
-
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
@@ -8304,31 +8291,6 @@ static const NSString* kStateCollectionBehavior = @"collectionBehavior";
   NS_OBJC_END_TRY_BLOCK_RETURN(nil);
 }
 
-- (id)accessibilityHitTest:(NSPoint)point {
-  if (!mozilla::a11y::ShouldA11yBeEnabled())
-    return [super accessibilityHitTest:point];
-
-  if ([self isKindOfClass:[PopupWindow class]] &&
-      ![(PopupWindow*)self usePopover]) {
-    // If this is a non-native popover we have to manually find
-    // the gecko accessible associated with this widget
-    // and call `accessibilityHitTest` on it.
-    id<mozAccessible> nativeAccessible = nil;
-
-    RefPtr<nsCocoaWindow> geckoChild =
-        static_cast<nsCocoaWindow*>([self.mainChildView widget]);
-    RefPtr<a11y::LocalAccessible> accessible =
-        geckoChild->GetWindowAccessible();
-    if (accessible) {
-      accessible->GetNativeInterface((void**)&nativeAccessible);
-    }
-
-    return [nativeAccessible accessibilityHitTest:point];
-  }
-
-  return [super accessibilityHitTest:point];
-}
-
 - (BOOL)isAccessibilityElement {
   if (!mozilla::a11y::ShouldA11yBeEnabled())
     return [super isAccessibilityElement];
@@ -8341,8 +8303,6 @@ static const NSString* kStateCollectionBehavior = @"collectionBehavior";
 - (void)releaseJSObjects {
   [mTouchBar releaseJSObjects];
 }
-
-#endif
 
 @end
 
