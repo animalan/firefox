@@ -1136,8 +1136,7 @@ class HomeFragment : Fragment(), SystemInsetsPaddedFragment {
             trackersBlockedFeature.set(
                 feature = TrackersBlockedFeature(
                     appStore = requireComponents.appStore,
-                    fetchTotalTrackersBlocked = requireComponents.useCases
-                        .trackingProtectionUseCases.fetchTotalTrackersBlocked,
+                    protectionsStorage = requireComponents.core.protectionsStorage,
                 ),
                 owner = viewLifecycleOwner,
                 view = binding.root,
