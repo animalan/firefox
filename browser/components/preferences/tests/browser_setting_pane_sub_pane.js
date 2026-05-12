@@ -7,7 +7,7 @@ describe("setting-pane", () => {
   let doc, win;
 
   beforeEach(async function setup() {
-    await openPreferencesViaOpenPreferencesAPI("sync", { leaveOpen: true });
+    await openPreferencesViaOpenPreferencesAPI("general", { leaveOpen: true });
     doc = gBrowser.selectedBrowser.contentDocument;
     win = doc.documentGlobal;
     win.Preferences.addSetting({
@@ -31,10 +31,10 @@ describe("setting-pane", () => {
       l10nId: "home-section",
       groupIds: ["testTopLevelGroup"],
     });
-    let syncCategory = doc.getElementById("category-sync");
-    let testTopLevelCategory = syncCategory.cloneNode(true);
+    let generalCategory = doc.getElementById("category-general");
+    let testTopLevelCategory = generalCategory.cloneNode(true);
     testTopLevelCategory.setAttribute("view", "paneTestTopLevel");
-    syncCategory.insertAdjacentElement("afterend", testTopLevelCategory);
+    generalCategory.insertAdjacentElement("afterend", testTopLevelCategory);
     win.Preferences.addSetting({
       id: "testSetting",
       get: () => true,

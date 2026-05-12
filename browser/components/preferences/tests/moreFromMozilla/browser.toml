@@ -4,6 +4,7 @@ prefs = [
 ]
 support-files = [
   "head.js",
+  "../head.js",
 ]
 tags = "os_integration"
 

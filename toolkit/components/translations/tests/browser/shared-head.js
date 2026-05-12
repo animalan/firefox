@@ -3650,19 +3650,12 @@ async function modifyRemoteSettingsRecords(
   });
 }
 
-async function selectAboutPreferencesElements(redesignEnabled) {
+async function selectAboutPreferencesElements() {
   const document = gBrowser.selectedBrowser.contentDocument;
 
   const settingsButton = document.getElementById(
     "translations-manage-settings-button"
   );
-
-  if (redesignEnabled) {
-    return {
-      document,
-      settingsButton,
-    };
-  }
 
   const rows = await waitForCondition(() => {
     const elements = document.querySelectorAll(".translations-manage-language");
@@ -3673,6 +3666,7 @@ async function selectAboutPreferencesElements(redesignEnabled) {
   }, "Waiting for manage language rows.");
 
   const [downloadAllRow, frenchRow, spanishRow, ukrainianRow] = rows;
+
   const downloadAllLabel = downloadAllRow.querySelector("label");
   const downloadAll = downloadAllRow.querySelector(
     "#translations-manage-install-all"
@@ -3701,6 +3695,7 @@ async function selectAboutPreferencesElements(redesignEnabled) {
   const ukrainianDelete = ukrainianRow.querySelector(
     `[data-l10n-id="translations-manage-language-remove-button"]`
   );
+
   return {
     document,
     downloadAllLabel,
@@ -3832,15 +3827,8 @@ async function setupAboutPreferences(
   );
   if (redesigned) {
     let loaded = BrowserTestUtils.waitForEvent(document, "paneshown");
-    let categoryLanguages = document.getElementById("category-languages");
-    categoryLanguages.scrollIntoView();
     EventUtils.synthesizeMouseAtCenter(
-      categoryLanguages,
-      {},
-      document.documentGlobal
-    );
-    EventUtils.synthesizeMouseAtCenter(
-      categoryLanguages,
+      document.getElementById("category-languages"),
       {},
       document.documentGlobal
     );
@@ -3848,7 +3836,7 @@ async function setupAboutPreferences(
     is(event.detail.category, "paneLanguages", "Loaded the correct pane");
   }
 
-  const elements = await selectAboutPreferencesElements(redesigned);
+  const elements = await selectAboutPreferencesElements();
 
   const translationsSettingsTestUtils = new TranslationsSettingsTestUtils(
     document

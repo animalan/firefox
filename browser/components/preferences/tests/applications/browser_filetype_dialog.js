@@ -137,6 +137,9 @@ add_setup(async function () {
   await openPreferencesViaOpenPreferencesAPI("downloads", { leaveOpen: true });
 
   info("Preferences page opened on the downloads pane.");
+
+  await gBrowser.selectedBrowser.contentWindow.promiseLoadHandlersList;
+  info("Apps list loaded.");
 });
 
 add_task(async function dialogShowsCorrectContent() {
