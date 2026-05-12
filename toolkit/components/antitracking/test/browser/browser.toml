@@ -94,6 +94,8 @@ support-files = [
 
 ["browser_fixed_ABA_partitionKey.js"]
 
+["browser_flushOnQuery.js"]
+
 ["browser_foreignWorker_eventSource.js"]
 support-files= [
   "eventsource_worker.js",
