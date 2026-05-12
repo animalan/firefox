@@ -1397,7 +1397,7 @@ uiaRawElmProvider::get_TextRange(
     return CO_E_OBJNOTCONNECTED;
   }
   TextLeafRange range = TextLeafRange::FromAccessible(acc);
-  RefPtr uiaRange = new UiaTextRange(range);
+  auto uiaRange = MakeRefPtr<UiaTextRange>(range);
   uiaRange.forget(aRetVal);
   return S_OK;
 }

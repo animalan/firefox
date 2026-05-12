@@ -989,7 +989,7 @@ AccessibleEnumerator::Next(unsigned long celt, VARIANT FAR* rgvar,
 
 STDMETHODIMP
 AccessibleEnumerator::Clone(IEnumVARIANT FAR* FAR* ppenum) {
-  RefPtr newEnum = new AccessibleEnumerator(*this);
+  auto newEnum = MakeRefPtr<AccessibleEnumerator>(*this);
   newEnum.forget(ppenum);
   return S_OK;
 }
