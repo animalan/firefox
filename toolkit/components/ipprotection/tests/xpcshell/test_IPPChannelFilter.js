@@ -817,3 +817,25 @@ add_task(async function test_shouldProxy() {
     "System-principal channel should not be proxied before the proxy is initialized"
   );
 });
+
+add_task(async function test_shouldExclude_trr_service_channel() {
+  const filter = IPPChannelFilter.create();
+  filter.proxyInfo = {};
+
+  const makeChannel = uri =>
+    NetUtil.newChannel({ uri, loadUsingSystemPrincipal: true });
+
+  const plain = makeChannel("https://doh.example.com/dns-query");
+  Assert.ok(
+    !filter.shouldExclude(plain),
+    "A regular HTTPS channel should not be excluded by the TRR rule"
+  );
+
+  const trrChannel = makeChannel("https://doh.example.com/dns-query");
+  trrChannel.QueryInterface(Ci.nsIHttpChannelInternal).isTRRServiceChannel =
+    true;
+  Assert.ok(
+    filter.shouldExclude(trrChannel),
+    "A channel marked as TRR service channel should be excluded"
+  );
+});

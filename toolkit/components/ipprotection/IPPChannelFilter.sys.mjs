@@ -344,6 +344,16 @@ export class IPPChannelFilter {
         return true;
       }
 
+      // DoH traffic must bypass the proxy: in TRR_ONLY mode (Max Protection)
+      // sending DNS-over-HTTPS through the proxy creates a circular
+      // resolution dependency that breaks all DNS.
+      if (
+        channel instanceof Ci.nsIHttpChannelInternal &&
+        channel.isTRRServiceChannel
+      ) {
+        return true;
+      }
+
       // Only get the principal from the channel URI when both loadingPrincipal
       // and triggeringPrincipal are system principals.
       let { loadingPrincipal, triggeringPrincipal } = channel.loadInfo ?? {};
