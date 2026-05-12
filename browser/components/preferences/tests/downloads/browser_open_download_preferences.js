@@ -25,8 +25,6 @@ async function getPdfCategoryItem() {
   await openPreferencesViaOpenPreferencesAPI("downloads", { leaveOpen: true });
   info("Preferences page opened on the downloads pane.");
   await appHandlerInitialized;
-  await gBrowser.selectedBrowser.contentWindow.promiseLoadHandlersList;
-  info("Apps list loaded.");
 
   let win = gBrowser.selectedBrowser.contentWindow;
   let container = win.document.getElementById("applicationsHandlersView");
