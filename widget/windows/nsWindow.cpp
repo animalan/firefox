@@ -332,6 +332,9 @@ bool nsWindow::sIsRestoringSession = false;
 bool nsWindow::sTouchInjectInitialized = false;
 InjectTouchInputPtr nsWindow::sInjectTouchFuncPtr;
 
+bool nsWindow::sIsNativePointLocked = false;
+bool nsWindow::sIsUsingRawInputForMouseMove = false;
+
 static SystemTimeConverter<DWORD>& TimeConverter() {
   static SystemTimeConverter<DWORD> timeConverterSingleton;
   return timeConverterSingleton;
@@ -4120,7 +4123,8 @@ bool nsWindow::DispatchMouseEvent(EventMessage aEventMessage, WPARAM wParam,
                                   LPARAM lParam, bool aIsContextMenuKey,
                                   int16_t aButton, uint16_t aInputSource,
                                   WinPointerInfo* aPointerInfo,
-                                  IsNonclient aIsNonclient) {
+                                  IsNonclient aIsNonclient,
+                                  Maybe<LayoutDeviceIntPoint> aMovement) {
   ContextMenuPreventer contextMenuPreventer(this);
   bool result = false;
 
@@ -4312,6 +4316,7 @@ bool nsWindow::DispatchMouseEvent(EventMessage aEventMessage, WPARAM wParam,
       if (!insideMovementThreshold) {
         sLastClickCount = 0;
       }
+      mouseOrPointerEvent.mMovement = aMovement;
       break;
     case eMouseExitFromWidget:
       mouseOrPointerEvent.mExitFrom =
@@ -5100,7 +5105,59 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       result = true;
     } break;
 
+    case WM_INPUT: {
+      if (!IsUsingRawInputForMouseMove()) {
+        break;
+      }
+      MOZ_ASSERT(IsNativePointerLocked());
+
+      HRAWINPUT inputHandle = reinterpret_cast<HRAWINPUT>(lParam);
+      UINT size = 0;
+      if (GetRawInputData(inputHandle, RID_INPUT, nullptr, &size,
+                          sizeof(RAWINPUTHEADER)) == UINT(-1)) {
+        break;
+      }
+
+      nsTArray<uint8_t> data(size);
+      data.SetLength(size);
+      if (GetRawInputData(inputHandle, RID_INPUT, data.Elements(), &size,
+                          sizeof(RAWINPUTHEADER)) == UINT(-1)) {
+        break;
+      }
+
+      PRAWINPUT raw = reinterpret_cast<PRAWINPUT>(data.Elements());
+      if (raw->header.dwType == RIM_TYPEMOUSE &&
+          raw->data.mouse.usButtonFlags != RI_MOUSE_WHEEL) {
+        // Not excluding absolute mouse position would cause analog-stick like
+        // motion for tablet devices due to mouse repositioning.
+        if (!(raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE)) {
+          int32_t movementX = int32_t(raw->data.mouse.lLastX);
+          int32_t movementY = int32_t(raw->data.mouse.lLastY);
+          if (movementX != 0 || movementY != 0) {
+            DWORD messagePos = ::GetMessagePos();
+            POINT cursorPos;
+            cursorPos.x = GET_X_LPARAM(messagePos);
+            cursorPos.y = GET_Y_LPARAM(messagePos);
+            ScreenToClient(mWnd, &cursorPos);
+            result = DispatchMouseEvent(
+                eMouseMove, wParamFromGlobalMouseState(),
+                MAKELPARAM(cursorPos.x, cursorPos.y), false,
+                MouseButton::ePrimary, MOUSE_INPUT_SOURCE(), nullptr,
+                IsNonclient::No,
+                Some(LayoutDeviceIntPoint(movementX, movementY)));
+            if (GET_RAWINPUT_CODE_WPARAM(wParam) == RIM_INPUT) {
+              result = false;  // should always bubble to DefWindowProc
+            }
+          }
+        }
+      }
+    } break;
+
     case WM_MOUSEMOVE: {
+      if (IsUsingRawInputForMouseMove()) {
+        break;
+      }
+
       LPARAM lParamScreen = lParamToScreen(lParam);
       mSimulatedClientArea = IsSimulatedClientArea(GET_X_LPARAM(lParamScreen),
                                                    GET_Y_LPARAM(lParamScreen));
@@ -8615,6 +8672,50 @@ bool nsWindow::HandleAppCommandMsg(const MSG& aAppCommandMsg,
   bool consumed = nativeKey.HandleAppCommandMessage();
   *aRetValue = consumed ? 1 : 0;
   return consumed;
+}
+
+void nsWindow::LockNativePointer(NativePointerLockMode aNativePointerLockMode) {
+  if (IsNativePointerLocked()) {
+    return;
+  }
+
+  // SetNativePointerLockMode() have to be called after setting
+  // sIsNativePointLocked.
+  sIsNativePointLocked = true;
+  SetNativePointerLockMode(aNativePointerLockMode);
+}
+
+void nsWindow::UnlockNativePointer() {
+  if (NS_WARN_IF(!IsNativePointerLocked())) {
+    return;
+  }
+
+  // SetNativePointerLockMode() have to be called before resetting
+  // sIsNativePointLocked.
+  SetNativePointerLockMode(NativePointerLockMode::Regular);
+  sIsNativePointLocked = false;
+}
+
+void nsWindow::SetNativePointerLockMode(
+    NativePointerLockMode aNativePointerLockMode) {
+  if (!IsNativePointerLocked()) {
+    return;
+  }
+
+  const bool usingRawInput =
+      (aNativePointerLockMode == NativePointerLockMode::Unadjusted);
+  if (sIsUsingRawInputForMouseMove == usingRawInput) {
+    return;
+  }
+
+  RAWINPUTDEVICE device;
+  device.usUsagePage = 0x01;  // HID_USAGE_PAGE_GENERIC
+  device.usUsage = 0x02;      // HID_USAGE_GENERIC_MOUSE
+  device.dwFlags = usingRawInput ? RIDEV_INPUTSINK : RIDEV_REMOVE;
+  device.hwndTarget = usingRawInput ? mWnd : nullptr;
+  RegisterRawInputDevices(&device, 1, sizeof(device));
+
+  sIsUsingRawInputForMouseMove = usingRawInput;
 }
 
 #ifdef DEBUG
