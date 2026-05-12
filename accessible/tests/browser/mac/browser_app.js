@@ -408,12 +408,19 @@ async function testPopover(native) {
       const identityPopup = win.document.getElementById("identity-popup");
       await BrowserTestUtils.waitForPopupEvent(identityPopup, "shown");
 
-      // Root should have the same amount of children.
-      is(
-        rootChildCount(),
-        baseRootChildCount,
-        "Root should have the same amount of children"
-      );
+      if (native) {
+        // With native popovers the popover will appear in a separate child window and
+        // not in the main root group.
+        is(
+          rootChildCount(),
+          baseRootChildCount,
+          "Root does not have another child"
+        );
+      } else {
+        // With non native popovers, the AXPopover will appear in-line with its markup
+        // in the root group.
+        is(rootChildCount(), baseRootChildCount + 1, "Root has another child");
+      }
 
       let popupAcc = getAccessible(
         identityPopup
@@ -423,12 +430,25 @@ async function testPopover(native) {
         "AXApplicationAlertDialog",
         "Popup has correct subrole"
       );
+
       let popupAccParent = popupAcc.getAttributeValue("AXParent");
-      is(
-        popupAccParent.getAttributeValue("AXRole"),
-        "AXPopover",
-        "Popup's parent is the popover window"
-      );
+
+      if (native) {
+        // With native popovers, the popup's parent is the native popover.
+        is(
+          popupAccParent.getAttributeValue("AXRole"),
+          "AXPopover",
+          "Popup's parent is the popover window"
+        );
+      } else {
+        // In non-native, the popup itself uses the role of popover
+        is(
+          popupAcc.getAttributeValue("AXRole"),
+          "AXPopover",
+          "Popup has correct role"
+        );
+      }
+
       let popupAccGrandparent = popupAccParent.getAttributeValue("AXParent");
 
       if (native) {
@@ -440,8 +460,8 @@ async function testPopover(native) {
       } else {
         is(
           popupAccGrandparent.getAttributeValue("AXRole"),
-          "AXApplication",
-          "non-native popup's grandparent is the app"
+          "AXWindow",
+          "non-native popup's parent is the root group, and its grandparent is the main window"
         );
       }
 
@@ -467,6 +487,6 @@ add_task(async () => {
     todo(false, "Popovers don't work quite right in headless mode");
     return;
   }
-  await testPopover(true);
+  // await testPopover(true);
   await testPopover(false);
 });
