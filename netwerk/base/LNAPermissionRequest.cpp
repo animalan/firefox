@@ -27,8 +27,7 @@ NS_IMPL_ISUPPORTS_CYCLE_COLLECTION_INHERITED_0(LNAPermissionRequest,
                                                ContentPermissionRequestBase)
 
 NS_IMPL_CYCLE_COLLECTION_INHERITED(LNAPermissionRequest,
-                                   ContentPermissionRequestBase,
-                                   mBrowsingContext)
+                                   ContentPermissionRequestBase)
 
 LNAPermissionRequest::LNAPermissionRequest(PermissionPromptCallback&& aCallback,
                                            nsILoadInfo* aLoadInfo,

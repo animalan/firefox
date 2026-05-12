@@ -264,8 +264,7 @@ inline void ImplCycleCollectionTraverse(
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(txMozillaXSLTProcessor)
 
 NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(txMozillaXSLTProcessor)
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mOwner, mStylesheetDocument,
-                                  mEmbeddedStylesheetRoot, mSource, mVariables)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mOwner, mSource)
   MOZ_RELEASE_ASSERT(tmp->mState == State::None);
   tmp->Reset(IgnoreErrors());
   NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
