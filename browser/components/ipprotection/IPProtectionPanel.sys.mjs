@@ -559,7 +559,7 @@ export class IPProtectionPanel {
     });
 
     if (this.state.bandwidthWarning) {
-      lazy.IPProtectionInfobarManager.hideInfobars();
+      lazy.IPProtectionInfobarManager.hideInfobars({ triggeredByPanel: true });
     }
 
     if (this.panel) {
