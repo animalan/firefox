@@ -29,7 +29,6 @@ def generatedLocaleListDir = new File(generatedLocaleListBaseDir, "org/mozilla/f
 def generatedLocaleListFilename = "LocalesList.kt"
 
 import com.android.build.api.variant.FilterConfiguration
-import com.google.android.gms.oss.licenses.plugin.DependencyTask
 
 android {
     if (project.hasProperty("testBuildType")) {
@@ -654,15 +653,6 @@ if (project.hasProperty("coverage")) {
             }
         }
     }
-}
-
-// Fix for Gradle 9 strictness: Ensure CleanUp runs before DependencyTask
-tasks.withType(DependencyTask).configureEach { task ->
-    // The OSS plugin creates a "LicensesCleanUp" task for every "DependencyTask"
-    // e.g., nightlyOssDependencyTask -> nightlyOssLicensesCleanUp
-    def cleanUpTaskName = task.name.replace("DependencyTask", "LicensesCleanUp")
-    // make the dependency task depend on its cleanup task.
-    task.dependsOn(tasks.named(cleanUpTaskName))
 }
 
 mozilla {
