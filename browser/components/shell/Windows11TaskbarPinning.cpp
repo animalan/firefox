@@ -555,7 +555,7 @@ Win11PinToTaskBarResult PinCurrentAppToTaskbarWin11(
   return {S_OK, Win11PinToTaskBarResultStatus::NotSupported};
 }
 
-Win11PinToTaskBarResult IsCurrentAppPinnedToTaskbarWin11(bool aCheckOnly) {
+Win11PinToTaskBarResult IsCurrentAppPinnedToTaskbarWin11() {
   return {S_OK, Win11PinToTaskBarResultStatus::NotSupported};
 }
 
