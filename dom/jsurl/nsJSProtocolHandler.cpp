@@ -1386,7 +1386,7 @@ nsJSURI::Write(nsIObjectOutputStream* aStream) {
   return NS_OK;
 }
 
-NS_IMETHODIMP_(void) nsJSURI::Serialize(mozilla::ipc::URIParams& aParams) {
+void nsJSURI::Serialize(mozilla::ipc::URIParams& aParams) {
   using namespace mozilla::ipc;
 
   JSURIParams jsParams;

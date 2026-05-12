@@ -1145,6 +1145,8 @@ NS_INTERFACE_MAP_BEGIN(nsStandardURL)
   NS_INTERFACE_MAP_ENTRY(nsISerializable)
   NS_IMPL_QUERY_CLASSINFO(nsStandardURL)
   NS_INTERFACE_MAP_ENTRY(nsISensitiveInfoHiddenURI)
+  NS_INTERFACE_MAP_ENTRY(nsIIPCSerializableURI)
+  NS_INTERFACE_MAP_ENTRY(nsIURIWithSizeOf)
   // see nsStandardURL::Equals
   if (aIID.Equals(kThisImplCID)) {
     foundInterface = static_cast<nsIURI*>(this);

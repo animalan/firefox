@@ -133,6 +133,7 @@ EXPORTS += [
     "nsBaseParentChannel.h",
     "nsFileStreams.h",
     "nsInputStreamPump.h",
+    "nsIURIWithSizeOf.h",
     "nsMIMEInputStream.h",
     "nsNetUtil.h",
     "nsReadLine.h",

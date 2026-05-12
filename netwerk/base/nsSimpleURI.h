@@ -5,7 +5,9 @@
 #ifndef nsSimpleURI_h_
 #define nsSimpleURI_h_
 
+#include "nsIIPCSerializableURI.h"
 #include "nsIURI.h"
+#include "nsIURIWithSizeOf.h"
 #include "nsISerializable.h"
 #include "nsString.h"
 #include "nsIClassInfo.h"
@@ -22,7 +24,10 @@ namespace net {
    0x470b,                                    \
    {0xb9, 0xb9, 0x9f, 0xd9, 0x46, 0x2b, 0x5e, 0x19}}
 
-class nsSimpleURI : public nsIURI, public nsISerializable {
+class nsSimpleURI : public nsIURI,
+                    public nsISerializable,
+                    public nsIIPCSerializableURI,
+                    public nsIURIWithSizeOf {
  protected:
   nsSimpleURI() = default;
   virtual ~nsSimpleURI() = default;
@@ -32,6 +37,8 @@ class nsSimpleURI : public nsIURI, public nsISerializable {
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIURI
   NS_DECL_NSISERIALIZABLE
+  NS_DECL_NSIIPCSERIALIZABLEURI
+  NS_DECL_NSIURIWITHSIZEOF
 
   // nsSimpleURI methods:
 
