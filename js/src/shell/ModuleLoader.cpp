@@ -119,7 +119,8 @@ bool ModuleLoader::loadRootModule(JSContext* cx, HandleString path) {
     return false;
   }
   RootedObject moduleRequest(
-      cx, ModuleRequestObject::create(cx, specifier, JS::ModuleType::JavaScript,
+      cx, ModuleRequestObject::create(cx, specifier,
+                                      JS::ModuleType::JavaScriptOrWasm,
                                       ImportPhase::Evaluation));
   if (!moduleRequest) {
     return false;
@@ -587,6 +588,20 @@ JSObject* ModuleLoader::loadAndParse(JSContext* cx, HandleString pathArg,
   }
 
   if (module) {
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+    // TODO: Until we support evaluation phase imports of wasm modules, we need
+    // to guard against first importing a wasm module as source, and then
+    // subsequently as evaluation phase. The module will be retrieved from the
+    // registry, and then we'll attempt to link it, which isn't currently
+    // supported. See Bug 2030454.
+    if (moduleRequestArg->as<ModuleRequestObject>().phase() ==
+            ImportPhase::Evaluation &&
+        module->as<ModuleObject>().moduleSource()) {
+      JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                                JSMSG_WASM_ESM_EVAL_NOT_SUPPORTED);
+      return nullptr;
+    }
+#endif
     return module;
   }
 
@@ -618,6 +633,67 @@ JSObject* ModuleLoader::loadAndParse(JSContext* cx, HandleString pathArg,
 
     return module;
   }
+
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+  // Normally the mime type determines whether a module is wasm or not, but
+  // this doesn't exist in the shell. Instead, we'll use the file extension.
+  if (JS::Prefs::experimental_wasm_esm_integration() &&
+      StringEndsWith(path, u".wasm")) {
+    js::ImportPhase phase = moduleRequestArg->as<ModuleRequestObject>().phase();
+    if (phase != ImportPhase::Source) {
+      JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                                JSMSG_WASM_ESM_EVAL_NOT_SUPPORTED);
+      return nullptr;
+    }
+    RootedString resolvedPath(cx, ResolvePath(cx, path, RootRelative));
+    if (!resolvedPath) {
+      return nullptr;
+    }
+
+    UniqueChars resolvedFilename = JS_EncodeStringToUTF8(cx, resolvedPath);
+    if (!resolvedFilename) {
+      return nullptr;
+    }
+
+    FILE* file = OpenFile(cx, resolvedFilename.get(), "rb");
+    if (!file) {
+      return nullptr;
+    }
+
+    size_t fileSize;
+    if (!FileSize(cx, resolvedFilename.get(), file, &fileSize)) {
+      fclose(file);
+      return nullptr;
+    }
+
+    js::Vector<uint8_t, 0, js::MallocAllocPolicy> srcBuf;
+    if (!srcBuf.growBy(fileSize)) {
+      fclose(file);
+      ReportOutOfMemory(cx);
+      return nullptr;
+    }
+
+    if (!ReadFile(cx, resolvedFilename.get(), file,
+                  reinterpret_cast<char*>(srcBuf.begin()), fileSize)) {
+      fclose(file);
+      return nullptr;
+    }
+    fclose(file);
+
+    JS::CompileOptions options(cx);
+    options.setFileAndLine(filename.get(), 1);
+    module = JS::CompileWasmModuleAsSource(cx, options, srcBuf);
+    if (!module) {
+      return nullptr;
+    }
+
+    if (!addModuleToRegistry(cx, moduleType, path, module)) {
+      return nullptr;
+    }
+
+    return module;
+  }
+#endif
 
   JS::CompileOptions options(cx);
   options.setFileAndLine(filename.get(), 1);
@@ -651,7 +727,7 @@ JSObject* ModuleLoader::loadAndParse(JSContext* cx, HandleString pathArg,
     return nullptr;
   }
 
-  if (moduleType == JS::ModuleType::JavaScript) {
+  if (moduleType == JS::ModuleType::JavaScriptOrWasm) {
     module = JS::CompileModule(cx, options, srcBuf);
     if (!module) {
       return nullptr;
