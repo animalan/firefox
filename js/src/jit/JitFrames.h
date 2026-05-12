@@ -121,7 +121,8 @@ struct VMFunctionData;
  *       the stack. Missing arguments must be filled in with `undefined` before
  *       calling. Note that it is valid for numActualArgs to be larger than the
  *       number of formal parameters in the callee.
- *    It also contains flag bits. See the Frame Descriptor Layout SMDOC for more.
+ *    It also contains flag bits. See the Frame Descriptor Layout SMDOC for
+ * more.
  *
  * ## Baseline IC ABI
  *
@@ -160,7 +161,8 @@ struct VMFunctionData;
  *
  * If all stub guards have succeeded, but the stub must perform a call that
  * could GC, we enter a stub frame. This discards any values above the original
- * stack pointer and retroactively rewrites the stack as if we had pushed a frame:
+ * stack pointer and retroactively rewrites the stack as if we had pushed a
+ * frame:
  *
  *  Original Stack:               Entered Stub Frame:
  *    .               .              .               .
