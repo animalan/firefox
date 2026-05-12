@@ -5,6 +5,7 @@
 #include "WorkletModuleLoader.h"
 
 #include "js/CompileOptions.h"  // JS::InstantiateOptions
+#include "js/Modules.h"
 #include "js/experimental/JSStencil.h"  // JS::CompileModuleScriptToStencil, JS::InstantiateModuleStencil
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
 #include "js/loader/ModuleLoadRequest.h"
@@ -128,8 +129,14 @@ nsresult WorkletModuleLoader::CompileJavaScriptOrWasmModule(
 #ifdef NIGHTLY_BUILD
   if (aRequest->HasWasmMimeTypeEssence()) {
     MOZ_ASSERT(aRequest->IsWasmBytes());
-    auto* wasmModule =
-        JS::CompileWasmModule(aCx, aOptions, aRequest->WasmBytes());
+    JS::Rooted<JSObject*> moduleReq(aCx, aRequest->mModuleRequestObj);
+    JSObject* wasmModule;
+    if (moduleReq && JS::ModuleRequestIsSourcePhase(aCx, moduleReq)) {
+      wasmModule =
+          JS::CompileWasmModuleAsSource(aCx, aOptions, aRequest->WasmBytes());
+    } else {
+      wasmModule = JS::CompileWasmModule(aCx, aOptions, aRequest->WasmBytes());
+    }
     if (!wasmModule) {
       return NS_ERROR_FAILURE;
     }
