@@ -50,6 +50,7 @@ hide-types = [
     "mozilla::StyleTimingFunction.*",
     # https://github.com/rust-lang/rust-bindgen/issues/1559
     "mozilla::StyleGeneric.*",
+    "mozilla::StyleNumericUnion.*",
     "nsTArray_.*",
     ".*ErrorResult.*",
 ]

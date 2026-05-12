@@ -49,7 +49,7 @@ class gfxFontFeatureValueSet;
 struct GeckoFontMetrics;
 namespace mozilla {
 
-// Forward declaration for `StyleLengthPercentageUnion::AsCalc`, which
+// Forward declaration for `StyleLengthPercentage::AsCalc`, which
 // references the type below in the generated code.
 struct StyleCalcLengthPercentage;
 
