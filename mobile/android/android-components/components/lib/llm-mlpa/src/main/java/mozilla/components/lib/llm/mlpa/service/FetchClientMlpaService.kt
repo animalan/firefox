@@ -19,6 +19,7 @@ import mozilla.components.concept.fetch.Request
 import mozilla.components.concept.fetch.Response
 import mozilla.components.concept.fetch.isClientError
 import mozilla.components.lib.llm.mlpa.service.ext.contentFlow
+import mozilla.components.lib.llm.mlpa.service.ext.rateLimitDetailedError
 import java.io.IOException
 
 /**
@@ -115,7 +116,7 @@ class FetchClientMlpaService(
                 it.error?.also { error -> throw error }
 
                 if (request.stream) {
-                    emitAll(it.contentFlow)
+                    emitAll(it.contentFlow(it.retryAfter))
                 } else {
                     emit(it.nonStreamedResponse)
                 }
@@ -136,15 +137,7 @@ class FetchClientMlpaService(
         401 -> ChatServiceError.InvalidToken()
         403 -> ChatServiceError.UserBlocked()
         413 -> ChatServiceError.RequestTooLarge()
-        429 -> try {
-            when (json.decodeFromString<ChatService.ResponseErrorCode>(bodyString).error) {
-                1 -> ChatServiceError.BudgetExceeded(retryAfter)
-                2 -> ChatServiceError.RateLimited(retryAfter)
-                else -> ChatServiceError.ServerError(status)
-            }
-        } catch (e: SerializationException) {
-            ChatServiceError.RateLimitResponseParseError(e)
-        }
+        429 -> json.rateLimitDetailedError(bodyString, retryAfter)
         502 -> try {
             ChatServiceError.UpstreamError(json.decodeFromString<ChatService.ResponseErrorReason>(bodyString).error)
         } catch (e: SerializationException) {

@@ -30,8 +30,6 @@ private val CHAT_NETWORK_ERROR = ErrorCode(1011)
 private val RESPONSE_PARSE_ERROR = ErrorCode(1012)
 private val RATE_LIMIT_RESPONSE_PARSE_ERROR = ErrorCode(1013)
 private val UPSTREAM_RESPONSE_PARSE_ERROR = ErrorCode(1014)
-private val STREAM_CONTENT_PARSE_ERROR = ErrorCode(1015)
-private val STREAM_EVENT_PARSE_ERROR = ErrorCode(1016)
 private val VERIFICATION_RESPONSE_PARSE_ERROR = ErrorCode(1017)
 private val VERIFICATION_NETWORK_ERROR = ErrorCode(1018)
 
@@ -116,22 +114,6 @@ sealed class ChatServiceError(message: String, errorCode: ErrorCode) : Llm.Excep
      */
     class UpstreamResponseParseError(cause: Exception) :
         ChatServiceError("Upstream response parse error: ${cause.message}", UPSTREAM_RESPONSE_PARSE_ERROR)
-
-    /**
-     * A streamed response could not be parsed.
-     *
-     * @param cause The underlying serialization exception.
-     */
-    class StreamEventParseError(cause: Exception) :
-        ChatServiceError("Stream event parse error: ${cause.message}", STREAM_CONTENT_PARSE_ERROR)
-
-    /**
-     * A streamed response event included an error message.
-     *
-     * @param cause The underlying serialization exception.
-     */
-    class StreamError(cause: Exception) :
-        ChatServiceError("Stream event error: ${cause.message}", STREAM_EVENT_PARSE_ERROR)
 
     /**
      * An error occurred while serializing the verification request.
