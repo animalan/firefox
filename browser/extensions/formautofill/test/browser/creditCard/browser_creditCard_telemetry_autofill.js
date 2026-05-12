@@ -92,7 +92,14 @@ add_task(async function test_clear_creditCard_autofill() {
 
   let browser = tab.linkedBrowser;
 
-  await openPopupOn(browser, "#cc-number");
+  let popupShown = BrowserTestUtils.waitForPopupEvent(
+    browser.autoCompletePopup,
+    "shown"
+  );
+  // Already focus in "cc-number" field, press 'down' to bring to popup.
+  await BrowserTestUtils.synthesizeKey("KEY_ArrowDown", {}, browser);
+
+  await popupShown;
 
   // flushing Glean data before tab removal (see Bug 1843178)
   await Services.fog.testFlushAllChildren();
@@ -115,7 +122,7 @@ add_task(async function test_clear_creditCard_autofill() {
 
   await popupHidden;
 
-  let popupShown = BrowserTestUtils.waitForPopupEvent(
+  popupShown = BrowserTestUtils.waitForPopupEvent(
     browser.autoCompletePopup,
     "shown"
   );

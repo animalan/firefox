@@ -107,7 +107,7 @@ async function openTabAndUseCreditCard(
   await focusUpdateSubmitForm(
     browser,
     {
-      focusSelector: "#cc-name",
+      focusSelector: "#cc-number",
       newValues: {},
     },
     submitForm
