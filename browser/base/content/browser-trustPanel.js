@@ -5,6 +5,7 @@
 /* import-globals-from browser-siteProtections.js */
 
 ChromeUtils.defineESModuleGetters(this, {
+  BreachAlertStorage: "resource://gre/modules/BreachAlertStore.sys.mjs",
   BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
   ContentBlockingAllowList:
     "resource://gre/modules/ContentBlockingAllowList.sys.mjs",
@@ -128,6 +129,7 @@ class TrustPanel {
    * logs out, we flip this boolean to indicate that list needs refreshing.
    */
   #clearFxaOauthClientCache = false;
+  #breachAlertStoragePromise = null;
 
   /**
    * If the document is using a qualified website authentication certificate
@@ -175,6 +177,18 @@ class TrustPanel {
 
     // Add an observer to listen for FxAccounts logout to clear OAuth cache
     Services.obs.addObserver(this, "fxaccounts:onlogout");
+
+    customElements.whenDefined("breach-alert-panel").then(() => {
+      const breachAlertElement = document.getElementById(
+        "trustpanel-breach-alert-section"
+      );
+      if (breachAlertElement) {
+        breachAlertElement.addEventListener(
+          "dismissBreachAlert",
+          this.dismissBreachAlert.bind(this)
+        );
+      }
+    });
   }
 
   uninit() {
@@ -347,8 +361,9 @@ class TrustPanel {
       position: "bottomleft topleft",
     });
 
+    const applicableBreaches = await this.#getApplicableBreaches(this.#host);
     Glean.trustpanel.opened.record({
-      breach_status: await this.#breachedStatus(),
+      breach_status: await this.#breachedStatus(applicableBreaches),
     });
   }
 
@@ -452,11 +467,16 @@ class TrustPanel {
     const breachAlertGraphicSection = document.getElementById(
       "trustpanel-breach-alert-section"
     );
-    const breachStatus = await this.#breachedStatus();
+
+    const applicableBreaches = await this.#getApplicableBreaches(this.#host);
+    const breachStatus = await this.#breachedStatus(applicableBreaches);
     if (breachStatus !== "disabled" && breachStatus !== "not-breached") {
       graphicSection.hidden = true;
       breachAlertGraphicSection.hidden = false;
       breachAlertGraphicSection.breachStatus = breachStatus;
+      breachAlertGraphicSection.breachNames = applicableBreaches.map(
+        breach => breach.Name
+      );
     } else {
       graphicSection.hidden = false;
       breachAlertGraphicSection.hidden = true;
@@ -589,7 +609,7 @@ class TrustPanel {
     return this.#trackingProtectionEnabled ? "enabled" : "disabled";
   }
 
-  async #breachedStatus() {
+  async #breachedStatus(breaches) {
     if (!UrlbarPrefs.get("trustPanel.breachAlerts")) {
       return "disabled";
     }
@@ -605,8 +625,7 @@ class TrustPanel {
     // breach alert with different content. Currently, we just show an alert
     // when the site is breached, but we could e.g. add a more pressing warning
     // if we know the user's credentials specifically have been included.
-    const breach = await this.#getBreachForSite(this.#host);
-    if (breach) {
+    if (breaches.length) {
       return "breached";
     }
 
@@ -1653,6 +1672,18 @@ class TrustPanel {
     }
   }
 
+  async #getBreachAlertStorage() {
+    if (this.#breachAlertStoragePromise === null) {
+      const initializeStorage = async () => {
+        const storage = new BreachAlertStorage();
+        await storage.initialize();
+        return storage;
+      };
+      this.#breachAlertStoragePromise = initializeStorage();
+    }
+    return this.#breachAlertStoragePromise;
+  }
+
   async #getBreachedWebsites() {
     const REMOTE_SETTINGS_COLLECTION = "fxmonitor-breaches";
 
@@ -1663,18 +1694,6 @@ class TrustPanel {
       console.error("Could not get breach data from Remote Settings:", ex);
       return [];
     }
-  }
-
-  async #getBreachForSite(site) {
-    const breaches = await this.#getBreachedWebsites();
-
-    if (!site || !breaches.length) {
-      return null;
-    }
-
-    return breaches.find(breach => {
-      return breach.Domain && Services.eTLD.hasRootDomain(site, breach.Domain);
-    });
   }
 
   // The urlbar icon is part of core browser chrome state, not a data-driven UI.
@@ -1709,6 +1728,71 @@ class TrustPanel {
     this.#breachesPromise = null;
     this.#breaches = [];
   }
+
+  async #getApplicableBreaches(site) {
+    const breaches = await this.#getBreachedWebsites();
+
+    if (!site || !breaches.length) {
+      return [];
+    }
+
+    // Get breaches applying to the current domain...
+    const breachesForSite = breaches.filter(breach => {
+      return breach.Domain && Services.eTLD.hasRootDomain(site, breach.Domain);
+    });
+
+    // ...filter them down to those that occurred in the last year...
+    const recentBreaches = breachesForSite.filter(isRecentBreach);
+
+    // ...and then load dismissals for those breaches,
+    // and filter out those that the user has dismissed:
+    const breachAlertStorage = await this.#getBreachAlertStorage();
+    const dismissedBreachNames = (
+      await breachAlertStorage.getBreachAlertDismissals(
+        recentBreaches.map(breach => breach.Name)
+      )
+    ).map(breachDismissal => breachDismissal.breachName);
+    const undismissedBreaches = recentBreaches.filter(
+      recentBreach => !dismissedBreachNames.includes(recentBreach.Name)
+    );
+
+    return undismissedBreaches;
+  }
+
+  async dismissBreachAlert(event) {
+    const breachNames = event.detail.breachNames;
+    if (!breachNames) {
+      return;
+    }
+
+    try {
+      const timeDismissed = Date.now();
+      const dismissals = breachNames.map(breachName => ({
+        breachName,
+        timeDismissed,
+      }));
+      const breachAlertStorage = await this.#getBreachAlertStorage();
+      await breachAlertStorage.setBreachAlertDismissals(dismissals);
+    } catch (ex) {
+      console.error("Failed to store breach dismissal:", ex);
+    }
+    this.#updateMainView();
+  }
+}
+
+/**
+ * @param {{ Name: string, Domain: string, BreachDate: string, AddedDate: string }} breach
+ * @returns boolean
+ */
+function isRecentBreach(breach) {
+  const currentDate = Temporal.Now.plainDateISO();
+  // Although `breach.AddedDate` is an ISO8601 string,
+  // `breach.BreachDate` is just `YYYY-MM-DD`:
+  const breachedDate = Temporal.PlainDate.from(breach.BreachDate);
+
+  const oneYearAgo = currentDate.subtract({ years: 1 });
+  // Return `true` if the breach happened at most a year ago
+  return Temporal.PlainDate.compare(breachedDate, oneYearAgo) !== -1;
 }
 
 var gTrustPanelHandler = new TrustPanel();

@@ -8,6 +8,7 @@
 "use strict";
 
 ChromeUtils.defineESModuleGetters(this, {
+  BreachAlertStorage: "resource://gre/modules/BreachAlertStore.sys.mjs",
   ContentBlockingAllowList:
     "resource://gre/modules/ContentBlockingAllowList.sys.mjs",
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
@@ -30,8 +31,9 @@ const TRACKING_PAGE =
   "http://tracking.example.org/browser/browser/base/content/test/protectionsUI/trackingPage.html";
 
 const TEST_BREACH = {
-  AddedDate: "2018-12-20T23:56:26Z",
-  BreachDate: "2018-12-16",
+  // Make sure the breach is a recent one, since breaches older than a year are not taken into account:
+  AddedDate: Temporal.Now.plainDateTimeISO().toString(),
+  BreachDate: Temporal.Now.plainDateISO().toString(),
   Domain: "example.org",
   Name: "TestBreach",
   PwnCount: 42,
@@ -64,6 +66,9 @@ add_setup(async function setup() {
     await PlacesUtils.history.clear();
     await db.clear();
     await db.importChanges({}, Date.now());
+    const storage = new BreachAlertStorage();
+    await storage.initialize();
+    await storage.clearAllBreachAlertDismissals();
   });
 });
 
@@ -420,30 +425,37 @@ add_task(async function test_breach_alert_check_button_glean() {
   // "Check Mozilla Monitor" button does not attempt to connect to monitor.mozilla.org,
   // which would crash the test due to the non-local address restriction.
   const sandbox = sinon.createSandbox();
-  sandbox.stub(window, "switchToTabHavingURI");
+  try {
+    sandbox.stub(window, "switchToTabHavingURI");
 
-  checkButton.click();
+    checkButton.click();
 
-  await Services.fog.testFlushAllChildren();
+    await Services.fog.testFlushAllChildren();
 
-  const events = Glean.trustpanel.breachAlertDiscoveredMonitor.testGetValue();
-  Assert.ok(
-    Array.isArray(events) && events.length === 1,
-    "The breachAlertDiscoveredMonitor Glean event was recorded once after clicking the Check Monitor button"
-  );
-  Assert.equal(
-    events[0].category,
-    "trustpanel",
-    "The Glean event for clicking the Check Monitor button is of the `trustpanel` category"
-  );
-  Assert.equal(
-    events[0].name,
-    "breach_alert_discovered_monitor",
-    "The Glean event for clicking the Check Monitor button is `breach_alert_discovered_monitor`"
-  );
+    const events = Glean.trustpanel.breachAlertDiscoveredMonitor.testGetValue();
+    Assert.ok(
+      Array.isArray(events) && events.length === 1,
+      "The breachAlertDiscoveredMonitor Glean event was recorded once after clicking the Check Monitor button"
+    );
+    Assert.equal(
+      events[0].category,
+      "trustpanel",
+      "The Glean event for clicking the Check Monitor button is of the `trustpanel` category"
+    );
+    Assert.equal(
+      events[0].name,
+      "breach_alert_discovered_monitor",
+      "The Glean event for clicking the Check Monitor button is `breach_alert_discovered_monitor`"
+    );
+  } finally {
+    sandbox.restore();
+  }
 
-  sandbox.restore();
   await BrowserTestUtils.removeTab(tab);
+
+  const storage = new BreachAlertStorage();
+  await storage.initialize();
+  await storage.clearAllBreachAlertDismissals();
 });
 
 add_task(async function test_breach_alert_check_button_utm() {
@@ -474,41 +486,202 @@ add_task(async function test_breach_alert_check_button_utm() {
   // Stub switchToTabHavingURI so we can inspect the URL it is called with
   // without actually navigating to monitor.mozilla.org.
   const sandbox = sinon.createSandbox();
-  const switchStub = sandbox.stub(window, "switchToTabHavingURI");
+  try {
+    const switchStub = sandbox.stub(window, "switchToTabHavingURI");
 
-  checkButton.click();
+    checkButton.click();
 
-  Assert.ok(
-    switchStub.calledOnce,
-    "switchToTabHavingURI was called once after clicking the Check Monitor button"
-  );
+    Assert.ok(
+      switchStub.calledOnce,
+      "switchToTabHavingURI was called once after clicking the Check Monitor button"
+    );
 
-  const calledUrl = switchStub.firstCall.args[0];
-  const parsedUrl = new URL(calledUrl);
+    const calledUrl = switchStub.firstCall.args[0];
+    const parsedUrl = new URL(calledUrl);
 
-  Assert.equal(
-    parsedUrl.searchParams.get("utm_medium"),
-    "referral",
-    "utm_medium is 'referral'"
-  );
-  Assert.equal(
-    parsedUrl.searchParams.get("utm_source"),
-    "firefox-desktop",
-    "utm_source is 'firefox-desktop'"
-  );
-  Assert.equal(
-    parsedUrl.searchParams.get("utm_campaign"),
-    "privacy-panel",
-    "utm_campaign is 'privacy-panel'"
-  );
-  Assert.equal(
-    parsedUrl.searchParams.get("utm_content"),
-    "sign-up-global",
-    "utm_content is 'sign-up-global'"
-  );
+    Assert.equal(
+      parsedUrl.searchParams.get("utm_medium"),
+      "referral",
+      "utm_medium is 'referral'"
+    );
+    Assert.equal(
+      parsedUrl.searchParams.get("utm_source"),
+      "firefox-desktop",
+      "utm_source is 'firefox-desktop'"
+    );
+    Assert.equal(
+      parsedUrl.searchParams.get("utm_campaign"),
+      "privacy-panel",
+      "utm_campaign is 'privacy-panel'"
+    );
+    Assert.equal(
+      parsedUrl.searchParams.get("utm_content"),
+      "sign-up-global",
+      "utm_content is 'sign-up-global'"
+    );
+  } finally {
+    sandbox.restore();
+  }
 
-  sandbox.restore();
   await BrowserTestUtils.removeTab(tab);
+
+  const storage = new BreachAlertStorage();
+  await storage.initialize();
+  await storage.clearAllBreachAlertDismissals();
+});
+
+add_task(async function test_breach_dismissal_via_dismiss_button() {
+  const undismissedBreach = {
+    ...TEST_BREACH,
+    Name: "UndismissedBreachForDismissalViaDismissButton",
+  };
+
+  const db = RemoteSettings("fxmonitor-breaches").db;
+  let tab;
+
+  try {
+    await db.clear();
+    await db.create(undismissedBreach, { useRecordId: true });
+    await db.importChanges({}, Date.now());
+    tab = await BrowserTestUtils.openNewForegroundTab({
+      gBrowser,
+      opening: "https://example.org",
+      waitForLoad: true,
+    });
+
+    await UrlbarTestUtils.openTrustPanel(window);
+
+    const breachAlertSection = window.document.getElementById(
+      "trustpanel-breach-alert-section"
+    );
+
+    await BrowserTestUtils.waitForCondition(
+      () => breachAlertSection.hidden === false,
+      "The breach alert section should be visible before dismissal"
+    );
+
+    const dismissButton = breachAlertSection.shadowRoot.querySelector(
+      "moz-button:not([type=primary])"
+    );
+
+    dismissButton.click();
+
+    await BrowserTestUtils.waitForCondition(
+      () => breachAlertSection.hidden === true,
+      "The breach alert section should be hidden after dismissal"
+    );
+
+    Assert.strictEqual(
+      breachAlertSection.hidden,
+      true,
+      "The breach alert section is hidden after being dismissed"
+    );
+
+    const graphicSection = window.document.getElementById(
+      "trustpanel-graphic-section"
+    );
+
+    await BrowserTestUtils.waitForCondition(
+      () => graphicSection.hidden === false,
+      "The graphic section should be visible after dismissal"
+    );
+
+    Assert.equal(
+      graphicSection.hidden,
+      false,
+      "The regular graphic section is shown again after dismissing the breach alert"
+    );
+  } finally {
+    if (tab) {
+      await BrowserTestUtils.removeTab(tab);
+    }
+
+    await db.clear();
+    await db.create(TEST_BREACH, { useRecordId: true });
+    await db.importChanges({}, Date.now());
+  }
+});
+
+add_task(async function test_breach_dismissal_via_check_button() {
+  const undismissedBreach = {
+    ...TEST_BREACH,
+    Name: "UndismissedBreachForDismissalViaCheckButton",
+  };
+
+  const db = RemoteSettings("fxmonitor-breaches").db;
+  let tab;
+
+  try {
+    await db.clear();
+    await db.create(undismissedBreach, { useRecordId: true });
+    await db.importChanges({}, Date.now());
+    tab = await BrowserTestUtils.openNewForegroundTab({
+      gBrowser,
+      opening: "https://example.org",
+      waitForLoad: true,
+    });
+
+    await UrlbarTestUtils.openTrustPanel(window);
+
+    const breachAlertSection = window.document.getElementById(
+      "trustpanel-breach-alert-section"
+    );
+
+    await BrowserTestUtils.waitForCondition(
+      () => breachAlertSection.hidden === false,
+      "The breach alert section should be visible before dismissal"
+    );
+
+    const checkButton = breachAlertSection.shadowRoot.querySelector(
+      "moz-button[type=primary]"
+    );
+
+    // Stub switchToTabHavingURI on the browser window so that clicking the
+    // "Check Mozilla Monitor" button does not attempt to connect to monitor.mozilla.org,
+    // which would crash the test due to the non-local address restriction.
+    const sandbox = sinon.createSandbox();
+    try {
+      sandbox.stub(window, "switchToTabHavingURI");
+
+      checkButton.click();
+
+      await BrowserTestUtils.waitForCondition(
+        () => breachAlertSection.hidden === true,
+        "The breach alert section should be hidden after dismissal"
+      );
+
+      Assert.strictEqual(
+        breachAlertSection.hidden,
+        true,
+        "The breach alert section is hidden after being dismissed"
+      );
+
+      const graphicSection = window.document.getElementById(
+        "trustpanel-graphic-section"
+      );
+
+      await BrowserTestUtils.waitForCondition(
+        () => graphicSection.hidden === false,
+        "The graphic section should be visible after dismissal"
+      );
+
+      Assert.equal(
+        graphicSection.hidden,
+        false,
+        "The regular graphic section is shown again after dismissing the breach alert"
+      );
+    } finally {
+      sandbox.restore();
+    }
+  } finally {
+    if (tab) {
+      await BrowserTestUtils.removeTab(tab);
+    }
+
+    await db.clear();
+    await db.create(TEST_BREACH, { useRecordId: true });
+    await db.importChanges({}, Date.now());
+  }
 });
 
 add_task(async function test_dismiss_button_glean() {
@@ -568,6 +741,10 @@ add_task(async function test_dismiss_button_glean() {
   );
 
   await BrowserTestUtils.removeTab(tab);
+
+  const storage = new BreachAlertStorage();
+  await storage.initialize();
+  await storage.clearAllBreachAlertDismissals();
 });
 
 add_task(async function test_no_breach_alert_panel_with_pref_off() {
