@@ -85,6 +85,19 @@ into the `release directory <https://archive.mozilla.org/pub/firefox/releases/pa
 ``publish_to_releases`` is too.
 
 
+Verifying attribution
+---------------------
+
+To verify that a Firefox install was correctly attributed, navigate to
+``about:telemetry#search=attribution`` in the browser. The following fields should
+be populated with values matching the ``attribution_config.yml``:
+
+* ``attribution.medium``
+* ``attribution.source``
+* ``attribution.campaign``
+* ``attribution.content``
+
+
 Repacking process
 -----------------
 
