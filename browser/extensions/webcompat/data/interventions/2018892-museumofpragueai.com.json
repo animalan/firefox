@@ -13,7 +13,8 @@
         "media.webspeech.recognition.enable": false
       },
       "content_scripts": {
-        "js": ["bug2018892-museumofpragueai.com-shim-SpeechRecognition.js"]
+        "css": ["bug2018892-museumofpragueai.com-hide-mic-icon.css"],
+        "js": ["define_SpeechRecognition.js"]
       }
     }
   ]
