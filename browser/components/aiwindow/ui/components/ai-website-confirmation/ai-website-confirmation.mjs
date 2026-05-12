@@ -11,6 +11,7 @@ import "chrome://global/content/elements/moz-button.mjs";
 
 const SELECTION_CHANGE_EVENT = "ai-website-confirmation:selection-change";
 const CLOSE_CONFIRMATION_EVENT = "ai-website-confirmation:close";
+const SUBMIT_CONFIRMATION_EVENT = "ai-website-confirmation:submit";
 
 /**
  * A container component for listing and managing multiple AI website selects
@@ -97,6 +98,23 @@ export class AIWebsiteConfirmation extends MozLitElement {
   }
 
   /**
+   * Handle confirm button click
+   */
+  handleConfirm() {
+    const selectedTabs = this.getSelectedTabs();
+    if (selectedTabs.length === 0) {
+      return;
+    }
+
+    // TODO: Dispatch selection event with selected tabs  https://bugzilla.mozilla.org/show_bug.cgi?id=2031516
+    const closeEvent = new CustomEvent(SUBMIT_CONFIRMATION_EVENT, {
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(closeEvent);
+  }
+
+  /**
    * Dispatch selection event helper
    */
   dispatchSelectionEvent() {
@@ -166,6 +184,7 @@ export class AIWebsiteConfirmation extends MozLitElement {
             >
             </moz-button>
             <moz-button
+              @click=${this.handleConfirm}
               type="primary"
               ?disabled=${confirmButtonDisabled}
               data-l10n-id=${confirmButtonL10nId}

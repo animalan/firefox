@@ -12,6 +12,8 @@ import "chrome://browser/content/aiwindow/components/chat-assistant-error.mjs";
 import "chrome://browser/content/aiwindow/components/chat-assistant-loader.mjs";
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://browser/content/aiwindow/components/website-chip-container.mjs";
+// eslint-disable-next-line import/no-unassigned-import
+import "chrome://browser/content/aiwindow/components/ai-website-confirmation.mjs";
 
 const FOLLOW_UP_QTY = 2;
 
@@ -476,6 +478,10 @@ export class AIChatContent extends MozLitElement {
     });
   }
 
+  #isAIResponseValid(content, toolUIData) {
+    return (typeof content?.body === "string" && content.body) || !!toolUIData;
+  }
+
   /**
    * Handle AI response events
    *
@@ -495,9 +501,10 @@ export class AIChatContent extends MozLitElement {
       webSearchQueries = [],
       followUpSuggestions = [],
       isPreviousMessage,
+      toolUIData,
     } = event.detail;
 
-    if (typeof content.body !== "string" || !content.body) {
+    if (!this.#isAIResponseValid(content, toolUIData)) {
       return;
     }
 
@@ -514,6 +521,7 @@ export class AIChatContent extends MozLitElement {
       appliedMemories: memoriesApplied ?? [],
       showCallout: showMemoriesCallout ?? false,
       isLastChunk: !!isPreviousMessage,
+      toolUIData,
     };
 
     this.requestUpdate();
@@ -619,6 +627,68 @@ export class AIChatContent extends MozLitElement {
     this.dispatchEvent(event);
   }
 
+  #renderToolUI(toolUIData, messageId) {
+    if (!toolUIData) {
+      return nothing;
+    }
+
+    switch (toolUIData.uiType) {
+      case "website-confirmation":
+        return html`
+          <ai-website-confirmation
+            .tabs=${toolUIData.properties?.tabs || []}
+            @ai-website-confirmation:submit=${event =>
+              this.#handleConfirmationSubmit(
+                event,
+                messageId,
+                toolUIData.toolCallId
+              )}
+            @ai-website-confirmation:close=${event =>
+              this.#handleConfirmationClose(
+                event,
+                messageId,
+                toolUIData.toolCallId
+              )}
+          ></ai-website-confirmation>
+        `;
+      case "ai-action-result":
+        return html`<div>confirmation placeholder</div>`;
+      case "cancelled-component":
+        return html`<div>cancelled placeholder</div>`;
+      default:
+        return nothing;
+    }
+  }
+
+  #handleConfirmationSubmit = (event, messageId, toolCallId) => {
+    // TODO - add selected tabs, this will be part of the card integration pach
+    this.#dispatchToolUIUpdate({
+      messageId,
+      toolCallId,
+      updateType: "confirmation-tab-selection",
+      updateData: event.detail,
+    });
+  };
+
+  #handleConfirmationClose = (event, messageId, toolCallId) => {
+    this.#dispatchToolUIUpdate({
+      messageId,
+      toolCallId,
+      updateType: "cancel-tab-selection",
+      updateData: event.detail,
+    });
+  };
+
+  #dispatchToolUIUpdate(data) {
+    this.dispatchEvent(
+      new CustomEvent("AIChatContent:ToolUIUpdate", {
+        bubbles: true,
+        composed: true,
+        detail: data,
+      })
+    );
+  }
+
   #renderMessage(msg, chips) {
     if (!msg) {
       return nothing;
@@ -638,6 +708,9 @@ export class AIChatContent extends MozLitElement {
           .conversationId=${this.conversationId}
           .seenUrls=${this.seenUrls}
         ></ai-chat-message>
+        ${msg.role === "assistant" && msg.toolUIData
+          ? this.#renderToolUI(msg.toolUIData, msg.messageId)
+          : nothing}
         ${msg.role === "assistant" && msg.isLastChunk
           ? html`
               <assistant-message-footer

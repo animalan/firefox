@@ -60,6 +60,7 @@ export class ChatMessage {
   followUpSuggestions; // transient value
   pageHistoryDeleted;
   tokens;
+  toolUIData;
 
   /**
    * @param {object} param
@@ -108,6 +109,7 @@ export class ChatMessage {
    * the only message of the revision branch set to true.
    * @param {?boolean} param.pageHistoryDeleted - Whether pageUrl was removed due
    * to a history removal action like Forget This Site or Delete Page
+   * @param {?object} param.toolUIData - Tool UI data to render with this message
    */
   constructor({
     ordinal,
@@ -130,6 +132,7 @@ export class ChatMessage {
     revisionRootMessageId = id,
     isActiveBranch = true,
     pageHistoryDeleted = false,
+    toolUIData = null,
   }) {
     this.id = id;
     this.createdDate = createdDate;
@@ -151,6 +154,7 @@ export class ChatMessage {
     this.webSearchQueries = webSearchQueries;
     this.followUpSuggestions = followUpSuggestions;
     this.pageHistoryDeleted = pageHistoryDeleted;
+    this.toolUIData = toolUIData;
     this.tokens = {
       search: [],
       existing_memory: [],

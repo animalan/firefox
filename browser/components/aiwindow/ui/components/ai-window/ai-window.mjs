@@ -42,6 +42,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/aiwindow/models/memories/MemoriesManager.sys.mjs",
   getCurrentModelName:
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindowConstants.sys.mjs",
+  ToolUI: "moz-src:///browser/components/aiwindow/ui/modules/ToolUI.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "log", function () {
@@ -2071,6 +2072,10 @@ export class AIWindow extends MozLitElement {
         this.#openMemoriesLearnMore();
         break;
     }
+  }
+
+  handleToolUIUpdate(data) {
+    lazy.ToolUI.handleUpdate(data, this.#conversation);
   }
 
   #openMemoriesSettings() {

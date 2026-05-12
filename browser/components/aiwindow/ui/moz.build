@@ -28,6 +28,7 @@ MOZ_SRC_FILES += [
     "modules/ChatUtils.sys.mjs",
     "modules/SmartWindowTelemetry.sys.mjs",
     "modules/TabManagementService.sys.mjs",
+    "modules/ToolUI.sys.mjs",
 ]
 
 TESTING_JS_MODULES += [
