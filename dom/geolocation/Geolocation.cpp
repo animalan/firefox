@@ -1054,13 +1054,13 @@ NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(Geolocation)
 NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(Geolocation)
   tmp->Shutdown();
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mPendingCallbacks, mWatchingCallbacks,
-                                  mPendingRequests)
+                                  mBrowsingContext, mPendingRequests)
   NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
   NS_IMPL_CYCLE_COLLECTION_UNLINK_WEAK_PTR
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(Geolocation)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mPendingCallbacks, mWatchingCallbacks,
-                                    mPendingRequests)
+                                    mBrowsingContext, mPendingRequests)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 Geolocation::Geolocation()
