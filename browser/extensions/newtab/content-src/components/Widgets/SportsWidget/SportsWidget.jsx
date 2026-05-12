@@ -11,27 +11,7 @@ import { useIntersectionObserver } from "../../../lib/utils";
 const WIDGET_STATES = {
   INTRO: "sports-intro",
   FOLLOW_TEAMS: "sports-follow-state",
-  MATCHES: "sports-matches",
 };
-
-const MATCHES_TABS = {
-  RESULTS: "results",
-  NOW: "now",
-  UPCOMING: "upcoming",
-};
-
-function getVisibleMatchesTabs(hasLiveGames, hasPreviousResults) {
-  return (
-    Object.values(MATCHES_TABS)
-      // Only show the Now tab when there are live games.
-      .filter(id => id !== MATCHES_TABS.NOW || hasLiveGames)
-      .map(id => ({
-        id,
-        // Disable the Results tab until previous match data is available.
-        disabled: id === MATCHES_TABS.RESULTS && !hasPreviousResults,
-      }))
-  );
-}
 
 const COUNTRIES = [
   { id: "CA", name: "Canada" },
@@ -71,13 +51,6 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
   const displaySize =
     widgetState === WIDGET_STATES.FOLLOW_TEAMS ? "large" : widgetSize;
   const selectedTeams = sportsWidgetData.selectedTeams || [];
-  const { matchesTab } = sportsWidgetData;
-  const hasLiveGames = sportsWidgetData?.data?.current?.length > 0;
-  const hasPreviousResults = sportsWidgetData?.data?.previous?.length > 0;
-  const tournamentStarted = hasLiveGames || hasPreviousResults;
-  const hasUserSelectedTab = useRef(false);
-  const activeTab =
-    hasLiveGames && !hasUserSelectedTab.current ? MATCHES_TABS.NOW : matchesTab;
   const impressionFired = useRef(false);
   const sizeSubmenuRef = useRef(null);
 
@@ -139,18 +112,6 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
           },
         })
       );
-      dispatch(
-        ac.AlsoToMain({
-          type: at.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
-          data: WIDGET_STATES.MATCHES,
-        })
-      );
-      dispatch(
-        ac.AlsoToMain({
-          type: at.WIDGETS_SPORTS_CHANGE_MATCHES_TAB,
-          data: MATCHES_TABS.UPCOMING,
-        })
-      );
     });
     handleInteraction();
   }
@@ -166,18 +127,6 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
             user_action: USER_ACTION_TYPES.VIEW_RESULTS,
             widget_size: widgetSize,
           },
-        })
-      );
-      dispatch(
-        ac.AlsoToMain({
-          type: at.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
-          data: WIDGET_STATES.MATCHES,
-        })
-      );
-      dispatch(
-        ac.AlsoToMain({
-          type: at.WIDGETS_SPORTS_CHANGE_MATCHES_TAB,
-          data: MATCHES_TABS.RESULTS,
         })
       );
     });
@@ -249,25 +198,17 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
   }, [handleChangeSize]);
 
   function handleViewSchedule() {
-    batch(() => {
-      dispatch(
-        ac.OnlyToMain({
-          type: at.WIDGETS_USER_EVENT,
-          data: {
-            widget_name: "sports_widget",
-            widget_source: "widget",
-            user_action: USER_ACTION_TYPES.VIEW_SCHEDULE,
-            widget_size: widgetSize,
-          },
-        })
-      );
-      dispatch(
-        ac.AlsoToMain({
-          type: at.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
-          data: WIDGET_STATES.MATCHES,
-        })
-      );
-    });
+    dispatch(
+      ac.OnlyToMain({
+        type: at.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "sports_widget",
+          widget_source: "widget",
+          user_action: USER_ACTION_TYPES.VIEW_SCHEDULE,
+          widget_size: widgetSize,
+        },
+      })
+    );
     handleInteraction();
   }
 
@@ -308,30 +249,6 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
     [dispatch]
   );
 
-  const handleViewIntro = useCallback(
-    () =>
-      dispatch(
-        ac.AlsoToMain({
-          type: at.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
-          data: WIDGET_STATES.INTRO,
-        })
-      ),
-    [dispatch]
-  );
-
-  const handleMatchesTabChange = useCallback(
-    tab => {
-      hasUserSelectedTab.current = true;
-      dispatch(
-        ac.AlsoToMain({
-          type: at.WIDGETS_SPORTS_CHANGE_MATCHES_TAB,
-          data: tab,
-        })
-      );
-    },
-    [dispatch]
-  );
-
   // @nova-cleanup(remove-gate): Remove this guard and PREF_NOVA_ENABLED after Nova ships
   if (!prefs[PREF_NOVA_ENABLED]) {
     return null;
@@ -354,34 +271,6 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
             // If changing this number, also update isMaxSelected in SportsWidgetFollowTeams.
             data-l10n-args={JSON.stringify({ number: 3 })}
           />
-        )}
-        {widgetState === WIDGET_STATES.MATCHES && (
-          <moz-button
-            className="sports-back-button"
-            type="icon ghost"
-            iconsrc="chrome://global/skin/icons/arrow-left.svg"
-            data-l10n-id="newtab-sports-widget-back-button"
-            onClick={handleViewIntro}
-            style={{ visibility: tournamentStarted ? "hidden" : "visible" }}
-            aria-hidden={tournamentStarted}
-          />
-        )}
-        {widgetState === WIDGET_STATES.MATCHES && (
-          <div className="sports-matches-tabs" role="tablist">
-            {getVisibleMatchesTabs(hasLiveGames, hasPreviousResults).map(
-              ({ id, disabled }) => (
-                <button
-                  key={id}
-                  role="tab"
-                  aria-selected={activeTab === id}
-                  disabled={disabled}
-                  className={`sports-matches-tab${activeTab === id ? " is-active" : ""}${disabled ? " is-disabled" : ""}`}
-                  onClick={() => handleMatchesTabChange(id)}
-                  data-l10n-id={`newtab-sports-widget-${id}`}
-                />
-              )
-            )}
-          </div>
         )}
         {widgetState === WIDGET_STATES.INTRO && (
           <div className="sports-intro-wrapper">
@@ -421,7 +310,6 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
               <panel-item
                 data-l10n-id="newtab-sports-widget-menu-view-results"
                 onClick={handleViewResults}
-                disabled={!hasPreviousResults}
               />
               {widgetsMayBeMaximized && (
                 <panel-item submenu="sports-size-submenu">
@@ -457,20 +345,13 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
       </div>
 
       <div className="sports-body">
-        {widgetState === WIDGET_STATES.FOLLOW_TEAMS && (
+        {widgetState === WIDGET_STATES.FOLLOW_TEAMS ? (
           <SportsWidgetFollowTeams
             initialSelectedTeams={selectedTeams}
             dispatch={dispatch}
             onClose={handleCancelSelection}
           />
-        )}
-        {widgetState === WIDGET_STATES.MATCHES && (
-          <SportsMatchesView
-            matchesTab={activeTab}
-            hasLiveGames={hasLiveGames}
-          />
-        )}
-        {widgetState === WIDGET_STATES.INTRO && (
+        ) : (
           <>
             <div className="sports-buttons-wrapper">
               <moz-button
@@ -556,16 +437,6 @@ function SportsWidgetFollowTeams({ onClose, initialSelectedTeams, dispatch }) {
         size="small"
         onClick={handleDoneSelection}
       />
-    </div>
-  );
-}
-
-function SportsMatchesView({ matchesTab, hasLiveGames }) {
-  return (
-    <div className="sports-matches-view">
-      <div hidden={matchesTab !== MATCHES_TABS.RESULTS} />
-      {hasLiveGames && <div hidden={matchesTab !== MATCHES_TABS.NOW} />}
-      <div hidden={matchesTab !== MATCHES_TABS.UPCOMING} />
     </div>
   );
 }

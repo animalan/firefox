@@ -216,7 +216,6 @@ export const INITIAL_STATE = {
     initialized: false,
     widgetState: "sports-intro",
     selectedTeams: [],
-    matchesTab: "upcoming",
   },
 };
 
@@ -1213,8 +1212,6 @@ function SportsWidget(prevState = INITIAL_STATE.SportsWidget, action) {
       return { ...prevState, widgetState: action.data };
     case at.WIDGETS_SPORTS_SET_SELECTED_TEAMS:
       return { ...prevState, selectedTeams: action.data };
-    case at.WIDGETS_SPORTS_SET_MATCHES_TAB:
-      return { ...prevState, matchesTab: action.data };
     default:
       return prevState;
   }

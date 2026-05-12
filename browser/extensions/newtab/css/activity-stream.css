@@ -6520,7 +6520,7 @@ dialog:dir(rtl)::after {
 .sports:hover {
   background: var(--newtab-background-color-secondary);
 }
-.sports:hover, .sports:has(:focus-visible) {
+.sports:hover, .sports:focus-within {
   outline: 1px solid var(--border-color-deemphasized);
   box-shadow: var(--card-box-shadow-hover);
 }
@@ -6560,9 +6560,6 @@ dialog:dir(rtl)::after {
 .sports.sports-follow-state .sports-title-wrapper {
   padding: var(--space-small);
 }
-.sports.sports-matches .sports-title-wrapper {
-  grid-template-columns: auto 1fr auto;
-}
 
 .sports-title-wrapper {
   display: grid;
@@ -6585,13 +6582,9 @@ dialog:dir(rtl)::after {
 }
 
 .sports:hover .sports-context-menu-wrapper,
-.sports:has(:focus-visible) .sports-context-menu-wrapper {
+.sports:focus-within .sports-context-menu-wrapper {
   opacity: 1;
   pointer-events: auto;
-}
-
-.sports-context-menu-wrapper:focus-within {
-  opacity: 1;
 }
 
 .sports-body {
@@ -6654,35 +6647,6 @@ dialog:dir(rtl)::after {
   gap: var(--space-medium);
   flex: 1;
   overflow-y: auto;
-}
-
-.sports-back-button {
-  grid-column: 1;
-  justify-self: start;
-}
-
-.sports-matches-tabs {
-  display: flex;
-}
-
-.sports-matches-tab {
-  flex: 1;
-  padding-block: var(--space-small);
-  border: none;
-  border-block-end: 2px solid transparent;
-  font-size: var(--font-size-small);
-}
-.sports-matches-tab:focus-visible {
-  outline: var(--focus-outline);
-}
-.sports-matches-tab.is-active {
-  font-weight: var(--font-weight-semibold);
-  border-block-end-color: var(--color-accent-primary);
-}
-.sports-matches-tab.is-disabled {
-  color: var(--text-color-disabled);
-  cursor: not-allowed;
-  pointer-events: none;
 }
 
 .sports-cancel-button {
