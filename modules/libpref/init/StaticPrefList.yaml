@@ -1415,6 +1415,15 @@
   value: false
   mirror: always
 
+# If true, TrackingDBService read methods broadcast a flush request before
+# querying, so live ContentBlockingLogs for long-lived top-level documents
+# write their pending events to the database first. Has no effect unless
+# browser.contentblocking.database.enabled is also true.
+- name: browser.contentblocking.database.flushOnQuery.enabled
+  type: bool
+  value: true
+  mirror: always
+
 # How many recent block/unblock actions per origins we remember in the
 # Content Blocking log for each top-level window.
 - name: browser.contentblocking.originlog.length

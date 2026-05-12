@@ -22,6 +22,13 @@ XPCOMUtils.defineLazyPreferenceGetter(
 
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
+  "flushOnQueryEnabled",
+  "browser.contentblocking.database.flushOnQuery.enabled",
+  true
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
   "fpp_enabled",
   "privacy.fingerprintingProtection",
   false
@@ -127,6 +134,7 @@ TrackingDBService.prototype = {
   _db: null,
   waitingTasks: new Set(),
   finishedShutdown: true,
+  _flushingLiveLogs: false,
 
   async ensureDB() {
     await this._initPromise;
@@ -172,7 +180,12 @@ TrackingDBService.prototype = {
   async _shutdown() {
     let db = await this.ensureDB();
     this.finishedShutdown = true;
-    await Promise.all(Array.from(this.waitingTasks, task => task.finalize()));
+    // Ensure all waiting tasks are finalized before closing the DB
+    await Promise.all(
+      Array.from(this.waitingTasks, task =>
+        task.isFinalized ? null : task.finalize()
+      )
+    );
     await db.close();
   },
 
@@ -190,6 +203,30 @@ TrackingDBService.prototype = {
     }, 0);
     task.arm();
     this.waitingTasks.add(task);
+  },
+
+  /**
+   * Force every live top-level WindowGlobalParent to flush its in-memory
+   * ContentBlockingLog to the database, then wait for those writes to settle.
+   * Called before read paths so long-lived tabs contribute up-to-date data.
+   */
+  async _flushLiveLogs() {
+    if (
+      this.finishedShutdown ||
+      !lazy.flushOnQueryEnabled ||
+      this._flushingLiveLogs
+    ) {
+      return;
+    }
+    this._flushingLiveLogs = true;
+    try {
+      WindowGlobalParent.flushAllContentBlockingLogs();
+      if (this.waitingTasks.size) {
+        await Promise.all([...this.waitingTasks].map(task => task.finalize()));
+      }
+    } finally {
+      this._flushingLiveLogs = false;
+    }
   },
 
   identifyType(events) {
@@ -370,17 +407,30 @@ TrackingDBService.prototype = {
 
   async clearAll() {
     let db = await this.ensureDB();
+    // Ensure all waiting tasks are finalized before clearing the DB.
+    await Promise.all(
+      Array.from(this.waitingTasks, task =>
+        task.isFinalized ? null : task.finalize()
+      )
+    );
     await removeAllRecords(db);
   },
 
   async clearSince(date) {
     let db = await this.ensureDB();
+    // Ensure all waiting tasks are finalized before clearing the DB.
+    await Promise.all(
+      Array.from(this.waitingTasks, task =>
+        task.isFinalized ? null : task.finalize()
+      )
+    );
     date = new Date(date).toISOString();
     await removeRecordsSince(db, date);
   },
 
   async getEventsByDateRange(dateFrom, dateTo) {
     let db = await this.ensureDB();
+    await this._flushLiveLogs();
     dateFrom = new Date(dateFrom).toISOString();
     dateTo = new Date(dateTo).toISOString();
     return db.execute(SQL.selectByDateRange, { dateFrom, dateTo });
@@ -388,6 +438,7 @@ TrackingDBService.prototype = {
 
   async sumAllEvents() {
     let db = await this.ensureDB();
+    await this._flushLiveLogs();
     let results = await db.execute(SQL.sumAllEvents);
     if (!results[0]) {
       return 0;
@@ -398,6 +449,7 @@ TrackingDBService.prototype = {
 
   async getEarliestRecordedDate() {
     let db = await this.ensureDB();
+    await this._flushLiveLogs();
     let date = await db.execute(SQL.getEarliestDate);
     if (!date[0]) {
       return null;
