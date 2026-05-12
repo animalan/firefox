@@ -5,13 +5,11 @@
 use flate2::{read::ZlibDecoder, write::ZlibEncoder, Compression};
 use log::warn;
 use nsstring::nsCString;
-use rustc_hash::FxHashSet as HashSet;
 use serde::{Deserialize, Serialize};
 use static_assertions::const_assert;
 use std::ffi::c_void;
 use std::io::{Read as _, Write as _};
 use std::path::Path;
-use std::sync::Mutex;
 use thin_vec::ThinVec;
 
 /// Callback type for [`ssl_tokens_cache_read`].
@@ -65,7 +63,7 @@ impl PersistedRecord {
 
     fn opt_chain_to_thin(chain: Option<&[Vec<u8>]>) -> ThinVec<ThinVec<u8>> {
         chain.map_or_else(ThinVec::new, |c| {
-            c.iter().map(|b| b.iter().copied().collect()).collect()
+            c.iter().map(|b| ThinVec::from(b.as_slice())).collect()
         })
     }
 
@@ -102,14 +100,14 @@ impl PersistedRecord {
     fn with_record<F: FnOnce(&SslTokensPersistedRecord)>(&self, f: F) {
         let rec = SslTokensPersistedRecord {
             id: self.id,
-            key: nsCString::from(&self.key[..]),
+            key: nsCString::from(self.key.as_slice()),
             expiration_time: self.expiration_time,
             token: self.token.as_ptr(),
             token_len: self.token.len(),
             ev_status: self.ev_status,
             ct_status: self.ct_status,
             overridable_error: self.overridable_error,
-            server_cert: self.server_cert.iter().copied().collect(),
+            server_cert: ThinVec::from(self.server_cert.as_slice()),
             succeeded_cert_chain: Self::opt_chain_to_thin(self.succeeded_cert_chain.as_deref()),
             handshake_certs: Self::opt_chain_to_thin(self.handshake_certs.as_deref()),
             is_built_cert_chain_root_built_in_root: self
@@ -120,14 +118,6 @@ impl PersistedRecord {
         f(&rec);
     }
 }
-
-struct SslTokensState {
-    records: Vec<PersistedRecord>,
-}
-
-static STATE: Mutex<SslTokensState> = Mutex::new(SslTokensState {
-    records: Vec::new(),
-});
 
 /// Microseconds since the Unix epoch, matching the C++ `PRTime` type.
 type PrTime = i64;
@@ -222,7 +212,7 @@ fn nscstring_as_path(s: &nsCString) -> Option<&Path> {
 
 fn write_atomically(buf: &[u8], bin_path: &Path) -> std::io::Result<()> {
     let tmp_path = bin_path.with_extension("tmp");
-    let mut f = std::fs::File::create(&tmp_path)?;
+    let mut f = std::fs::File::create(&tmp_path)?; // nosemgrep
     f.write_all(buf)?;
     f.sync_all()?;
     std::fs::rename(tmp_path, bin_path)
@@ -244,60 +234,6 @@ unsafe fn dispatch_records(
     for rec in records.iter().filter(|r| r.expiration_time > now) {
         // SAFETY: callback is a valid function pointer and ctx is caller-managed.
         rec.with_record(|c_rec| unsafe { callback(ctx, &raw const *c_rec) });
-    }
-}
-
-fn with_state<F: FnOnce(&mut SslTokensState)>(f: F) {
-    if let Ok(mut state) = STATE.lock() {
-        f(&mut state);
-    }
-}
-
-fn serialize_filtered(records: &[PersistedRecord], ids: &HashSet<u64>) -> Vec<u8> {
-    to_file_bytes(
-        &records
-            .iter()
-            .filter(|r| ids.contains(&r.id))
-            .cloned()
-            .collect::<Vec<_>>(),
-        MAGIC,
-    )
-}
-
-/// Appends a record to the in-memory shadow copy.
-///
-/// # Safety
-///
-/// All pointer fields in `record` must be valid for their associated length
-/// fields for the duration of this call.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn ssl_tokens_cache_append(record: &SslTokensPersistedRecord) {
-    // SAFETY: caller guarantees all pointer fields are valid for their lengths.
-    let rec = unsafe { PersistedRecord::from_record(record) };
-    with_state(|state| state.records.push(rec));
-}
-
-/// Filters to `valid_ids`, serializes, and writes to disk atomically.
-///
-/// # Safety
-///
-/// `path` and `valid_ids` must be valid non-null pointers.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn ssl_tokens_cache_write(path: &nsCString, valid_ids: &ThinVec<u64>) {
-    let Some(path) = nscstring_as_path(path) else {
-        return;
-    };
-
-    let ids: HashSet<u64> = valid_ids.iter().copied().collect();
-
-    // Serialize while holding the lock (fast, no I/O), then write outside it.
-    let buf = {
-        let Ok(state) = STATE.lock() else { return };
-        serialize_filtered(&state.records, &ids)
-    };
-
-    if let Err(e) = write_atomically(&buf, path) {
-        warn!("SslTokensCache: write failed: {e}");
     }
 }
 
@@ -350,67 +286,43 @@ pub unsafe extern "C" fn ssl_tokens_cache_read(
     }
 }
 
-/// Removes the record with the given `id` from the in-memory shadow.
-///
-/// Called when a token is consumed by `Get()` or evicted, to keep the shadow
-/// in sync without waiting for the next write.
+/// Serializes `records` to STCF format, appending the bytes to `out`.
+/// Stateless — does not touch any global state.
 ///
 /// # Safety
 ///
-/// This function is safe to call from any thread with no preconditions.
+/// Each record's `token` pointer must be valid and stable (no reallocation
+/// of the owning buffer) for `token_len` bytes for the duration of this
+/// call. `records` and `out` must be valid non-null references.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn ssl_tokens_cache_remove(id: u64) {
-    with_state(|state| state.records.retain(|r| r.id != id));
-}
-
-/// Clears all in-memory state.
-///
-/// # Safety
-///
-/// This function is safe to call from any thread with no preconditions.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn ssl_tokens_cache_clear() {
-    with_state(|state| state.records.clear());
-}
-
-/// Retains only records whose id is in `valid_ids`, discarding the rest.
-///
-/// Called after `RemoveByOriginAttributesPattern` to keep the shadow in sync
-/// with the C++ cache for all origin-attribute dimensions, not just partitionKey.
-///
-/// # Safety
-///
-/// `valid_ids` must be a valid non-null reference for the duration of this call.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn ssl_tokens_cache_retain_only(valid_ids: &ThinVec<u64>) {
-    let ids: HashSet<u64> = valid_ids.iter().copied().collect();
-    with_state(|state| state.records.retain(|r| ids.contains(&r.id)));
-}
-
-/// Serializes the in-memory shadow filtered to `valid_ids` into STCF format
-/// for IPC transport, appending the bytes to `out` (mapped to
-/// `nsTArray<uint8_t>*` in C++). `out` is left unchanged on failure.
-///
-/// # Safety
-///
-/// `valid_ids` and `out` must be valid non-null pointers.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn ssl_tokens_cache_serialize(
-    valid_ids: &ThinVec<u64>,
+pub unsafe extern "C" fn ssl_tokens_cache_serialize_snapshot(
+    records: &ThinVec<SslTokensPersistedRecord>,
     out: &mut ThinVec<u8>,
 ) {
-    let ids: HashSet<u64> = valid_ids.iter().copied().collect();
-    let Ok(state) = STATE.lock() else {
-        return;
-    };
-    out.extend_from_slice(&serialize_filtered(&state.records, &ids));
+    let persisted: Vec<_> = records
+        .iter()
+        .map(|r| unsafe { PersistedRecord::from_record(r) })
+        .collect();
+    out.extend_from_slice(&to_file_bytes(&persisted, MAGIC));
 }
 
-/// Parses an STCF-format buffer (as produced by [`ssl_tokens_cache_serialize`])
-/// and dispatches each non-expired record to `callback`.
+/// Writes `data` atomically to `path` via the .tmp + rename dance.
 ///
-/// Does not modify the in-memory shadow; the C++ callback is expected to call
-/// `ssl_tokens_cache_append` for records that should be persisted.
+/// # Safety
+///
+/// `path` and `data` must be valid non-null references.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ssl_tokens_cache_write_bytes(path: &nsCString, data: &ThinVec<u8>) {
+    let Some(path) = nscstring_as_path(path) else {
+        return;
+    };
+    if let Err(e) = write_atomically(data, path) {
+        warn!("SslTokensCache: write failed: {e}");
+    }
+}
+
+/// Parses an STCF-format buffer and dispatches each non-expired record to
+/// `callback`.
 ///
 /// # Safety
 ///
@@ -590,37 +502,6 @@ mod tests {
         let out = from_file_bytes(&data, MAGIC).expect("valid file bytes");
         assert_eq!(out[0].key, b"a.com:443");
         Ok(())
-    }
-
-    // --- serialize_filtered / from_file_bytes (IPC round-trip logic) ---
-
-    #[test]
-    fn ipc_round_trip_empty() {
-        let ids: HashSet<u64> = HashSet::default();
-        let buf = serialize_filtered(&[], &ids);
-        assert!(
-            !buf.is_empty(),
-            "empty cache still produces a valid STCF header"
-        );
-        let records = from_file_bytes(&buf, MAGIC).expect("valid STCF");
-        assert!(records.is_empty());
-    }
-
-    #[test]
-    fn ipc_round_trip_records() {
-        let records = vec![
-            make_record(1, "a.com:443", b"tok1", i64::MAX),
-            make_record(2, "b.com:443", b"tok2", i64::MAX),
-            make_record(3, "c.com:443", b"tok3", i64::MAX),
-        ];
-        let ids: HashSet<u64> = [1, 3].into_iter().collect(); // exclude id=2
-        let buf = serialize_filtered(&records, &ids);
-        assert!(!buf.is_empty());
-
-        let out = from_file_bytes(&buf, MAGIC).expect("valid STCF");
-        assert_eq!(out.len(), 2);
-        assert!(out.iter().any(|r| r.key == b"a.com:443"));
-        assert!(out.iter().any(|r| r.key == b"c.com:443"));
     }
 
     #[test]
