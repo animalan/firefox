@@ -11398,7 +11398,7 @@
 # Per-domain blocklist for ::-webkit-scrollbar pseudo element
 - name: layout.css.fake-webkit-scrollbar.disabled-domains
   type: DataMutexString
-  value: "discord.com"
+  value: "discord.com,shitposter.world"
   mirror: always
   rust: true
 
