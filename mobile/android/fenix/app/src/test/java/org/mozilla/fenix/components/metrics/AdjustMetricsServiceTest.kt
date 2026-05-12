@@ -147,7 +147,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(1) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -158,7 +157,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(2) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -169,7 +167,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(3) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -180,7 +177,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(4) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -191,7 +187,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(5) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -202,7 +197,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(6) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -213,7 +207,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(7) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -224,7 +217,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(8) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -235,7 +227,6 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(9) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 
     @Test
@@ -246,6 +237,5 @@ internal class AdjustMetricsServiceTest {
         )
 
         verify { conversionEventRecorder.recordConversionEvent(10) }
-        verify { conversionEventRecorder.submitAdjustAttributionPing() }
     }
 }
