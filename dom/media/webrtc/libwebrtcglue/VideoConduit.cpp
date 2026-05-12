@@ -1529,9 +1529,13 @@ void WebrtcVideoConduit::OnSendFrame(const webrtc::VideoFrame& aFrame) {
 
   const gfx::IntSize size{aFrame.width(), aFrame.height()};
 
-  CSFLogVerbose(LOGTAG, "WebrtcVideoConduit %p %s (send SSRC %u (0x%x))", this,
-                __FUNCTION__, mSendStreamConfig.rtp.ssrcs.front(),
-                mSendStreamConfig.rtp.ssrcs.front());
+  {
+    const auto ssrc = mSendStreamConfig.rtp.ssrcs.empty()
+                          ? 0u
+                          : mSendStreamConfig.rtp.ssrcs.front();
+    CSFLogVerbose(LOGTAG, "WebrtcVideoConduit %p %s (send SSRC %u (0x%x))",
+                  this, __FUNCTION__, ssrc, ssrc);
+  }
 
   if (Some(size) != mLastSize) {
     MOZ_ASSERT(size != gfx::IntSize(0, 0));
