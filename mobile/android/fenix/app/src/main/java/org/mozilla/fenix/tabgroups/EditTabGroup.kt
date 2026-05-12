@@ -279,12 +279,12 @@ private fun TabGroupColorPickerItem(
                 Modifier
                     .border(
                         outerBorderWidth,
-                        color = FirefoxTheme.colors.layerAccent,
+                        color = MaterialTheme.colorScheme.primary,
                         shape = CircleShape,
                     )
                     .border(
                         innerBorderWidth,
-                        color = FirefoxTheme.colors.layer2,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
                         shape = CircleShape,
                     ),
                 predicate = { selected },
