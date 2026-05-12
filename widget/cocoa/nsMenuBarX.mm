@@ -133,6 +133,10 @@ nsMenuBarX::~nsMenuBarX() {
   }
 
   if (mApplicationMenuDelegate) {
+    if (sApplicationMenu &&
+        sApplicationMenu.delegate == mApplicationMenuDelegate) {
+      sApplicationMenu.delegate = nil;
+    }
     [mApplicationMenuDelegate release];
   }
 
@@ -1118,10 +1122,9 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
 
   if (representedObject) {
     menuGroupOwner = representedObject.menuGroupOwner;
-    if (!menuGroupOwner) {
-      return;
+    if (menuGroupOwner) {
+      menuBar = menuGroupOwner->GetMenuBar();
     }
-    menuBar = menuGroupOwner->GetMenuBar();
   }
 
   // Notify containing menu about the fact that a menu item will be activated.
