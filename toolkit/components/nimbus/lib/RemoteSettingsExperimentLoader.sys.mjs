@@ -849,12 +849,7 @@ export class RemoteSettingsExperimentLoader {
       throw new Error(`Recipe ${recipe.slug} did not match targeting`);
     }
 
-    const branch = recipe.branches.find(b => b.slug === branchSlug);
-    if (!branch) {
-      throw new Error(`Could not find branch slug ${branchSlug} in ${slug}`);
-    }
-
-    await this.manager.forceEnroll(recipe, branch);
+    await this.manager.forceEnroll(recipe, branchSlug);
   }
 
   /**

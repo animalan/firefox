@@ -686,7 +686,7 @@ add_task(async function test_forceEnroll_cleanup() {
   await manager.enroll(existingRecipe, "test_forceEnroll_cleanup");
 
   sandbox.spy(NimbusTelemetry, "setExperimentActive");
-  await manager.forceEnroll(forcedRecipe, forcedRecipe.branches[0]);
+  await manager.forceEnroll(forcedRecipe, forcedRecipe.branches[0].slug);
 
   Assert.deepEqual(
     Glean.nimbusEvents.enrollmentStatus
@@ -754,7 +754,7 @@ add_task(async function test_rollout_unenroll_conflict() {
   // We want to force a conflict
   await manager.enroll(conflictingRollout, "rs-loader");
 
-  await manager.forceEnroll(rollout, rollout.branches[0]);
+  await manager.forceEnroll(rollout, rollout.branches[0].slug);
 
   Assert.ok(
     manager._unenroll.calledOnceWith(
@@ -817,7 +817,7 @@ add_task(async function test_forceEnroll() {
 
   for (const { enroll, expected } of TEST_CASES) {
     for (const recipe of enroll) {
-      await manager.forceEnroll(recipe, recipe.branches[0]);
+      await manager.forceEnroll(recipe, recipe.branches[0].slug);
     }
 
     const activeSlugs = manager.store

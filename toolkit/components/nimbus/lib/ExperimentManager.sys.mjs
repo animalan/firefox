@@ -813,13 +813,30 @@ export class ExperimentManager {
     return enrollment;
   }
 
-  async forceEnroll(recipe, branch) {
-    /**
-     * If we happen to be enrolled in an experiment for the same feature
-     * we need to unenroll from that experiment.
-     * If the experiment has the same slug after unenrollment adding it to the
-     * store will overwrite the initial experiment.
-     */
+  /**
+   * Force enrollment in a recipe.
+   *
+   * The resulting enrollment will have a slug prefixed with `optin-` to
+   * distinguish it from regular enrollments in telemetry.
+   *
+   * @param {object} recipe The recipe to enroll in.
+   * @param {string} branchSlug The slug of the branch to enroll in.
+   *
+   * @returns {object} The resulting enrollment.
+   */
+  async forceEnroll(recipe, branchSlug) {
+    const branch = recipe.branches.find(b => b.slug === branchSlug);
+    if (!branch) {
+      throw new Error(
+        `Could not force enroll into ${recipe.slug}: no such branch ${branchSlug}`
+      );
+    }
+
+    // If we happen to be enrolled in an experiment for the same feature we need
+    // to unenroll from that experiment.
+    //
+    // If the experiment has the same slug after unenrollment adding it to the
+    // store will overwrite the initial experiment.
     for (let feature of branch.features) {
       const isRollout = recipe.isRollout ?? false;
       let enrollment = isRollout
@@ -841,19 +858,21 @@ export class ExperimentManager {
       }
     }
 
-    recipe.userFacingName = `${recipe.userFacingName} - Forced enrollment`;
+    const optInRecipe = structuredClone(recipe);
+    optInRecipe.userFacingName = `${recipe.userFacingName} - Forced enrollment`;
+    optInRecipe.slug = `optin-${recipe.slug}`;
 
-    const slug = `optin-${recipe.slug}`;
     const enrollment = await this._enroll(
-      {
-        ...recipe,
-        slug,
-      },
-      branch.slug,
+      optInRecipe,
+      branchSlug,
       lazy.NimbusTelemetry.EnrollmentSource.FORCE_ENROLLMENT
     );
 
-    Services.obs.notifyObservers(null, "nimbus:enrollments-updated", slug);
+    Services.obs.notifyObservers(
+      null,
+      "nimbus:enrollments-updated",
+      optInRecipe.slug
+    );
 
     return enrollment;
   }
