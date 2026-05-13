@@ -11,6 +11,7 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   JsonSchema: "resource://gre/modules/JsonSchema.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
@@ -77,7 +78,10 @@ class ContentSharingUtilsClass {
   #validator = null;
 
   get isEnabled() {
-    return lazy.CONTENT_SHARING_ENABLED;
+    let isPrivate = lazy.PrivateBrowsingUtils.isWindowPrivate(
+      Services.wm.getMostRecentBrowserWindow()
+    );
+    return lazy.CONTENT_SHARING_ENABLED && !isPrivate;
   }
 
   get serverURL() {
