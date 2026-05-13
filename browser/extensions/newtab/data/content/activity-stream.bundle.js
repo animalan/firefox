@@ -11941,6 +11941,13 @@ function CardSections({
   }, sectionsToRender);
 }
 
+;// CONCATENATED MODULE: ./content-src/lib/BaseContext.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+const BaseContext = /*#__PURE__*/external_React_default().createContext({});
 ;// CONCATENATED MODULE: ./common/WidgetsRegistry.mjs
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -17558,6 +17565,7 @@ const WIDGET_SIDEBAR_COMPONENTS = {
 
 
 
+
 // Bug 2034542: these per-widget imports can be removed once the non-Nova render
 // path (@nova-cleanup) is gone and all widgets render via WIDGET_ROW_COMPONENTS.
 
@@ -17645,6 +17653,9 @@ function Widgets() {
   const timerType = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.TimerWidget.timerType);
   const timerData = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.TimerWidget);
   const dispatch = (0,external_ReactRedux_namespaceObject.useDispatch)();
+  const {
+    openWidgetsPanel
+  } = (0,external_React_namespaceObject.useContext)(BaseContext);
   const novaEnabled = prefs[Widgets_PREF_NOVA_ENABLED];
   const isMaximized = prefs[PREF_WIDGETS_MAXIMIZED];
   const nimbusMaximizedTrainhopEnabled = prefs.trainhopConfig?.widgets?.maximized;
@@ -17819,6 +17830,13 @@ function Widgets() {
       toggleMaximize();
     }
   }
+  function handleManageWidgetsClick(e) {
+    e.preventDefault();
+    openWidgetsPanel();
+    dispatch(actionCreators.UserEvent({
+      event: "SHOW_PERSONALIZE"
+    }));
+  }
   function handleFeedbackClick(e) {
     e.preventDefault();
     (0,external_ReactRedux_namespaceObject.batch)(() => {
@@ -17883,6 +17901,9 @@ function Widgets() {
       }, /*#__PURE__*/external_React_default().createElement("panel-item", {
         "data-l10n-id": "newtab-widget-section-menu-hide-all",
         onClick: handleHideAllWidgetsClick
+      }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+        "data-l10n-id": "newtab-widget-section-menu-manage",
+        onClick: handleManageWidgetsClick
       }), /*#__PURE__*/external_React_default().createElement("panel-item", {
         "data-l10n-id": "newtab-widget-section-menu-learn-more",
         onClick: handleFeedbackClick
@@ -18497,7 +18518,6 @@ function SectionsMgmtPanel_extends() { return SectionsMgmtPanel_extends = Object
 // eslint-disable-next-line no-shadow
 
 function SectionsMgmtPanel({
-  exitEventFired,
   pocketEnabled,
   onSubpanelToggle,
   togglePanel,
@@ -18626,13 +18646,6 @@ function SectionsMgmtPanel({
       }
     }));
   }, [dispatch, sectionPersonalization]);
-
-  // Close followed/blocked topic subpanel when parent menu is closed
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (exitEventFired && showPanel) {
-      togglePanel();
-    }
-  }, [exitEventFired, showPanel, togglePanel]);
 
   // Notify parent menu when subpanel opens/closes
   (0,external_React_namespaceObject.useEffect)(() => {
@@ -19543,7 +19556,6 @@ const WallpaperCategories = (0,external_ReactRedux_namespaceObject.connect)(stat
 // eslint-disable-next-line no-shadow
 
 function WidgetsManagementPanel({
-  exitEventFired,
   onSubpanelToggle,
   togglePanel,
   showPanel,
@@ -19561,13 +19573,6 @@ function WidgetsManagementPanel({
   const arrowButtonRef = (0,external_React_namespaceObject.useRef)(null);
   const panelRef = (0,external_React_namespaceObject.useRef)(null);
   const dispatch = (0,external_ReactRedux_namespaceObject.useDispatch)();
-
-  // Close widget subpanel when parent menu is closed
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (exitEventFired && showPanel) {
-      togglePanel();
-    }
-  }, [exitEventFired, showPanel, togglePanel]);
 
   // Notify parent menu when subpanel opens/closes
   (0,external_React_namespaceObject.useEffect)(() => {
@@ -20090,7 +20095,6 @@ class ContentSection extends (external_React_default()).PureComponent {
       mayHaveWeatherForecast: mayHaveWeatherForecast,
       weatherDisplay: weatherDisplay,
       setPref: setPref,
-      exitEventFired: exitEventFired,
       onSubpanelToggle: onSubpanelToggle,
       togglePanel: toggleWidgetsManagementPanel,
       showPanel: showWidgetsManagementPanel
@@ -20187,7 +20191,6 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
     this.dialogRef = /*#__PURE__*/external_React_default().createRef();
     this.closeButtonRef = /*#__PURE__*/external_React_default().createRef();
     this.state = {
-      exitEventFired: false,
       subpanelOpen: false
     };
   }
@@ -20213,9 +20216,6 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
     }
   }
   onEntered() {
-    this.setState({
-      exitEventFired: false
-    });
     if (this.closeButtonRef.current) {
       this.closeButtonRef.current.focus();
     }
@@ -20224,9 +20224,12 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
     if (this.dialogRef.current?.open) {
       this.dialogRef.current.close();
     }
-    this.setState({
-      exitEventFired: true
-    });
+    if (this.props.showWidgetsManagementPanel) {
+      this.props.toggleWidgetsManagementPanel();
+    }
+    if (this.props.showSectionsMgmtPanel) {
+      this.props.toggleSectionsMgmtPanel();
+    }
     if (this.personalizeButtonRef.current) {
       this.personalizeButtonRef.current.focus();
     }
@@ -20313,7 +20316,6 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
       mayHaveSportsWidget: this.props.mayHaveSportsWidget,
       mayHaveClocksWidget: this.props.mayHaveClocksWidget,
       dispatch: this.props.dispatch,
-      exitEventFired: this.state.exitEventFired,
       onSubpanelToggle: this.onSubpanelToggle,
       toggleSectionsMgmtPanel: this.props.toggleSectionsMgmtPanel,
       showSectionsMgmtPanel: this.props.showSectionsMgmtPanel,
@@ -21840,6 +21842,7 @@ function Base_extends() { return Base_extends = Object.assign ? Object.assign.bi
 
 
 
+
 const Base_VISIBLE = "visible";
 const Base_VISIBILITY_CHANGE_EVENT = "visibilitychange";
 const PREF_INFERRED_PERSONALIZATION_SYSTEM = "discoverystream.sections.personalization.inferred.enabled";
@@ -21910,6 +21913,7 @@ class BaseContent extends (external_React_default()).PureComponent {
     this.applyBodyClasses = this.applyBodyClasses.bind(this);
     this.toggleSectionsMgmtPanel = this.toggleSectionsMgmtPanel.bind(this);
     this.toggleWidgetsManagementPanel = this.toggleWidgetsManagementPanel.bind(this);
+    this.openWidgetsPanel = this.openWidgetsPanel.bind(this);
     this.state = {
       fixedSearch: false,
       colorMode: "",
@@ -22400,6 +22404,15 @@ class BaseContent extends (external_React_default()).PureComponent {
       showWidgetsManagementPanel: !prevState.showWidgetsManagementPanel
     }));
   }
+  openWidgetsPanel() {
+    this.openCustomizationMenu();
+    if (!this.state.showWidgetsManagementPanel) {
+      this.setState({
+        showWidgetsManagementPanel: true,
+        showSectionsMgmtPanel: false
+      });
+    }
+  }
   shouldDisplayTopicSelectionModal() {
     const prefs = this.props.Prefs.values;
     const pocketEnabled = prefs["feeds.section.topstories"] && prefs["feeds.system.topstories"];
@@ -22531,6 +22544,9 @@ class BaseContent extends (external_React_default()).PureComponent {
       messageData: this.props.Messages.messageData,
       className: "asrouter-multistage-message-wrapper"
     }))) : null;
+    const baseContextValue = {
+      openWidgetsPanel: this.openWidgetsPanel
+    };
 
     // @nova-cleanup(remove-conditional): Remove this conditional and
     // always render the Nova layout below. The classic render() return
@@ -22545,7 +22561,9 @@ class BaseContent extends (external_React_default()).PureComponent {
       const weatherGoesToSidebar = resolveWidgetHasSidebar(weatherWidget, prefs) && resolveWidgetSize(weatherWidget, prefs) === "small";
       const hasContentWidgets = mayHaveListsWidget && enabledWidgets.listsEnabled || mayHaveTimerWidget && enabledWidgets.timerEnabled || mayHaveClocksWidget && enabledWidgets.clocksEnabled || mayHaveWeatherWidget && enabledWidgets.weatherEnabled && !weatherGoesToSidebar || mayHaveSportsWidget && enabledWidgets.sportsWidgetEnabled;
       const logoShouldBeCentered = !pocketEnabled && !hasContentWidgets;
-      return /*#__PURE__*/external_React_default().createElement("div", {
+      return /*#__PURE__*/external_React_default().createElement(BaseContext.Provider, {
+        value: baseContextValue
+      }, /*#__PURE__*/external_React_default().createElement("div", {
         className: "nova-outer-wrapper"
       }, /*#__PURE__*/external_React_default().createElement("div", {
         className: `container nova-enabled${logoShouldBeCentered ? " logo-in-content" : ""}`
@@ -22624,11 +22642,13 @@ class BaseContent extends (external_React_default()).PureComponent {
         dispatch: this.props.dispatch
       }))), this.props.Notifications?.showNotifications && /*#__PURE__*/external_React_default().createElement(ErrorBoundary, null, /*#__PURE__*/external_React_default().createElement(Notifications_Notifications, {
         dispatch: this.props.dispatch
-      })));
+      }))));
     }
 
     // @nova-cleanup(remove-conditional): Delete this entire classic return block along with all variables only used here
-    return /*#__PURE__*/external_React_default().createElement("div", {
+    return /*#__PURE__*/external_React_default().createElement(BaseContext.Provider, {
+      value: baseContextValue
+    }, /*#__PURE__*/external_React_default().createElement("div", {
       className: featureClassName
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "weatherWrapper"
@@ -22706,7 +22726,7 @@ class BaseContent extends (external_React_default()).PureComponent {
     }, /*#__PURE__*/external_React_default().createElement(WallpaperFeatureHighlight, {
       position: "inset-block-start inset-inline-start",
       dispatch: this.props.dispatch
-    }))));
+    })))));
   }
 }
 BaseContent.defaultProps = {

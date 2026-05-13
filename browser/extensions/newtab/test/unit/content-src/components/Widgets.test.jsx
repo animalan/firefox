@@ -10,6 +10,7 @@ import {
 import { Lists } from "content-src/components/Widgets/Lists/Lists";
 import { actionTypes as at } from "common/Actions.mjs";
 import { FocusTimer } from "content-src/components/Widgets/FocusTimer/FocusTimer";
+import { BaseContext } from "content-src/lib/BaseContext";
 
 const PREF_WIDGETS_ENABLED = "widgets.enabled";
 const PREF_WIDGETS_LISTS_ENABLED = "widgets.lists.enabled";
@@ -1258,7 +1259,27 @@ describe("<Widgets>", () => {
           "#widgets-header-context-panel panel-item"
         );
 
-        assert.equal(menuButtons.length, 2, "should render two menu items");
+        assert.equal(menuButtons.length, 3, "should render three menu items");
+      });
+
+      it("should call openWidgetsPanel when the manage widgets menu item is clicked", () => {
+        const openWidgetsPanel = sinon.stub();
+        const novaStore = createStore(combineReducers(reducers), NOVA_STATE);
+        const novaWrapper = mount(
+          <BaseContext.Provider value={{ openWidgetsPanel }}>
+            <Provider store={novaStore}>
+              <Widgets />
+            </Provider>
+          </BaseContext.Provider>
+        );
+
+        novaWrapper
+          .find("panel-item[data-l10n-id='newtab-widget-section-menu-manage']")
+          .prop("onClick")({
+          preventDefault: () => {},
+        });
+
+        assert.calledOnce(openWidgetsPanel);
       });
 
       it("should dispatch hide widget actions from the Nova header menu", () => {

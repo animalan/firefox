@@ -22,7 +22,6 @@ export class _CustomizeMenu extends React.PureComponent {
     this.dialogRef = React.createRef();
     this.closeButtonRef = React.createRef();
     this.state = {
-      exitEventFired: false,
       subpanelOpen: false,
     };
   }
@@ -51,7 +50,6 @@ export class _CustomizeMenu extends React.PureComponent {
   }
 
   onEntered() {
-    this.setState({ exitEventFired: false });
     if (this.closeButtonRef.current) {
       this.closeButtonRef.current.focus();
     }
@@ -61,7 +59,12 @@ export class _CustomizeMenu extends React.PureComponent {
     if (this.dialogRef.current?.open) {
       this.dialogRef.current.close();
     }
-    this.setState({ exitEventFired: true });
+    if (this.props.showWidgetsManagementPanel) {
+      this.props.toggleWidgetsManagementPanel();
+    }
+    if (this.props.showSectionsMgmtPanel) {
+      this.props.toggleSectionsMgmtPanel();
+    }
     if (this.personalizeButtonRef.current) {
       this.personalizeButtonRef.current.focus();
     }
@@ -172,7 +175,6 @@ export class _CustomizeMenu extends React.PureComponent {
                 mayHaveSportsWidget={this.props.mayHaveSportsWidget}
                 mayHaveClocksWidget={this.props.mayHaveClocksWidget}
                 dispatch={this.props.dispatch}
-                exitEventFired={this.state.exitEventFired}
                 onSubpanelToggle={this.onSubpanelToggle}
                 toggleSectionsMgmtPanel={this.props.toggleSectionsMgmtPanel}
                 showSectionsMgmtPanel={this.props.showSectionsMgmtPanel}

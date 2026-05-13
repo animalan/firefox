@@ -417,7 +417,6 @@ export class ContentSection extends React.PureComponent {
                             mayHaveWeatherForecast={mayHaveWeatherForecast}
                             weatherDisplay={weatherDisplay}
                             setPref={setPref}
-                            exitEventFired={exitEventFired}
                             onSubpanelToggle={onSubpanelToggle}
                             togglePanel={toggleWidgetsManagementPanel}
                             showPanel={showWidgetsManagementPanel}

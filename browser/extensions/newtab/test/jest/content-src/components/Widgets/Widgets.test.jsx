@@ -5,6 +5,7 @@ import { createStore, combineReducers } from "redux";
 import { INITIAL_STATE, reducers } from "common/Reducers.sys.mjs";
 import { actionTypes as at } from "common/Actions.mjs";
 import { Widgets } from "content-src/components/Widgets/Widgets";
+import { BaseContext } from "content-src/lib/BaseContext";
 
 const ENABLED_STATE = {
   ...INITIAL_STATE,
@@ -133,5 +134,42 @@ describe("<Widgets> hideAllWidgets legacy weather telemetry", () => {
         action.data?.widget_source === "widget"
     );
     expect(weatherEnabledCalls).toHaveLength(0);
+  });
+});
+
+describe("<Widgets> manage widgets menu item", () => {
+  it("calls openWidgetsPanel and dispatches SHOW_PERSONALIZE when clicked", () => {
+    const novaState = {
+      ...ENABLED_STATE,
+      Prefs: {
+        ...ENABLED_STATE.Prefs,
+        values: {
+          ...ENABLED_STATE.Prefs.values,
+          "nova.enabled": true,
+        },
+      },
+    };
+    const store = createStore(combineReducers(reducers), novaState);
+    jest.spyOn(store, "dispatch");
+    const openWidgetsPanel = jest.fn();
+    const { container } = render(
+      <Provider store={store}>
+        <BaseContext.Provider value={{ openWidgetsPanel }}>
+          <Widgets />
+        </BaseContext.Provider>
+      </Provider>
+    );
+    const manageItem = container.querySelector(
+      "[data-l10n-id='newtab-widget-section-menu-manage']"
+    );
+    expect(manageItem).toBeInTheDocument();
+    fireEvent.click(manageItem);
+    expect(openWidgetsPanel).toHaveBeenCalledTimes(1);
+    expect(store.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: at.TELEMETRY_USER_EVENT,
+        data: expect.objectContaining({ event: "SHOW_PERSONALIZE" }),
+      })
+    );
   });
 });

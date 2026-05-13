@@ -11,7 +11,6 @@ import { actionCreators as ac, actionTypes as at } from "common/Actions.mjs";
 import { CSSTransition } from "react-transition-group";
 
 function WidgetsManagementPanel({
-  exitEventFired,
   onSubpanelToggle,
   togglePanel,
   showPanel,
@@ -29,13 +28,6 @@ function WidgetsManagementPanel({
   const arrowButtonRef = useRef(null);
   const panelRef = useRef(null);
   const dispatch = useDispatch();
-
-  // Close widget subpanel when parent menu is closed
-  useEffect(() => {
-    if (exitEventFired && showPanel) {
-      togglePanel();
-    }
-  }, [exitEventFired, showPanel, togglePanel]);
 
   // Notify parent menu when subpanel opens/closes
   useEffect(() => {
