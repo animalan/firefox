@@ -17,19 +17,17 @@ transforms:
 tasks:
     final-verify:
         from-deps:
-            unique-kinds: false
             kinds: [release-update-verify-config]
             group-by:
-                attribute: shipping_product
+                # `build_platform` includes `shippable` and `devedition` so
+                # this effectively groups by platform+shipping product
+                attribute: build_platform
             copy-attributes: true
-            set-name: false
 
         description: final verify
         shipping-phase: push
         treeherder:
-            kind: test
-            symbol: Rel(FV)
-            tier: 1
+            symbol: FV
         run-on-repo-type: [hg]
         name: final-verify
         run-on-projects: []  # to make sure this never runs as part of CI
