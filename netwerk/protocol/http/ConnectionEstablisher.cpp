@@ -405,20 +405,18 @@ void TCPConnectionEstablisher::Close(nsresult aReason) {
 
   mHandle = nullptr;
   if (mResultConn) {
-    // If the HT on this conn has been adopted, the conn is already
-    // driving the real nsHttpTransaction — tearing it down here would
-    // close the real txn. Just mark the conn non-reusable and let it
-    // finish serving the in-flight request naturally.
+    // Every connection touched by HE is marked non-reusable: adopted conns
+    // finish serving the in-flight real txn then close; losing conns are
+    // torn down immediately below.  Either way the CM must never hand a new
+    // transaction to a connection that participated in an HE race.
     bool adopted = mTransaction && mTransaction->IsAdopted();
+    mResultConn->DontReuse();
     if (adopted) {
       LOG(("TCPConnectionEstablisher::Close %p adopted conn %p DontReuse", this,
            mResultConn.get()));
-      mResultConn->DontReuse();
     } else {
       LOG(("TCPConnectionEstablisher::Close closing connection %p",
            mResultConn.get()));
-      // HappyEyeballsTransaction is speculative — the real transaction is
-      // never driving this conn, so we always tear down the conn here.
       // Use CloseTransaction rather than Close to properly clean up the
       // SPDY session: if we only called Close, an Http2Session in
       // mSpdySession/mTransaction would never be released and the conn

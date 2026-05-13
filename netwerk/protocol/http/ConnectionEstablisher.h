@@ -70,6 +70,7 @@ class ConnectionEstablisher : public nsITransportEventSink,
   HappyEyeballsTransaction* Transaction() const { return mTransaction; }
   const NetAddr& Addr() const { return mAddr; }
   void ClearResultConnection();
+  HttpConnectionBase* ResultConn() const { return mResultConn; }
   virtual bool IsUDP() const { return false; }
   bool HasConnected() const { return mHasConnected; }
 

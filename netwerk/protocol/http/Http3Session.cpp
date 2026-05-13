@@ -331,6 +331,12 @@ void Http3Session::Shutdown() {
                                                                      mError);
   LOG(("Http3Session::Shutdown %p allowToRetryWithDifferentIPFamily=%d", this,
        allowToRetryWithDifferentIPFamily));
+  // Don't exclude H3 if the failure was in the 0-RTT phase: the PSK ticket
+  // is single-use, so the retry will do a full TLS handshake and the H3
+  // server itself should still be reachable.
+  if (mBeforeConnectedError && mHad0RttStream) {
+    mDontExclude = true;
+  }
   if ((mBeforeConnectedError ||
        (mError == NS_ERROR_NET_HTTP3_PROTOCOL_ERROR)) &&
       !isNSSError && !isEchRetry && !mConnInfo->GetWebTransport() &&
@@ -1582,6 +1588,7 @@ nsresult Http3Session::TryActivating(
       }
       return NS_BASE_STREAM_WOULD_BLOCK;
     }
+    mHad0RttStream = true;
   }
 
   nsresult rv = NS_OK;

@@ -489,6 +489,11 @@ class Http3Session final : public Http3SessionBase,
   bool mHasWebTransportSession = false;
   // When true, we don't add this connection info into the Http/3 excluded list.
   bool mDontExclude = false;
+  // True if any stream accepted Do0RTT() during the ZERORTT phase.  When the
+  // session closes with mBeforeConnectedError we suppress ExcludeHttp3: the
+  // PSK ticket is single-use so the retry does a full handshake and the H3
+  // server itself should still be reachable.
+  bool mHad0RttStream = false;
   // The lifetime of the UDP socket is managed by the HttpConnectionUDP. This
   // is only used in Http3Session::ProcessOutput. Using raw pointer here to
   // improve performance.

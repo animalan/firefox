@@ -137,6 +137,10 @@ class HappyEyeballsConnectionAttempt final : public ConnectionAttempt,
   void HandleTCPConnectionResult(
       Result<RefPtr<HttpConnectionBase>, nsresult> aResult,
       TCPConnectionEstablisher* aEstablisher, uint64_t aId);
+  // If 0-RTT was active, forward the connection's security info to the real
+  // transaction so MaybeRemoveSSLToken() in nsHttpTransaction::Restart() can
+  // clear the SSL token cache for the retry.
+  void MaybeForward0RTTSecurityInfo(ConnectionEstablisher* aEstablisher);
   void CancelConnection(uint64_t aId);
   nsresult EstablishUDPConnection(NetAddr aAddr, uint16_t aPort,
                                   nsTArray<uint8_t>&& aEchConfig, uint64_t aId);
