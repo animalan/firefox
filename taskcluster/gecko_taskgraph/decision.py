@@ -168,21 +168,18 @@ def try_syntax_from_message(message):
     return message[try_idx:].split("\n", 1)[0]
 
 
-def taskgraph_decision(options, parameters=None):
+def taskgraph_decision(options, parameters):
     """
     Run the decision task.  This function implements `mach taskgraph decision`,
     and is responsible for
 
-     * processing decision task command-line options into parameters
      * running task-graph generation exactly the same way the other `mach
        taskgraph` commands do
      * generating a set of artifacts to memorialize the graph
      * calling TaskCluster APIs to create the graph
-    """
 
-    parameters = parameters or (
-        lambda graph_config: get_decision_parameters(graph_config, options)
-    )
+    The ``parameters`` argument must be a pre-resolved ``Parameters`` object.
+    """
 
     decision_task_id = os.environ["TASK_ID"]
 

@@ -592,10 +592,11 @@ def image_digest(args):
     action="store_false",
     help="Skip graph verifications.",
 )
-def decision(options):
+def decision(options, parameters):
+
     from gecko_taskgraph.decision import taskgraph_decision
 
-    taskgraph_decision(options)
+    taskgraph_decision(options, parameters)
 
 
 @command("action-callback", description="Run action callback used by action tasks")
