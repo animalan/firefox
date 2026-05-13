@@ -116,7 +116,7 @@ function getProducts() {
       region: "global",
       link: {
         l10nId: "more-from-moz-mdn-box-link",
-        iconSrc: "chrome://browser/skin/preferences/mdn-logo.svg",
+        iconSrc: "chrome://global/skin/icons/mdn.svg",
         actionURL: "https://developer.mozilla.org/docs/Learn_web_development",
       },
     },
@@ -126,13 +126,13 @@ function getProducts() {
       region: "global",
       link: {
         l10nId: "more-from-moz-thunderbird-box-link",
-        iconSrc: "chrome://browser/skin/preferences/thunderbird-16.svg",
+        iconSrc: "chrome://browser/skin/preferences/thunderbird-color-16.svg",
         actionURL: "https://www.thunderbird.net/",
       },
     },
     {
       id: "solo-ai",
-      l10nId: "more-from-moz-solo-card",
+      l10nId: "more-from-moz-solo-card-1",
       region: "global",
       link: {
         l10nId: "more-from-moz-solo-box-link",
