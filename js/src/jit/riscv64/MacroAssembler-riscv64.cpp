@@ -5268,7 +5268,11 @@ void MacroAssemblerRiscv64::ma_b(Register lhs, Register rhs, Label* label,
 
 void MacroAssemblerRiscv64::ExtractBits(Register rt, Register rs, uint16_t pos,
                                         uint16_t size, bool sign_extend) {
+#if JS_CODEGEN_RISCV64
   constexpr uint16_t MaxBits = 64;
+#elif JS_CODEGEN_RISCV32
+  constexpr uint16_t MaxBits = 32;
+#endif
 
   MOZ_ASSERT(pos < MaxBits);
   MOZ_ASSERT(size > 0);
@@ -5293,8 +5297,11 @@ void MacroAssemblerRiscv64::ExtractBits(Register rt, Register rs, uint16_t pos,
 
 void MacroAssemblerRiscv64::InsertBits(Register dest, Register source, int pos,
                                        int size) {
+#if JS_CODEGEN_RISCV64
   MOZ_ASSERT(size < 64);
-
+#elif JS_CODEGEN_RISCV32
+  MOZ_ASSERT(size < 32);
+#endif
   UseScratchRegisterScope temps(this);
   BlockTrampolinePoolScope block_trampoline_pool(this, 9);
   Register source_ = temps.Acquire();
@@ -5324,8 +5331,11 @@ void MacroAssemblerRiscv64::InsertBits(Register dest, Register source, int pos,
 
 void MacroAssemblerRiscv64::InsertBits(Register dest, Register source,
                                        Register pos, int size) {
+#if JS_CODEGEN_RISCV64
   MOZ_ASSERT(size < 64);
-
+#elif JS_CODEGEN_RISCV32
+  MOZ_ASSERT(size < 32);
+#endif
   UseScratchRegisterScope temps(this);
   Register mask = temps.Acquire();
   BlockTrampolinePoolScope block_trampoline_pool(this, 9);
@@ -6378,7 +6388,11 @@ void MacroAssemblerRiscv64::BranchFloat64(DoubleCondition cc,
 
 void MacroAssemblerRiscv64::Clz32(Register rd, Register rs) {
   if (HasZbbExtension()) {
+#if JS_CODEGEN_RISCV64
     clzw(rd, rs);
+#else
+    clz(rd, rs);
+#endif
     return;
   }
 
@@ -6401,6 +6415,7 @@ void MacroAssemblerRiscv64::Clz32(Register rd, Register rs) {
   MOZ_ASSERT(rs != y && rs != n);
   mv(x, rs);
   ma_li(n, Imm32(32));
+#if JS_CODEGEN_RISCV64
   srliw(y, x, 16);
   ma_branch(&L0, Equal, y, Operand(zero_reg));
   mv(x, y);
@@ -6426,8 +6441,36 @@ void MacroAssemblerRiscv64::Clz32(Register rd, Register rs) {
   ma_branch(&L4, Equal, y, Operand(zero_reg));
   addiw(rd, n, -2);
   bind(&L4);
+#elif JS_CODEGEN_RISCV32
+  srli(y, x, 16);
+  ma_branch(&L0, Equal, y, Operand(zero_reg));
+  mv(x, y);
+  addi(n, n, -16);
+  bind(&L0);
+  srli(y, x, 8);
+  ma_branch(&L1, Equal, y, Operand(zero_reg));
+  addi(n, n, -8);
+  mv(x, y);
+  bind(&L1);
+  srli(y, x, 4);
+  ma_branch(&L2, Equal, y, Operand(zero_reg));
+  addi(n, n, -4);
+  mv(x, y);
+  bind(&L2);
+  srli(y, x, 2);
+  ma_branch(&L3, Equal, y, Operand(zero_reg));
+  addi(n, n, -2);
+  mv(x, y);
+  bind(&L3);
+  srli(y, x, 1);
+  sub(rd, n, x);
+  ma_branch(&L4, Equal, y, Operand(zero_reg));
+  addi(rd, n, -2);
+  bind(&L4);
+#endif
 }
 
+#if JS_CODEGEN_RISCV64
 void MacroAssemblerRiscv64::Clz64(Register rd, Register rs) {
   if (HasZbbExtension()) {
     clz(rd, rs);
@@ -6485,10 +6528,15 @@ void MacroAssemblerRiscv64::Clz64(Register rd, Register rs) {
   addiw(rd, n, -2);
   bind(&L5);
 }
+#endif
 
 void MacroAssemblerRiscv64::Ctz32(Register rd, Register rs) {
   if (HasZbbExtension()) {
+#if JS_CODEGEN_RISCV64
     ctzw(rd, rs);
+#else
+    ctz(rd, rs);
+#endif
     return;
   }
 
@@ -6514,6 +6562,7 @@ void MacroAssemblerRiscv64::Ctz32(Register rd, Register rs) {
   }
 }
 
+#if JS_CODEGEN_RISCV64
 void MacroAssemblerRiscv64::Ctz64(Register rd, Register rs) {
   if (HasZbbExtension()) {
     ctz(rd, rs);
@@ -6540,11 +6589,16 @@ void MacroAssemblerRiscv64::Ctz64(Register rd, Register rs) {
     ma_sub64(rd, scratch, rd);
   }
 }
+#endif
 
 void MacroAssemblerRiscv64::Popcnt32(Register rd, Register rs,
                                      Register scratch) {
   if (HasZbbExtension()) {
+#if JS_CODEGEN_RISCV64
     cpopw(rd, rs);
+#else
+    cpop(rd, rs);
+#endif
     return;
   }
 
@@ -6596,6 +6650,7 @@ void MacroAssemblerRiscv64::Popcnt32(Register rd, Register rs,
   ma_srl32(rd, rd, Operand(shift));
 }
 
+#if JS_CODEGEN_RISCV64
 void MacroAssemblerRiscv64::Popcnt64(Register rd, Register rs,
                                      Register scratch) {
   if (HasZbbExtension()) {
@@ -6636,6 +6691,7 @@ void MacroAssemblerRiscv64::Popcnt64(Register rd, Register rs,
   ma_mul64(rd, rd, value);
   srli(rd, rd, 32 + shift);
 }
+#endif
 
 void MacroAssemblerRiscv64::ma_mod_mask(Register src, Register dest,
                                         Register hold, Register remain,
@@ -6725,6 +6781,7 @@ void MacroAssemblerRiscv64::ma_fmovz(FloatFormat fmt, FloatRegister fd,
 void MacroAssemblerRiscv64::ByteSwap(Register dest, Register src,
                                      int operand_size, Register scratch) {
   MOZ_ASSERT(operand_size == 4 || operand_size == 8);
+#if JS_CODEGEN_RISCV64
   if (HasZbbExtension()) {
     rev8(dest, src);
     if (operand_size == 4) {
@@ -6732,6 +6789,7 @@ void MacroAssemblerRiscv64::ByteSwap(Register dest, Register src,
     }
     return;
   }
+#endif
 
   MOZ_ASSERT(scratch != src);
   MOZ_ASSERT(scratch != dest);

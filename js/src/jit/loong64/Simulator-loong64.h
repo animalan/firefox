@@ -28,17 +28,15 @@
 #ifndef jit_loong64_Simulator_loong64_h
 #define jit_loong64_Simulator_loong64_h
 
-#ifndef JS_SIMULATOR_LOONG64
-#  error "simulator disabled"
-#endif
+#ifdef JS_SIMULATOR_LOONG64
 
-#include "mozilla/Atomics.h"
+#  include "mozilla/Atomics.h"
 
-#include "jit/IonTypes.h"
-#include "js/ProfilingFrameIterator.h"
-#include "threading/Thread.h"
-#include "vm/MutexIDs.h"
-#include "wasm/WasmSignalHandlers.h"
+#  include "jit/IonTypes.h"
+#  include "js/ProfilingFrameIterator.h"
+#  include "threading/Thread.h"
+#  include "vm/MutexIDs.h"
+#  include "wasm/WasmSignalHandlers.h"
 
 namespace js {
 
@@ -521,10 +519,10 @@ class Simulator {
   void setCallResultDouble(double result);
   void setCallResultFloat(float result);
   void setCallResult(int64_t res);
-#ifdef XP_DARWIN
+#  ifdef XP_DARWIN
   // add a dedicated setCallResult for intptr_t on Darwin
   void setCallResult(intptr_t res);
-#endif
+#  endif
   void setCallResult(__int128 res);
 
   void callInternal(uint8_t* entry);
@@ -648,5 +646,7 @@ class SimulatorProcess {
 
 }  // namespace jit
 }  // namespace js
+
+#endif /* JS_SIMULATOR_LOONG64 */
 
 #endif /* jit_loong64_Simulator_loong64_h */

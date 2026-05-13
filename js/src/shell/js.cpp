@@ -89,6 +89,18 @@
 #  include "irregexp/RegExpAPI.h"
 #endif
 
+#ifdef JS_SIMULATOR_ARM
+#  include "jit/arm/Simulator-arm.h"
+#endif
+#ifdef JS_SIMULATOR_MIPS64
+#  include "jit/mips64/Simulator-mips64.h"
+#endif
+#ifdef JS_SIMULATOR_LOONG64
+#  include "jit/loong64/Simulator-loong64.h"
+#endif
+#ifdef JS_SIMULATOR_RISCV64
+#  include "jit/riscv64/Simulator-riscv64.h"
+#endif
 #include "jit/BaselineCompileQueue.h"
 #include "jit/CacheIRHealth.h"
 #include "jit/InlinableNatives.h"
@@ -96,7 +108,6 @@
 #include "jit/JitcodeMap.h"
 #include "jit/JitZone.h"
 #include "jit/shared/CodeGenerator-shared.h"
-#include "jit/Simulator.h"
 #ifdef JS_CODEGEN_ARM64
 #  include "jit/arm64/vixl/Cpu-Features-vixl.h"
 #endif
