@@ -3362,14 +3362,19 @@ void nsHttpTransaction::SetHttpTrailers(nsCString& aTrailers) {
 }
 
 bool nsHttpTransaction::IsWebsocketUpgrade() {
+  if (mIsWebsocketUpgrade.isSome()) {
+    return *mIsWebsocketUpgrade;
+  }
+  bool result = false;
   if (mRequestHead) {
     nsAutoCString upgradeHeader;
     if (NS_SUCCEEDED(mRequestHead->GetHeader(nsHttp::Upgrade, upgradeHeader)) &&
         upgradeHeader.LowerCaseEqualsLiteral("websocket")) {
-      return true;
+      result = true;
     }
   }
-  return false;
+  mIsWebsocketUpgrade = Some(result);
+  return result;
 }
 
 void nsHttpTransaction::OnProxyConnectComplete(int32_t aResponseCode) {

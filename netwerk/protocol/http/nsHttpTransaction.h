@@ -674,6 +674,7 @@ class nsHttpTransaction final : public nsAHttpTransaction,
   bool mSupportsHTTP3 = false;
   Atomic<bool, Relaxed> mIsForWebTransport{false};
   bool mIsResettingForTunnelConn = false;
+  Maybe<bool> mIsWebsocketUpgrade;
 
   bool mResumptionAttempted = false;
   void OnPSKResumptionAccepted() override;
