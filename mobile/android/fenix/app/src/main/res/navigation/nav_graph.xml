@@ -203,6 +203,9 @@
     <action
         android:id="@+id/action_global_to_installedAddonDetailsFragment"
         app:destination="@id/installedAddonDetailsFragment" />
+    <action
+        android:id="@+id/action_global_to_downloadAddonDialogFragment"
+        app:destination="@id/downloadAddonDialogFragment" />
 
     <action
         android:id="@+id/action_global_aiControlsFragment"
@@ -1517,6 +1520,27 @@
             android:name="addon"
             app:argType="mozilla.components.feature.addons.Addon" />
     </fragment>
+
+    <dialog
+        android:id="@+id/downloadAddonDialogFragment"
+        android:name="org.mozilla.fenix.addons.DownloadAddonDialogFragment">
+        <argument
+            android:name="addonDownloadUrl"
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="addonName"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="addonImageUrl"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="addonInstallationSource"
+            android:defaultValue="MANAGER"
+            app:argType="mozilla.components.concept.engine.webextension.InstallationMethod" />
+    </dialog>
 
     <navigation
         android:id="@+id/addons_management_graph"

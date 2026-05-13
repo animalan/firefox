@@ -520,19 +520,28 @@ class OnboardingFragment : Fragment() {
 
         requireComponents.analytics.metrics.track(Event.GrowthData.ConversionEvent6)
 
-        val downloadUrl = settings.rtamoAddonDownloadUrl
-        if (downloadUrl.isNotBlank()) {
-            settings.rtamoAddonDownloadUrl = ""
-            requireComponents.addonManager.installAddon(
-                url = downloadUrl,
-                installationMethod = InstallationMethod.RTAMO,
-            )
-        }
-
         findNavController().nav(
             id = R.id.onboardingFragment,
             directions = OnboardingFragmentDirections.actionHome(),
         )
+
+        val downloadUrl = settings.rtamoAddonDownloadUrl
+        if (downloadUrl.isNotBlank()) {
+            val addonName = settings.rtamoAddonName
+            val addonImageUrl = settings.rtamoAddonImageUrl
+
+            findNavController().navigate(
+                directions = OnboardingFragmentDirections.actionGlobalToDownloadAddonDialogFragment(
+                    addonDownloadUrl = downloadUrl,
+                    addonName = addonName,
+                    addonImageUrl = addonImageUrl,
+                    addonInstallationSource = InstallationMethod.RTAMO,
+                ),
+            )
+            settings.rtamoAddonDownloadUrl = ""
+            settings.rtamoAddonName = ""
+            settings.rtamoAddonImageUrl = ""
+        }
 
         maybeAddMenuNotification()
     }
