@@ -1207,7 +1207,7 @@ class ContentParent final : public PContentParent,
       uint64_t aTopLevelWindowId,
       const MaybeDiscarded<BrowsingContext>& aParentContext,
       nsIPrincipal* aTrackingPrincipal, const nsACString& aTrackingOrigin,
-      const int& aAllowMode,
+      const StorageAccessPromptChoices& aAllowMode,
       const Maybe<
           ContentBlockingNotifier::StorageAccessPermissionGrantedReason>&
           aReason,

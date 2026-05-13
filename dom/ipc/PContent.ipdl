@@ -1643,10 +1643,10 @@ parent:
                                                   MaybeDiscardedBrowsingContext aParentContext,
                                                   nullable nsIPrincipal aTrackingPrincipal,
                                                   nsCString aTrackingOrigin,
-                                                  int aAllowMode,
+                                                  StorageAccessPromptChoices aAllowMode,
                                                   StorageAccessPermissionGrantedReason? aReason,
                                                   bool aFrameOnly)
-          returns (bool unused);
+          returns (bool granted);
 
     async CompleteAllowAccessFor(MaybeDiscardedBrowsingContext aParentContext,
                                  uint64_t aTopLevelWindowId,

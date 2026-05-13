@@ -20072,15 +20072,19 @@ already_AddRefed<mozilla::dom::Promise> Document::RequestStorageAccessForOrigin(
               [inner, thirdPartyURI, bc, principal, hasUserActivation,
                aRequireUserActivation, self,
                promise](Maybe<bool> cookieResult) {
+                using StorageAccessPermissionGrantPromise =
+                    StorageAccessAPIHelper::StorageAccessPermissionGrantPromise;
+
                 // Handle the result of the cookie permission check that took
                 // place in the ContentParent.
                 if (cookieResult.isSome()) {
                   if (cookieResult.value()) {
-                    return MozPromise<int, bool, true>::CreateAndResolve(
-                        true, __func__);
+                    return StorageAccessPermissionGrantPromise::
+                        CreateAndResolve(
+                            StorageAccessAPIHelper::eAllowAutoGrant, __func__);
                   }
-                  return MozPromise<int, bool, true>::CreateAndReject(false,
-                                                                      __func__);
+                  return StorageAccessPermissionGrantPromise::CreateAndReject(
+                      false, __func__);
                 }
 
                 // Step 4b: Check for the existing storage access permission
@@ -20088,14 +20092,14 @@ already_AddRefed<mozilla::dom::Promise> Document::RequestStorageAccessForOrigin(
                 bool ok = AntiTrackingUtils::CreateStoragePermissionKey(
                     principal, type);
                 if (!ok) {
-                  return MozPromise<int, bool, true>::CreateAndReject(false,
-                                                                      __func__);
+                  return StorageAccessPermissionGrantPromise::CreateAndReject(
+                      false, __func__);
                 }
                 if (AntiTrackingUtils::CheckStoragePermission(
                         self->NodePrincipal(), type,
                         self->IsInPrivateBrowsing())) {
-                  return MozPromise<int, bool, true>::CreateAndResolve(
-                      true, __func__);
+                  return StorageAccessPermissionGrantPromise::CreateAndResolve(
+                      StorageAccessAPIHelper::eAllowAutoGrant, __func__);
                 }
 
                 // Step 4c: Try to request storage access, either automatically
@@ -20111,8 +20115,9 @@ already_AddRefed<mozilla::dom::Promise> Document::RequestStorageAccessForOrigin(
               // If the IPC rejects, we should reject our promise here which
               // will cause a rejection of the promise we already returned
               [promise]() {
-                return MozPromise<int, bool, true>::CreateAndReject(false,
-                                                                    __func__);
+                return StorageAccessAPIHelper::
+                    StorageAccessPermissionGrantPromise::CreateAndReject(
+                        false, __func__);
               })
           ->Then(
               GetCurrentSerialEventTarget(), __func__,

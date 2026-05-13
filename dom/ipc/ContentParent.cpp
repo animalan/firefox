@@ -6589,7 +6589,7 @@ ContentParent::RecvStorageAccessPermissionGrantedForOrigin(
     uint64_t aTopLevelWindowId,
     const MaybeDiscarded<BrowsingContext>& aParentContext,
     nsIPrincipal* aTrackingPrincipal, const nsACString& aTrackingOrigin,
-    const int& aAllowMode,
+    const StorageAccessPromptChoices& aAllowMode,
     const Maybe<ContentBlockingNotifier::StorageAccessPermissionGrantedReason>&
         aReason,
     const bool& aFrameOnly,
@@ -6646,8 +6646,7 @@ mozilla::ipc::IPCResult ContentParent::RecvCompleteAllowAccessFor(
                      ResolveOrRejectValue&& aValue) {
                Maybe<StorageAccessPromptChoices> choice;
                if (aValue.IsResolve()) {
-                 choice.emplace(static_cast<StorageAccessPromptChoices>(
-                     aValue.ResolveValue()));
+                 choice.emplace(aValue.ResolveValue());
                }
                aResolver(choice);
              });
