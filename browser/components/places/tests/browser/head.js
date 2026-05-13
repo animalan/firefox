@@ -94,10 +94,14 @@ function promiseClipboard(aPopulateClipboardFn, aFlavor) {
   });
 }
 
-function synthesizeClickOnSelectedTreeCell(aTree, aOptions) {
+async function synthesizeClickOnSelectedTreeCell(aTree, aOptions) {
   if (aTree.view.selection.count < 1) {
     throw new Error("The test node should be successfully selected");
   }
+  await TestUtils.waitForCondition(
+    () => aTree.getBoundingClientRect().width > 0,
+    "Tree should have non-zero width before clicking"
+  );
   // Get selection rowID.
   let min = {},
     max = {};

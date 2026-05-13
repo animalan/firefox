@@ -905,6 +905,11 @@ class PlacesViewBase {
  * Toolbar View implementation.
  */
 class PlacesToolbar extends PlacesViewBase {
+  /** Whether we can retry updating nodes visibility. */
+  #pendingVisibilityRetry = false;
+  /** Whether we are currently updating nodes visibility. */
+  #updatingNodesVisibility = false;
+
   constructor(placesUrl, rootElt, viewElt) {
     let timerId = Glean.bookmarksToolbar.init.start();
     super(placesUrl, rootElt, viewElt);
@@ -978,8 +983,6 @@ class PlacesToolbar extends PlacesViewBase {
     this._dragRoot = BookmarkingUI.toolbar.contains(this._viewElt)
       ? BookmarkingUI.toolbar
       : this._viewElt;
-
-    this._updatingNodesVisibility = false;
   }
 
   _cbEvents = [
@@ -1331,35 +1334,53 @@ class PlacesToolbar extends PlacesViewBase {
   }
 
   async _updateNodesVisibilityTimerCallback() {
-    if (this._updatingNodesVisibility || window.closed || !this._isAlive) {
+    if (this.#updatingNodesVisibility || window.closed || !this._isAlive) {
       return;
     }
-    this._updatingNodesVisibility = true;
+    this.#updatingNodesVisibility = true;
 
     let dwu = window.windowUtils;
 
-    let visibleCount = await window.promiseDocumentFlushed(() => {
-      let scrollRect = dwu.getBoundsWithoutFlushing(this._rootElt);
-      let count = 0;
-      for (let child of this._rootElt.children) {
-        let childRect = dwu.getBoundsWithoutFlushing(child);
-        let overflowed = this.isRTL
-          ? childRect.left < scrollRect.left
-          : childRect.right > scrollRect.right;
-        if (overflowed) {
-          // Once a child overflows, all the next ones will.
-          break;
+    let { visibleCount, scrollWidth } = await window.promiseDocumentFlushed(
+      () => {
+        let scrollRect = dwu.getBoundsWithoutFlushing(this._rootElt);
+        let count = 0;
+        for (let child of this._rootElt.children) {
+          let childRect = dwu.getBoundsWithoutFlushing(child);
+          let overflowed = this.isRTL
+            ? childRect.left < scrollRect.left
+            : childRect.right > scrollRect.right;
+          if (overflowed) {
+            // Once a child overflows, all the next ones will.
+            break;
+          }
+          count++;
         }
-        count++;
+        return { visibleCount: count, scrollWidth: scrollRect.width };
       }
-      return count;
-    });
+    );
 
-    this._updatingNodesVisibility = false;
+    this.#updatingNodesVisibility = false;
     if (!this._isAlive) {
       return;
     }
 
+    if (!scrollWidth) {
+      // The element may have no layout frame (display:none ancestor) yet.
+      // Reschedule once to allow layout to complete. If it's still frameless
+      // on the retry, give up to avoid looping indefinitely.
+      if (!this.#pendingVisibilityRetry) {
+        this.#pendingVisibilityRetry = true;
+        window.requestAnimationFrame(() => {
+          if (this._isAlive) {
+            this.updateNodesVisibility();
+          }
+        });
+      }
+      return;
+    }
+
+    this.#pendingVisibilityRetry = false;
     window.requestAnimationFrame(() => {
       if (!this._isAlive) {
         return;
