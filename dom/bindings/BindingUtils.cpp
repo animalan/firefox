@@ -2894,8 +2894,8 @@ struct LenientThisPolicyMixin {
 
 // There are some LenientThis things on globals, so we inherit from
 // MaybeGlobalThisPolicy.
-struct LenientThisPolicy : public MaybeGlobalThisPolicy,
-                           public LenientThisPolicyMixin {
+struct MOZ_EMPTY_BASES LenientThisPolicy : public MaybeGlobalThisPolicy,
+                                           public LenientThisPolicyMixin {
   // We want the HasValidThisValue of MaybeGlobalThisPolicy.
 
   // We want the ExtractThisObject of MaybeGlobalThisPolicy.
@@ -3011,7 +3011,7 @@ struct MaybeCrossOriginObjectThisPolicy : public MaybeGlobalThisPolicy {
 
 // And in some cases we are dealing with a maybe-cross-origin object _and_ need
 // [LenientThis] behavior.
-struct MaybeCrossOriginObjectLenientThisPolicy
+struct MOZ_EMPTY_BASES MaybeCrossOriginObjectLenientThisPolicy
     : public MaybeCrossOriginObjectThisPolicy,
       public LenientThisPolicyMixin {
   // We want to get all of our behavior from

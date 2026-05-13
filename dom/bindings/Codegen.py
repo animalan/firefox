@@ -14410,7 +14410,7 @@ class CGClass(CGThing):
         else:
             specialization = ""
 
-        myself = "%s %s%s" % (type, self.name, specialization)
+        myself = "%s MOZ_EMPTY_BASES %s%s" % (type, self.name, specialization)
         if self.decorators != "":
             myself += " " + self.decorators
         result += myself
