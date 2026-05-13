@@ -3101,7 +3101,7 @@ Preferences.addSetting({
         reason: Services.dns.getTRRSkipReasonName(
           Ci.nsITRRSkipReason.TRR_PARENTAL_CONTROL
         ),
-        displayName,
+        name: displayName,
       };
     } else {
       let confirmationState = Services.dns.currentTrrConfirmationState;
@@ -3136,19 +3136,19 @@ Preferences.addSetting({
       if (confirmationStatus != Cr.NS_OK) {
         l10nArgs = {
           reason: ChromeUtils.getXPCOMErrorName(confirmationStatus),
-          name,
+          name: displayName,
         };
       } else {
         l10nArgs = {
           reason: Services.dns.getTRRSkipReasonName(
             Services.dns.lastConfirmationSkipReason
           ),
-          name,
+          name: displayName,
         };
         if (
           Services.dns.lastConfirmationSkipReason ==
             Ci.nsITRRSkipReason.TRR_BAD_URL ||
-          !name
+          !displayName
         ) {
           l10nId = "preferences-doh-status-item-not-active-bad-url";
           supportPage = "doh-status";
@@ -3296,21 +3296,13 @@ Preferences.addSetting({
 Preferences.addSetting({
   id: "dohCustomProvider",
   deps: ["dohProviderSelect", "dohURL"],
-  _value: null,
   visible: deps => {
     return deps.dohProviderSelect.value == "custom";
   },
   get(_val, deps) {
-    if (this._value === null) {
-      return deps.dohURL.value;
-    }
-    return this._value;
+    return deps.dohURL.value;
   },
   set(val, deps) {
-    this._value = val;
-    if (val == "") {
-      val = " ";
-    }
     deps.dohURL.value = val;
   },
 });
