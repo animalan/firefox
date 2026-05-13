@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 :root {
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not (-moz-pref("browser.nova.enabled")) {
     /* See bug 2036647 for removing this. */
     --lwt-additional-images: var(--ai-gradient);

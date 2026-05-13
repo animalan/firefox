@@ -11,7 +11,6 @@
   &[uidensity="touch"] {
     --tab-group-label-size: var(--tab-min-height);
   }
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("browser.nova.enabled") {
     --tab-min-height: 36px;
     --tab-group-label-size: 24px;
@@ -45,7 +44,6 @@
   &[lwt-tab-selected="dark"] {
     --tab-selected-color-scheme: dark;
   }
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     --tab-selected-shadow: var(--tab-box-shadow);
   }
@@ -103,7 +101,6 @@
   --tab-height-with-margin-padding: calc(5px + var(--tab-min-height) + (2 * var(--tab-block-margin)));
 }
 
-/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("sidebar.verticalTabs") {
   :root {
     --tab-min-height: max(32px, calc(var(--tab-label-line-height) * 1em));
@@ -267,7 +264,6 @@ tab-split-view-wrapper[dragtarget] {
     }
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
     pref is not set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -388,7 +384,6 @@ tab-split-view-wrapper[dragtarget] {
     margin-inline-end: var(--tab-icon-end-margin);
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
     pref is set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -498,7 +493,6 @@ tab-split-view-wrapper[dragtarget] {
   -moz-context-properties: fill, stroke;
   fill: currentColor;
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.tabs.fadeOutUnloadedTabs") {
     &[pending] {
       filter: grayscale(100%);
@@ -518,7 +512,6 @@ tab-split-view-wrapper[dragtarget] {
     }
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.tabs.fadeOutExplicitlyUnloadedTabs") {
     &[pending][discarded] {
       filter: grayscale(100%);
@@ -592,7 +585,6 @@ tab-split-view-wrapper[dragtarget] {
   inset-inline-end: -7px;
   z-index: 1; /* Overlay tab title */
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     top: 7px;
     box-shadow: var(--box-shadow-level-1);
@@ -669,7 +661,6 @@ tab-split-view-wrapper[dragtarget] {
     display: revert;
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
     pref is set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -739,7 +730,6 @@ tab-split-view-wrapper[dragtarget] {
     }
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
     pref is not set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -794,7 +784,6 @@ tab-split-view-wrapper[dragtarget] {
     display: revert;
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
     pref is set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -805,7 +794,6 @@ tab-split-view-wrapper[dragtarget] {
     }
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
     pref is not set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -825,7 +813,6 @@ tab-split-view-wrapper[dragtarget] {
   --button-min-height-small: 24px;
   --button-border-radius: var(--border-radius-small);
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
       pref is not set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -938,7 +925,6 @@ tab-split-view-wrapper[dragtarget] {
   &:is([selected]:not([multiselected])) {
     /* The below lines are required for dark, light, and
       system themes to achieve the gradient border appearance */
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media (not ((forced-colors) or (-moz-native-theme))) and (-moz-pref("browser.nova.enabled")) {
       :root:not([lwtheme]) & {
         border: 1px solid transparent;
@@ -1019,7 +1005,6 @@ tab-split-view-wrapper[dragtarget] {
       color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-pale));
       outline-color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-pale));
 
-      /* stylelint-disable-next-line media-query-no-invalid */
       @media -moz-pref("browser.nova.enabled") {
         background-color: var(--dragover-tab-group-color-invert);
         color: currentColor;
@@ -1029,7 +1014,6 @@ tab-split-view-wrapper[dragtarget] {
     }
 
     &:is([selected], [multiselected]) {
-      /* stylelint-disable-next-line media-query-no-invalid */
       @media not -moz-pref("browser.nova.enabled") {
         outline-color: var(--dragover-tab-group-color);
         outline-width: 2px;
@@ -1235,11 +1219,9 @@ tab-group > tab-split-view-wrapper {
 
   .tab-group-line {
     inset-block-end: calc(var(--tab-group-line-toolbar-border-distance) - var(--tab-block-margin) - var(--split-view-padding-block));
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media not -moz-pref("browser.nova.enabled") {
       inset-inline-start: calc(var(--space-small) * -2);
     }
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       inset-inline-end: calc(-1 * var(--tab-overflow-clip-margin) - var(--split-view-tab-padding-inline));
     }
@@ -1247,7 +1229,6 @@ tab-group > tab-split-view-wrapper {
 
   &[last-tab-or-split-view] .tabbrowser-tab:last-child .tab-group-line {
     inset-inline-end: calc(var(--tab-border-radius) / 2);
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       inset-inline-end: calc(-1 * var(--tab-overflow-clip-margin));
     }
@@ -1335,7 +1316,6 @@ tab-group > tab-split-view-wrapper {
     color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-pale));
     outline-color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-pale));
 
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       background-color: var(--dragover-tab-group-color-invert);
       color: currentColor;
@@ -1484,7 +1464,6 @@ tab-group > tab-split-view-wrapper {
   @container vertical-tabs-container (max-width: 210px) {
     grid-template-columns: 1fr;
 
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       border-radius: var(--border-radius-large);
     }
@@ -1506,7 +1485,6 @@ tab-group > tab-split-view-wrapper {
 :root[sidebar-expand-on-hover] #tabbrowser-tabs[orient="vertical"][expanded] tab-split-view-wrapper {
   grid-template-columns: 1fr;
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     border-radius: var(--border-radius-large);
   }
@@ -1696,7 +1674,6 @@ tab-group > tab-split-view-wrapper {
     display: flex;
     background-color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-invert));
 
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       background-color: var(--dragover-tab-group-color);
     }
@@ -1722,7 +1699,6 @@ tab-group > tab-split-view-wrapper {
       inset-inline-end: calc(var(--tab-border-radius) / 2);
       border-start-end-radius: calc(var(--tab-group-line-thickness) / 2);
       border-end-end-radius: calc(var(--tab-group-line-thickness) / 2);
-      /* stylelint-disable-next-line media-query-no-invalid */
       @media -moz-pref("browser.nova.enabled") {
         inset-inline-end: calc(-1 * var(--tab-overflow-clip-margin));
       }
@@ -1761,7 +1737,6 @@ tab-group > tab-split-view-wrapper {
     background-color: light-dark(var(--dragover-tab-group-color), var(--dragover-tab-group-color-invert));
     border-radius: var(--border-radius-xsmall);
 
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       background-color: var(--dragover-tab-group-color);
     }
@@ -1780,7 +1755,6 @@ tab-group {
   display: contents;
 
   --tab-group-line-color: light-dark(var(--tab-group-color), var(--tab-group-color-invert));
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     --tab-group-line-color: var(--tab-group-background-color);
   }
@@ -1802,7 +1776,6 @@ tab-group {
   }
 
   &[collapsed] {
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media not -moz-pref("browser.nova.enabled") {
       --tab-group-line-color: light-dark(var(--tab-group-color), var(--tab-group-color-pale));
     }
@@ -1910,7 +1883,6 @@ tab-group {
     padding-inline-end: 3px;
     margin-inline-end: 3px;
 
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       padding-inline-start: var(--space-xsmall);
     }
@@ -1959,7 +1931,6 @@ tab-group {
     margin-inline-start: calc(var(--tab-inner-inline-margin) + (var(--tab-min-height) - var(--tab-group-counter-size)) / 2);
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     text-align: center;
     color: var(--tab-group-background-color);
@@ -1980,7 +1951,6 @@ tab-group {
      * spread radius, make sure that these values vary together in order to add
      * up to --tab-border-radius.
      */
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media not -moz-pref("browser.nova.enabled") {
       border-radius: calc(var(--tab-border-radius) - var(--tab-group-label-highlight-radius));
 
@@ -2007,12 +1977,10 @@ tab-group {
 
   tab-group[collapsed]:not([movingtabgroup]) &:hover,
   tab-group[previewpanelactive] & {
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media not -moz-pref("browser.nova.enabled") {
       background-color: var(--tab-background-color-hover);
       box-shadow: 0 0 0 var(--tab-group-label-highlight-radius) var(--tab-background-color-hover);
     }
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       .tab-group-label {
         background-color: var(--tab-group-background-color-hover);
@@ -2043,7 +2011,6 @@ tab-group {
   background-color: light-dark(var(--tab-group-color), var(--tab-group-color-invert));
   margin: auto 0;
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     line-height: var(--tab-group-label-size);
     min-width: var(--tab-group-label-size);
@@ -2065,7 +2032,6 @@ tab-group {
   &[dragover-groupTarget] {
     box-shadow: color-mix(in oklab, light-dark(var(--tab-group-color), var(--tab-group-color-pale)) 30%, transparent) 0 0 0
       var(--tab-group-label-highlight-thickness);
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       box-shadow: none;
     }
@@ -2076,7 +2042,6 @@ tab-group {
     color: light-dark(var(--tab-group-color), var(--tab-group-color-pale));
     outline: 1px solid light-dark(var(--tab-group-color), var(--tab-group-color-pale));
     outline-offset: -1px;
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       color: var(--tab-group-text-color);
       background-color: var(--tab-group-background-color);
@@ -2178,7 +2143,6 @@ tab-group {
     border-radius: var(--border-radius-medium);
     background-clip: content-box;
     background-color: light-dark(var(--tabgroup-swatch-color), var(--tabgroup-swatch-color-invert));
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       background-color: var(--tabgroup-swatch-color);
     }
@@ -2308,7 +2272,6 @@ tab-group {
 
       margin-block: 0 -16px;
 
-      /* stylelint-disable-next-line media-query-no-invalid */
       @media -moz-pref("browser.nova.enabled") {
         background-image: linear-gradient(to top, transparent, var(--toolbox-background-color));
       }
@@ -2467,7 +2430,6 @@ tab-group {
 
   :root:not([sidebar-expand-on-hover]) & {
     --tab-inline-padding: calc((var(--tab-collapsed-background-width) + 2 * var(--tab-pinned-margin-inline-expanded) - var(--icon-size)) / 2);
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media not -moz-pref("sidebar.visibility", "expand-on-hover") {
       /* We need these rules to apply at all times when the sidebar.visibility
       pref is not set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -2503,7 +2465,6 @@ tab-group {
     }
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need this rule to apply at all times when the sidebar.visibility
     pref is set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -2520,12 +2481,10 @@ tab-group {
   background-color: transparent;
   margin-inline: var(--tab-inner-inline-margin);
   min-height: 2px;
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     min-height: 4px;
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     min-height: 4px;
   }
@@ -2534,7 +2493,6 @@ tab-group {
     display: none;
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("sidebar.verticalTabs") {
     display: none;
   }
@@ -2544,7 +2502,6 @@ tab-group {
     border-radius: var(--border-radius-medium);
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
     pref is not set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -2576,7 +2533,6 @@ tab-group {
     border-color: transparent;
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("sidebar.visibility", "expand-on-hover") {
     /* We need these rules to apply at all times when the sidebar.visibility
     pref is not set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
@@ -2675,7 +2631,6 @@ tab-group {
         display: none;
       }
 
-      /* stylelint-disable-next-line media-query-no-invalid */
       @media -moz-pref("sidebar.visibility", "expand-on-hover") {
         /* Tab close button when the sidebar is collapsed should
         not be shown when expand on hover is enabled because once
@@ -2736,7 +2691,6 @@ tab-group {
 
   /* The below lines are required for dark, light, and
       system themes to achieve the gradient border appearance */
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media (not ((forced-colors) or (-moz-native-theme))) and (-moz-pref("browser.nova.enabled")) {
     :root:not([lwtheme]) & {
       border: 1px solid transparent;
@@ -2984,7 +2938,6 @@ toolbar:not(#TabsToolbar) #firefox-view-button {
   }
 }
 
-/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("browser.tabs.notes.enabled") and (not -moz-pref("sidebar.visibility", "expand-on-hover")) {
   .tabbrowser-tab[tab-note]:not([pinned]) .tab-note-icon {
     #tabbrowser-tabs[orient="horizontal"] &,
@@ -3002,7 +2955,6 @@ toolbar:not(#TabsToolbar) #firefox-view-button {
   --menuitem-icon-fill: light-dark(var(--tab-group-color), var(--tab-group-color-invert));
   -moz-context-properties: fill, stroke;
   stroke: light-dark(var(--tab-group-color), var(--tab-group-color-invert));
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     --menuitem-icon-fill: var(--tab-group-background-color);
     stroke: var(--tab-group-background-color);
@@ -3015,7 +2967,6 @@ toolbar:not(#TabsToolbar) #firefox-view-button {
   &.tab-group-icon-collapsed {
     --menuitem-icon-fill: light-dark(var(--tab-group-color-pale), var(--tab-group-color));
     stroke: light-dark(var(--tab-group-color), var(--tab-group-color-pale));
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       --menuitem-icon-fill: var(--tab-group-background-color);
       stroke: var(--tab-group-background-color);
@@ -3025,7 +2976,6 @@ toolbar:not(#TabsToolbar) #firefox-view-button {
   &.tab-group-icon-closed {
     --menuitem-icon-fill: transparent;
     stroke: light-dark(var(--tab-group-color), var(--tab-group-color-invert));
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("browser.nova.enabled") {
       stroke: var(--tab-group-background-color);
     }

@@ -31,7 +31,6 @@
      Vertical tab mode is more size-constrained due to window controls being in
      the nav bar, so we use the smaller not-yet-default value as if the trust
      panel was enabled. */
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("sidebar.verticalTabs") or -moz-pref("browser.urlbar.trustPanel.featureGate") {
     --urlbar-container-min-width: 275px;
     @media (max-width: 770px) {
@@ -66,7 +65,6 @@ toolbar[inactive="true"] .urlbar,
 
 /* When rich suggestions are enabled the urlbar identity icon is given extra padding to
  * align the results and urlbar text */
-/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("browser.urlbar.richSuggestions.featureGate") {
   #identity-box[pageproxystate="invalid"] > .identity-box-button {
     padding-inline: calc(6px + var(--urlbar-icon-padding));
@@ -201,7 +199,6 @@ toolbar[inactive="true"] .urlbar,
     mask-image: linear-gradient(to right, transparent var(--urlbar-scheme-size), black calc(var(--urlbar-scheme-size) + 3ch));
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     &::selection {
       border-radius: var(--border-radius-xsmall);
@@ -600,7 +597,6 @@ toolbar[inactive="true"] .urlbar,
  * their SVG icons instead, see Bug 2001318 for additional context).
  *
  */
-/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("extensions.webextensions.pageActionIconDarkModeFilter.enabled") {
   .urlbar-addon-page-action[style*=".svg"] > .urlbar-icon {
     :root[lwt-toolbar-field="dark"] #urlbar:not([focused]) &,
@@ -1082,13 +1078,11 @@ toolbar[inactive="true"] .urlbar,
   }
 }
 
-/* stylelint-disable-next-line media-query-no-invalid */
 @media not -moz-pref("browser.search.widget.new") {
   #searchbar-new {
     display: none;
   }
 }
-/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("browser.search.widget.new") {
   #searchbar {
     display: none;
@@ -1187,7 +1181,6 @@ toolbar[inactive="true"] .urlbar,
   --button-background-color-selected: var(--button-background-color);
 
   --button-background-color: var(--urlbar-box-background-color);
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.urlbar.unifiedSearchButton.always") {
     .urlbar[pageproxystate="valid"] & {
       --button-icon-content: url("chrome://global/skin/icons/search-glass.svg");
@@ -1218,11 +1211,9 @@ toolbar[inactive="true"] .urlbar,
   }
 
   .urlbar:not(#searchbar-new) & {
-    /* stylelint-disable media-query-no-invalid */
     @media (not -moz-pref("browser.urlbar.searchModeSwitcher.featureGate")) and (not -moz-pref("browser.urlbar.scotchBonnet.enableOverride")) {
       display: none;
     }
-    /* stylelint-enable media-query-no-invalid */
   }
 }
 
@@ -1234,7 +1225,6 @@ toolbar[inactive="true"] .urlbar,
   white-space: nowrap;
   max-width: var(--search-engine-name-max-width);
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("browser.urlbar.unifiedSearchButton.always") {
     .urlbar:not(#searchbar-new)[searchmode] & {
       display: block;
@@ -1247,7 +1237,6 @@ toolbar[inactive="true"] .urlbar,
   border: 0;
   align-self: center;
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("browser.urlbar.unifiedSearchButton.always") {
     .urlbar[searchmode] & {
       display: revert;
@@ -1269,13 +1258,11 @@ toolbar[inactive="true"] .urlbar,
     transition: 300ms transform ease-in-out;
   }
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.urlbar.unifiedSearchButton.always") {
     margin-inline-start: calc(var(--space-xsmall) * -1);
   }
 
   .urlbar[searchmode] & {
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media not -moz-pref("browser.urlbar.unifiedSearchButton.always") {
       display: none;
     }
@@ -1297,7 +1284,6 @@ toolbar[inactive="true"] .urlbar,
   --panel-list-border-radius: var(--panel-border-radius);
   padding: var(--panel-subview-body-padding);
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.nova.enabled") {
     min-width: 17em;
   }
@@ -1352,12 +1338,10 @@ toolbar[inactive="true"] .urlbar,
   display: none;
 }
 
-/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("browser.urlbar.searchModeSwitcher.featureGate") or -moz-pref("browser.urlbar.scotchBonnet.enableOverride") {
   #urlbar[searchmode] > .urlbar-input-container > #urlbar-search-mode-indicator {
     display: none;
   }
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("browser.urlbar.unifiedSearchButton.always") {
     #urlbar[pageproxystate="invalid"] {
       #identity-box,
@@ -1368,7 +1352,6 @@ toolbar[inactive="true"] .urlbar,
   }
 }
 
-/* stylelint-disable-next-line media-query-no-invalid */
 @media not -moz-pref("browser.urlbar.unifiedSearchButton.always") {
   .urlbar:not([unifiedsearchbutton-available]) > .urlbar-input-container > .searchmode-switcher {
     /* Display as off-screen to get focus */
