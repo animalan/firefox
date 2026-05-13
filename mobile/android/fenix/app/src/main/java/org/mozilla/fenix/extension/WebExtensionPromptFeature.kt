@@ -18,7 +18,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
@@ -72,6 +74,14 @@ class WebExtensionPromptFeature(
     private var scope: CoroutineScope? = null
 
     /**
+     * Job that completes once the [DownloadAddonDialogFragment] has been on screen for
+     * at least [MIN_DOWNLOAD_DIALOG_DISPLAY_MS].
+     * Used to gate dismissals and any follow-up dialogs (permissions, post-install, error) so that the
+     * download dialog isn't shown and then immediately replaced, which users would see as a flicker.
+     */
+    private var minDownloadDialogDisplayJob: Job? = null
+
+    /**
      * Starts observing the selected session to listen for window requests
      * and opens / closes tabs as needed.
      */
@@ -88,10 +98,12 @@ class WebExtensionPromptFeature(
                     }
 
                     is WebExtensionPromptRequest.AfterInstallation -> {
+                        minDownloadDialogDisplayJob?.join()
                         handleAfterInstallationRequest(promptRequest)
                     }
 
                     is WebExtensionPromptRequest.BeforeInstallation.InstallationFailed -> {
+                        minDownloadDialogDisplayJob?.join()
                         handleBeforeInstallationRequest(promptRequest)
                         consumePromptRequest()
                     }
@@ -299,10 +311,16 @@ class WebExtensionPromptFeature(
             url = addonDownloadUrl,
             installationMethod = addonInstallationSource,
             onSuccess = {
-                findPreviousDownloadAddonDialogFragment()?.dismissAllowingStateLoss()
+                scope?.launch {
+                    minDownloadDialogDisplayJob?.join()
+                    findPreviousDownloadAddonDialogFragment()?.dismissAllowingStateLoss()
+                }
             },
             onError = {
-                findPreviousDownloadAddonDialogFragment()?.dismissAllowingStateLoss()
+                scope?.launch {
+                    minDownloadDialogDisplayJob?.join()
+                    findPreviousDownloadAddonDialogFragment()?.dismissAllowingStateLoss()
+                }
             },
         )
     }
@@ -328,6 +346,10 @@ class WebExtensionPromptFeature(
         }
         dialog.onCancelled = ::handleDownloadAddonDialogCancelled
         dialog.show(fragmentManager, DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG)
+
+        minDownloadDialogDisplayJob = scope?.launch {
+            delay(MIN_DOWNLOAD_DIALOG_DISPLAY_MS)
+        }
 
         return dialog
     }
@@ -466,6 +488,7 @@ class WebExtensionPromptFeature(
     private fun handleDownloadAddonDialogCancelled() {
         scope?.launch(mainDispatcher) {
             downloadAddonOperation?.cancel()?.await()
+            minDownloadDialogDisplayJob?.cancel()
         }
     }
 
@@ -604,5 +627,8 @@ class WebExtensionPromptFeature(
         private const val POST_INSTALLATION_DIALOG_FRAGMENT_TAG =
             "ADDONS_INSTALLATION_DIALOG_FRAGMENT"
         private const val AMO_BLOCKED_PAGE_URL = "${BuildConfig.AMO_BASE_URL}/android/blocked-addon/%s/"
+
+        @VisibleForTesting
+        internal const val MIN_DOWNLOAD_DIALOG_DISPLAY_MS = 1500L
     }
 }
