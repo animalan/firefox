@@ -620,17 +620,49 @@ void HappyEyeballsConnectionAttempt::AdoptWinner(
 
   nsHttpTransaction* realTxn = RealHttpTransaction();
   if (!realTxn) {
+    LOG(
+        ("HappyEyeballsConnectionAttempt::AdoptWinner %p no real txn; "
+         "closing winner=%p",
+         this, aWinner));
+    aWinner->Close(NS_ERROR_ABORT);
     return;
   }
 
-  RefPtr<ConnectionEntry> entry(mEntry);
-  if (entry) {
-    RefPtr<PendingTransactionInfo> pendingInfo =
-        gHttpHandler->ConnMgr()->FindTransactionHelper(
-            /*removeWhenFound*/ true, entry, realTxn);
-    (void)pendingInfo;
+  // The trans must have been removed from the pending queue by
+  // LockInRealTxnFromPendingQueue at Do0RTT time.
+#ifdef DEBUG
+  {
+    RefPtr<ConnectionEntry> entry(mEntry);
+    if (entry) {
+      RefPtr<PendingTransactionInfo> pendingInfo =
+          gHttpHandler->ConnMgr()->FindTransactionHelper(
+              /*removeWhenFound*/ false, entry, realTxn);
+      MOZ_ASSERT(!pendingInfo,
+                 "real txn must have been removed from the pending queue "
+                 "by LockInRealTxnFromPendingQueue");
+    }
   }
+#endif
   aWinner->Adopt(realTxn);
+}
+
+bool HappyEyeballsConnectionAttempt::LockInRealTxnFromPendingQueue() {
+  nsHttpTransaction* realTxn = RealHttpTransaction();
+  if (!realTxn) {
+    return false;
+  }
+  RefPtr<ConnectionEntry> entry(mEntry);
+  if (!entry) {
+    return false;
+  }
+  RefPtr<PendingTransactionInfo> pendingInfo =
+      gHttpHandler->ConnMgr()->FindTransactionHelper(
+          /*removeWhenFound*/ true, entry, realTxn);
+  LOG(
+      ("HappyEyeballsConnectionAttempt::LockInRealTxnFromPendingQueue "
+       "%p realTxn=%p removed=%d",
+       this, realTxn, !!pendingInfo));
+  return !!pendingInfo;
 }
 
 already_AddRefed<HappyEyeballsTransaction>

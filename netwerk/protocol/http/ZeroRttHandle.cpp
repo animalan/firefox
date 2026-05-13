@@ -75,6 +75,23 @@ bool ZeroRttHandle::Do0RTT(HappyEyeballsTransaction* aCaller,
     return false;
   }
 
+  // On the first Do0RTT acceptance, verify the real transaction is
+  // still in the pending queue. If it has already been dispatched onto
+  // an idle connection (removed=0), we must not enter 0-RTT: the
+  // early-data bytes would go to a connection that has no live real
+  // txn to adopt, producing a duplicate request on the wire and
+  // leaving the HE race with nothing to adopt at Finish0RTT time.
+  if (!mAny0RttStarted) {
+    RefPtr<HappyEyeballsConnectionAttempt> attempt = do_QueryReferent(mHet);
+    if (!attempt || !attempt->LockInRealTxnFromPendingQueue()) {
+      LOG(
+          ("ZeroRttHandle::Do0RTT %p caller=%p declining — real txn "
+           "already dispatched elsewhere",
+           this, aCaller));
+      return false;
+    }
+  }
+
   LOG(("ZeroRttHandle::Do0RTT %p caller=%p accepted, offset=0", this, aCaller));
   aCaller->Request0RttStreamOffset() = Some(uint64_t(0));
   // Do NOT mutate the real transaction's flags here. The contract is
@@ -173,6 +190,10 @@ nsresult ZeroRttHandle::Finish0RTT(HappyEyeballsTransaction* aCaller,
 
   nsHttpTransaction* realTxn = ResolveRealTxn(mHet);
   if (!realTxn) {
+    LOG(("ZeroRttHandle::Finish0RTT %p real txn gone; closing caller=%p", this,
+         aCaller));
+    Cleanup();
+    aCaller->Close(NS_ERROR_ABORT);
     return NS_OK;
   }
 
