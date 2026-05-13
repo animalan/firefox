@@ -24,6 +24,9 @@ import org.mozilla.focus.ext.ifCustomTab
 import org.mozilla.focus.theme.resolveAttribute
 import mozilla.components.ui.icons.R as iconsR
 
+/**
+ * Integration for browser navigation buttons (back, forward, reload/stop).
+ */
 class NavigationButtonsIntegration(
     val context: Context,
     val store: BrowserStore,

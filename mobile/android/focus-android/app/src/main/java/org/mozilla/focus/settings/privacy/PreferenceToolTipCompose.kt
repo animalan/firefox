@@ -40,6 +40,9 @@ import org.mozilla.focus.ext.settings
 import org.mozilla.focus.ui.theme.FocusTheme
 import org.mozilla.focus.ui.theme.focusColors
 
+/**
+ * A custom [Preference] that displays a tooltip using Compose.
+ */
 class PreferenceToolTipCompose(context: Context, attrs: AttributeSet?) :
     Preference(context, attrs) {
 

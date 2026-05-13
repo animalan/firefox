@@ -66,6 +66,10 @@ import org.mozilla.focus.utils.ViewUtils
 
 private const val REQUEST_TIME_OUT = 2000L
 
+/**
+ * The main activity of the application, serving as the primary entry point and container for
+ * various fragments like the browser and settings.
+ */
 @Suppress("LargeClass")
 // The main entry point for the app.
 open class MainActivity : EdgeToEdgeActivity() {

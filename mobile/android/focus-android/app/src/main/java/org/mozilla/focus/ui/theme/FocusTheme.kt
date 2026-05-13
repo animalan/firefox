@@ -131,12 +131,18 @@ private fun lightColorSchemeMaterial(): ColorScheme = lightColorScheme(
     onPrimary = PhotonColors.Ink50,
 )
 
+/**
+ * Returns the [FocusDimensions] for phone devices.
+ */
 fun phoneDimensions() = FocusDimensions(
     onboardingTitle = 24.sp,
     onboardingSubtitleOne = 16.sp,
     onboardingSubtitleTwo = 14.sp,
 )
 
+/**
+ * Returns the [FocusDimensions] for tablet devices.
+ */
 fun tabletDimensions() = FocusDimensions(
     onboardingTitle = 28.sp,
     onboardingSubtitleOne = 18.sp,

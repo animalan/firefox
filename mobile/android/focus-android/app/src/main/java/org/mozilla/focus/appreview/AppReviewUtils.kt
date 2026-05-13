@@ -21,6 +21,9 @@ import org.mozilla.focus.state.AppAction
 import org.mozilla.focus.utils.SupportUtils
 import java.util.concurrent.TimeUnit
 
+/**
+ * Utility class for handling In-App Review.
+ */
 object AppReviewUtils {
     /**
      * Number of app openings until In App Review is triggered.
