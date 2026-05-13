@@ -13,21 +13,17 @@ import android.os.Build
 import android.service.chooser.ChooserAction
 import androidx.annotation.RequiresApi
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.support.ktx.android.content.share
 import mozilla.components.support.ktx.android.content.shareWithChooserActions
 import mozilla.components.support.ktx.kotlin.trimmed
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.menu.MenuDialogFragmentDirections
 import org.mozilla.fenix.components.menu.share.QRCodeGenerator
-import org.mozilla.fenix.ext.nav
 import mozilla.components.ui.icons.R as iconsR
 
 internal const val SAVE_PDF_ACTION = "org.mozilla.fenix.ACTION_SAVE_TO_PDF"
@@ -35,6 +31,15 @@ internal const val PRINT_ACTION = "org.mozilla.fenix.ACTION_PRINT"
 internal const val TAB_ID_KEY = "tabID"
 internal const val SEND_TO_DEVICES_ACTION = "org.mozilla.fenix.ACTION_SEND_TO_DEVICES"
 internal const val QR_CODE_URI_KEY = "qr_code_uri"
+
+/**
+ * Whether the system share sheet is supported on this device. Returns `true` for API 34 and above.
+ *
+ * Check this before invoking [ShareSheetLauncher.showSystemShareSheet]. When `false`, fall back to the in-app share
+ * fragment for a richer experience than the bare `Intent.ACTION_SEND` available on older Android versions.
+ */
+val isSystemShareSheetSupported: Boolean
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 
 /**
  * Delegate interface to abstract away the share implementation, allowing for easier testing and
@@ -72,25 +77,9 @@ private class ContextShareDelegate(private val getContext: () -> Context) : Shar
 }
 
 /**
- * Interface for handling share events and launching the appropriate share sheet.
+ * Interface for handling share events and launching the system share sheet.
  */
 interface ShareSheetLauncher {
-
-    /**
-     * Show the in-app share sheet for sharing resources within the app.
-     *
-     * @param id The session id of the tab to share from.
-     * @param url The url to share.
-     * @param title The title of the page to share.
-     * @param isCustomTab Whether the share is being initiated from a custom tab,
-     * used to determine the correct destination to pop up to when navigating to the share fragment.
-     */
-    fun showInAppShareSheet(
-        id: String?,
-        url: String?,
-        title: String?,
-        isCustomTab: Boolean = false,
-    )
 
     /**
      * Show the system share sheet for sharing resources outside the app.
@@ -123,11 +112,8 @@ interface ShareSheetLauncher {
 }
 
 /**
- * Default implementation for handling navigating share events, either to the system share sheet
- * or the in-app share sheet.
+ * Default implementation for launching the system share sheet.
  *
- * @param browserStore [BrowserStore] used to dispatch actions related to the menu state and access
- * the selected tab.
  * @param navController [NavController] used for navigation.
  * @param homeActivityClass The [Class] of the activity used to handle send-to-devices and display QR codes.
  * @param qrCodeGenerator [QRCodeGenerator] used to generate QR codes for URLs.
@@ -137,7 +123,6 @@ interface ShareSheetLauncher {
  * @param ioDispatcher [CoroutineDispatcher] used for IO-bound QR code generation work.
  */
 class DefaultShareSheetLauncher(
-    private val browserStore: BrowserStore,
     private val navController: NavController,
     private val homeActivityClass: Class<out Activity>,
     private val qrCodeGenerator: QRCodeGenerator = QRCodeGenerator(),
@@ -151,28 +136,6 @@ class DefaultShareSheetLauncher(
         private const val PRINT_REQUEST_CODE_OFFSET = 1
         private const val SEND_TO_DEVICES_REQUEST_CODE_OFFSET = 2
         private const val QR_CODE_REQUEST_CODE_OFFSET = 3
-    }
-
-    /**
-     * Show the in-app share sheet for sharing resources within the app.
-     *
-     * @param id The session id of the tab to share from.
-     * @param url The url to share.
-     * @param title The title of the page to share.
-     * @param isCustomTab Whether the share is being initiated from a custom tab.
-     */
-    override fun showInAppShareSheet(
-        id: String?,
-        url: String?,
-        title: String?,
-        isCustomTab: Boolean,
-    ) {
-        val shareAction = browserStore.createPdfShareAction(id, url)
-        if (shareAction != null) {
-            browserStore.dispatch(shareAction)
-        } else {
-            dismissMenu(title, url, id, isCustomTab)
-        }
     }
 
     /**
@@ -362,43 +325,5 @@ class DefaultShareSheetLauncher(
             context.getString(R.string.share_qr_code),
             pendingIntent,
         ).build()
-    }
-
-    /**
-     * Helper function to handle dismissing the menu and navigating to the share fragment with the
-     * provided share data.
-     *
-     * @param title The title of the page to share.
-     * @param url The url to share.
-     * @param id The session id of the tab to share from.
-     * @param isCustomTab Whether the share is being initiated from a custom tab, used to determine
-     * the correct destination to pop up to when navigating to the share fragment.
-     */
-    private fun dismissMenu(
-        title: String?,
-        url: String?,
-        id: String?,
-        isCustomTab: Boolean,
-    ) {
-        val shareData = ShareData(title = title, url = url)
-        val direction = MenuDialogFragmentDirections.actionGlobalShareFragment(
-            sessionId = id,
-            data = arrayOf(shareData),
-            showPage = true,
-        )
-
-        val popUpToId = if (isCustomTab) {
-            R.id.externalAppBrowserFragment
-        } else {
-            R.id.browserFragment
-        }
-
-        navController.nav(
-            R.id.menuDialogFragment,
-            direction,
-            navOptions = NavOptions.Builder()
-                .setPopUpTo(popUpToId, false)
-                .build(),
-        )
     }
 }
