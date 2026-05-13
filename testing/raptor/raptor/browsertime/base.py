@@ -831,6 +831,10 @@ class Browsertime(Perftest, metaclass=ABCMeta):
         if self.config["gecko_profile"] is True:
             bt_timeout += 5 * 60
 
+        # if etw profiling enabled and instantiated, give browser more time for profiling
+        if self.config.get("etw_profile") and self.etw_profiler:
+            bt_timeout += 5 * 60
+
         # if simpleperf enabled, give browser more time for profiling
         if self.config["simpleperf"] is True:
             bt_timeout += 5 * 60
@@ -958,6 +962,10 @@ class Browsertime(Perftest, metaclass=ABCMeta):
 
         self.run_test_setup(test)
 
+        # Initialize ETW profiling if enabled and in CI
+        if self.config.get("etw_profile") and "MOZ_AUTOMATION" in os.environ:
+            self._init_etw_profiling(test)
+
         if self.config.get("simpleperf"):
             self._init_simpleperf_profiling(test)
 
@@ -1006,6 +1014,18 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             )
 
         LOG.info("PATH: {}".format(env["PATH"]))
+
+        # Start ETW profiling if enabled (before browsertime starts)
+        if self.config.get("etw_profile") and self.etw_profiler:
+            try:
+                self.etw_profiler.start()
+                LOG.info("ETW Profiling started")
+            except Exception as e:
+                LOG.warning(f"Failed to start ETW profiling: {e}")
+                LOG.warning(
+                    "ETW profiling requires administrator privileges - continuing without profiling"
+                )
+                self.etw_profiler = None  # Disable profiler to skip stop() later
 
         try:
             line_matcher = re.compile(r".*(\[.*\])\s+([a-zA-Z]+):\s+(.*)")
@@ -1118,6 +1138,13 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             if self.browsertime_failure:
                 self.get_failure_screenshot()
                 raise Exception(self.browsertime_failure)
+
+            if self.config.get("etw_profile") and self.etw_profiler:
+                try:
+                    self.etw_profiler.stop()
+                    LOG.info("ETW Profiling stopped")
+                except Exception as e:
+                    LOG.error(f"Failed to stop ETW profiling: {e}")
 
             # We've run the main browsertime process, now we need to run the
             # browsertime one more time if the profiler wasn't enabled already
