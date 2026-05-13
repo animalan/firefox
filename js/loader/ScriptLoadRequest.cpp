@@ -93,6 +93,7 @@ ScriptLoadRequest::ScriptLoadRequest(ScriptKind aKind,
       mHadPostponed_(false),
       mDiskCachingPlan(CachingPlan::Uninitialized),
       mMemoryCachingPlan(CachingPlan::Uninitialized),
+      mIsRetrievedFromMemoryCache(false),
       mIntegrity(aIntegrity),
       mReferrer(aReferrer),
       mLoadContext(aContext),
@@ -185,6 +186,9 @@ void ScriptLoadRequest::SetCacheEntry(LoadedScript* aLoadedScript,
       new ScriptFetchInfo(mKind, aLoadedScript->CachedReferrerPolicy(),
                           aFetchOptions, aLoadedScript->CachedBaseURL());
 
+  MOZ_ASSERT(!IsRetrievedFromMemoryCache());
+  mIsRetrievedFromMemoryCache = true;
+
   switch (mKind) {
     case ScriptKind::eClassic:
       MOZ_ASSERT(aLoadedScript->IsClassicScript());
@@ -221,6 +225,7 @@ void ScriptLoadRequest::NoCacheEntryFound(
     ScriptFetchOptions* aFetchOptions, nsIURI* aURI) {
   MOZ_ASSERT(IsCheckingCache());
   MOZ_ASSERT(mKind != ScriptKind::eEvent, "eEvent is only for ScriptFetchInfo");
+  MOZ_ASSERT(!IsRetrievedFromMemoryCache());
 
   mFetchInfo = new ScriptFetchInfo(mKind, aReferrerPolicy, aFetchOptions, aURI);
   mLoadedScript = new LoadedScript(mKind, aURI);

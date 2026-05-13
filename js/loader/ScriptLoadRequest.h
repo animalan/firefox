@@ -297,6 +297,21 @@ class ScriptLoadRequest : public nsISupports,
   const ScriptFetchInfo* FetchInfo() const { return mFetchInfo; }
   ScriptFetchInfo* FetchInfo() { return mFetchInfo; }
 
+  // Becomes true if the actual script data is retrieved from the
+  // SharedScriptCache.
+  // This becomes true in the following two situations:
+  //   * A valid cache is found when starting the request
+  //   * A dirty cache is found when starting the request, and the
+  //     cache is revived (becomes true only after revived)
+  //
+  // This is different than LoadedScript::IsCachedStencil, given that
+  // LoadedScript::IsCachedStencil can become true also when the
+  // script data is retrieved as text or serialized stencil and then
+  // converted to the cached stencil.
+  bool IsRetrievedFromMemoryCache() const {
+    return mIsRetrievedFromMemoryCache;
+  }
+
  public:
   // Fields.
 
@@ -341,6 +356,8 @@ class ScriptLoadRequest : public nsISupports,
   };
   CachingPlan mDiskCachingPlan : 2;
   CachingPlan mMemoryCachingPlan : 2;
+
+  bool mIsRetrievedFromMemoryCache : 1;
 
   CacheExpirationTime mExpirationTime = CacheExpirationTime::Never();
 
