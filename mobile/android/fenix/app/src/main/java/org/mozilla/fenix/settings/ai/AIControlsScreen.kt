@@ -445,7 +445,7 @@ object AIControlsSearchProvider : SettingsSearchProvider {
                 ),
             )
 
-            for (feature in context.components.aiFeatureRegistry.getFeatures()) {
+            for (feature in context.components.aiFeatureRegistry.getFeatures().sortedForDisplay()) {
                 add(
                     SettingsSearchItem(
                         title = context.getString(feature.description.titleRes),

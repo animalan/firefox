@@ -36,7 +36,7 @@ class AIControlsFragment : Fragment(), SystemInsetsPaddedFragment {
         savedInstanceState: Bundle?,
     ): View = content {
         val registry = requireComponents.aiFeatureRegistry
-        val features = remember { registry.getFeatures() }
+        val features = remember { registry.getFeatures().sortedForDisplay() }
         val featureBlock = requireComponents.aiControlsFeatureBlock
         val scope = rememberCoroutineScope()
 
