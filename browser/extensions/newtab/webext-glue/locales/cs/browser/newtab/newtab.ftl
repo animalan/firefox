@@ -377,6 +377,8 @@ newtab-custom-widget-timer-toggle =
     .label = Časovač
 newtab-custom-widget-sports-toggle =
     .label = Světový šampionát
+newtab-custom-widget-clock-toggle =
+    .label = Hodiny
 newtab-custom-widget-section-title = Widgety
 newtab-custom-widget-section-toggle =
     .label = Widgety
@@ -769,6 +771,7 @@ newtab-widget-lists-label-beta =
 #   $number (number) - Amount of list items marked complete
 newtab-widget-lists-completed-list = Splněno ({ $number })
 newtab-widget-lists-celebration-headline = Dobrá práce
+newtab-widget-lists-celebration-subhead = Vše vyřešeno
 newtab-widget-task-list-menu-copy = Kopírovat
 newtab-widget-lists-menu-edit = Upravit název seznamu
 newtab-widget-lists-menu-edit2 =
@@ -800,6 +803,9 @@ newtab-widget-lists-name-label-checklist =
     .label = Kontrolní seznam
 newtab-widget-lists-name-placeholder-default =
     .placeholder = Seznam úkolů
+newtab-widget-lists-name-placeholder-checklist2 =
+    .placeholder = Kontrolní seznam
+    .aria-label = Upravit název seznamu
 # The placeholder value of the name field for a newly created list
 newtab-widget-lists-name-placeholder-new2 =
     .placeholder = Nový seznam
@@ -825,9 +831,13 @@ newtab-widget-section-maximize =
 newtab-widget-section-minimize =
     .title = Minimalizovat wigety
     .aria-label = Sbalení všech widgetů na kompaktní velikost
+newtab-widget-section-menu-button =
+    .title = Nabídka widgetů
+    .aria-label = Otevřít nabídku widgetů
 newtab-widget-section-menu-hide-all = Skrýt widgety
 newtab-widget-section-menu-learn-more = Zjistit více
 newtab-widget-section-feedback = Sdělte nám svůj názor
+newtab-widget-lists-name-default = Kontrolní seznam
 
 ## Strings introduced by the Nova redesign of the Timer widget
 
@@ -874,14 +884,122 @@ newtab-promo-card-dismiss-button =
     .title = Zavřít
     .aria-label = Zavřít
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label =
+        { $minutes ->
+            [one] Spustit časovač na { $minutes } minutu
+            [few] Spustit časovač na { $minutes } minuty
+            [many] Spustit časovač na { $minutes } minut
+           *[other] Spustit časovač na { $minutes } minut
+        }
+newtab-widget-timer-pause-aria =
+    .aria-label = Pozastavit časovač
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label =
+        { $minutes ->
+            [one] { $minutes } minuta
+            [few] { $minutes } minuty
+            [many] { $minutes } minut
+           *[other] { $minutes } minut
+        }
+newtab-widget-timer-decrease-min =
+    .title = Zkrátit o 1 minutu
+newtab-widget-timer-increase-min =
+    .title = Zvýšit o 1 minutu
+newtab-widget-timer-mode-group =
+    .aria-label = Režim časovače
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = Soustředění
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = Přestávka
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = Skrýt časovač
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = Skvělá práce
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = Vaše přestávka skončila
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = Potřebujete přestávku?
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = Jste připraveni se soustředit?
+
 ## Sports widget
 
+newtab-sports-widget-menu-follow-teams = Sledujte týmy
+newtab-sports-widget-menu-view-upcoming = Zobrazit nadcházející
+newtab-sports-widget-menu-view-results = Zobrazit výsledky
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = Klíčová data
+newtab-sports-widget-menu-learn-more = Zjistit více
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = Sledujte Mistrovství světa ve fotbale
+newtab-sports-widget-get-updates = Získejte živé informace o zápasech a další informace.
+newtab-sports-widget-view-schedule =
+    .label = Zobrazit rozpis zápasů
+newtab-sports-widget-follow-teams =
+    .label = Sledujte týmy
+newtab-sports-widget-view-matches =
+    .label = Zobrazit zápasy
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title =
+    { $number ->
+        [one] Sledovat { $number } tým
+        [few] Sledovat { $number } týmy
+        [many] Sledovat { $number } týmů
+       *[other] Sledovat { $number } týmů
+    }
+newtab-sports-widget-choose-wallpaper =
+    .label = Zvolte si tapetu
+newtab-sports-widget-skip = Přeskočit
+newtab-sports-widget-search-country =
+    .placeholder = Hledat zemi
+    .aria-label = Hledat zemi
+newtab-sports-widget-cancel = Zrušit
+newtab-sports-widget-done-button =
+    .label = Hotovo
+newtab-sports-widget-group-stage = Skupinová fáze
+newtab-sports-widget-round-32 = Nejlepších 32
+newtab-sports-widget-round-16 = Nejlepších 16
+newtab-sports-widget-quarter-finals = Čtvrtfinále
+# The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
+newtab-sports-widget-live = ŽIVĚ
+newtab-custom-widget-live-refresh =
+    .title = Obnovit skóre
+    .aria-label = Obnovit skóre
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = Klíčová data
+newtab-sports-widget-upcoming = Nadcházející
+newtab-sports-widget-results = Výsledky
+newtab-sports-widget-semi-finals = Semifinále
+newtab-sports-widget-bronze-finals = O třetí místo
+# Final is the final match for 1st place.
+newtab-sports-widget-final = Finále
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, month: "short", day: "numeric") } – { DATETIME($end, month: "short", day: "numeric") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, month: "short", day: "numeric") }
+newtab-sports-widget-delayed = Zpožděno
+newtab-sports-widget-postponed = Odloženo
 newtab-sports-widget-suspended = Pozastaveno
 newtab-sports-widget-cancelled = Zrušeno
 newtab-sports-widget-information = Informace o zápase
 newtab-sports-widget-no-live-data = Data o aktuálních zápasech se aktuálně neaktualizují
 newtab-sports-widget-view-results-link = Zobrazit výsledky
 newtab-sports-widget-third-place = Třetí místo
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = Druhé místo
+newtab-sports-widget-champions = Vítěz
 newtab-sports-widget-world-cup-champions = Mistrovství světa ve fotbale 2026
 
 ## Strings for activation window message variants. In certain experiment configurations,
@@ -909,3 +1027,59 @@ newtab-activation-window-message-values-focus-message =
         [with-cases] { -brand-product-name } vám umožní procházet internet způsobem, který vám vyhovuje a je přizpůsoben vašemu dennímu programu. Přizpůsobte si { -brand-product-name(case: "acc") }.
        *[no-cases] { -brand-product-name } vám umožní procházet internet způsobem, který vám vyhovuje a je přizpůsoben vašemu dennímu programu. Přizpůsobte si aplikaci { -brand-product-name }.
     }
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = Skrýt hodiny
+newtab-clock-widget-menu-learn-more = Zjistit více
+newtab-clock-widget-menu-edit = Úprava hodin
+newtab-clock-widget-menu-switch-to-12h = Přepnout na 12hodinový formát
+newtab-clock-widget-menu-switch-to-24h = Přepnout na 24-hodinový formát
+newtab-clock-widget-label-your-clocks = Vaše hodiny
+newtab-clock-widget-search-location-input =
+    .label = Umístění
+    .placeholder = Vyhledat město
+    .aria-label = Vyhledat město
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = Přezdívka (volitelné)
+    .placeholder = Přidat přezdívku
+    .aria-label = Přezdívka (volitelné)
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = Přidat nové hodiny
+    .aria-label = Přidat nové hodiny
+newtab-clock-widget-button-add-clock = Přidat
+newtab-clock-widget-button-cancel = Zrušit
+newtab-clock-widget-button-back =
+    .title = Zpět
+    .aria-label = Zpět
+newtab-clock-widget-button-edit-clock =
+    .title = Upravit hodiny
+    .aria-label = Upravit hodiny
+newtab-clock-widget-button-save = Uložit
+newtab-clock-widget-button-remove-clock =
+    .title = Odebrat hodiny
+    .aria-label = Odebrat hodiny
+newtab-clock-widget-add-clock-form =
+    .aria-label = Přidat hodiny
+newtab-clock-widget-edit-clock-form =
+    .aria-label = Upravit hodiny
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = Výsledky vyhledávání
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = Otevřít nabídku pro hodiny
+    .aria-label = Otevřít nabídku pro hodiny
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = Přezdívka: { $nickname }

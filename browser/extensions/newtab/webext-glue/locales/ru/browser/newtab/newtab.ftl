@@ -278,7 +278,7 @@ newtab-pocket-read-more = Популярные темы:
 newtab-pocket-new-topics-title = Хотите увидеть ещё больше историй? Вот самые популярные темы от { -pocket-brand-name }
 newtab-pocket-more-recommendations = Ещё рекомендации
 newtab-pocket-learn-more = Подробнее
-newtab-pocket-cta-button = Загрузить { -pocket-brand-name }
+newtab-pocket-cta-button = Скачать { -pocket-brand-name }
 newtab-pocket-cta-text = Сохраняйте интересные статьи в { -pocket-brand-name } и подпитывайте свой ум увлекательным чтением.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } является частью семейства { -brand-product-name }
 newtab-pocket-save = Сохранить
@@ -367,6 +367,8 @@ newtab-custom-widget-timer-toggle =
     .label = Таймер
 newtab-custom-widget-sports-toggle =
     .label = Чемпионат мира
+newtab-custom-widget-clock-toggle =
+    .label = Часы
 newtab-custom-widget-section-title = Виджеты
 newtab-custom-widget-section-toggle =
     .label = Виджеты
@@ -848,36 +850,108 @@ newtab-promo-card-dismiss-button =
     .title = Убрать
     .aria-label = Убрать
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label =
+        { $minutes ->
+            [one] Запустить таймер на { $minutes } минуту
+            [few] Запустить таймер на { $minutes } минуты
+           *[many] Запустить таймер на { $minutes } минут
+        }
+newtab-widget-timer-pause-aria =
+    .aria-label = Приостановить таймер
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label =
+        { $minutes ->
+            [one] { $minutes } минута
+            [few] { $minutes } минуты
+           *[many] { $minutes } минут
+        }
+newtab-widget-timer-decrease-min =
+    .title = Уменьшить на 1 минуту
+newtab-widget-timer-increase-min =
+    .title = Увеличить на 1 минуту
+newtab-widget-timer-mode-group =
+    .aria-label = Режим таймера
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = Фокусировка
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = Перерыв
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = Скрыть таймер
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = Отличная работа
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = Ваш перерыв закончен
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = Нужен перерыв?
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = Готовы сфокусироваться?
+
 ## Sports widget
 
 newtab-sports-widget-menu-follow-teams = Подписаться на команды
 newtab-sports-widget-menu-view-upcoming = Просмотреть предстоящие
 newtab-sports-widget-menu-view-results = Просмотреть результаты
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = Ключевые даты
 newtab-sports-widget-menu-learn-more = Подробнее
-newtab-sports-widget-countdown-title = Обратный отсчёт до ЧМ
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = Будьте в курсе событий ЧМ
 newtab-sports-widget-get-updates = Получайте обновления по матчам и другую информацию в прямом эфире.
+newtab-sports-widget-view-schedule =
+    .label = Просмотреть расписание
 newtab-sports-widget-follow-teams =
     .label = Подписаться на команды
+newtab-sports-widget-view-matches =
+    .label = Просмотреть совпадения
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title =
+    { $number ->
+        [one] Следить за до { $number } командой
+        [few] Следить за до { $number } команд
+       *[many] Следить за до { $number } команд
+    }
 newtab-sports-widget-choose-wallpaper =
     .label = Выберите обои
 newtab-sports-widget-skip = Пропустить
-newtab-sports-widget-search-teams =
-    .placeholder = Поиск команд
-    .aria-label = Поиск команд
+newtab-sports-widget-search-country =
+    .placeholder = Поиск страны
+    .aria-label = Поиск страны
+newtab-sports-widget-cancel = Отмена
 newtab-sports-widget-done-button =
     .label = Готово
 newtab-sports-widget-group-stage = Групповой этап
+newtab-sports-widget-round-32 = 1/16 финала
+newtab-sports-widget-round-16 = 1/8 финала
+newtab-sports-widget-quarter-finals = 1/4 финала
 # The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
 newtab-sports-widget-live = ЭФИР
 newtab-custom-widget-live-refresh =
     .title = Обновить результаты
     .aria-label = Обновить результаты
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = Ключевые даты
 newtab-sports-widget-upcoming = Предстоящие
 newtab-sports-widget-results = Результаты
 newtab-sports-widget-semi-finals = Полуфиналы
 newtab-sports-widget-bronze-finals = Игра за третье место
 # Final is the final match for 1st place.
 newtab-sports-widget-final = Финал
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, month: "short", day: "numeric") } – { DATETIME($end, month: "short", day: "numeric") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, month: "short", day: "numeric") }
 newtab-sports-widget-delayed = Задерживается
 newtab-sports-widget-postponed = Отложено
 newtab-sports-widget-suspended = Приостановлено
@@ -886,6 +960,8 @@ newtab-sports-widget-information = Информация о матче
 newtab-sports-widget-no-live-data = Данные о матчах в данный момент не обновляются
 newtab-sports-widget-view-results-link = Просмотреть результаты
 newtab-sports-widget-third-place = Третье место
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = Второе место
 newtab-sports-widget-champions = Чемпионы
 newtab-sports-widget-world-cup-champions = Чемпионы ЧМ 2026
 
@@ -910,3 +986,59 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = Это пространство играет по вашим правилам
 newtab-activation-window-message-values-focus-message = { -brand-product-name } позволяет вам сёрфить так, как вам нравится, более личное начало дня в Интернете. Сделайте { -brand-product-name } своим.
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = Скрыть часы
+newtab-clock-widget-menu-learn-more = Узнать больше
+newtab-clock-widget-menu-edit = Редактировать часы
+newtab-clock-widget-menu-switch-to-12h = Переключиться на 12-часовой формат
+newtab-clock-widget-menu-switch-to-24h = Перейти на 24-часовой формат
+newtab-clock-widget-label-your-clocks = Ваши часы
+newtab-clock-widget-search-location-input =
+    .label = Местоположение
+    .placeholder = Поиск города
+    .aria-label = Поиск города
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = Ник (необязательно)
+    .placeholder = Добавить ник
+    .aria-label = Ник (необязательно)
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = Добавить новые часы
+    .aria-label = Добавить новые часы
+newtab-clock-widget-button-add-clock = Добавить
+newtab-clock-widget-button-cancel = Отмена
+newtab-clock-widget-button-back =
+    .title = Назад
+    .aria-label = Назад
+newtab-clock-widget-button-edit-clock =
+    .title = Редактировать часы
+    .aria-label = Редактировать часы
+newtab-clock-widget-button-save = Сохранить
+newtab-clock-widget-button-remove-clock =
+    .title = Удалить часы
+    .aria-label = Удалить часы
+newtab-clock-widget-add-clock-form =
+    .aria-label = Добавить часы
+newtab-clock-widget-edit-clock-form =
+    .aria-label = Редактировать часы
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = Результаты поиска
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = Открыть меню для часов
+    .aria-label = Открыть меню для часов
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = Ник: { $nickname }

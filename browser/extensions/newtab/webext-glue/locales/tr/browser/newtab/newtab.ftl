@@ -365,6 +365,8 @@ newtab-custom-widget-timer-toggle =
     .label = Sayaç
 newtab-custom-widget-sports-toggle =
     .label = Dünya Kupası
+newtab-custom-widget-clock-toggle =
+    .label = Saat
 newtab-custom-widget-section-title = Araçlar
 newtab-custom-widget-section-toggle =
     .label = Araçlar
@@ -846,36 +848,103 @@ newtab-promo-card-dismiss-button =
     .title = Kapat
     .aria-label = Kapat
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label =
+        { $minutes ->
+            [one] { $minutes } dakikalık sayaç başlat
+           *[other] { $minutes } dakikalık sayaç başlat
+        }
+newtab-widget-timer-pause-aria =
+    .aria-label = Sayacı duraklat
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label =
+        { $minutes ->
+            [one] { $minutes } dakika
+           *[other] { $minutes } dakika
+        }
+newtab-widget-timer-decrease-min =
+    .title = 1 dakika azalt
+newtab-widget-timer-increase-min =
+    .title = 1 dakika artır
+newtab-widget-timer-mode-group =
+    .aria-label = Sayaç modu
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = Odaklan
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = Mola ver
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = Sayacı gizle
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = İyi iş çıkardınız
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = Molanız sona erdi
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = Molaya mı ihtiyacınız var?
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = Odaklanmaya hazır mısınız?
+
 ## Sports widget
 
 newtab-sports-widget-menu-follow-teams = Takımları takip et
 newtab-sports-widget-menu-view-upcoming = Yaklaşanlara bak
 newtab-sports-widget-menu-view-results = Sonuçlara bak
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = Önemli tarihler
 newtab-sports-widget-menu-learn-more = Daha fazla bilgi al
-newtab-sports-widget-countdown-title = Dünya Kupası’na geri sayım
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = Dünya Kupası’nı takip edin
 newtab-sports-widget-get-updates = Canlı maç haberlerini ve daha fazlasını alın.
+newtab-sports-widget-view-schedule =
+    .label = Takvimi gör
 newtab-sports-widget-follow-teams =
     .label = Takımları takip et
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title =
+    { $number ->
+        [one] İstediğiniz { $number } takımı takip edin
+       *[other] İstediğiniz { $number } takımı takip edin
+    }
 newtab-sports-widget-choose-wallpaper =
     .label = Duvar kâğıdı seç
 newtab-sports-widget-skip = Atla
-newtab-sports-widget-search-teams =
-    .placeholder = Takım ara
-    .aria-label = Takım ara
+newtab-sports-widget-search-country =
+    .placeholder = Ülke ara
+    .aria-label = Ülke ara
+newtab-sports-widget-cancel = Vazgeç
 newtab-sports-widget-done-button =
     .label = Tamam
 newtab-sports-widget-group-stage = Grup maçı
+newtab-sports-widget-round-32 = Son 32 turu
+newtab-sports-widget-round-16 = Son 16 turu
+newtab-sports-widget-quarter-finals = Çeyrek finaller
 # The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
 newtab-sports-widget-live = CANLI
 newtab-custom-widget-live-refresh =
     .title = Skorları yenile
     .aria-label = Skorları yenile
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = Önemli tarihler
 newtab-sports-widget-upcoming = Yaklaşıyor
 newtab-sports-widget-results = Sonuçlar
 newtab-sports-widget-semi-finals = Yarı finaller
 newtab-sports-widget-bronze-finals = Üçüncülük maçı
 # Final is the final match for 1st place.
 newtab-sports-widget-final = Final
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, month: "short", day: "numeric") } – { DATETIME($end, month: "short", day: "numeric") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, month: "short", day: "numeric") }
 newtab-sports-widget-delayed = Gecikmeli
 newtab-sports-widget-postponed = Ertelendi
 newtab-sports-widget-suspended = Askıya alındı
@@ -884,6 +953,8 @@ newtab-sports-widget-information = Maç bilgileri
 newtab-sports-widget-no-live-data = Canlı maç verileri şu anda güncellenmiyor
 newtab-sports-widget-view-results-link = Sonuçlara bak
 newtab-sports-widget-third-place = Üçüncü
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = İkinci
 newtab-sports-widget-champions = Şampiyon
 newtab-sports-widget-world-cup-champions = 2026 Dünya Kupası Şampiyonu
 
@@ -908,3 +979,59 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = Burası sizin yeriniz
 newtab-activation-window-message-values-focus-message = { -brand-product-name } internette istediğiniz gibi gezinmenizi ve güne daha kişisel bir şekilde başlamanızı sağlar. { -brand-product-name } tarayıcınızı özelleştirin.
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = Saati gizle
+newtab-clock-widget-menu-learn-more = Daha fazla bilgi al
+newtab-clock-widget-menu-edit = Saatleri düzenle
+newtab-clock-widget-menu-switch-to-12h = 12 saatlik biçime geç
+newtab-clock-widget-menu-switch-to-24h = 24 saatlik biçime geç
+newtab-clock-widget-label-your-clocks = Saatleriniz
+newtab-clock-widget-search-location-input =
+    .label = Konum
+    .placeholder = Şehir ara
+    .aria-label = Şehir ara
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = Ad (isteğe bağlı)
+    .placeholder = Ad ekle
+    .aria-label = Ad (isteğe bağlı)
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = Yeni saat ekle
+    .aria-label = Yeni saat ekle
+newtab-clock-widget-button-add-clock = Ekle
+newtab-clock-widget-button-cancel = Vazgeç
+newtab-clock-widget-button-back =
+    .title = Geri
+    .aria-label = Geri
+newtab-clock-widget-button-edit-clock =
+    .title = Saati düzenle
+    .aria-label = Saati düzenle
+newtab-clock-widget-button-save = Kaydet
+newtab-clock-widget-button-remove-clock =
+    .title = Saati sil
+    .aria-label = Saati sil
+newtab-clock-widget-add-clock-form =
+    .aria-label = Saat ekle
+newtab-clock-widget-edit-clock-form =
+    .aria-label = Saati düzenle
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = Arama sonuçları
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = Saat menüsünü aç
+    .aria-label = Saat menüsünü aç
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = Ad: { $nickname }

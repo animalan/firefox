@@ -373,6 +373,8 @@ newtab-custom-widget-timer-toggle =
     .label = Měritko casa
 newtab-custom-widget-sports-toggle =
     .label = Swětowe mejstaŕstwo
+newtab-custom-widget-clock-toggle =
+    .label = Zeger
 newtab-custom-widget-section-title = Asistenty
 newtab-custom-widget-section-toggle =
     .label = Asistenty
@@ -905,48 +907,60 @@ newtab-widget-timer-celebration-message-break = Sćo gótowy se koncentrěrowaś
 newtab-sports-widget-menu-follow-teams = Teamam slědowaś
 newtab-sports-widget-menu-view-upcoming = Pśichodny pokazaś
 newtab-sports-widget-menu-view-results = Wuslědki pokazaś
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = Klucowe datumy
 newtab-sports-widget-menu-learn-more = Dalšne informacije
-newtab-sports-widget-countdown-title = Countdown k swětowemu mejstaŕstwoju
-# Abbreviated label for days in the sport widget countdown. D is short for Days.
-# The layout only allows for 1–2 characters: if there is an equivalent single
-# character for your language, use that. Your translation will be automatically
-# truncated at 1 character to avoid layout issues.
-newtab-sports-widget-countdown-days = Ź
-# Abbreviated label for hours in the sport widget countdown. H is short for Hours.
-# The layout only allows for 1–2 characters: if there is an equivalent single
-# character for your language, use that. Your translation will be automatically
-# truncated at 1 character to avoid layout issues.
-newtab-sports-widget-countdown-hours = G
-# Abbreviated label for minutes in the sport widget countdown. M is short for Minutes.
-# The layout only allows for 1–2 characters: if there is an equivalent single
-# character for your language, use that. Your translation will be automatically
-# truncated at 1 character to avoid layout issues.
-newtab-sports-widget-countdown-minutes = M
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = Wobchowajśo swětowe mejstaŕstwo we wócyma
 newtab-sports-widget-get-updates = Dostańśo aktualizacije live a wěcej.
 newtab-sports-widget-view-schedule =
     .label = Grajny plan pokazaś
 newtab-sports-widget-follow-teams =
     .label = Teamam slědowaś
+newtab-sports-widget-view-matches =
+    .label = Graśa pokazaś
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title =
+    { $number ->
+        [one] { $number } teamoju slědowaś
+        [two] { $number } teamoma slědowaś
+        [few] { $number } teamam slědowaś
+       *[other] { $number } teamam slědowaś
+    }
 newtab-sports-widget-choose-wallpaper =
     .label = Wubjeŕśo slězynowy wobraz
 newtab-sports-widget-skip = Pśeskócyś
-newtab-sports-widget-search-teams =
-    .placeholder = Teamy pytaś
-    .aria-label = Teamy pytaś
+newtab-sports-widget-search-country =
+    .placeholder = Kraj pytaś
+    .aria-label = Kraj pytaś
+newtab-sports-widget-cancel = Pśetergnuś
 newtab-sports-widget-done-button =
     .label = Dokóńcony
 newtab-sports-widget-group-stage = Kupkowa faza
+newtab-sports-widget-round-32 = Koło z 32
+newtab-sports-widget-round-16 = Koło z 16
+newtab-sports-widget-quarter-finals = Běrtylfinale
 # The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
 newtab-sports-widget-live = LIVE
 newtab-custom-widget-live-refresh =
     .title = Wuslědki aktualizěrowaś
     .aria-label = Wuslědki aktualizěrowaś
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = Klucowe datumy
 newtab-sports-widget-upcoming = Pśichodne
 newtab-sports-widget-results = Wuslědki
 newtab-sports-widget-semi-finals = Połfinale
 newtab-sports-widget-bronze-finals = Graśe wó městno 3
 # Final is the final match for 1st place.
 newtab-sports-widget-final = Finale
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, month: "short", day: "numeric") } – { DATETIME($end, month: "short", day: "numeric") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, month: "short", day: "numeric") }
 newtab-sports-widget-delayed = Wokomuźony
 newtab-sports-widget-postponed = Wótstarcony
 newtab-sports-widget-suspended = Wótgronjony
@@ -981,3 +995,59 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = Toś to městno pó wašych pšawidłach grajo
 newtab-activation-window-message-values-focus-message = { -brand-product-name } wam zmóžnja, na wašnju pśeglědowaś, kótarež wam se spódoba, z wěcej wósobinskej móžnosću, źeń online zachopiś. Pśiswójśo se { -brand-product-name }.
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = Zeger schowaś
+newtab-clock-widget-menu-learn-more = Dalšne informacije
+newtab-clock-widget-menu-edit = Zegery wobźěłaś
+newtab-clock-widget-menu-switch-to-12h = Do 12-góźińskego formata změniś
+newtab-clock-widget-menu-switch-to-24h = Do 24-góźińskego formata změniś
+newtab-clock-widget-label-your-clocks = Waše zegery
+newtab-clock-widget-search-location-input =
+    .label = Stojnišćo
+    .placeholder = Město pytaś
+    .aria-label = Město pytaś
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = Pśimě (na žycenje)
+    .placeholder = Pśimě pśidaś
+    .aria-label = Pśimě (na žycenje)
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = Nowy zeger pśidaś
+    .aria-label = Nowy zeger pśidaś
+newtab-clock-widget-button-add-clock = Pśidaś
+newtab-clock-widget-button-cancel = Pśetergnuś
+newtab-clock-widget-button-back =
+    .title = Slědk
+    .aria-label = Slědk
+newtab-clock-widget-button-edit-clock =
+    .title = Zeger wobźěłaś
+    .aria-label = Zeger wobźěłaś
+newtab-clock-widget-button-save = Składowaś
+newtab-clock-widget-button-remove-clock =
+    .title = Zeger wótwónoźeś
+    .aria-label = Zeger wótwónoźeś
+newtab-clock-widget-add-clock-form =
+    .aria-label = Zeger pśidaś
+newtab-clock-widget-edit-clock-form =
+    .aria-label = Zeger wobźěłaś
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = Pytańske wuslědki
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = Meni za zeger wócyniś
+    .aria-label = Meni za zeger wócyniś
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = Pśimě: { $nickname }

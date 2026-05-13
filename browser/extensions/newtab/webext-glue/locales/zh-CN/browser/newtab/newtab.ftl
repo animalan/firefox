@@ -363,6 +363,8 @@ newtab-custom-widget-timer-toggle =
     .label = 计时器
 newtab-custom-widget-sports-toggle =
     .label = 世界杯
+newtab-custom-widget-clock-toggle =
+    .label = 时钟
 newtab-custom-widget-section-title = 小组件
 newtab-custom-widget-section-toggle =
     .label = 小组件
@@ -530,6 +532,8 @@ newtab-weather-opt-in-not-now =
 newtab-weather-opt-in-yes =
     .label = 好的
 newtab-weather-opt-in-headline = 获取您当地的天气预报
+newtab-weather-opt-in-use-location =
+    .label = 使用位置信息
 newtab-weather-opt-in-choose-location = 选择位置
 # We'll be showing static (fake) weather data if the user has not opted in to using their location
 newtab-weather-static-city = 纽约市
@@ -660,6 +664,7 @@ newtab-new-user-custom-wallpaper-cta = 现在就试试
 
 ## Strings for Nova wallpaper feature highlight
 
+newtab-wallpaper-feature-highlight-subtitle = 选择您最爱的壁纸，让每次打开新标签页都亲切如归家。
 newtab-wallpaper-feature-highlight-cta = 选择壁纸
 
 ## Strings for download mobile highlight
@@ -730,6 +735,7 @@ newtab-widget-lists-label-beta =
 # Variables:
 #   $number (number) - Amount of list items marked complete
 newtab-widget-lists-completed-list = 已完成（{ $number }）
+newtab-widget-lists-celebration-subhead = 已全部完成
 newtab-widget-task-list-menu-copy = 复制
 newtab-widget-lists-menu-edit = 编辑清单名称
 newtab-widget-lists-menu-edit2 =
@@ -838,35 +844,89 @@ newtab-promo-card-dismiss-button =
     .title = 知道了
     .aria-label = 知道了
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label = 启动 { $minutes } 分钟计时器
+newtab-widget-timer-pause-aria =
+    .aria-label = 暂停计时器
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label = { $minutes } 分钟
+newtab-widget-timer-decrease-min =
+    .title = 减少 1 分钟
+newtab-widget-timer-increase-min =
+    .title = 增加 1 分钟
+newtab-widget-timer-mode-group =
+    .aria-label = 计时器模式
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = 专注
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = 休息
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = 隐藏计时器
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = 休息时间结束
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = 需要休息吗？
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = 准备好专注了吗？
+
 ## Sports widget
 
 newtab-sports-widget-menu-follow-teams = 关注球队
 newtab-sports-widget-menu-view-upcoming = 查看即将进行的比赛
+newtab-sports-widget-menu-view-results = 查看比赛结果
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = 重要日期
 newtab-sports-widget-menu-learn-more = 详细了解
-newtab-sports-widget-countdown-title = 世界杯即将开幕
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = 持续关注世界杯
 newtab-sports-widget-get-updates = 获取实时赛况等信息。
+newtab-sports-widget-view-schedule =
+    .label = 查看赛程
 newtab-sports-widget-follow-teams =
     .label = 关注球队
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title = 最多可关注 { $number } 支球队
 newtab-sports-widget-choose-wallpaper =
     .label = 选择壁纸
 newtab-sports-widget-skip = 跳过
-newtab-sports-widget-search-teams =
-    .placeholder = 搜索球队
-    .aria-label = 搜索球队
+newtab-sports-widget-search-country =
+    .placeholder = 搜索国家/地区
+    .aria-label = 搜索国家/地区
+newtab-sports-widget-cancel = 取消
 newtab-sports-widget-done-button =
     .label = 完成
 newtab-sports-widget-group-stage = 小组赛阶段
+newtab-sports-widget-round-32 = 十六分之一决赛
+newtab-sports-widget-round-16 = 八分之一决赛
+newtab-sports-widget-quarter-finals = 四分之一决赛
 # The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
 newtab-sports-widget-live = 进行中
 newtab-custom-widget-live-refresh =
     .title = 刷新比分
     .aria-label = 刷新比分
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = 重要日期
 newtab-sports-widget-upcoming = 即将进行
 newtab-sports-widget-results = 比赛结果
 newtab-sports-widget-semi-finals = 半决赛
 newtab-sports-widget-bronze-finals = 三四名决赛
 # Final is the final match for 1st place.
 newtab-sports-widget-final = 决赛
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, month: "short", day: "numeric") } – { DATETIME($end, month: "short", day: "numeric") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, month: "short", day: "numeric") }
 newtab-sports-widget-delayed = 推迟
 newtab-sports-widget-postponed = 改期
 newtab-sports-widget-suspended = 中断
@@ -874,7 +934,9 @@ newtab-sports-widget-cancelled = 取消
 newtab-sports-widget-information = 本场比赛信息
 newtab-sports-widget-no-live-data = 目前未在更新实时比赛数据
 newtab-sports-widget-view-results-link = 查看比赛结果
-newtab-sports-widget-third-place = 第三名
+newtab-sports-widget-third-place = 季军
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = 亚军
 newtab-sports-widget-champions = 冠军
 newtab-sports-widget-world-cup-champions = 2026 年世界杯冠军
 
@@ -899,3 +961,59 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = 这片空间，由您做主
 newtab-activation-window-message-values-focus-message = { -brand-product-name } 可让您以更具个性的方式开启网络上的新一天，按自己喜欢的方式来浏览。让 { -brand-product-name } 有您的个性。
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = 隐藏时钟
+newtab-clock-widget-menu-learn-more = 详细了解
+newtab-clock-widget-menu-edit = 编辑时钟
+newtab-clock-widget-menu-switch-to-12h = 切换为 12 小时制
+newtab-clock-widget-menu-switch-to-24h = 切换为 24 小时制
+newtab-clock-widget-label-your-clocks = 您的时钟
+newtab-clock-widget-search-location-input =
+    .label = 位置
+    .placeholder = 搜索城市
+    .aria-label = 搜索城市
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = 昵称（选填）
+    .placeholder = 添加昵称
+    .aria-label = 昵称（选填）
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = 添加新时钟
+    .aria-label = 添加新时钟
+newtab-clock-widget-button-add-clock = 添加
+newtab-clock-widget-button-cancel = 取消
+newtab-clock-widget-button-back =
+    .title = 返回
+    .aria-label = 返回
+newtab-clock-widget-button-edit-clock =
+    .title = 编辑时钟
+    .aria-label = 编辑时钟
+newtab-clock-widget-button-save = 保存
+newtab-clock-widget-button-remove-clock =
+    .title = 移除时钟
+    .aria-label = 移除时钟
+newtab-clock-widget-add-clock-form =
+    .aria-label = 添加时钟
+newtab-clock-widget-edit-clock-form =
+    .aria-label = 调整时钟
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = 搜索结果
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = 打开时钟菜单
+    .aria-label = 打开时钟菜单
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = 昵称：{ $nickname }

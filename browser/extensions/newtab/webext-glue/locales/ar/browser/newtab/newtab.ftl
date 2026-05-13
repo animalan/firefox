@@ -652,6 +652,8 @@ newtab-widget-lists-label-beta =
 # Variables:
 #   $number (number) - Amount of list items marked complete
 newtab-widget-lists-completed-list = اكتمل ({ $number })
+newtab-widget-lists-celebration-headline = عمل جيد
+newtab-widget-lists-celebration-subhead = انتهى الكل
 newtab-widget-task-list-menu-copy = انسخ
 newtab-widget-lists-menu-edit = حرّر اسم القائمة
 newtab-widget-lists-menu-edit2 =
@@ -672,14 +674,23 @@ newtab-widget-lists-input-menu-move-up = انقل لأعلى
 newtab-widget-lists-input-menu-move-down = انقل لأسفل
 newtab-widget-lists-input-menu-delete = احذف
 newtab-widget-lists-input-menu-edit = حرّر
+newtab-widget-lists-input-menu-edit2 =
+    .aria-label = حرِّر العنصر
 newtab-widget-lists-name-label-default =
     .label = قائمة المهام
+newtab-widget-lists-name-label-checklist =
+    .label = قائمة التحقق
 newtab-widget-lists-name-placeholder-default =
     .placeholder = قائمة المهام
+newtab-widget-lists-name-placeholder-checklist2 =
+    .placeholder = قائمة التحقق
+    .aria-label = حرِّر اسم القائمة
 # The placeholder value of the name field for a newly created list
 newtab-widget-lists-name-placeholder-new2 =
     .placeholder = قائمة جديدة
     .aria-label = حرّر اسم القائمة
+newtab-widget-lists-name-placeholder-checklist =
+    .placeholder = قائمة التحقق
 # The placeholder value of the name field for a newly created list
 newtab-widget-lists-name-placeholder-new =
     .placeholder = قائمة جديدة
@@ -698,6 +709,7 @@ newtab-widget-section-menu-button =
 newtab-widget-section-menu-hide-all = أخفِ الويدجات
 newtab-widget-section-menu-learn-more = اطّلع على المزيد
 newtab-widget-section-feedback = أخبرنا برأيك
+newtab-widget-lists-name-default = قائمة التحقق
 
 ## Strings introduced by the Nova redesign of the Timer widget
 
@@ -724,6 +736,8 @@ newtab-daily-briefing-card-menu-dismiss = أهمِل
 #   $minutes (number) - Time since the feed has been refreshed
 newtab-daily-briefing-card-timestamp = حُدِّث منذ { $minutes }د
 newtab-widget-message-title = حافظ على تركيزك باستخدام القوائم والمؤقت المدمج
+# to-dos stands for "things to do".
+newtab-widget-message-copy = من التذكيرات السريعة إلى المهام اليومية، ومن جلسات التركيز إلى فترات الراحة القصيرة - حافظ على إنجاز مهامك وفي الوقت المحدّد.
 # "Make Firefox yours" refers to about:newtab. The call to action here ("Try it now")
 # is to customize the new tab page with a background image or color from
 # the built-in wallpaper collection or uploading your own image.
@@ -737,8 +751,33 @@ newtab-promo-card-dismiss-button =
     .title = أهمِل
     .aria-label = أهمِل
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+newtab-widget-timer-pause-aria =
+    .aria-label = ألبِث المؤقت
+newtab-widget-timer-decrease-min =
+    .title = قلّل دقيقة واحدة
+newtab-widget-timer-increase-min =
+    .title = زد دقيقة واحدة
+newtab-widget-timer-mode-group =
+    .aria-label = وضع المؤقت
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = ركّز
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = أخفِ المؤقت
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = عمل رائع
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = انتهت استراحتك
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = أتحتاج إلى استراحة؟
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = أمستعد للتركيز؟
+
 ## Sports widget
 
+newtab-sports-widget-menu-learn-more = اطّلع على المزيد
 newtab-sports-widget-skip = تخطَّ
 
 ## Strings for activation window message variants. In certain experiment configurations,
@@ -762,3 +801,42 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = هذه المساحة تلتزم بقواعدك
 newtab-activation-window-message-values-focus-message = يتيح لك { -brand-product-name } التصفح بالطريقة التي تُفضّلها، مع تجربة شخصية أكثر لبدء يومك على الإنترنت. اجعل { -brand-product-name } خاصًا بك.
+
+## Strings for the Clock widget
+
+newtab-clock-widget-menu-edit = حرّر الساعات
+newtab-clock-widget-menu-switch-to-12h = بدّل إلى نظام الـ 12 ساعة
+newtab-clock-widget-menu-switch-to-24h = بدّل إلى نظام الـ 24 ساعة
+newtab-clock-widget-label-your-clocks = ساعاتك
+newtab-clock-widget-search-location-input =
+    .label = الموقع
+    .placeholder = ابحث عن مدينة
+    .aria-label = ابحث عن مدينة
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = الاسم المستعار (اختياري)
+    .placeholder = أضف اسم مستعار
+    .aria-label = الاسم المستعار (اختياري)
+newtab-clock-widget-button-save = احفظ
+newtab-clock-widget-button-remove-clock =
+    .title = أزِل الساعة
+    .aria-label = أزِل الساعة
+newtab-clock-widget-add-clock-form =
+    .aria-label = أضف ساعة
+newtab-clock-widget-edit-clock-form =
+    .aria-label = حرّر الساعة
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = نتائج البحث
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = افتح قائمة الساعة
+    .aria-label = افتح قائمة الساعة
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = الاسم المستعار: { $nickname }

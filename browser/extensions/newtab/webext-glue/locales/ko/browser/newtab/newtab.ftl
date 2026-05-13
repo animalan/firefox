@@ -367,6 +367,8 @@ newtab-custom-widget-timer-toggle =
     .label = 타이머
 newtab-custom-widget-sports-toggle =
     .label = 월드컵
+newtab-custom-widget-clock-toggle =
+    .label = 시계
 newtab-custom-widget-section-title = 위젯
 newtab-custom-widget-section-toggle =
     .label = 위젯
@@ -848,36 +850,93 @@ newtab-promo-card-dismiss-button =
     .title = 닫기
     .aria-label = 닫기
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label = { $minutes }분 타이머 시작
+newtab-widget-timer-pause-aria =
+    .aria-label = 타이머 일시 중지
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label = { $minutes }분
+newtab-widget-timer-decrease-min =
+    .title = 1분 감소
+newtab-widget-timer-increase-min =
+    .title = 1분 증가
+newtab-widget-timer-mode-group =
+    .aria-label = 타이머 모드
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = 집중
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = 휴식
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = 타이머 숨기기
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = 잘하셨어요
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = 휴식 시간이 종료됨
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = 휴식이 필요하신가요?
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = 집중할 준비가 되었나요?
+
 ## Sports widget
 
 newtab-sports-widget-menu-follow-teams = 팀 팔로우
 newtab-sports-widget-menu-view-upcoming = 예정된 경기 보기
 newtab-sports-widget-menu-view-results = 결과 보기
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = 주요 날짜
 newtab-sports-widget-menu-learn-more = 더 알아보기
-newtab-sports-widget-countdown-title = 월드컵 카운트다운
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = 월드컵 소식을 놓치지 마세요
 newtab-sports-widget-get-updates = 라이브 경기 업데이트 등을 받으세요.
+newtab-sports-widget-view-schedule =
+    .label = 일정 보기
 newtab-sports-widget-follow-teams =
     .label = 팀 팔로우
+newtab-sports-widget-view-matches =
+    .label = 경기 보기
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title = 최대 { $number }개 팀 팔로우
 newtab-sports-widget-choose-wallpaper =
     .label = 배경 화면 선택
 newtab-sports-widget-skip = 건너뛰기
-newtab-sports-widget-search-teams =
-    .placeholder = 팀 검색
-    .aria-label = 팀 검색
+newtab-sports-widget-search-country =
+    .placeholder = 국가 검색
+    .aria-label = 국가 검색
+newtab-sports-widget-cancel = 취소
 newtab-sports-widget-done-button =
     .label = 완료
 newtab-sports-widget-group-stage = 조별 예선
+newtab-sports-widget-round-32 = 32강
+newtab-sports-widget-round-16 = 16강
+newtab-sports-widget-quarter-finals = 8강
 # The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
 newtab-sports-widget-live = 라이브
 newtab-custom-widget-live-refresh =
     .title = 점수 새로 고침
     .aria-label = 점수 새로 고침
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = 주요 날짜
 newtab-sports-widget-upcoming = 예정된 경기
 newtab-sports-widget-results = 결과
 newtab-sports-widget-semi-finals = 준결승
 newtab-sports-widget-bronze-finals = 동메달 결정전
 # Final is the final match for 1st place.
 newtab-sports-widget-final = 결승
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, month: "short", day: "numeric") } – { DATETIME($end, month: "short", day: "numeric") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, month: "short", day: "numeric") }
 newtab-sports-widget-delayed = 지연됨
 newtab-sports-widget-postponed = 연기됨
 newtab-sports-widget-suspended = 중단됨
@@ -886,6 +945,8 @@ newtab-sports-widget-information = 경기 정보
 newtab-sports-widget-no-live-data = 현재 라이브 경기 데이터가 업데이트되지 않고 있습니다
 newtab-sports-widget-view-results-link = 결과 보기
 newtab-sports-widget-third-place = 3위
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = 준우승
 newtab-sports-widget-champions = 우승팀
 newtab-sports-widget-world-cup-champions = 2026년 월드컵 우승팀
 
@@ -910,3 +971,59 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = 이 공간은 유연하고 사용자 정의가 가능합니다
 newtab-activation-window-message-values-focus-message = { -brand-product-name }는 사용자가 원하는 방식으로 탐색할 수 있게 해주며, 온라인에서 하루를 시작하는 더 개인화된 방법을 제공합니다. 나만의 { -brand-product-name }를 만드세요.
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = 시계 숨기기
+newtab-clock-widget-menu-learn-more = 더 알아보기
+newtab-clock-widget-menu-edit = 시계 편집
+newtab-clock-widget-menu-switch-to-12h = 12시간제로 전환
+newtab-clock-widget-menu-switch-to-24h = 24시간제로 전환
+newtab-clock-widget-label-your-clocks = 나만의 시계
+newtab-clock-widget-search-location-input =
+    .label = 위치
+    .placeholder = 도시 검색
+    .aria-label = 도시 검색
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = 별명 (선택 사항)
+    .placeholder = 별명 추가
+    .aria-label = 별명 (선택 사항)
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = 새 시계 추가
+    .aria-label = 새 시계 추가
+newtab-clock-widget-button-add-clock = 추가
+newtab-clock-widget-button-cancel = 취소
+newtab-clock-widget-button-back =
+    .title = 뒤로
+    .aria-label = 뒤로
+newtab-clock-widget-button-edit-clock =
+    .title = 시계 편집
+    .aria-label = 시계 편집
+newtab-clock-widget-button-save = 저장
+newtab-clock-widget-button-remove-clock =
+    .title = 시계 제거
+    .aria-label = 시계 제거
+newtab-clock-widget-add-clock-form =
+    .aria-label = 시계 추가
+newtab-clock-widget-edit-clock-form =
+    .aria-label = 시계 편집
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = 검색 결과
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = 시계 메뉴 열기
+    .aria-label = 시계 메뉴 열기
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = Nickname: { $nickname }

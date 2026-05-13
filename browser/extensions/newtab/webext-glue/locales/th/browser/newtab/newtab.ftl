@@ -365,6 +365,10 @@ newtab-custom-widget-lists-toggle =
     .label = รายการ
 newtab-custom-widget-timer-toggle =
     .label = ตัวจับเวลา
+newtab-custom-widget-sports-toggle =
+    .label = ฟุตบอลโลก
+newtab-custom-widget-clock-toggle =
+    .label = นาฬิกา
 newtab-custom-widget-section-title = วิดเจ็ต
 newtab-custom-widget-section-toggle =
     .label = วิดเจ็ต
@@ -736,6 +740,8 @@ newtab-widget-lists-label-beta =
 # Variables:
 #   $number (number) - Amount of list items marked complete
 newtab-widget-lists-completed-list = เสร็จสมบูรณ์ ({ $number })
+newtab-widget-lists-celebration-headline = ทำดีมาก
+newtab-widget-lists-celebration-subhead = เสร็จเรียบร้อย
 newtab-widget-task-list-menu-copy = คัดลอก
 newtab-widget-lists-menu-edit = แก้ไขชื่อรายการ
 newtab-widget-lists-menu-edit2 =
@@ -756,6 +762,8 @@ newtab-widget-lists-input-menu-move-up = เลื่อนขึ้น
 newtab-widget-lists-input-menu-move-down = เลื่อนลง
 newtab-widget-lists-input-menu-delete = ลบ
 newtab-widget-lists-input-menu-edit = แก้ไข
+newtab-widget-lists-input-menu-edit2 =
+    .aria-label = แก้ไขรายการ
 # the + symbol emphasises the functionality of adding a new list
 newtab-widget-lists-dropdown-create =
     .label = + สร้างรายการใหม่
@@ -842,6 +850,106 @@ newtab-promo-card-dismiss-button =
     .title = ปิด
     .aria-label = ปิด
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label = เริ่มจับเวลา { $minutes } นาที
+newtab-widget-timer-pause-aria =
+    .aria-label = หยุดตัวจับเวลาชั่วคราว
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label = { $minutes } นาที
+newtab-widget-timer-decrease-min =
+    .title = ลด 1 นาที
+newtab-widget-timer-increase-min =
+    .title = เพิ่ม 1 นาที
+newtab-widget-timer-mode-group =
+    .aria-label = โหมดจับเวลา
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = โฟกัส
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = พัก
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = ซ่อนตัวจับเวลา
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = เยี่ยมมาก
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = หมดเวลาพักแล้ว
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = พักสักหน่อยไหม?
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = พร้อมที่จะโฟกัสหรือยัง?
+
+## Sports widget
+
+newtab-sports-widget-menu-follow-teams = ติดตามทีม
+newtab-sports-widget-menu-view-upcoming = ดูสิ่งที่กำลังจะมาถึง
+newtab-sports-widget-menu-view-results = ดูผลการแข่ง
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = วันสำคัญ
+newtab-sports-widget-menu-learn-more = เรียนรู้เพิ่มเติม
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = ติดตามข่าวสารฟุตบอลโลก
+newtab-sports-widget-get-updates = เกาะติดผลบอลสดและอีกมากมาย
+newtab-sports-widget-view-schedule =
+    .label = ดูตารางการแข่ง
+newtab-sports-widget-follow-teams =
+    .label = ติดตามทีม
+newtab-sports-widget-view-matches =
+    .label = ดูการแข่งขัน
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title = ติดตามได้สูงสุด { $number } ทีม
+newtab-sports-widget-choose-wallpaper =
+    .label = เลือกรูปพื้นหลัง
+newtab-sports-widget-skip = ข้าม
+newtab-sports-widget-search-country =
+    .placeholder = ค้นหาประเทศ
+    .aria-label = ค้นหาประเทศ
+newtab-sports-widget-cancel = ยกเลิก
+newtab-sports-widget-done-button =
+    .label = เสร็จสิ้น
+newtab-sports-widget-group-stage = รอบแบ่งกลุ่ม
+newtab-sports-widget-round-32 = รอบ 32 ทีม
+newtab-sports-widget-round-16 = รอบ 16 ทีม
+newtab-sports-widget-quarter-finals = รอบก่อนรองชนะเลิศ
+# The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
+newtab-sports-widget-live = สด
+newtab-custom-widget-live-refresh =
+    .title = เรียกคะแนนใหม่
+    .aria-label = เรียกคะแนนใหม่
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = วันสำคัญ
+newtab-sports-widget-upcoming = กำลังจะมาถึง
+newtab-sports-widget-results = ผลลัพธ์
+newtab-sports-widget-semi-finals = รอบรองชนะเลิศ
+newtab-sports-widget-bronze-finals = รอบชิงเหรียญทองแดง
+# Final is the final match for 1st place.
+newtab-sports-widget-final = รอบชิงชนะเลิศ
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, month: "short", day: "numeric") } – { DATETIME($end, month: "short", day: "numeric") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, month: "short", day: "numeric") }
+newtab-sports-widget-delayed = ล่าช้า
+newtab-sports-widget-postponed = เลื่อนออกไป
+newtab-sports-widget-suspended = ถูกระงับ
+newtab-sports-widget-cancelled = ถูกยกเลิก
+newtab-sports-widget-information = ข้อมูลเกี่ยวกับการแข่ง
+newtab-sports-widget-no-live-data = ข้อมูลการแข่งขันสดไม่ได้รับการอัปเดตในขณะนี้
+newtab-sports-widget-view-results-link = ดูผลการแข่ง
+newtab-sports-widget-third-place = อันดับสาม
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = รองชนะเลิศ
+newtab-sports-widget-champions = ผู้ชนะเลิศ
+newtab-sports-widget-world-cup-champions = แชมป์ฟุตบอลโลก 2026
+
 ## Strings for activation window message variants. In certain experiment configurations,
 ## the strings from these variants may be displayed in a message below the search input
 ## for the first 48 hours of a new profile's lifetime. Some messages include buttons with
@@ -863,3 +971,59 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = พื้นที่แห่งนี้เล่นตามกฎของคุณ
 newtab-activation-window-message-values-focus-message = { -brand-product-name } ช่วยให้คุณเลือกดูสินค้าได้ตามใจชอบ พร้อมวิธีเริ่มต้นวันใหม่บนโลกออนไลน์ในแบบที่เป็นส่วนตัวยิ่งขึ้น ปรับแต่ง { -brand-product-name } ให้เป็นของคุณเอง
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = ซ่อนนาฬิกา
+newtab-clock-widget-menu-learn-more = เรียนรู้เพิ่มเติม
+newtab-clock-widget-menu-edit = แก้ไขนาฬิกา
+newtab-clock-widget-menu-switch-to-12h = สลับเป็นรูปแบบ 12 ชั่วโมง
+newtab-clock-widget-menu-switch-to-24h = สลับเป็นรูปแบบ 24 ชั่วโมง
+newtab-clock-widget-label-your-clocks = นาฬิกาของคุณ
+newtab-clock-widget-search-location-input =
+    .label = ตำแหน่งที่ตั้ง
+    .placeholder = ค้นหาเมือง
+    .aria-label = ค้นหาเมือง
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = ชื่อเล่น (ไม่บังคับ)
+    .placeholder = เพิ่มชื่อเล่น
+    .aria-label = ชื่อเล่น (ไม่บังคับ)
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = เพิ่มนาฬิกาใหม่
+    .aria-label = เพิ่มนาฬิกาใหม่
+newtab-clock-widget-button-add-clock = เพิ่ม
+newtab-clock-widget-button-cancel = ยกเลิก
+newtab-clock-widget-button-back =
+    .title = ย้อนกลับ
+    .aria-label = ย้อนกลับ
+newtab-clock-widget-button-edit-clock =
+    .title = แก้ไขนาฬิกา
+    .aria-label = แก้ไขนาฬิกา
+newtab-clock-widget-button-save = บันทึก
+newtab-clock-widget-button-remove-clock =
+    .title = เอานาฬิกาออก
+    .aria-label = เอานาฬิกาออก
+newtab-clock-widget-add-clock-form =
+    .aria-label = เพิ่มนาฬิกา
+newtab-clock-widget-edit-clock-form =
+    .aria-label = แก้ไขนาฬิกา
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = ผลการค้นหา
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = เปิดเมนูสำหรับนาฬิกา
+    .aria-label = เปิดเมนูสำหรับนาฬิกา
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = ชื่อเล่น: { $nickname }

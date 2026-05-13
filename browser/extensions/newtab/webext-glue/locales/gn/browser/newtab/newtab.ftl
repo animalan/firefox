@@ -849,22 +849,62 @@ newtab-promo-card-dismiss-button =
     .title = Mboyke
     .aria-label = Mboyke
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label =
+        { $minutes ->
+            [one] Emoñepyrũ aravokuaaukaha { $minutes } aravo’i
+           *[other] Emoñepyrũ aravokuaaukaha { $minutes } aravo’i
+        }
+newtab-widget-timer-pause-aria =
+    .aria-label = Emombyta aravokuaaukaha
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label =
+        { $minutes ->
+            [one] { $minutes } aravo’i
+           *[other] { $minutes } aravo’ieta
+        }
+newtab-widget-timer-decrease-min =
+    .title = Emomichĩ 1 aravo’i
+newtab-widget-timer-increase-min =
+    .title = Embotuicha 1 aravo’i
+newtab-widget-timer-mode-group =
+    .aria-label = Aravokuaaukaha reko
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = Focus
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = Pytu’u
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = Eñomi aravokuaaukaha
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = Emba’apo porã
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = Opáma jepytu’u
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = ¿Epytu’usépa?
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = ¿Oĩmbáma atyrã?
+
 ## Sports widget
 
 newtab-sports-widget-menu-follow-teams = Esegi atyetápe
 newtab-sports-widget-menu-view-upcoming = Ehecha tenondegua
 newtab-sports-widget-menu-view-results = Ehecha mba’éicha osẽ
 newtab-sports-widget-menu-learn-more = Eikuaave
-newtab-sports-widget-countdown-title = Copa del Mundo ñeg̃uahẽ jepapa
 newtab-sports-widget-get-updates = Erekóta mbohekopyahu partído oiko jave ha hetave.
+newtab-sports-widget-view-schedule =
+    .label = Ehecha nde aravorã
 newtab-sports-widget-follow-teams =
     .label = Esegi atyetápe
 newtab-sports-widget-choose-wallpaper =
     .label = Eiporavo mba’erechaha rugua
 newtab-sports-widget-skip = Jepo
-newtab-sports-widget-search-teams =
-    .placeholder = Atyeta jehekaha
-    .aria-label = Atyeta jehekaha
 newtab-sports-widget-done-button =
     .label = Japopyre
 newtab-sports-widget-group-stage = Atygua jehuga
@@ -887,6 +927,8 @@ newtab-sports-widget-information = Marandu partído rehegua
 newtab-sports-widget-no-live-data = Mba’ekuaarãita partído rehegua ndahekopyahúi ko’ag̃aite
 newtab-sports-widget-view-results-link = Ehecha mba’éicha osẽ
 newtab-sports-widget-third-place = Osẽva mbohapyhápe
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = Osẽva mokõihápe
 newtab-sports-widget-champions = Campeón
 newtab-sports-widget-world-cup-champions = Copa Mundial 2026 oganáva
 

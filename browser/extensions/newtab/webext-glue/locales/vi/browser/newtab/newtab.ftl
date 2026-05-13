@@ -367,6 +367,8 @@ newtab-custom-widget-timer-toggle =
     .label = Bộ hẹn giờ
 newtab-custom-widget-sports-toggle =
     .label = World Cup
+newtab-custom-widget-clock-toggle =
+    .label = Đồng hồ
 newtab-custom-widget-section-title = Widget
 newtab-custom-widget-section-toggle =
     .label = Widget
@@ -848,36 +850,94 @@ newtab-promo-card-dismiss-button =
     .title = Bỏ qua
     .aria-label = Bỏ qua
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label = Bắt đầu bộ hẹn giờ { $minutes } phút
+newtab-widget-timer-pause-aria =
+    .aria-label = Tạm dừng bộ hẹn giờ
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label = { $minutes } phút
+newtab-widget-timer-decrease-min =
+    .title = Giảm 1 phút
+newtab-widget-timer-increase-min =
+    .title = Tăng 1 phút
+newtab-widget-timer-mode-group =
+    .aria-label = Chế độ hẹn giờ
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = Tập trung
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = Giải lao
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = Ẩn bộ hẹn giờ
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = Làm tốt lắm
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = Giờ giải lao của bạn đã kết thúc
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = Cần giải lao?
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = Sẵn sàng tập trung trở lại?
+
 ## Sports widget
 
 newtab-sports-widget-menu-follow-teams = Theo dõi đội
 newtab-sports-widget-menu-view-upcoming = Xem cái gì sắp tới
 newtab-sports-widget-menu-view-results = Hiện kết quả
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = Ngày quan trọng
 newtab-sports-widget-menu-learn-more = Tìm hiểu thêm
-newtab-sports-widget-countdown-title = Đếm ngược đến World Cup
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = Cập nhật World Cup
 newtab-sports-widget-get-updates = Nhận thông tin cập nhật trực tiếp và hơn thế nữa.
+newtab-sports-widget-view-schedule =
+    .label = Xem lịch trình
 newtab-sports-widget-follow-teams =
     .label = Theo dõi đội
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title =
+    { $number ->
+       *[other] Theo dõi { $number } nhóm
+    }
 newtab-sports-widget-choose-wallpaper =
     .label = Chọn một hình nền
 newtab-sports-widget-skip = Bỏ qua
-newtab-sports-widget-search-teams =
-    .placeholder = Tìm kiếm đội
-    .aria-label = Tìm kiếm đội
+newtab-sports-widget-search-country =
+    .placeholder = Tìm kiếm quốc gia
+    .aria-label = Tìm kiếm quốc gia
+newtab-sports-widget-cancel = Hủy
 newtab-sports-widget-done-button =
     .label = Xong
 newtab-sports-widget-group-stage = Vòng bảng
+newtab-sports-widget-round-32 = Vòng 32
+newtab-sports-widget-round-16 = Vòng 16
+newtab-sports-widget-quarter-finals = Tứ kết
 # The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
 newtab-sports-widget-live = TRỰC TIẾP
 newtab-custom-widget-live-refresh =
     .title = Làm mới điểm số
     .aria-label = Làm mới điểm số
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = Ngày quan trọng
 newtab-sports-widget-upcoming = Sắp tới
 newtab-sports-widget-results = Kết quả
 newtab-sports-widget-semi-finals = Bán kết
 newtab-sports-widget-bronze-finals = Tranh hạng ba
 # Final is the final match for 1st place.
 newtab-sports-widget-final = Chung kết
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, month: "short", day: "numeric") } – { DATETIME($end, month: "short", day: "numeric") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, month: "short", day: "numeric") }
 newtab-sports-widget-delayed = Bị lùi giờ
 newtab-sports-widget-postponed = Đã hoãn lại
 newtab-sports-widget-suspended = Đã tạm dừng
@@ -886,6 +946,8 @@ newtab-sports-widget-information = Thông tin về trận đấu
 newtab-sports-widget-no-live-data = Dữ liệu trận đấu trực tiếp hiện chưa được cập nhật
 newtab-sports-widget-view-results-link = Xem kết quả
 newtab-sports-widget-third-place = Hạng ba
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = Á quân
 newtab-sports-widget-champions = Nhà vô địch
 newtab-sports-widget-world-cup-champions = Nhà vô địch World Cup 2026
 
@@ -910,3 +972,59 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = Không gian này tuân theo luật lệ của bạn.
 newtab-activation-window-message-values-focus-message = { -brand-product-name } cho phép bạn duyệt web theo cách bạn thích, với cách thức cá nhân hơn để bắt đầu ngày mới trực tuyến. Biến { -brand-product-name } thành của riêng bạn.
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = Ẩn đồng hồ
+newtab-clock-widget-menu-learn-more = Tìm hiểu thêm
+newtab-clock-widget-menu-edit = Chỉnh sửa đồng hồ
+newtab-clock-widget-menu-switch-to-12h = Chuyển sang định dạng 12 giờ
+newtab-clock-widget-menu-switch-to-24h = Chuyển sang định dạng 24 giờ
+newtab-clock-widget-label-your-clocks = Đồng hồ của bạn
+newtab-clock-widget-search-location-input =
+    .label = Vị trí
+    .placeholder = Tìm kiếm một thành phố
+    .aria-label = Tìm kiếm một thành phố
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = Tên gọi (tuỳ chọn)
+    .placeholder = Thêm một tên gọi
+    .aria-label = Tên gọi (tuỳ chọn)
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = Thêm đồng hồ mới
+    .aria-label = Thêm đồng hồ mới
+newtab-clock-widget-button-add-clock = Thêm
+newtab-clock-widget-button-cancel = Hủy bỏ
+newtab-clock-widget-button-back =
+    .title = Quay lại
+    .aria-label = Quay lại
+newtab-clock-widget-button-edit-clock =
+    .title = Chỉnh sửa đồng hồ
+    .aria-label = Chỉnh sửa đồng hồ
+newtab-clock-widget-button-save = Lưu
+newtab-clock-widget-button-remove-clock =
+    .title = Xoá đồng hồ
+    .aria-label = Xoá đồng hồ
+newtab-clock-widget-add-clock-form =
+    .aria-label = Thêm đồng hồ
+newtab-clock-widget-edit-clock-form =
+    .aria-label = Chỉnh sửa đồng hồ
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = Kết quả tìm kiếm
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = Mở menu đồng hồ
+    .aria-label = Mở menu đồng hồ
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = Tên gọi: { $nickname }

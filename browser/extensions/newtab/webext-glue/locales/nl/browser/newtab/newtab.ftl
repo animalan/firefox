@@ -369,6 +369,8 @@ newtab-custom-widget-timer-toggle =
     .label = Timer
 newtab-custom-widget-sports-toggle =
     .label = Wereldkampioenschap
+newtab-custom-widget-clock-toggle =
+    .label = Klok
 newtab-custom-widget-section-title = Widgets
 newtab-custom-widget-section-toggle =
     .label = Widgets
@@ -850,36 +852,105 @@ newtab-promo-card-dismiss-button =
     .title = Sluiten
     .aria-label = Sluiten
 
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-start-aria =
+    .aria-label =
+        { $minutes ->
+            [one] { $minutes }-minuut-timer starten
+           *[other] { $minutes }-minuten-timer starten
+        }
+newtab-widget-timer-pause-aria =
+    .aria-label = Timer pauzeren
+# Variables:
+#   $minutes (number) - The currently selected timer duration in minutes
+newtab-widget-timer-spinbutton-name =
+    .aria-label =
+        { $minutes ->
+            [one] { $minutes } minuut
+           *[other] { $minutes } minuten
+        }
+newtab-widget-timer-decrease-min =
+    .title = Met 1 minuut verminderen
+newtab-widget-timer-increase-min =
+    .title = Met 1 minuut verlengen
+newtab-widget-timer-mode-group =
+    .aria-label = Timermodus
+# Small label shown beneath the live time while the focus timer is running or paused.
+newtab-widget-timer-running-focus = Focus
+# Small label shown beneath the live time while the break timer is running or paused.
+newtab-widget-timer-running-break = Pauze
+# Context-menu item to hide the Timer widget. Replaces the shared "Hide widget"
+# copy with a widget-specific string per the Nova design.
+newtab-widget-timer-menu-hide = Timer verbergen
+# Heading shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-heading-focus = Goed werk
+# Heading shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-heading-break = Uw pauze is voorbij
+# Message shown inside the Timer widget after a focus session ends.
+newtab-widget-timer-celebration-message-focus = Pauze nodig?
+# Message shown inside the Timer widget after a break session ends.
+newtab-widget-timer-celebration-message-break = Klaar om te focussen?
+
 ## Sports widget
 
 newtab-sports-widget-menu-follow-teams = Teams volgen
 newtab-sports-widget-menu-view-upcoming = Volgende tonen
 newtab-sports-widget-menu-view-results = Resultaten bekijken
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-menu-key-dates = Belangrijke data
 newtab-sports-widget-menu-learn-more = Meer info
-newtab-sports-widget-countdown-title = Aftellen naar het WK
+# “Keep tabs on” is an informal expression meaning to stay updated on, stay informed on, or regularly follow something (in this case, World Cup matches and updates).
+newtab-sports-widget-keep-tabs = Houd het WK in de gaten
 newtab-sports-widget-get-updates = Ontvang live wedstrijdupdates en meer.
+newtab-sports-widget-view-schedule =
+    .label = Tijdschema bekijken
 newtab-sports-widget-follow-teams =
     .label = Teams volgen
+newtab-sports-widget-view-matches =
+    .label = Wedstrijden bekijken
+# Variables:
+#   $number (number) - Maximum number of teams a user can choose to follow in the team selection state
+newtab-sports-widget-follow-teams-title =
+    { $number ->
+        [one] Volg maximaal { $number } team
+       *[other] Volg maximaal { $number } teams
+    }
 newtab-sports-widget-choose-wallpaper =
     .label = Kies een achtergrond
 newtab-sports-widget-skip = Overslaan
-newtab-sports-widget-search-teams =
-    .placeholder = Teams zoeken
-    .aria-label = Teams zoeken
+newtab-sports-widget-search-country =
+    .placeholder = Land zoeken
+    .aria-label = Land zoeken
+newtab-sports-widget-cancel = Annuleren
 newtab-sports-widget-done-button =
     .label = Gereed
 newtab-sports-widget-group-stage = Groepsfase
+newtab-sports-widget-round-32 = Ronde van 32
+newtab-sports-widget-round-16 = Ronde van 16
+newtab-sports-widget-quarter-finals = Kwartfinales
 # The "LIVE" string is meant to be uppercase in English, but other languages and locales may vary in how they handle this.
 newtab-sports-widget-live = LIVE
 newtab-custom-widget-live-refresh =
     .title = Scores vernieuwen
     .aria-label = Scores vernieuwen
+# Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.
+newtab-sports-widget-key-dates = Belangrijke data
 newtab-sports-widget-upcoming = Binnenkort
 newtab-sports-widget-results = Resultaten
 newtab-sports-widget-semi-finals = Halve finales
 newtab-sports-widget-bronze-finals = Troostfinale
 # Final is the final match for 1st place.
 newtab-sports-widget-final = Finale
+# Variables:
+#   $start (Date) - Start date of a tournament stage
+#   $end (Date) - End date of a tournament stage
+newtab-sports-widget-key-date-range = { DATETIME($start, day: "numeric", month: "short") } – { DATETIME($end, day: "numeric", month: "short") }
+# Variables:
+#   $date (Date) - Date of a single tournament event
+newtab-sports-widget-key-date = { DATETIME($date, day: "numeric", month: "short") }
 newtab-sports-widget-delayed = Vertraagd
 newtab-sports-widget-postponed = Uitgesteld
 newtab-sports-widget-suspended = Onderbroken
@@ -888,6 +959,8 @@ newtab-sports-widget-information = Informatie over de wedstrijd
 newtab-sports-widget-no-live-data = Livewedstrijdgegevens worden momenteel niet bijgewerkt
 newtab-sports-widget-view-results-link = Resultaten bekijken
 newtab-sports-widget-third-place = Derde plaats
+# Runner-up is the team in 2nd place.
+newtab-sports-widget-runner-up = Tweede plaats
 newtab-sports-widget-champions = Kampioen
 newtab-sports-widget-world-cup-champions = Wereldkampioen 2026
 
@@ -912,3 +985,59 @@ newtab-activation-window-message-customization-focus-primary-button =
 # the existing widgetry that appears on it.
 newtab-activation-window-message-values-focus-header = Deze ruimte volgt uw regels
 newtab-activation-window-message-values-focus-message = Met { -brand-product-name } kunt u surfen zoals u dat wilt, met een meer persoonlijke manier om uw dag online te beginnen. Maak { -brand-product-name } van uzelf.
+
+## Strings for the Clock widget
+
+# Context menu item: toggle the clock card off.
+newtab-clock-widget-menu-hide = Klok verbergen
+newtab-clock-widget-menu-learn-more = Meer info
+newtab-clock-widget-menu-edit = Klokken bewerken
+newtab-clock-widget-menu-switch-to-12h = Omschakelen naar 12-uursnotatie
+newtab-clock-widget-menu-switch-to-24h = Omschakelen naar 24-uursnotatie
+newtab-clock-widget-label-your-clocks = Uw klokken
+newtab-clock-widget-search-location-input =
+    .label = Locatie
+    .placeholder = Stad zoeken
+    .aria-label = Stad zoeken
+# "Nickname (optional)" refers to a custom, user-defined label for a saved location
+# (e.g., "Home", "Office", or "School") to make it easier to recognize.
+# Not to be translated as a legal name, username, or alias used for identity verification.
+newtab-clock-widget-input-nickname =
+    .label = Bijnaam (optioneel)
+    .placeholder = Voeg een bijnaam toe
+    .aria-label = Bijnaam (optioneel)
+# "Add new clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-button-add =
+    .title = Nieuwe klok toevoegen
+    .aria-label = Nieuwe klok toevoegen
+newtab-clock-widget-button-add-clock = Toevoegen
+newtab-clock-widget-button-cancel = Annuleren
+newtab-clock-widget-button-back =
+    .title = Terug
+    .aria-label = Terug
+newtab-clock-widget-button-edit-clock =
+    .title = Klok bewerken
+    .aria-label = Klok bewerken
+newtab-clock-widget-button-save = Opslaan
+newtab-clock-widget-button-remove-clock =
+    .title = Klok verwijderen
+    .aria-label = Klok verwijderen
+newtab-clock-widget-add-clock-form =
+    .aria-label = Klok toevoegen
+newtab-clock-widget-edit-clock-form =
+    .aria-label = Klok bewerken
+# "Search results" is the accessible label for the listbox dropdown that appears
+# below the location search field, listing matching cities as the user types.
+# It means "results of the search", not "search within the results".
+newtab-clock-widget-search-results =
+    .aria-label = Zoekresultaten
+# "Open menu for clock" is an icon-only button in the widget toolbar — the
+# attributes are consumed as tooltip/screen-reader label only. The button
+# never renders visible text.
+newtab-clock-widget-menu-button =
+    .title = Menu voor klok openen
+    .aria-label = Menu voor klok openen
+# $nickname (String) - The user-defined nickname for a saved clock location (e.g., "Home", "Office").
+newtab-clock-widget-label-nickname-with-value = Bijnaam: { $nickname }
