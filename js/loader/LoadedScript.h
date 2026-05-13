@@ -595,10 +595,6 @@ class LoadedScriptDelegate {
   bool IsUnknownDataType() const {
     return GetLoadedScript()->IsUnknownDataType();
   }
-  bool IsTextSource() const { return GetLoadedScript()->IsTextSource(); }
-  bool IsSerializedStencil() const {
-    return GetLoadedScript()->IsSerializedStencil();
-  }
   bool IsWasmBytes() const { return GetLoadedScript()->IsWasmBytes(); }
 
   void SetUnknownDataType() { GetLoadedScript()->SetUnknownDataType(); }

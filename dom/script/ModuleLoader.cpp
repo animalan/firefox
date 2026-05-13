@@ -310,7 +310,7 @@ nsresult ModuleLoader::CompileJavaScriptOrWasmModule(
   }
 
   RefPtr<JS::Stencil> stencil;
-  if (aRequest->IsTextSource()) {
+  if (aRequest->IsFetchedAsTextSource()) {
     MaybeSourceText maybeSource;
     nsresult rv = aRequest->GetScriptSource(aCx, &maybeSource,
                                             aRequest->mLoadContext.get());
@@ -321,7 +321,7 @@ nsresult ModuleLoader::CompileJavaScriptOrWasmModule(
     };
     stencil = maybeSource.mapNonEmpty(compile);
   } else {
-    MOZ_ASSERT(aRequest->IsSerializedStencil());
+    MOZ_ASSERT(aRequest->IsRetrievedAsSerializedStencil());
     JS::DecodeOptions decodeOptions(aOptions);
     if (!GetScriptLoader()->UsesMemoryCache()) {
       decodeOptions.borrowBuffer = true;
@@ -365,7 +365,7 @@ nsresult ModuleLoader::CompileJsonModule(
     JS::MutableHandle<JSObject*> aModuleOut) {
   MOZ_ASSERT(!aRequest->GetScriptLoadContext()->mWasCompiledOMT);
 
-  MOZ_ASSERT(aRequest->IsTextSource());
+  MOZ_ASSERT(aRequest->IsFetchedAsTextSource());
   ModuleLoader::MaybeSourceText maybeSource;
   nsresult rv = aRequest->GetScriptSource(aCx, &maybeSource,
                                           aRequest->mLoadContext.get());
@@ -451,7 +451,7 @@ nsresult ModuleLoader::CompileCssModule(
   MOZ_ASSERT(!aRequest->GetScriptLoadContext()->mWasCompiledOMT);
   MOZ_ASSERT(mozilla::StaticPrefs::layout_css_module_scripts_enabled());
 
-  MOZ_ASSERT(aRequest->IsTextSource());
+  MOZ_ASSERT(aRequest->IsFetchedAsTextSource());
   ModuleLoader::MaybeSourceText maybeSource;
   nsresult rv = aRequest->GetScriptSource(aCx, &maybeSource,
                                           aRequest->mLoadContext.get());
@@ -496,7 +496,7 @@ nsresult ModuleLoader::CreateTextModule(
     JS::MutableHandle<JSObject*> aModuleOut) {
   MOZ_ASSERT(!aRequest->GetScriptLoadContext()->mWasCompiledOMT);
 
-  MOZ_ASSERT(aRequest->IsTextSource());
+  MOZ_ASSERT(aRequest->IsFetchedAsTextSource());
   ModuleLoader::MaybeSourceText maybeSource;
   nsresult rv = aRequest->GetScriptSource(aCx, &maybeSource,
                                           aRequest->mLoadContext.get());

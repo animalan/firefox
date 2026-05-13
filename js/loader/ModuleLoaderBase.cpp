@@ -1790,7 +1790,7 @@ UniquePtr<ImportMap> ModuleLoaderBase::ParseImportMap(
     return nullptr;
   }
 
-  MOZ_ASSERT(aRequest->IsTextSource());
+  MOZ_ASSERT(aRequest->IsFetchedAsTextSource());
   MaybeSourceText maybeSource;
   nsresult rv = aRequest->GetScriptSource(jsapi.cx(), &maybeSource,
                                           aRequest->mLoadContext.get());

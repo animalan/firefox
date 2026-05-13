@@ -145,7 +145,7 @@ nsresult WorkletModuleLoader::CompileJavaScriptOrWasmModule(
     return NS_OK;
   }
 #endif
-  MOZ_ASSERT(aRequest->IsTextSource());
+  MOZ_ASSERT(aRequest->IsFetchedAsTextSource());
 
   MaybeSourceText maybeSource;
   nsresult rv = aRequest->GetScriptSource(aCx, &maybeSource,
@@ -172,7 +172,7 @@ nsresult WorkletModuleLoader::CompileJavaScriptOrWasmModule(
 nsresult WorkletModuleLoader::CompileJsonModule(
     JSContext* aCx, JS::CompileOptions& aOptions, ModuleLoadRequest* aRequest,
     JS::MutableHandle<JSObject*> aModuleScript) {
-  MOZ_ASSERT(aRequest->IsTextSource());
+  MOZ_ASSERT(aRequest->IsFetchedAsTextSource());
 
   MaybeSourceText maybeSource;
   nsresult rv = aRequest->GetScriptSource(aCx, &maybeSource,
@@ -195,7 +195,7 @@ nsresult WorkletModuleLoader::CompileJsonModule(
 nsresult WorkletModuleLoader::CreateTextModule(
     JSContext* aCx, JS::CompileOptions& aOptions, ModuleLoadRequest* aRequest,
     JS::MutableHandle<JSObject*> aModuleScript) {
-  MOZ_ASSERT(aRequest->IsTextSource());
+  MOZ_ASSERT(aRequest->IsFetchedAsTextSource());
 
   MaybeSourceText maybeSource;
   nsresult rv = aRequest->GetScriptSource(aCx, &maybeSource,
