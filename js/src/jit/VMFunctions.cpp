@@ -535,8 +535,8 @@ bool InvokeFunction(JSContext* cx, HandleObject obj, bool constructing,
     // we can use normal construction code without creating an extraneous
     // object.
     if (thisv.isMagic()) {
-      MOZ_ASSERT(thisv.whyMagic() == JS_IS_CONSTRUCTING ||
-                 thisv.whyMagic() == JS_UNINITIALIZED_LEXICAL);
+      MOZ_RELEASE_ASSERT(thisv.whyMagic() == JS_IS_CONSTRUCTING ||
+                         thisv.whyMagic() == JS_UNINITIALIZED_LEXICAL);
 
       RootedObject obj(cx);
       if (!Construct(cx, fval, cargs, newTarget, &obj)) {
