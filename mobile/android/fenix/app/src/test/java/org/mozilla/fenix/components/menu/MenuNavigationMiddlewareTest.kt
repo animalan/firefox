@@ -476,7 +476,7 @@ class MenuNavigationMiddlewareTest {
         testScheduler.advanceUntilIdle()
 
         verify {
-            shareSheetLauncher.showNativeShareSheet(id, url, title, false)
+            shareSheetLauncher.showSystemShareSheet(id, url, title, false)
         }
     }
 
@@ -502,7 +502,7 @@ class MenuNavigationMiddlewareTest {
         testScheduler.advanceUntilIdle()
 
         verify {
-            shareSheetLauncher.showCustomShareSheet(any(), activeUrl, title, false)
+            shareSheetLauncher.showInAppShareSheet(any(), activeUrl, title, false)
         }
     }
 
@@ -527,7 +527,7 @@ class MenuNavigationMiddlewareTest {
         testScheduler.advanceUntilIdle()
 
         verify {
-            shareSheetLauncher.showCustomShareSheet(any(), url, title)
+            shareSheetLauncher.showInAppShareSheet(any(), url, title)
         }
     }
 
@@ -555,7 +555,7 @@ class MenuNavigationMiddlewareTest {
         testScheduler.advanceUntilIdle()
 
         verify {
-            shareSheetLauncher.showCustomShareSheet(id, url, "", false)
+            shareSheetLauncher.showInAppShareSheet(id, url, "", false)
         }
     }
 
@@ -579,7 +579,7 @@ class MenuNavigationMiddlewareTest {
         testScheduler.advanceUntilIdle()
 
         verify {
-            shareSheetLauncher.showCustomShareSheet(any(), url, title, true)
+            shareSheetLauncher.showInAppShareSheet(any(), url, title, true)
         }
     }
 

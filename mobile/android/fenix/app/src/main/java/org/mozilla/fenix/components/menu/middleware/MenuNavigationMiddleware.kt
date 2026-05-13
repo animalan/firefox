@@ -208,10 +208,11 @@ class MenuNavigationMiddleware(
                 is MenuAction.Navigate.Share -> {
                     val session: SessionState? = customTab ?: currentState.browserMenuState?.selectedTab
                     val url = customTab?.content?.url ?: currentState.browserMenuState?.selectedTab?.getUrl()
+
                     if (settings.nativeShareSheetEnabled) {
                         val title = session?.content?.title
                         url?.let {
-                            shareSheetLauncher.showNativeShareSheet(
+                            shareSheetLauncher.showSystemShareSheet(
                                 id = session?.id,
                                 longUrl = it,
                                 title = title,
@@ -220,7 +221,7 @@ class MenuNavigationMiddleware(
                             )
                         }
                     } else {
-                        shareSheetLauncher.showCustomShareSheet(
+                        shareSheetLauncher.showInAppShareSheet(
                             id = session?.id,
                             url = url,
                             title = session?.content?.title,
