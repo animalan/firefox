@@ -198,7 +198,6 @@ void WaylandSurface::RequestEmulatedVSyncLocked(
 
   MOZ_DIAGNOSTIC_ASSERT(!mEmulatedVSyncCallbackTimerID, "Already created?");
 
-  mIsPendingGdkCleanup = true;
   mEmulatedVSyncCallbackTimerID = g_timeout_add(
       sEmulatedVSyncCallbackTimeoutMs,
       [](void* data) -> gint {
@@ -207,11 +206,6 @@ void WaylandSurface::RequestEmulatedVSyncLocked(
                      surface->GetLoggingWidget());
         // Clear timer ID as we're going to remove this timer
         surface->mEmulatedVSyncCallbackTimerID = 0;
-
-        if (!surface->mGdkAfterPaintId &&
-            !surface->mIsOpaqueSurfaceHandlerSet) {
-          surface->mIsPendingGdkCleanup = false;
-        }
 
         // Get some timestamp for emulated callback.
         // We don't compare between emulated / none-emulated ones
@@ -528,7 +522,6 @@ void WaylandSurface::GdkCleanUpLocked(const WaylandSurfaceLock& aProofOfLock) {
     RemoveOpaqueSurfaceHandlerLocked(aProofOfLock);
     mGdkWindow = nullptr;
   }
-  MozClearHandleID(mEmulatedVSyncCallbackTimerID, g_source_remove);
   mIsPendingGdkCleanup = false;
 }
 
