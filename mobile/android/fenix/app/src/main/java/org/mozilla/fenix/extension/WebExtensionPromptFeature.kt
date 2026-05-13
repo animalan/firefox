@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+@file:Suppress("TooManyFunctions")
+
 package org.mozilla.fenix.extension
 
 import android.content.Context
@@ -98,14 +100,16 @@ class WebExtensionPromptFeature(
                     }
 
                     is WebExtensionPromptRequest.AfterInstallation -> {
-                        minDownloadDialogDisplayJob?.join()
-                        handleAfterInstallationRequest(promptRequest)
+                        guardPromptActionWithDownloadDialogDelay {
+                            handleAfterInstallationRequest(promptRequest)
+                        }
                     }
 
                     is WebExtensionPromptRequest.BeforeInstallation.InstallationFailed -> {
-                        minDownloadDialogDisplayJob?.join()
-                        handleBeforeInstallationRequest(promptRequest)
-                        consumePromptRequest()
+                        guardPromptActionWithDownloadDialogDelay {
+                            handleBeforeInstallationRequest(promptRequest)
+                            consumePromptRequest()
+                        }
                     }
                 }
             }
@@ -489,6 +493,7 @@ class WebExtensionPromptFeature(
         scope?.launch(mainDispatcher) {
             downloadAddonOperation?.cancel()?.await()
             minDownloadDialogDisplayJob?.cancel()
+            minDownloadDialogDisplayJob = null
         }
     }
 
@@ -618,6 +623,24 @@ class WebExtensionPromptFeature(
             dialog.show()
 
             return dialog
+        }
+    }
+
+    /**
+     * Execute the given [action] after [MIN_DOWNLOAD_DIALOG_DISPLAY_MS] if the download dialog is shown or
+     * consume any prompt requests received before [MIN_DOWNLOAD_DIALOG_DISPLAY_MS] if the download dialog is canceled.
+     */
+    private fun guardPromptActionWithDownloadDialogDelay(action: () -> Unit) {
+        val delayJob = minDownloadDialogDisplayJob
+
+        scope?.launch {
+            delayJob?.join()
+
+            if (delayJob != null && delayJob.isCancelled) {
+                consumePromptRequest()
+            } else {
+                action()
+            }
         }
     }
 
