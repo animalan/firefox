@@ -9,34 +9,6 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  ci-pass:
-    name: CI is green
-    runs-on: ubuntu-latest
-    needs:
-      - style
-      - test
-      - msrv
-      - wasm
-      - minimal-versions
-      - miri
-      - semver
-    steps:
-      - run: exit 0
-
-  style:
-    name: Check Style
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-
-      - run: cargo fmt --all --check
-
   test:
     name: Test ${{ matrix.rust }}
     #needs: [style]
@@ -46,6 +18,9 @@ jobs:
           - stable
           - beta
           - nightly
+          # When updating this value, don't forget to also adjust the
+          # `rust-version` field in the `Cargo.toml` file.
+          - 1.49.0
 
         include:
           - rust: nightly
@@ -55,38 +30,42 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v2
 
       - name: Install Rust (${{ matrix.rust }})
-        uses: dtolnay/rust-toolchain@master
+        uses: actions-rs/toolchain@v1
         with:
+          profile: minimal
           toolchain: ${{ matrix.rust }}
+          override: true
 
       - name: Test
-        run: cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
 
       - name: Test all benches
         if: matrix.benches
-        run: cargo test --benches ${{ matrix.features }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --benches ${{ matrix.features }}
 
   msrv:
-    name: Check MSRV
+    name: Test MSRV
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Get MSRV from package metadata
-        id: metadata
-        run: echo "msrv=$(yq '.package.rust-version' Cargo.toml)" >> $GITHUB_OUTPUT
-
-      - name: Install Rust (${{ steps.metadata.outputs.msrv }})
-        uses: dtolnay/rust-toolchain@master
+        uses: actions/checkout@v2
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ steps.metadata.outputs.msrv }}
-
-      - name: Test
-        run: cargo check -p http
+          profile: minimal
+          toolchain: "1.49"
+          override: true
+      - name: test 
+        run: cargo test -p http
+  
 
   wasm:
     name: WASM
@@ -96,48 +75,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v2
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rs/toolchain@v1
         with:
-          targets: wasm32-unknown-unknown
+          profile: minimal
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
 
       - name: Check
-        run: cargo check --target wasm32-unknown-unknown
-
-  minimal-versions:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@nightly
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: taiki-e/install-action@cargo-hack
-      - uses: taiki-e/install-action@cargo-minimal-versions
-      - run: cargo minimal-versions check
-
-  miri:
-    name: Miri
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@nightly
+        uses: actions-rs/cargo@v1
         with:
-          components: miri
+          command: check
+          args: --target wasm32-unknown-unknown
 
-      - name: Test
-        run: MIRIFLAGS="-Zmiri-disable-isolation -Zmiri-ignore-leaks" cargo miri test
 
-  semver:
-    name: semver
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Check semver
-        uses: obi1kenobi/cargo-semver-checks-action@v2
-        with:
-          release-type: minor

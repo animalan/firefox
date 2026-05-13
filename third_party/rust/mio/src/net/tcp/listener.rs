@@ -13,14 +13,13 @@ use std::{fmt, io};
 
 use crate::io_source::IoSource;
 use crate::net::TcpStream;
-#[cfg(any(
-    unix,
-    target_os = "hermit",
-    all(target_os = "wasi", not(target_env = "p1"))
-))]
+#[cfg(any(unix, target_os = "hermit"))]
 use crate::sys::tcp::set_reuseaddr;
-#[cfg(not(all(target_os = "wasi", target_env = "p1")))]
-use crate::sys::tcp::{bind, listen, new_for_addr};
+#[cfg(not(target_os = "wasi"))]
+use crate::sys::{
+    tcp::{bind, listen, new_for_addr},
+    LISTEN_BACKLOG_SIZE,
+};
 use crate::{event, sys, Interest, Registry, Token};
 
 /// A structure representing a socket server
@@ -63,10 +62,10 @@ impl TcpListener {
     /// 2. Set the `SO_REUSEADDR` option on the socket on Unix.
     /// 3. Bind the socket to the specified address.
     /// 4. Calls `listen` on the socket to prepare it to receive new connections.
-    #[cfg(not(all(target_os = "wasi", target_env = "p1")))]
+    #[cfg(not(target_os = "wasi"))]
     pub fn bind(addr: SocketAddr) -> io::Result<TcpListener> {
         let socket = new_for_addr(addr)?;
-        #[cfg(any(unix, target_os = "hermit", target_os = "wasi"))]
+        #[cfg(any(unix, target_os = "hermit"))]
         let listener = unsafe { TcpListener::from_raw_fd(socket) };
         #[cfg(windows)]
         let listener = unsafe { TcpListener::from_raw_socket(socket as _) };
@@ -82,16 +81,7 @@ impl TcpListener {
         set_reuseaddr(&listener.inner, true)?;
 
         bind(&listener.inner, addr)?;
-        // Use the same backlog value as the standard libary.
-        // <https://github.com/rust-lang/rust/blob/0028f344ce9f64766259577c998a1959ca1f6a0b/library/std/src/sys/net/connection/socket/mod.rs#L559-L571>
-        let backlog = if cfg!(target_os = "horizon") {
-            20
-        } else if cfg!(target_os = "haiku") {
-            32
-        } else {
-            128
-        };
-        listen(&listener.inner, backlog)?;
+        listen(&listener.inner, LISTEN_BACKLOG_SIZE)?;
         Ok(listener)
     }
 

@@ -28,9 +28,9 @@
 mod tcp;
 pub use self::tcp::{TcpListener, TcpStream};
 
-#[cfg(not(all(target_os = "wasi", target_env = "p1")))]
+#[cfg(not(target_os = "wasi"))]
 mod udp;
-#[cfg(not(all(target_os = "wasi", target_env = "p1")))]
+#[cfg(not(target_os = "wasi"))]
 pub use self::udp::UdpSocket;
 
 #[cfg(unix)]

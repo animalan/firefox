@@ -39,10 +39,9 @@ use cfg_if::cfg_if;
 cfg_if! {
     if #[cfg(not(target_os = "android"))] {
         use std::sync::mpsc::{channel, Receiver, TryRecvError};
-        use http_body_util::BodyExt;
+        use hyper::body::HttpBody;
         use hyper::header::{HeaderName, HeaderValue};
-        use hyper::Method;
-        use hyper_util::client::legacy::Client;
+        use hyper::{Body, Client, Method, Request};
     }
 }
 
@@ -859,12 +858,12 @@ impl Http3ReverseProxyServer {
 
     #[cfg(not(target_os = "android"))]
     async fn fetch_url(
-        request: http::Request<String>,
+        request: Request<Body>,
         out_header: &mut Vec<Header>,
         out_body: &mut Vec<u8>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        let client = Client::builder(hyper_util::rt::TokioExecutor::new()).build_http();
-        let resp = client.request(request).await?;
+        let client = Client::new();
+        let mut resp = client.request(request).await?;
         out_header.push(Header::new(":status", resp.status().as_str()));
         for (key, value) in resp.headers() {
             out_header.push(Header::new(
@@ -876,8 +875,14 @@ impl Http3ReverseProxyServer {
             ));
         }
 
-        let body = resp.into_body().collect().await?.to_bytes();
-        out_body.extend_from_slice(&body);
+        while let Some(chunk) = resp.body_mut().data().await {
+            match chunk {
+                Ok(data) => {
+                    out_body.append(&mut data.to_vec());
+                }
+                _ => {}
+            }
+        }
 
         Ok(())
     }
@@ -889,7 +894,7 @@ impl Http3ReverseProxyServer {
         request_headers: &Vec<Header>,
         request_body: Vec<u8>,
     ) {
-        let mut request: http::Request<String> = http::Request::default();
+        let mut request: Request<Body> = Request::default();
         let mut path = String::new();
         for hdr in request_headers.iter() {
             match hdr.name() {
@@ -915,7 +920,7 @@ impl Http3ReverseProxyServer {
                 }
             }
         }
-        *request.body_mut() = String::from_utf8_lossy(&request_body).into_owned();
+        *request.body_mut() = Body::from(request_body);
         *request.uri_mut() =
             match format!("http://127.0.0.1:{}{}", self.server_port.to_string(), path).parse() {
                 Ok(uri) => uri,

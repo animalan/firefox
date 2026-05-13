@@ -38,7 +38,6 @@ impl PacketSender {
     #[must_use]
     pub fn new(conn_params: &ConnectionParameters, pmtud: Pmtud, now: Instant) -> Self {
         let mtu = pmtud.plpmtu();
-        let spurious_recovery = conn_params.spurious_recovery_enabled();
         Self {
             cc: match (
                 conn_params.get_congestion_control(),
@@ -49,7 +48,6 @@ impl PacketSender {
                         ClassicSlowStart::default(),
                         NewReno::default(),
                         pmtud,
-                        spurious_recovery,
                     ))
                 }
                 (CongestionControl::NewReno, SlowStart::HyStart) => {
@@ -60,7 +58,6 @@ impl PacketSender {
                         ),
                         NewReno::default(),
                         pmtud,
-                        spurious_recovery,
                     ))
                 }
                 (CongestionControl::Cubic, SlowStart::Classic) => {
@@ -68,7 +65,6 @@ impl PacketSender {
                         ClassicSlowStart::default(),
                         Cubic::default(),
                         pmtud,
-                        spurious_recovery,
                     ))
                 }
                 (CongestionControl::Cubic, SlowStart::HyStart) => {
@@ -79,7 +75,6 @@ impl PacketSender {
                         ),
                         Cubic::default(),
                         pmtud,
-                        spurious_recovery,
                     ))
                 }
             },

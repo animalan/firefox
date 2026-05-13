@@ -13,9 +13,9 @@
 edition = "2024"
 rust-version = "1.90.0"
 name = "neqo-transport"
-version = "0.27.0"
+version = "0.26.1"
 authors = ["The Neqo Authors <necko@mozilla.com>"]
-build = false
+build = "build.rs"
 autolib = false
 autobins = false
 autoexamples = false
@@ -66,7 +66,6 @@ memory = false
 bench = [
     "neqo-common/bench",
     "neqo-crypto/bench",
-    "test-fixture/bench",
     "log/release_max_level_info",
 ]
 build-fuzzing-corpus = [
@@ -77,7 +76,7 @@ build-fuzzing-corpus = [
 ]
 disable-encryption = ["neqo-crypto/disable-encryption"]
 draft-29 = []
-gecko = []
+gecko = ["mtu/gecko"]
 
 [lib]
 name = "neqo_transport"

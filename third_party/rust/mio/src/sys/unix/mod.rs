@@ -50,7 +50,6 @@ cfg_os_poll! {
         target_os = "solaris",
         target_os = "vita",
         target_os = "cygwin",
-        target_os = "wasi",
     ), path = "selector/poll.rs")]
     mod selector;
     pub(crate) use self::selector::*;
@@ -104,9 +103,7 @@ cfg_os_poll! {
         target_os = "solaris",
         target_os = "vita",
         target_os = "cygwin",
-        all(target_os = "wasi", target_env = "p1")
     ), path = "waker/pipe.rs")]
-    #[cfg_attr(all(target_os = "wasi", not(target_env = "p1")), path = "waker/single_threaded.rs")]
     mod waker;
     // NOTE: the `Waker` type is expected in the selector module as the
     // `poll(2)` implementation needs to do some special stuff.
@@ -121,7 +118,7 @@ cfg_os_poll! {
 
         pub(crate) mod tcp;
         pub(crate) mod udp;
-        #[cfg(not(any(target_os = "hermit", target_os = "wasi")))]
+        #[cfg(not(target_os = "hermit"))]
         pub(crate) mod uds;
     }
 
@@ -156,8 +153,8 @@ cfg_os_poll! {
             target_os = "vita",
             target_os = "cygwin",
         ),
+        // Hermit doesn't support pipes.
         not(target_os = "hermit"),
-        not(target_os = "wasi"),
     ))]
     pub(crate) mod pipe;
 }

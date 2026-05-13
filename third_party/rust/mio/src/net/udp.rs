@@ -36,8 +36,6 @@ use crate::{event, sys, Interest, Registry, Token};
 /// # use std::error::Error;
 /// #
 /// # fn main() -> Result<(), Box<dyn Error>> {
-/// # // Temporarily disabled on WASI pending https://github.com/WebAssembly/wasi-libc/pull/740:
-/// # if cfg!(target_os = "wasi") { return Ok(()) }
 /// // An Echo program:
 /// // SENDER -> sends a message.
 /// // ECHOER -> listens and prints the message received.
@@ -346,8 +344,6 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// # // WASI does not yet support broadcast.
-    /// # if cfg!(target_os = "wasi") { return Ok(()) }
     /// use mio::net::UdpSocket;
     ///
     /// let broadcast_socket = UdpSocket::bind("127.0.0.1:0".parse()?)?;
@@ -378,8 +374,6 @@ impl UdpSocket {
     /// # use std::error::Error;
     /// #
     /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// # // WASI does not yet support broadcast.
-    /// # if cfg!(target_os = "wasi") { return Ok(()) }
     /// use mio::net::UdpSocket;
     ///
     /// let broadcast_socket = UdpSocket::bind("127.0.0.1:0".parse()?)?;
