@@ -695,7 +695,7 @@ static nsSecurityFlags CORSModeToSecurityFlags(CORSMode aCORSMode) {
 nsresult ScriptLoader::StartClassicLoad(
     ScriptLoadRequest* aRequest,
     const Maybe<nsAutoString>& aCharsetForPreload) {
-  if (aRequest->OnceCachedStencil()) {
+  if (aRequest->IsRetrievedFromMemoryCache()) {
     EmulateNetworkEvents(aRequest, aCharsetForPreload);
     return NS_OK;
   }
@@ -1350,7 +1350,7 @@ void ScriptLoader::TryUseCache(ReferrerPolicy aReferrerPolicy,
 void ScriptLoader::EmulateNetworkEvents(
     ScriptLoadRequest* aRequest,
     const Maybe<nsAutoString>& aCharsetForPreload) {
-  MOZ_ASSERT(aRequest->OnceCachedStencil());
+  MOZ_ASSERT(aRequest->IsRetrievedFromMemoryCache());
   MOZ_ASSERT(aRequest->mNetworkMetadata);
   MOZ_ASSERT(!aRequest->IsWasmBytes());
 
@@ -1567,7 +1567,7 @@ bool ScriptLoader::ProcessExternalScript(nsIScriptElement* aElement,
       return block;
     }
 
-    if (request->OnceCachedStencil()) {
+    if (request->IsRetrievedFromMemoryCache()) {
       // https://html.spec.whatwg.org/#prepare-the-script-element
       //
       // Step 33. If el's type is "classic" and el has a src attribute, or el's
@@ -2043,7 +2043,7 @@ nsresult ScriptLoader::CompileOffThreadOrProcessRequest(
   NS_ASSERTION(nsContentUtils::IsSafeToRunScript(),
                "Processing requests when running scripts is unsafe.");
 
-  if (!aRequest->OnceCachedStencil() &&
+  if (!aRequest->IsRetrievedFromMemoryCache() &&
       !aRequest->GetScriptLoadContext()->mCompileOrDecodeTask &&
       !aRequest->GetScriptLoadContext()->CompileStarted()) {
     bool couldCompile = false;
@@ -2159,7 +2159,7 @@ nsresult ScriptLoader::AttemptOffThreadScriptCompile(
     return NS_OK;
   }
 
-  if (aRequest->OnceCachedStencil()) {
+  if (aRequest->IsRetrievedFromMemoryCache()) {
     // This is a revived cache.
     return NS_OK;
   }
@@ -2942,7 +2942,7 @@ void ScriptLoader::CalculateCacheFlag(ScriptLoadRequest* aRequest) {
 
   MOZ_ASSERT(!aRequest->IsWasmBytes());
 
-  if (!aRequest->OnceCachedStencil() &&
+  if (!aRequest->IsRetrievedFromMemoryCache() &&
       aRequest->ExpirationTime().IsExpired()) {
     LOG(("ScriptLoadRequest (%p): Bytecode-cache: Skip all: Expired",
          aRequest));
@@ -3023,7 +3023,7 @@ void ScriptLoader::CalculateCacheFlag(ScriptLoadRequest* aRequest) {
   // cache for this script, as the overhead of parsing it might not be worth the
   // effort.
   size_t sourceLength;
-  if (aRequest->OnceCachedStencil()) {
+  if (aRequest->IsRetrievedFromMemoryCache()) {
     sourceLength = JS::GetScriptSourceLength(aRequest->GetStencil());
   } else {
     MOZ_ASSERT(aRequest->IsTextSource());
@@ -3517,7 +3517,7 @@ void ScriptLoader::InstantiateClassicScriptFromAny(
     ScriptLoadRequest* aRequest, JS::MutableHandle<JSScript*> aScript,
     JS::Handle<JSScript*> aDebuggerIntroductionScript, ErrorResult& aRv) {
   MOZ_ASSERT(!aRequest->IsWasmBytes());
-  if (aRequest->OnceCachedStencil()) {
+  if (aRequest->IsRetrievedFromMemoryCache()) {
     RefPtr<JS::Stencil> stencil = aRequest->GetStencil();
     InstantiateClassicScriptFromCachedStencil(aCx, aCompileOptions, aRequest,
                                               stencil, aScript,

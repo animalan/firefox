@@ -97,7 +97,7 @@ bool ModuleLoader::CanStartLoad(ModuleLoadRequest* aRequest, nsresult* aRvOut) {
 }
 
 nsresult ModuleLoader::StartFetch(ModuleLoadRequest* aRequest) {
-  if (aRequest->OnceCachedStencil()) {
+  if (aRequest->IsRetrievedFromMemoryCache()) {
     GetScriptLoader()->EmulateNetworkEvents(aRequest, Nothing());
     SetModuleFetchStarted(aRequest);
     return aRequest->OnFetchComplete(NS_OK);
@@ -263,7 +263,7 @@ nsresult ModuleLoader::CompileJavaScriptOrWasmModule(
 #endif
   MOZ_ASSERT(!aRequest->IsWasmBytes());
 
-  if (aRequest->OnceCachedStencil()) {
+  if (aRequest->IsRetrievedFromMemoryCache()) {
     JS::InstantiateOptions instantiateOptions(aOptions);
     RefPtr<JS::Stencil> stencil = aRequest->GetStencil();
     aModuleOut.set(
