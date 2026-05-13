@@ -21,6 +21,11 @@ ChromeUtils.defineESModuleGetters(lazy, {
 let URLs, dates, today;
 
 add_setup(async () => {
+  // test_history_context_menu opens the legacy bookmarks sidebar panel and
+  // inspects its tree view, so opt out of the updated bookmarks panel here.
+  await SpecialPowers.pushPrefEnv({
+    set: [["sidebar.updatedBookmarks.enabled", false]],
+  });
   const historyInfo = await populateHistory();
   URLs = historyInfo.URLs;
   dates = historyInfo.dates;

@@ -13,6 +13,14 @@ var testPage3 =
 
 var fm = Services.focus;
 
+add_setup(async function () {
+  // This test exercises the legacy bookmarks sidebar panel; opt out of the
+  // updated bookmarks panel so the expected document/element ids are present.
+  await SpecialPowers.pushPrefEnv({
+    set: [["sidebar.updatedBookmarks.enabled", false]],
+  });
+});
+
 async function expectFocusOnF6(
   backward,
   expectedDocument,
