@@ -1201,6 +1201,12 @@ pub extern "C" fn Servo_ComputedValues_ShouldTransition(
         return Default::default();
     }
 
+    if old_transition_end_value.is_none() && !AnimationValue::is_different_for(prop, old, new) {
+        // Skip computing AnimationValues when there's no running transition and the property value
+        // hasn't changed.
+        return Default::default();
+    }
+
     let Some(new_value) = AnimationValue::from_computed_values(prop, new) else {
         return Default::default();
     };
