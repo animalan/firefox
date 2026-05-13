@@ -245,10 +245,8 @@ const statsExpectedByType = {
       "port",
       "candidateType",
       "priority",
-      "usernameFragment",
-      "foundation",
     ],
-    optional: ["relayProtocol", "proxied", "tcpType"],
+    optional: ["relayProtocol", "proxied"],
     unimplemented: ["networkType", "url", "transportId"],
     deprecated: [
       "candidateId",
@@ -269,10 +267,8 @@ const statsExpectedByType = {
       "port",
       "candidateType",
       "priority",
-      "usernameFragment",
-      "foundation",
     ],
-    optional: ["relayProtocol", "proxied", "tcpType"],
+    optional: ["relayProtocol", "proxied"],
     unimplemented: ["networkType", "url", "transportId"],
     deprecated: [
       "candidateId",
@@ -1637,13 +1633,6 @@ function pedanticChecks(report) {
         stat.protocol,
         `${stat.type} has protocol. value=${stat.protocol} ` + `(${stat.kind})`
       );
-
-      // tcpType
-      if (stat.protocol == "tcp") {
-        ok(stat.tcpType == "active", `TCP candidate has tcpType 'active'`);
-      } else if (stat.protocol == "udp") {
-        ok(stat.tcpType == undefined, `UDP candidate has no tcpType`);
-      }
 
       // port
       ok(
