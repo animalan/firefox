@@ -444,16 +444,7 @@ const JSClass BufferHolderObject::class_ = {"BufferHolderObject",
                                             &BufferHolderObject::classOps_};
 
 const JSClassOps BufferHolderObject::classOps_ = {
-    nullptr,                    // addProperty
-    nullptr,                    // delProperty
-    nullptr,                    // enumerate
-    nullptr,                    // newEnumerate
-    nullptr,                    // resolve
-    nullptr,                    // mayResolve
-    nullptr,                    // finalize
-    nullptr,                    // call
-    nullptr,                    // construct
-    BufferHolderObject::trace,  // trace
+    .trace = BufferHolderObject::trace,
 };
 
 /* static */
@@ -1000,16 +991,7 @@ class VectorObject : public NativeObject {
   }
 
   static constexpr JSClassOps classOps_ = {
-      nullptr,  // addProperty
-      nullptr,  // delProperty
-      nullptr,  // enumerate
-      nullptr,  // newEnumerate
-      nullptr,  // resolve
-      nullptr,  // mayResolve
-      nullptr,  // finalize
-      nullptr,  // call
-      nullptr,  // construct
-      trace,    // trace
+      .trace = trace,
   };
 
   static constexpr JSClass class_ = {
@@ -1154,16 +1136,7 @@ class HashSetObject : public NativeObject {
   }
 
   static constexpr JSClassOps classOps_ = {
-      nullptr,  // addProperty
-      nullptr,  // delProperty
-      nullptr,  // enumerate
-      nullptr,  // newEnumerate
-      nullptr,  // resolve
-      nullptr,  // mayResolve
-      nullptr,  // finalize
-      nullptr,  // call
-      nullptr,  // construct
-      trace,    // trace
+      .trace = trace,
   };
 
   static constexpr JSClass class_ = {

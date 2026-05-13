@@ -53,16 +53,7 @@ static void BackgroundFinalizedClass_finalize(JS::GCContext*, JSObject* obj) {
 }
 
 static const JSClassOps BackgroundFinalizedClassOps = {
-    nullptr,  // addProperty
-    nullptr,  // delProperty
-    nullptr,  // enumerate
-    nullptr,  // newEnumerate
-    nullptr,  // resolve
-    nullptr,  // mayResolve
-    &BackgroundFinalizedClass_finalize,
-    nullptr,  // call
-    nullptr,  // construct
-    nullptr,  // trace
+    .finalize = &BackgroundFinalizedClass_finalize,
 };
 
 static const JSClass BackgroundFinalizedClass = {"BackgroundFinalizedClass",
