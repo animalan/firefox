@@ -1144,8 +1144,8 @@ class Settings(
         default = true,
     )
 
-    var shouldUseTrackingProtectionDatabase by booleanPreference(
-        appContext.getPreferenceKey(R.string.pref_key_tracking_protection_database_status),
+    var shouldShowTrackingProtectionDashboard by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_tracking_protection_dashboard_status),
         default = false,
     )
 

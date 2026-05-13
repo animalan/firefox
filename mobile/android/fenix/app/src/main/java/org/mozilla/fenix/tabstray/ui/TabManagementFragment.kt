@@ -1014,7 +1014,7 @@ class TabManagementFragment : Fragment() {
     private fun shouldShowPrivacyReport(settings: Settings): Boolean =
         settings.showPrivacyReportSectionToggle &&
             settings.showPrivacyReportFeature &&
-            settings.shouldUseTrackingProtectionDatabase
+            settings.shouldShowTrackingProtectionDashboard
 
     private companion object {
         private const val DOWNLOAD_CANCEL_DIALOG_FRAGMENT_TAG = "DOWNLOAD_CANCEL_DIALOG_FRAGMENT_TAG"

@@ -473,9 +473,9 @@ class SecretSettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFra
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
 
-        requirePreference<SwitchPreferenceCompat>(R.string.pref_key_tracking_protection_database_status).apply {
+        requirePreference<SwitchPreferenceCompat>(R.string.pref_key_tracking_protection_dashboard_status).apply {
             isVisible = Config.channel.isDebug
-            isChecked = context.settings().shouldUseTrackingProtectionDatabase
+            isChecked = context.settings().shouldShowTrackingProtectionDashboard
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
     }
