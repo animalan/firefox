@@ -1583,26 +1583,24 @@ export class HTTP3Server {
     );
     this.processId = result.id;
 
-    /* eslint-disable no-control-regex */
-    const regex =
-      /HTTP3 server listening on ports (\d+), (\d+), (\d+), (\d+), (\d+) and (\d+). EchConfig is @([\x00-\x7F]+)@/;
-
-    // Execute the regex on the input string
-    let match = regex.exec(result.output);
-
-    if (!match) {
+    const lineMatch = result.output.match(
+      /HTTP3 server listening on ports ([\d, ]+ and \d+)\./
+    );
+    if (!lineMatch) {
       throw new Error(
         `HTTP3Server: unexpected server output: ${result.output.slice(0, 500)}`
       );
     }
 
-    // Extract the ports as an array of numbers
-    let ports = match.slice(1, 7).map(Number);
+    // Remove the ports.length guard once esr140 (5-port binary) is EOL.
+    const ports = lineMatch[1].match(/\d+/g).map(Number);
     this._port = ports[0];
-    this._reverse_proxy_port = ports[3];
-    this._no_response_port = ports[4];
-    this._masque_proxy_port = ports[5];
-    return ports[0];
+    if (ports.length >= 6) {
+      this._reverse_proxy_port = ports[3];
+      this._no_response_port = ports[4];
+      this._masque_proxy_port = ports[5];
+    }
+    return this._port;
   }
 }
 
