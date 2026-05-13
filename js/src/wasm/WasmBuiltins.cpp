@@ -848,7 +848,7 @@ void wasm::HandleExceptionWasm(JSContext* cx, JitFrameIter& iter,
     wasm::ContStack* wasmStack = wasmFrame.contStack();
     if (wasmFrame.currentFrameStackSwitched()) {
       if (wasmPreviousStack) {
-        ContStack::unwind(cx, wasmPreviousStack->handlers());
+        ContStack::unwind(wasmPreviousStack->handlers());
       }
       wasmPreviousStack = wasmStack;
     } else {

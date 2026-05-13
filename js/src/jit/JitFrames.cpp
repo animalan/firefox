@@ -1507,11 +1507,11 @@ static void TraceWasmSuspendedContStacks(JSContext* cx, JSTracer* trc) {
     return;
   }
 
-  for (wasm::ContStack* stack : cx->wasm().stacks()) {
+  cx->wasm().contStacks().forEachAllocatedStack([trc](wasm::ContStack* stack) {
     if (stack->canResume()) {
       stack->traceSuspended(trc);
     }
-  }
+  });
 }
 #endif
 
@@ -1561,11 +1561,12 @@ void UpdateJitActivationsForMinorGC(JSRuntime* rt) {
     }
   }
 #ifdef ENABLE_WASM_JSPI
-  for (wasm::ContStack* stack : cx->wasm().stacks()) {
-    if (stack->canResume()) {
-      stack->updateSuspendedForMovingGC(nursery);
-    }
-  }
+  cx->wasm().contStacks().forEachAllocatedStack(
+      [&nursery](wasm::ContStack* stack) {
+        if (stack->canResume()) {
+          stack->updateSuspendedForMovingGC(nursery);
+        }
+      });
 #endif
 }
 
@@ -1584,11 +1585,12 @@ void UpdateJitActivationsForCompactingGC(JSRuntime* rt) {
     }
   }
 #ifdef ENABLE_WASM_JSPI
-  for (wasm::ContStack* stack : cx->wasm().stacks()) {
-    if (stack->canResume()) {
-      stack->updateSuspendedForMovingGC(nursery);
-    }
-  }
+  cx->wasm().contStacks().forEachAllocatedStack(
+      [&nursery](wasm::ContStack* stack) {
+        if (stack->canResume()) {
+          stack->updateSuspendedForMovingGC(nursery);
+        }
+      });
 #endif
 }
 

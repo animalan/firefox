@@ -2342,6 +2342,13 @@ void JSReporter::CollectReports(WindowPaths* windowPaths,
         " to RSS, only vsize.");
   }
 
+  if (rtStats.runtime.wasmContStacks > 0) {
+    REPORT_BYTES(
+        "wasm-cont-stacks"_ns, KIND_OTHER, rtStats.runtime.wasmContStacks,
+        "Memory mapped for wasm continuation stacks (JS Promise Integration "
+        "and stack-switching), including guard pages.");
+  }
+
   // Report the numbers for memory outside of realms.
 
   REPORT_BYTES("js-main-runtime/gc-heap/unused-chunks"_ns, KIND_OTHER,

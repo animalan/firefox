@@ -370,6 +370,11 @@ void JSRuntime::addSizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf,
 
   rtSizes->wasmRuntime +=
       wasmInstances.lock()->sizeOfExcludingThis(mallocSizeOf);
+
+#ifdef ENABLE_WASM_JSPI
+  rtSizes->wasmContStacks +=
+      mainContextFromAnyThread()->wasm().contStacks().sizeOfNonHeap();
+#endif
 }
 
 static bool InvokeInterruptCallbacks(JSContext* cx) {

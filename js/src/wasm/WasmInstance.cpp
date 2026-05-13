@@ -1927,7 +1927,7 @@ static bool ArrayCopyFromElem(JSContext* cx, Handle<WasmArrayObject*> arrayObj,
 /* static */ void Instance::contUnwind(Instance* instance,
                                        wasm::Handlers* handlers) {
   MOZ_ASSERT(SASigContUnwind.failureMode == FailureMode::Infallible);
-  ContStack::unwind(instance->cx(), handlers);
+  ContStack::unwind(handlers);
 }
 
 #endif  // ENABLE_WASM_JSPI

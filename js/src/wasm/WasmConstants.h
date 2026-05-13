@@ -1256,14 +1256,6 @@ static const unsigned MaxHandlers = 16;
 
 static const unsigned MaxFrameSize = 512 * 1024;
 
-// The wasm usable size of a continuation stack.
-static const size_t ContJitStackSize = 0x100000;
-
-// Size of additional space at the top of a continuation stack.
-// The space is allocated to C++ handlers such as error/trap handlers,
-// or stack snapshots utilities.
-static const size_t ContRedZoneSize = 0x8000;
-
 // Asserted by Decoder::readVarU32.
 
 static const unsigned MaxVarU32DecodedBytes = 5;

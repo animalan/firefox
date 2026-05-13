@@ -2698,6 +2698,9 @@ void GCRuntime::purgeRuntime() {
   queueUnusedLifoBlocksForFree(&cx->tempLifoAlloc());
   cx->interpreterStack().purge(rt);
   cx->frontendCollectionPool().purge();
+#ifdef ENABLE_WASM_JSPI
+  cx->wasm().contStacks().purge(isShrinkingGC());
+#endif
 
   rt->caches().purge();
 

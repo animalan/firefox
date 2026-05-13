@@ -43,8 +43,6 @@ JSJitFrameIter::JSJitFrameIter(const JitActivation* activation, uint8_t* fp,
   // frames in the same JitActivation so ignore activation_->bailoutData().
   if (unwinding) {
     MOZ_ASSERT(fp == activation->jsExitFP());
-  } else {
-    MOZ_ASSERT(fp > activation->jsOrWasmExitFP());
   }
   MOZ_ASSERT(!TlsContext.get()->inUnsafeCallWithABI);
 }
