@@ -75,6 +75,12 @@ class WaylandSurface final {
       const WaylandSurfaceLock& aProofOfLock,
       const std::function<void(bool)>& aVSyncCallbackStateHandler);
 
+  // Set a a routine which return if whether we should run emulated callback
+  // or not. Don't overwrite existing one unless aForce is set.
+  void SetVSyncEmulateCheckLocked(
+      const WaylandSurfaceLock& aProofOfLock,
+      const std::function<bool(void)>& aVSyncEmulateCheck, bool aForce = false);
+
   wl_egl_window* GetEGLWindow(DesktopIntSize aSize);
   bool HasEGLWindow() const { return !!mEGLWindow; }
 
@@ -412,6 +418,7 @@ class WaylandSurface final {
 
   bool mVSyncCallbackEnabled = true;
   std::function<void(bool)> mVSyncCallbackStateHandler = nullptr;
+  std::function<bool(void)> mVSyncEmulateCheck = nullptr;
 
   guint mEmulatedVSyncCallbackTimerID = 0;
   constexpr static int sEmulatedVSyncCallbackTimeoutMs = (int)(1000.0 / 60.0);
