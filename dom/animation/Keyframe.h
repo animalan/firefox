@@ -77,6 +77,10 @@ struct Keyframe {
       return {StyleTimelineRangeName::None, aPercentage};
     }
 
+    bool IsPercentageOffset() const {
+      MOZ_ASSERT(mRangeName != StyleTimelineRangeName::Normal);
+      return mRangeName == StyleTimelineRangeName::None;
+    }
     bool IsTimelineRangeOffset() const {
       MOZ_ASSERT(mRangeName != StyleTimelineRangeName::Normal);
       return mRangeName != StyleTimelineRangeName::None;
