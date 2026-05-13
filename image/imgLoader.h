@@ -10,6 +10,7 @@
 #include "mozilla/Maybe.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/EnumSet.h"
+#include "mozilla/StaticPtr.h"
 #include "mozilla/UniquePtr.h"
 
 #include "imgILoader.h"
@@ -461,7 +462,7 @@ class imgLoader final : public imgILoader,
 
   static double sCacheTimeWeight;
   static uint32_t sCacheMaxSize;
-  static imgMemoryReporter* sMemReporter;
+  static mozilla::StaticRefPtr<imgMemoryReporter> sMemReporter;
 
   mozilla::UniquePtr<imgCacheExpirationTracker> mCacheTracker;
   bool mRespectPrivacy;
