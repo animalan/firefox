@@ -365,6 +365,8 @@ def add_extra_options(config, tests):
         test_platform = test["test-platform"]
         if test_platform.startswith("android-hw-a55"):
             extra_options.append("--device-name=a55")
+        elif test_platform.startswith("android-hw-p5"):
+            extra_options.append("--device-name=p5_aarch64")
         elif test_platform.startswith("android-hw-p6"):
             extra_options.append("--device-name=p6_aarch64")
         elif test_platform.startswith("android-hw-s24"):
