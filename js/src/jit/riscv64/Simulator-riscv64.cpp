@@ -215,7 +215,6 @@ Simulator* Simulator::Create() {
 
 void Simulator::Destroy(Simulator* sim) { js_delete(sim); }
 
-#  if JS_CODEGEN_RISCV64
 void Simulator::TraceRegWr(int64_t value, TraceType t) {
   if (FLAG_trace_sim) {
     union {
@@ -252,7 +251,6 @@ void Simulator::TraceRegWr(int64_t value, TraceType t) {
     }
   }
 }
-#  endif
 
 // The RiscvDebugger class is used by the simulator while debugging simulated
 // code.
@@ -1951,7 +1949,6 @@ void Simulator::DecodeRVRType() {
     case RO_XNOR:
       set_rd(~(rs1() ^ rs2()));
       break;
-#  ifdef JS_CODEGEN_RISCV64
     case RO_ADDW: {
       set_rd(sext32(rs1() + rs2()));
       break;
@@ -1999,7 +1996,6 @@ void Simulator::DecodeRVRType() {
       set_rd(sext32((extz_rs1 >> shamt) | (extz_rs1 << (32 - shamt))));
       break;
     }
-#  endif /* JS_CODEGEN_RISCV64 */
       // TODO(riscv): Add RISCV M extension macro
     case RO_MUL: {
       set_rd(rs1() * rs2());
@@ -2061,7 +2057,6 @@ void Simulator::DecodeRVRType() {
       }
       break;
     }
-#  ifdef JS_CODEGEN_RISCV64
     case RO_MULW: {
       set_rd(sext32(sext32(rs1()) * sext32(rs2())));
       break;
@@ -2110,7 +2105,6 @@ void Simulator::DecodeRVRType() {
       }
       break;
     }
-#  endif /*JS_CODEGEN_RISCV64*/
     case RO_SH1ADD:
       set_rd(rs2() + (rs1() << 1));
       break;
@@ -2665,7 +2659,6 @@ void Simulator::DecodeRVRAType() {
           instr_.instr(), WORD)));
       break;
     }
-#  ifdef JS_CODEGEN_RISCV64
     case RO_LR_D: {
       sreg_t addr = rs1();
       set_rd(loadLinkedD(addr, instr_));
@@ -2736,7 +2729,6 @@ void Simulator::DecodeRVRAType() {
           instr_.instr(), DWORD));
       break;
     }
-#  endif /*JS_CODEGEN_RISCV64*/
     // TODO(riscv): End Add macro for RISCV A extension
     default: {
       UNSUPPORTED();
@@ -2869,7 +2861,6 @@ void Simulator::DecodeRVRFPType() {
               RoundF2IHelper<uint32_t>(original_val, instr_.RoundMode())));
           break;
         }
-#  ifdef JS_CODEGEN_RISCV64
         case 0b00010: {  // RO_FCVT_L_S
           set_rd(RoundF2IHelper<int64_t>(original_val, instr_.RoundMode()));
           break;
@@ -2878,7 +2869,6 @@ void Simulator::DecodeRVRFPType() {
           set_rd(RoundF2IHelper<uint64_t>(original_val, instr_.RoundMode()));
           break;
         }
-#  endif /* JS_CODEGEN_RISCV64 */
         default: {
           UNSUPPORTED();
         }
@@ -2936,7 +2926,6 @@ void Simulator::DecodeRVRFPType() {
           set_frd(static_cast<float>((uint32_t)rs1()));
           break;
         }
-#  ifdef JS_CODEGEN_RISCV64
         case 0b00010: {  // RO_FCVT_S_L
           set_frd(static_cast<float>((int64_t)rs1()));
           break;
@@ -2945,7 +2934,6 @@ void Simulator::DecodeRVRFPType() {
           set_frd(static_cast<float>((uint64_t)rs1()));
           break;
         }
-#  endif /* JS_CODEGEN_RISCV64 */
         default: {
           UNSUPPORTED();
         }
@@ -3116,12 +3104,10 @@ void Simulator::DecodeRVRFPType() {
           set_rd(FclassHelper(drs1()));
           break;
         }
-#  ifdef JS_CODEGEN_RISCV64
         case 0b000: {  // RO_FMV_X_D
           set_rd(bit_cast<int64_t>(drs1()));
           break;
         }
-#  endif /* JS_CODEGEN_RISCV64 */
         default: {
           UNSUPPORTED();
         }
@@ -3140,7 +3126,6 @@ void Simulator::DecodeRVRFPType() {
               RoundF2IHelper<uint32_t>(original_val, instr_.RoundMode())));
           break;
         }
-#  ifdef JS_CODEGEN_RISCV64
         case 0b00010: {  // RO_FCVT_L_D
           set_rd(RoundF2IHelper<int64_t>(original_val, instr_.RoundMode()));
           break;
@@ -3149,7 +3134,6 @@ void Simulator::DecodeRVRFPType() {
           set_rd(RoundF2IHelper<uint64_t>(original_val, instr_.RoundMode()));
           break;
         }
-#  endif /* JS_CODEGEN_RISCV64 */
         default: {
           UNSUPPORTED();
         }
@@ -3166,7 +3150,6 @@ void Simulator::DecodeRVRFPType() {
           set_drd((uint32_t)rs1());
           break;
         }
-#  ifdef JS_CODEGEN_RISCV64
         case 0b00010: {  // RO_FCVT_D_L
           set_drd((int64_t)rs1());
           break;
@@ -3175,14 +3158,12 @@ void Simulator::DecodeRVRFPType() {
           set_drd((uint64_t)rs1());
           break;
         }
-#  endif /* JS_CODEGEN_RISCV64 */
         default: {
           UNSUPPORTED();
         }
       }
       break;
     }
-#  ifdef JS_CODEGEN_RISCV64
     case RO_FMV_D_X: {
       if (instr_.Funct3Value() == 0b000 && instr_.Rs2Value() == 0b00000) {
         // Since FMV preserves source bit-pattern, no need to canonize
@@ -3192,7 +3173,6 @@ void Simulator::DecodeRVRFPType() {
       }
       break;
     }
-#  endif /* JS_CODEGEN_RISCV64 */
     default: {
       UNSUPPORTED();
     }
@@ -3477,7 +3457,6 @@ void Simulator::DecodeRVIType() {
       TraceMemRd(addr, val, getRegister(rd_reg()));
       break;
     }
-#  ifdef JS_CODEGEN_RISCV64
     case RO_LWU: {
       int64_t addr = rs1() + imm12();
       uint32_t val = ReadMem<uint32_t>(addr, instr_.instr());
@@ -3492,7 +3471,6 @@ void Simulator::DecodeRVIType() {
       TraceMemRd(addr, val, getRegister(rd_reg()));
       break;
     }
-#  endif /*JS_CODEGEN_RISCV64*/
     case RO_ADDI: {
       set_rd(sext_xlen(rs1() + imm12()));
       break;
@@ -3623,9 +3601,7 @@ void Simulator::DecodeRVIType() {
           break;
         }
         case RO_RORI: {
-#  ifdef JS_CODEGEN_RISCV64
           int16_t shamt = shamt6();
-#  endif
           set_rd((static_cast<reg_t>(rs1()) >> shamt) |
                  (static_cast<reg_t>(rs1()) << (xlen - shamt)));
           break;
@@ -3649,7 +3625,6 @@ void Simulator::DecodeRVIType() {
       }
       break;
     }
-#  ifdef JS_CODEGEN_RISCV64
     case RO_ADDIW: {
       set_rd(sext32(rs1() + imm12()));
       break;
@@ -3726,7 +3701,6 @@ void Simulator::DecodeRVIType() {
       }
       break;
     }
-#  endif /*JS_CODEGEN_RISCV64*/
     case RO_FENCE: {
       // DO nothing in sumulator
       break;
@@ -3839,11 +3813,9 @@ void Simulator::DecodeRVSType() {
     case RO_SW:
       WriteMem<uint32_t>(rs1() + s_imm12(), (uint32_t)rs2(), instr_.instr());
       break;
-#  ifdef JS_CODEGEN_RISCV64
     case RO_SD:
       WriteMem<uint64_t>(rs1() + s_imm12(), (uint64_t)rs2(), instr_.instr());
       break;
-#  endif /*JS_CODEGEN_RISCV64*/
     // TODO(riscv): use F Extension macro block
     case RO_FSW: {
       WriteMem<Float32>(rs1() + s_imm12(), getFpuRegisterFloat32(rs2_reg()),
@@ -3981,14 +3953,12 @@ void Simulator::DecodeCAType() {
     case RO_C_AND:
       set_rvc_rs1s(rvc_rs1s() & rvc_rs2s());
       break;
-#  if JS_CODEGEN_RISCV64
     case RO_C_SUBW:
       set_rvc_rs1s(sext32(rvc_rs1s() - rvc_rs2s()));
       break;
     case RO_C_ADDW:
       set_rvc_rs1s(sext32(rvc_rs1s() + rvc_rs2s()));
       break;
-#  endif
     default:
       UNSUPPORTED();
   }
@@ -4003,11 +3973,9 @@ void Simulator::DecodeCIType() {
         set_rvc_rd(sext_xlen(rvc_rs1() + rvc_imm6()));
       }
       break;
-#  if JS_CODEGEN_RISCV64
     case RO_C_ADDIW:
       set_rvc_rd(sext32(rvc_rs1() + rvc_imm6()));
       break;
-#  endif
     case RO_C_LI:
       set_rvc_rd(sext_xlen(rvc_imm6()));
       break;
@@ -4034,7 +4002,6 @@ void Simulator::DecodeCIType() {
                        getFpuRegister(rvc_frd_reg()));
       break;
     }
-#  if JS_CODEGEN_RISCV64
     case RO_C_LWSP: {
       sreg_t addr = getRegister(sp) + rvc_imm6_lwsp();
       int64_t val = ReadMem<int32_t>(addr, instr_.instr());
@@ -4049,7 +4016,6 @@ void Simulator::DecodeCIType() {
       TraceMemRd(addr, val, getRegister(rvc_rd_reg()));
       break;
     }
-#  endif
     default:
       UNSUPPORTED();
   }
@@ -4079,13 +4045,11 @@ void Simulator::DecodeCSSType() {
       WriteMem<int32_t>(addr, (int32_t)rvc_rs2(), instr_.instr());
       break;
     }
-#  if JS_CODEGEN_RISCV64
     case RO_C_SDSP: {
       sreg_t addr = getRegister(sp) + rvc_imm6_sdsp();
       WriteMem<int64_t>(addr, (int64_t)rvc_rs2(), instr_.instr());
       break;
     }
-#  endif
     default:
       UNSUPPORTED();
   }
@@ -4106,7 +4070,6 @@ void Simulator::DecodeCLType() {
       set_rvc_drs2s(Float64::FromBits(val), false);
       break;
     }
-#  if JS_CODEGEN_RISCV64
     case RO_C_LD: {
       sreg_t addr = rvc_rs1s() + rvc_imm5_d();
       int64_t val = ReadMem<int64_t>(addr, instr_.instr());
@@ -4114,7 +4077,6 @@ void Simulator::DecodeCLType() {
       TraceMemRd(addr, val, getRegister(rvc_rs2s_reg()));
       break;
     }
-#  endif
     default:
       UNSUPPORTED();
   }
@@ -4127,13 +4089,11 @@ void Simulator::DecodeCSType() {
       WriteMem<int32_t>(addr, (int32_t)rvc_rs2s(), instr_.instr());
       break;
     }
-#  if JS_CODEGEN_RISCV64
     case RO_C_SD: {
       sreg_t addr = rvc_rs1s() + rvc_imm5_d();
       WriteMem<int64_t>(addr, (int64_t)rvc_rs2s(), instr_.instr());
       break;
     }
-#  endif
     case RO_C_FSD: {
       sreg_t addr = rvc_rs1s() + rvc_imm5_d();
       WriteMem<double>(addr, static_cast<double>(rvc_drs2s()), instr_.instr());

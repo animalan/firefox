@@ -214,22 +214,16 @@ const uint32_t kFCSRExceptionFlagMask = kFCSRFlagMask ^ kFCSRInexactFlagMask;
 
 // -----------------------------------------------------------------------------
 // Utility types and functions for RISCV
-#  ifdef JS_CODEGEN_RISCV64
 using sreg_t = int64_t;
 using reg_t = uint64_t;
 using freg_t = uint64_t;
 using sfreg_t = int64_t;
-#  else
-#    error "Cannot detect Riscv's bitwidth"
-#  endif
 
 #  define sext32(x) ((sreg_t)(int32_t)(x))
 #  define zext32(x) ((reg_t)(uint32_t)(x))
 
-#  ifdef JS_CODEGEN_RISCV64
-#    define sext_xlen(x) (((sreg_t)(x) << (64 - xlen)) >> (64 - xlen))
-#    define zext_xlen(x) (((reg_t)(x) << (64 - xlen)) >> (64 - xlen))
-#  endif
+#  define sext_xlen(x) (((sreg_t)(x) << (64 - xlen)) >> (64 - xlen))
+#  define zext_xlen(x) (((reg_t)(x) << (64 - xlen)) >> (64 - xlen))
 
 #  define BIT(n) (0x1LL << (n))
 #  define QUIET_BIT_S(nan) (bit_cast<int32_t>(nan) & BIT(22))
@@ -239,7 +233,6 @@ static inline bool isSnan(double fp) { return !QUIET_BIT_D(fp); }
 #  undef QUIET_BIT_S
 #  undef QUIET_BIT_D
 
-#  ifdef JS_CODEGEN_RISCV64
 inline uint64_t mulhu(uint64_t a, uint64_t b) {
   __uint128_t full_result = ((__uint128_t)a) * ((__uint128_t)b);
   return full_result >> 64;
@@ -254,7 +247,6 @@ inline int64_t mulhsu(int64_t a, uint64_t b) {
   __int128_t full_result = ((__int128_t)a) * ((__uint128_t)b);
   return full_result >> 64;
 }
-#  endif
 
 // Floating point helpers
 #  define F32_SIGN ((uint32_t)1 << 31)
@@ -629,9 +621,7 @@ class Simulator {
     BYTE,
     HALF,
     WORD,
-#  if JS_CODEGEN_RISCV64
     DWORD,
-#  endif
     FLOAT,
     DOUBLE,
     // FLOAT_DOUBLE,
@@ -694,9 +684,7 @@ class Simulator {
   // Helper for debugging memory access.
   inline void DieOrDebug();
 
-#  if JS_CODEGEN_RISCV64
   void TraceRegWr(sreg_t value, TraceType t = DWORD);
-#  endif
   void TraceMemWr(sreg_t addr, sreg_t value, TraceType t);
   template <typename T>
   void TraceMemRd(sreg_t addr, T value, sreg_t reg_value);
@@ -716,9 +704,7 @@ class Simulator {
 
   inline void set_rd(sreg_t value, bool trace = true) {
     setRegister(rd_reg(), value);
-#  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rd_reg()), DWORD);
-#  endif
   }
   inline void set_frd(float value, bool trace = true) {
     setFpuRegisterFloat(rd_reg(), value);
@@ -738,21 +724,15 @@ class Simulator {
   }
   inline void set_rvc_rd(sreg_t value, bool trace = true) {
     setRegister(rvc_rd_reg(), value);
-#  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rvc_rd_reg()), DWORD);
-#  endif
   }
   inline void set_rvc_rs1s(sreg_t value, bool trace = true) {
     setRegister(rvc_rs1s_reg(), value);
-#  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rvc_rs1s_reg()), DWORD);
-#  endif
   }
   inline void set_rvc_rs2(sreg_t value, bool trace = true) {
     setRegister(rvc_rs2_reg(), value);
-#  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rvc_rs2_reg()), DWORD);
-#  endif
   }
   inline void set_rvc_drd(double value, bool trace = true) {
     setFpuRegisterDouble(rvc_rd_reg(), value);
@@ -768,9 +748,7 @@ class Simulator {
   }
   inline void set_rvc_rs2s(sreg_t value, bool trace = true) {
     setRegister(rvc_rs2s_reg(), value);
-#  if JS_CODEGEN_RISCV64
     if (trace) TraceRegWr(getRegister(rvc_rs2s_reg()), DWORD);
-#  endif
   }
   inline void set_rvc_drs2s(double value, bool trace = true) {
     setFpuRegisterDouble(rvc_rs2s_reg(), value);
