@@ -16,6 +16,12 @@ def add_command(config, tasks):
         if not task["worker"].get("env"):
             task["worker"]["env"] = {}
 
+        product = task["attributes"]["shipping_product"]
+        task["name"] = product
+        task["treeherder"]["platform"] = f"{product}-release/opt"
+
+        task["dependencies"]["bouncer-check"] = f"release-bouncer-check-{product}"
+
         final_verify_configs = []
         for upstream in sorted(task.get("dependencies", {}).keys()):
             if "update-verify-config" in upstream:
