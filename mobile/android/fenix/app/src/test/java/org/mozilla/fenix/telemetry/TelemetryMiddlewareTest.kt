@@ -531,6 +531,21 @@ class TelemetryMiddlewareTest {
     }
 
     @Test
+    @Config(sdk = [Build.VERSION_CODES.Q])
+    fun `GIVEN API below 30 WHEN a tab is killed THEN tab_killed metric is NOT recorded`() = runTest {
+        val tabId = "test-tab-id"
+
+        store.dispatch(
+            TabListAction.AddTabAction(createTab(id = tabId, url = "https://firefox.com")),
+        )
+        store.dispatch(EngineAction.KillEngineSessionAction(tabId))
+
+        ShadowLooper.idleMainLooper()
+
+        assertTrue(EngineMetrics.tabKilled.testGetValue().isNullOrEmpty())
+    }
+
+    @Test
     fun `GIVEN a tab that was not recently killed WHEN it reloads THEN telemetry is NOT sent`() =
         runTest {
             val tabId = "test-tab-id"

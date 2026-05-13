@@ -60,7 +60,7 @@ class TelemetryMiddleware(
     private val logger = Logger("TelemetryMiddleware")
 
     // ApplicationExitInfo, which we need to distinguish user-requested exits from unexpected
-    // process kills, is only available on API 30+. We skip all engine tab reload telemetry on older
+    // process kills, is only available on API 30+. We skip all engine tab telemetry on older
     // versions to avoid recording false positives.
     private val androidVersionSupportsEngineTabTelemetry = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
@@ -190,6 +190,8 @@ class TelemetryMiddleware(
      * https://github.com/mozilla-mobile/android-components/issues/9366
      */
     private fun onEngineSessionKilled(state: BrowserState, tab: SessionState?) {
+        if (!androidVersionSupportsEngineTabTelemetry) return
+
         if (tab == null) {
             logger.debug("Could not find tab for killed engine session")
             return
