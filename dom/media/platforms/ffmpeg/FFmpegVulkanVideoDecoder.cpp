@@ -37,6 +37,10 @@
 #    include "mozilla/StaticPrefs_media.h"
 #    ifdef __linux__
 #      include <sys/sysmacros.h>
+#    elif defined(XP_SOLARIS) || defined(__sun)
+#      include <sys/mkdev.h>  // major(), minor() for st_rdev
+#    elif defined(XP_FREEBSD) || defined(XP_OPENBSD) || defined(XP_NETBSD)
+#      include <sys/types.h>  // major(), minor() for st_rdev (BSD)
 #    endif
 #  endif  // MOZ_USE_HWDECODE && MOZ_WIDGET_GTK
 #endif    // LIBAVCODEC_VERSION_MAJOR >= 60 && !defined(FFVPX_VERSION)

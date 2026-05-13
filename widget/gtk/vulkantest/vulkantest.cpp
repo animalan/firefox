@@ -17,6 +17,10 @@
 
 #ifdef __linux__
 #  include <sys/sysmacros.h>
+#elif defined(XP_SOLARIS) || defined(__sun)
+#  include <sys/mkdev.h>  // major(), minor() for st_rdev
+#elif defined(XP_FREEBSD) || defined(XP_OPENBSD) || defined(XP_NETBSD)
+#  include <sys/types.h>  // major(), minor() for st_rdev (BSD)
 #endif
 
 #if defined(MOZ_ASAN) || defined(FUZZING)
