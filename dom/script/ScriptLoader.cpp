@@ -647,7 +647,7 @@ void ScriptLoader::RunScriptWhenSafe(ScriptLoadRequest* aRequest) {
 }
 
 nsresult ScriptLoader::RestartLoad(ScriptLoadRequest* aRequest) {
-  aRequest->DropSRIOrSRIAndSerializedStencil();
+  aRequest->getLoadedScript()->DropSRIOrSRIAndSerializedStencil();
   TRACE_FOR_TEST(aRequest, "load:fallback");
 
   // Notify preload restart so that we can register this preload request again.
@@ -2659,15 +2659,21 @@ nsresult ScriptLoader::ProcessRequest(ScriptLoadRequest* aRequest) {
     aRequest->GetScriptLoadContext()->MaybeCancelOffThreadScript();
   }
 
-  if (aRequest->IsTextSource()) {
-    // Free text source, but keep the serialized Stencil as we might have to
-    // save it later.
-    aRequest->ClearScriptText();
-  } else if (aRequest->IsSerializedStencil()) {
-    // We received serialized Stencil as input, thus we were decoding, and we
-    // will not be encoding it once more. We can safely clear the content of
-    // this buffer.
-    aRequest->DropSRIOrSRIAndSerializedStencil();
+  // If the script is in-memory cached, it should already be converted to
+  // CachedStencil in ScriptLoader::TryCacheRequest.
+  //
+  // If the navigation cache is not enabled and the script is going to be
+  // saved to disk, it's also converted to CachedStencil in
+  // ScriptLoader::RegisterForDiskCache.
+  //
+  // If the LoadedScript is still eTextSource or eSerializedStencil at this
+  // point, they're not going to be cached, and the received data is
+  // no longer necessary.
+  if (aRequest->getLoadedScript()->IsTextSource()) {
+    aRequest->getLoadedScript()->ClearScriptText();
+  } else if (aRequest->getLoadedScript()->IsSerializedStencil()) {
+    MOZ_ASSERT(!aRequest->HasStencil());
+    aRequest->getLoadedScript()->DropSRIOrSRIAndSerializedStencil();
   }
 
   return rv;
@@ -3850,6 +3856,8 @@ void ScriptLoader::RegisterForDiskCache(ScriptLoadRequest* aRequest) {
              "Web extension scripts are not compatible with the disk cache");
 
   LoadedScript* loadedScript = aRequest->getLoadedScript();
+  MOZ_ASSERT(loadedScript->IsTextSource(),
+             "Serialized stencil case shouldn't be saved again");
   loadedScript->ConvertToCachedStencil(
       aRequest->GetStencil(), aRequest->ReferrerPolicy(), aRequest->BaseURL());
   mDiskCacheQueue.AppendElement(loadedScript);

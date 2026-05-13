@@ -637,8 +637,6 @@ class LoadedScriptDelegate {
     return GetLoadedScript()->GetScriptSource(aCx, aMaybeSource, aLoadContext);
   }
 
-  void ClearScriptText() { GetLoadedScript()->ClearScriptText(); }
-
   bool HasNoSRIOrSRIAndSerializedStencil() const {
     return GetLoadedScript()->HasNoSRIOrSRIAndSerializedStencil();
   }
@@ -654,10 +652,6 @@ class LoadedScriptDelegate {
   size_t GetSRILength() const { return GetLoadedScript()->GetSRILength(); }
   void SetSRILength(size_t sriLength) {
     GetLoadedScript()->SetSRILength(sriLength);
-  }
-
-  void DropSRIOrSRIAndSerializedStencil() {
-    GetLoadedScript()->DropSRIOrSRIAndSerializedStencil();
   }
 
   void SetTookLongInPreviousRuns() {

@@ -768,8 +768,8 @@ nsresult ModuleLoaderBase::OnFetchComplete(ModuleLoadRequest* aRequest,
     }
 #endif
 
-    if (aRequest->IsTextSource()) {
-      aRequest->ClearScriptText();
+    if (aRequest->getLoadedScript()->IsTextSource()) {
+      aRequest->getLoadedScript()->ClearScriptText();
     }
 
     if (NS_FAILED(rv)) {
