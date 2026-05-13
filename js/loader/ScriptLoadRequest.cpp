@@ -202,11 +202,9 @@ void ScriptLoadRequest::SetCacheEntry(LoadedScript* aLoadedScript,
       mState = State::Ready;
       break;
     case ScriptKind::eModule:
-      // NOTE: The cache entry has "module" kind, but it's not ModuleScript
-      //       instance, given ModuleScript has GC pointers.
       MOZ_ASSERT(aLoadedScript->IsModuleScript());
 
-      mLoadedScript = ModuleScript::FromCache(*aLoadedScript, mFetchInfo);
+      mLoadedScript = aLoadedScript;
 
       // Modules need to wait for fetching dependencies before setting to
       // Ready.
@@ -238,7 +236,7 @@ void ScriptLoadRequest::NoCacheEntryFound(
       mLoadedScript = new ImportMapScript(aURI);
       break;
     case ScriptKind::eModule:
-      mLoadedScript = new ModuleScript(aURI, mFetchInfo);
+      mLoadedScript = new LoadedModuleScript(aURI);
       break;
     case ScriptKind::eEvent:
       MOZ_ASSERT_UNREACHABLE("eEvent is only for ScriptFetchInfo");

@@ -3630,9 +3630,6 @@ void ScriptLoader::TryCacheRequest(ScriptLoadRequest* aRequest) {
     if (loadedScript->mFetchCount == 0) {
       loadedScript->mFetchCount = 1;
     }
-    if (loadedScript->IsModuleScript()) {
-      loadedScript = loadedScript->ModuleScriptToCache();
-    }
     loadedScript->SetSRIMetadata(aRequest->mIntegrity);
     auto loadData = MakeRefPtr<ScriptLoadData>(this, aRequest, expirationTime,
                                                loadedScript);

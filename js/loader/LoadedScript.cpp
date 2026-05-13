@@ -4,7 +4,6 @@
 
 #include "LoadedScript.h"
 
-#include "mozilla/AlreadyAddRefed.h"  // already_AddRefed
 #include "mozilla/HoldDropJSObjects.h"
 #include "mozilla/RefPtr.h"     // RefPtr, mozilla::MakeRefPtr
 #include "mozilla/Sprintf.h"    // SprintfLiteral
@@ -101,8 +100,8 @@ void HostReleaseScriptFetchInfo(const Value& aPrivate) {
 // LoadedScript
 //////////////////////////////////////////////////////////////
 
-// LoadedScript itself doesn't have to be cycle-collected,
-// but ModuleScript subclass needs cycle-collection.
+// LoadedScript doesn't have to be cycle-collected.
+// TODO: Make it non-cycle-collected.
 //
 // Provide a base class that does nothing.
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(LoadedScript)
@@ -153,37 +152,6 @@ LoadedScript::LoadedScript(ScriptKind aKind, nsIURI* aURI)
       mReceivedScriptTextLength(0) {
   MOZ_ASSERT(mURI);
 }
-
-LoadedScript::LoadedScript(const LoadedScript& aOther)
-    : mDataType(DataType::eCachedStencil),
-      mFetchCount(aOther.mFetchCount),
-      mKind(aOther.mKind),
-      mCachedReferrerPolicy(aOther.mCachedReferrerPolicy),
-      mSerializedStencilOffset(0),
-      mCacheEntryId(aOther.mCacheEntryId),
-      mIsDirty(aOther.mIsDirty),
-      mTookLongInPreviousRuns(aOther.mTookLongInPreviousRuns),
-      mIsEverHitFromMemoryCache(aOther.mIsEverHitFromMemoryCache),
-      mURI(aOther.mURI),
-      mCachedBaseURL(aOther.mCachedBaseURL),
-      mReceivedScriptTextLength(0),
-      mCachedStencil(aOther.mCachedStencil),
-      mCacheEntry(aOther.mCacheEntry) {
-  MOZ_ASSERT(mURI);
-  // NOTE: This is only for the cached stencil case.
-  //       The script text and the serialized stencil are not reflected.
-  MOZ_DIAGNOSTIC_ASSERT(aOther.mDataType == DataType::eCachedStencil);
-  MOZ_DIAGNOSTIC_ASSERT(mCachedStencil);
-  MOZ_ASSERT(!mScriptData);
-  MOZ_ASSERT(mSRIAndSerializedStencil.empty());
-
-  if (aOther.mSRIMetadata) {
-    mSRIMetadata =
-        mozilla::MakeUnique<mozilla::dom::SRIMetadata>(*aOther.mSRIMetadata);
-  }
-}
-
-LoadedScript::~LoadedScript() { mozilla::DropJSObjects(this); }
 
 size_t LoadedScript::SizeOfIncludingThis(
     mozilla::MallocSizeOf aMallocSizeOf) const {
@@ -310,73 +278,45 @@ ImportMapScript::ImportMapScript(nsIURI* aURI)
     : LoadedScript(ScriptKind::eImportMap, aURI) {}
 
 //////////////////////////////////////////////////////////////
+// LoadedModuleScript
+//////////////////////////////////////////////////////////////
+
+LoadedModuleScript::LoadedModuleScript(nsIURI* aURI)
+    : LoadedScript(ScriptKind::eModule, aURI) {}
+
+//////////////////////////////////////////////////////////////
 // ModuleScript
 //////////////////////////////////////////////////////////////
 
-NS_IMPL_ISUPPORTS_CYCLE_COLLECTION_INHERITED_0(ModuleScript, LoadedScript)
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(ModuleScript)
+  NS_INTERFACE_MAP_ENTRY(nsISupports)
+NS_INTERFACE_MAP_END
 
 NS_IMPL_CYCLE_COLLECTION_CLASS(ModuleScript)
 
-NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(ModuleScript, LoadedScript)
+NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(ModuleScript)
   tmp->mModuleRecord = nullptr;
   tmp->mParseError.setUndefined();
   tmp->mErrorToRethrow.setUndefined();
-  tmp->DropDiskCacheReference();
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 
-NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(ModuleScript, LoadedScript)
+NS_IMPL_CYCLE_COLLECTING_ADDREF(ModuleScript)
+NS_IMPL_CYCLE_COLLECTING_RELEASE(ModuleScript)
+
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(ModuleScript)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
-NS_IMPL_CYCLE_COLLECTION_TRACE_BEGIN_INHERITED(ModuleScript, LoadedScript)
+NS_IMPL_CYCLE_COLLECTION_TRACE_BEGIN(ModuleScript)
   NS_IMPL_CYCLE_COLLECTION_TRACE_JS_MEMBER_CALLBACK(mModuleRecord)
   NS_IMPL_CYCLE_COLLECTION_TRACE_JS_MEMBER_CALLBACK(mParseError)
   NS_IMPL_CYCLE_COLLECTION_TRACE_JS_MEMBER_CALLBACK(mErrorToRethrow)
 NS_IMPL_CYCLE_COLLECTION_TRACE_END
 
-ModuleScript::ModuleScript(nsIURI* aURI, ScriptFetchInfo* aFetchInfo)
-    : LoadedScript(ScriptKind::eModule, aURI),
-      mFetchInfoForAccessingPreloadFlag(aFetchInfo) {
+ModuleScript::ModuleScript(ScriptFetchInfo* aFetchInfo)
+    : mFetchInfoForAccessingPreloadFlag(aFetchInfo) {
   MOZ_ASSERT(!ModuleRecord());
   MOZ_ASSERT(!HasParseError());
   MOZ_ASSERT(!HasErrorToRethrow());
-}
-
-ModuleScript::ModuleScript(const LoadedScript& aOther,
-                           ScriptFetchInfo* aFetchInfo)
-    : LoadedScript(aOther), mFetchInfoForAccessingPreloadFlag(aFetchInfo) {
-  MOZ_ASSERT(!ModuleRecord());
-  MOZ_ASSERT(!HasParseError());
-  MOZ_ASSERT(!HasErrorToRethrow());
-}
-
-/* static */
-already_AddRefed<ModuleScript> ModuleScript::FromCache(
-    const LoadedScript& aScript, ScriptFetchInfo* aFetchInfo) {
-  MOZ_DIAGNOSTIC_ASSERT(aScript.IsModuleScript());
-  // IsInvalidatedCachedStencil case shouldn't reach here, because that case
-  // should be filtered out immediately after the cache lookup, and then
-  // this should be called synchronously and immediately after that.
-  MOZ_DIAGNOSTIC_ASSERT(aScript.IsCachedStencil());
-
-  return mozilla::MakeRefPtr<ModuleScript>(aScript, aFetchInfo).forget();
-}
-
-LoadedScript* LoadedScript::ModuleScriptToCache() {
-  MOZ_DIAGNOSTIC_ASSERT(IsCachedStencil());
-  MOZ_DIAGNOSTIC_ASSERT(IsModuleScript());
-  MOZ_DIAGNOSTIC_ASSERT(!AsModuleScript()->HasParseError());
-  MOZ_DIAGNOSTIC_ASSERT(!AsModuleScript()->HasErrorToRethrow());
-
-  LoadedScript* result = new LoadedScript(*this);
-
-  if (HasSRI()) {
-    // SRI is used only for the disk cache handling, which is performed by the
-    // SharedScriptCache, and the original ModuleScript no longer neeed the
-    // data.
-    result->mSRIAndSerializedStencil = std::move(mSRIAndSerializedStencil);
-  }
-
-  return result;
 }
 
 void ModuleScript::Shutdown() {
@@ -390,12 +330,13 @@ void ModuleScript::Shutdown() {
 ModuleScript::~ModuleScript() {
   // The object may be destroyed without being unlinked first.
   mModuleRecord = nullptr;
+  mozilla::DropJSObjects(this);
 }
 
 void ModuleScript::SetModuleRecord(Handle<JSObject*> aModuleRecord) {
   MOZ_ASSERT(!mModuleRecord);
-  MOZ_ASSERT_IF(IsModuleScript(), !AsModuleScript()->HasParseError());
-  MOZ_ASSERT_IF(IsModuleScript(), !AsModuleScript()->HasErrorToRethrow());
+  MOZ_ASSERT(!HasParseError());
+  MOZ_ASSERT(!HasErrorToRethrow());
 
   mModuleRecord = aModuleRecord;
 

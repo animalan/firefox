@@ -630,10 +630,8 @@ bool ModuleLoaderBase::IsModuleFetched(const ModuleMapKey& key) const {
 
 nsresult ModuleLoaderBase::GetFetchedModuleURLs(nsTArray<nsCString>& aURLs) {
   for (const auto& entry : mFetchedModules) {
-    nsIURI* uri = entry.GetData()->GetURI();
-
     nsAutoCString spec;
-    nsresult rv = uri->GetSpec(spec);
+    nsresult rv = entry.mUri->GetSpec(spec);
     NS_ENSURE_SUCCESS(rv, rv);
 
     aURLs.AppendElement(spec);
@@ -1023,8 +1021,8 @@ nsresult ModuleLoaderBase::CreateModuleScript(ModuleLoadRequest* aRequest) {
     }
 
     MOZ_ASSERT(aRequest->mLoadedScript->IsModuleScript());
-    RefPtr<ModuleScript> moduleScript =
-        aRequest->mLoadedScript->AsModuleScript();
+
+    RefPtr<ModuleScript> moduleScript = new ModuleScript(aRequest->FetchInfo());
 
     aRequest->mModuleScript = moduleScript;
 

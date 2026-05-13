@@ -9,7 +9,6 @@
 #include "js/experimental/JSStencil.h"
 #include "js/Transcoding.h"
 
-#include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/MaybeOneOf.h"
 #include "mozilla/MemoryReporting.h"
@@ -41,7 +40,7 @@ void HostAddRefScriptFetchInfo(const Value& aPrivate);
 void HostReleaseScriptFetchInfo(const Value& aPrivate);
 
 class ClassicScript;
-class ModuleScript;
+class LoadedModuleScript;
 class LoadContextBase;
 
 // Information required to fetch scripts or module graphs.
@@ -135,12 +134,10 @@ class LoadedScript : public nsISupports {
  protected:
   LoadedScript(ScriptKind aKind, nsIURI* aURI);
 
-  LoadedScript(const LoadedScript& aOther);
-
   template <typename T, typename... Args>
   friend RefPtr<T> mozilla::MakeRefPtr(Args&&... aArgs);
 
-  virtual ~LoadedScript();
+  virtual ~LoadedScript() = default;
 
  public:
   size_t SizeOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf) const;
@@ -162,7 +159,6 @@ class LoadedScript : public nsISupports {
   bool IsImportMapScript() const { return mKind == ScriptKind::eImportMap; }
 
   inline ClassicScript* AsClassicScript();
-  inline ModuleScript* AsModuleScript();
 
   nsIURI* GetURI() const { return mURI; }
 
@@ -459,17 +455,6 @@ class LoadedScript : public nsISupports {
   // one.
   bool IsSRIMetadataReusableBy(const mozilla::dom::SRIMetadata& aSRIMetadata);
 
-  // Clone an existing ModuleScript to a cache-able LoadedScript, which does
-  // not capture any GC references.
-  // SharedScriptCache is JSContext-agnostic, and it cannot hold any GC
-  // references.
-  //
-  // When putting a ModuleScript into the SharedScriptCache, it should be
-  // converted into LoadedScript with this method, and when the cached module
-  // is found in subsequent loads, the script should be cloned back to a new
-  // ModuleScript with ModuleScript::FromCache below.
-  LoadedScript* ModuleScriptToCache();
-
  public:
   // Fields.
 
@@ -728,9 +713,18 @@ class ImportMapScript final : public LoadedScript {
   explicit ImportMapScript(nsIURI* aURI);
 };
 
+class LoadedModuleScript final : public LoadedScript {
+  ~LoadedModuleScript() = default;
+
+ private:
+  explicit LoadedModuleScript(nsIURI* aURI);
+
+  friend class ScriptLoadRequest;
+};
+
 // A single module script. May be used to satisfy multiple load requests.
 
-class ModuleScript final : public LoadedScript {
+class ModuleScript final : public nsISupports {
   // Those fields are used only after instantiated, and they're reset to
   // null and false when stored into the cache as LoadedScript instance.
   Heap<JSObject*> mModuleRecord;
@@ -748,26 +742,10 @@ class ModuleScript final : public LoadedScript {
   ~ModuleScript();
 
  public:
-  NS_DECL_ISUPPORTS_INHERITED
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS_INHERITED(ModuleScript,
-                                                         LoadedScript)
+  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(ModuleScript)
 
- private:
-  // Scripts can be created only by ScriptLoadRequest::NoCacheEntryFound.
-  ModuleScript(nsIURI* aURI, ScriptFetchInfo* aFetchInfo);
-
-  ModuleScript(const LoadedScript& other, ScriptFetchInfo* aFetchInfo);
-
-  template <typename T, typename... Args>
-  friend RefPtr<T> mozilla::MakeRefPtr(Args&&... aArgs);
-
-  friend class ScriptLoadRequest;
-
- public:
-  // Convert between cacheable LoadedScript instance, which is used by
-  // mozilla::dom::SharedScriptCache.
-  static already_AddRefed<ModuleScript> FromCache(const LoadedScript& aScript,
-                                                  ScriptFetchInfo* aFetchInfo);
+  explicit ModuleScript(ScriptFetchInfo* aFetchInfo);
 
   void SetModuleRecord(Handle<JSObject*> aModuleRecord);
   void SetParseError(const Value& aError);
@@ -801,11 +779,6 @@ class ModuleScript final : public LoadedScript {
 ClassicScript* LoadedScript::AsClassicScript() {
   MOZ_ASSERT(!IsModuleScript());
   return static_cast<ClassicScript*>(this);
-}
-
-ModuleScript* LoadedScript::AsModuleScript() {
-  MOZ_ASSERT(IsModuleScript());
-  return static_cast<ModuleScript*>(this);
 }
 
 }  // namespace JS::loader
