@@ -8,7 +8,7 @@ import android.content.Context
 import androidx.lifecycle.ProcessLifecycleOwner
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.Engine
-import mozilla.components.feature.ipprotection.IPProtectionFeatureV2
+import mozilla.components.feature.ipprotection.IPProtectionFeature
 import mozilla.components.feature.ipprotection.IPProtectionStorageSynchronizer
 import mozilla.components.feature.ipprotection.store.IPProtectionStore
 import mozilla.components.service.fxa.manager.FxaAccountManager
@@ -52,7 +52,7 @@ class IPProtection(
     }
 
     val feature by lazy {
-        IPProtectionFeatureV2(
+        IPProtectionFeature(
             store = store,
             engine = engine,
             accountManager = lazyFxaAccountManager.value,

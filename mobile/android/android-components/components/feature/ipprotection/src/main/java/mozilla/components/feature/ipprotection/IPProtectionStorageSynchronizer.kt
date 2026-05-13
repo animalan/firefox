@@ -26,7 +26,7 @@ import mozilla.components.service.fxa.store.SyncStore
  * A system that collects state from an [FxaAccountManager] and [IPProtectionEligibilityStorage] and
  * forwards it to the [IPProtectionStore].
  *
- * This helper is a convenience for [IPProtectionFeatureV2] that needs to react to multiple data sources
+ * This helper is a convenience for [IPProtectionFeature] that needs to react to multiple data sources
  * in combination, so forwarding them to one location, allows the Store to be the single-source-of-truth
  * for the feature.
  *
