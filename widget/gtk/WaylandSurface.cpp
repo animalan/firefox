@@ -185,6 +185,48 @@ void WaylandSurface::VSyncCallbackHandler(struct wl_callback* aCallback,
   }
 }
 
+bool WaylandSurface::IsEmulatedVSyncEnabledLocked(
+    const WaylandSurfaceLock& aProofOfLock) {
+  return HasEmulatedVSyncCallbackLocked(aProofOfLock) &&
+         !mEmulatedVSyncCallbackTimerID && mVSyncEmulateCheck &&
+         mVSyncEmulateCheck();
+}
+
+void WaylandSurface::RequestEmulatedVSyncLocked(
+    const WaylandSurfaceLock& aProofOfLock) {
+  LOGVERBOSE("WaylandSurface::RequestEmulatedVSyncLocked()");
+
+  MOZ_DIAGNOSTIC_ASSERT(!mEmulatedVSyncCallbackTimerID, "Already created?");
+
+  mIsPendingGdkCleanup = true;
+  mEmulatedVSyncCallbackTimerID = g_timeout_add(
+      sEmulatedVSyncCallbackTimeoutMs,
+      [](void* data) -> gint {
+        RefPtr surface = static_cast<WaylandSurface*>(data);
+        LOGS_VERBOSE("[%p]: WaylandSurface emulated frame callbacks",
+                     surface->GetLoggingWidget());
+        // Clear timer ID as we're going to remove this timer
+        surface->mEmulatedVSyncCallbackTimerID = 0;
+
+        if (!surface->mGdkAfterPaintId &&
+            !surface->mIsOpaqueSurfaceHandlerSet) {
+          surface->mIsPendingGdkCleanup = false;
+        }
+
+        // Get some timestamp for emulated callback.
+        // We don't compare between emulated / none-emulated ones
+        // so we're safe here.
+        uint32_t timestampTime =
+            static_cast<uint32_t>(g_get_monotonic_time() / 1000);
+        surface->VSyncCallbackHandler(
+            /* wl_callback */ nullptr, timestampTime,
+            /* aEmulated */ true,
+            /* aRoutedFromChildSurface */ false);
+        return G_SOURCE_REMOVE;
+      },
+      this);
+}
+
 void WaylandSurface::SetVSyncCallbackLocked(
     const WaylandSurfaceLock& aProofOfLock) {
   MOZ_DIAGNOSTIC_ASSERT(&aProofOfLock == mSurfaceLock);
@@ -216,52 +258,30 @@ void WaylandSurface::SetVSyncCallbackLocked(
     mSurfaceNeedsCommit = true;
   }
 
-  // Request VSync emulation if it's requested and we can't get regular
-  // Vsync (we're hidden).
-  if (HasEmulatedVSyncCallbackLocked(aProofOfLock) &&
-      !mEmulatedVSyncCallbackTimerID && mVSyncEmulateCheck &&
-      mVSyncEmulateCheck()) {
-    LOGVERBOSE(
-        "WaylandSurface::SetVSyncCallbackLocked() emulated, schedule "
-        "next check");
-
-    // Frame callback needs to be run from main thread
-    NS_DispatchToMainThread(NS_NewRunnableFunction(
-        "WaylandSurface::SetVSyncCallbackLocked",
-        [this, self = RefPtr{this}]() {
-          MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread());
-          WaylandSurfaceLock lock(this);
-          if (!mEmulatedVSyncCallbackTimerID) {
-            mIsPendingGdkCleanup = true;
-            mEmulatedVSyncCallbackTimerID = g_timeout_add(
-                sEmulatedVSyncCallbackTimeoutMs,
-                [](void* data) -> gint {
-                  RefPtr surface = static_cast<WaylandSurface*>(data);
-                  LOGS_VERBOSE("[%p]: WaylandSurface emulated frame callbacks",
-                               surface->GetLoggingWidget());
-                  // Clear timer ID as we're going to remove this timer
-                  surface->mEmulatedVSyncCallbackTimerID = 0;
-
-                  if (!surface->mGdkAfterPaintId &&
-                      !surface->mIsOpaqueSurfaceHandlerSet) {
-                    surface->mIsPendingGdkCleanup = false;
-                  }
-
-                  // Get some timestamp for emulated callback.
-                  // We don't compare between emulated / none-emulated ones
-                  // so we're safe here.
-                  uint32_t timestampTime =
-                      static_cast<uint32_t>(g_get_monotonic_time() / 1000);
-                  surface->VSyncCallbackHandler(
-                      /* wl_callback */ nullptr, timestampTime,
-                      /* aEmulated */ true,
-                      /* aRoutedFromChildSurface */ false);
-                  return G_SOURCE_REMOVE;
-                },
-                this);
-          }
-        }));
+  if (!IsEmulatedVSyncEnabledLocked(aProofOfLock)) {
+    return;
   }
+
+  // Queue emulated VSync directly on main thread
+  if (NS_IsMainThread()) {
+    RequestEmulatedVSyncLocked(aProofOfLock);
+    return;
+  }
+
+  LOGVERBOSE(
+      "WaylandSurface::SetVSyncCallbackLocked() schedule emulated VSync to "
+      "main thread");
+
+  // VSync needs to be run from main thread
+  NS_DispatchToMainThread(NS_NewRunnableFunction(
+      "WaylandSurface::SetVSyncCallbackLocked", [this, self = RefPtr{this}]() {
+        MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread());
+        WaylandSurfaceLock lock(this);
+        if (!IsEmulatedVSyncEnabledLocked(lock)) {
+          return;
+        }
+        RequestEmulatedVSyncLocked(lock);
+      }));
 }
 
 void WaylandSurface::ClearVSyncCallbackLocked(

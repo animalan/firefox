@@ -322,6 +322,8 @@ class WaylandSurface final {
   void ClearVSyncCallbackLocked(const WaylandSurfaceLock& aProofOfLock);
   bool HasEmulatedVSyncCallbackLocked(
       const WaylandSurfaceLock& aProofOfLock) const;
+  bool IsEmulatedVSyncEnabledLocked(const WaylandSurfaceLock& aProofOfLock);
+  void RequestEmulatedVSyncLocked(const WaylandSurfaceLock& aProofOfLock);
 
   void ClearScaleLocked(const WaylandSurfaceLock& aProofOfLock);
 
