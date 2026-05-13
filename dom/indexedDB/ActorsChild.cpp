@@ -1794,15 +1794,16 @@ nsCOMPtr<nsIRunnable> BackgroundRequestChild::HandleResponse(
            MOZ_ASSERT(mTransaction->IsAborted());
          }));
 
-  std::transform(std::make_move_iterator(aResponse.begin()),
-                 std::make_move_iterator(aResponse.end()),
-                 MakeBackInserter(cloneReadInfos),
-                 [database = mTransaction->Database(), this](
-                     SerializedStructuredCloneReadInfo&& serializedCloneInfo) {
-                   return DeserializeStructuredCloneReadInfo(
-                       std::move(serializedCloneInfo), database,
-                       [this] { return std::move(*GetNextCloneData()); });
-                 });
+  std::transform(
+      std::make_move_iterator(aResponse.begin()),
+      std::make_move_iterator(aResponse.end()),
+      MakeBackInserter(cloneReadInfos),
+      [database = RefPtr<IDBDatabase>(mTransaction->Database()),
+       this](SerializedStructuredCloneReadInfo&& serializedCloneInfo) {
+        return DeserializeStructuredCloneReadInfo(
+            std::move(serializedCloneInfo), database,
+            [this] { return std::move(*GetNextCloneData()); });
+      });
 
   return MakeDeferredResultRunnable(
       [infos = std::move(cloneReadInfos)](auto& request,
