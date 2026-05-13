@@ -136,7 +136,6 @@ TESTING_JS_MODULES += [
     "tests/modules/MockDocument.sys.mjs",
     "tests/modules/OSKeyStoreTestUtils.sys.mjs",
     "tests/modules/PromiseTestUtils.sys.mjs",
-    "tests/modules/SystemDelay.sys.mjs",
     "tests/xpcshell/RegionTestUtils.sys.mjs",
     "tests/xpcshell/TestIntegration.sys.mjs",
 ]

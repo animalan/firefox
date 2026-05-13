@@ -6,35 +6,22 @@ const lazy = {};
 const PREF_APP_UPDATE_COMPULSORY_RESTART = "app.update.compulsory_restart";
 let deferredRestartTasks = null;
 
-const postWakeRestartDeferralMilliseconds = 5 * 60 * 1000; // 5 minutes
-
 ChromeUtils.defineESModuleGetters(lazy, {
   ScheduledTask: "resource://gre/modules/ScheduledTask.sys.mjs",
   InfoBar: "resource:///modules/asrouter/InfoBar.sys.mjs",
 });
 
-ChromeUtils.defineLazyGetter(lazy, "logConsole", () =>
-  console.createInstance({
-    prefix: "UpdatePolicyEnforcer",
-    maxLogLevelPref: "app.update.compulsory_restart_log",
-  })
-);
-
 // Forcibly close Firefox, without waiting for beforeunload handlers.
 function forceRestart() {
-  lazy.logConsole.warn(`Firefox is restarting`);
   Services.startup.quit(
     Services.startup.eForceQuit | Services.startup.eRestart
   );
+  console.error(`Firefox is restarting`);
 }
 
 function infobarDispatchCallback(action, _selectedBrowser) {
   if (action?.type === "USER_ACTION" && action.data?.type === "RESTART_APP") {
     forceRestart();
-  } else {
-    lazy.logConsole.debug(
-      `No action for type=${action?.type} and data.type=${action.data?.type}`
-    );
   }
 }
 
@@ -72,7 +59,7 @@ function showNotificationToolbar(restartZonedDateTime) {
     groups: [],
   };
 
-  const win = Services.wm.getMostRecentBrowserWindow("navigator:browser");
+  const win = Services.wm.getMostRecentBrowserWindow();
   if (!win) {
     return;
   }
@@ -81,7 +68,6 @@ function showNotificationToolbar(restartZonedDateTime) {
     message,
     infobarDispatchCallback
   );
-  lazy.logConsole.info(`Showing infobar message`);
 }
 
 /**
@@ -165,9 +151,7 @@ export function calculateSchedule(
       Temporal.Duration.from({ hours: 24 })
     );
   }
-  lazy.logConsole.debug(
-    `Computed notification time: ${notificationZonedDateTime}, restart time: ${restartZonedDateTime}`
-  );
+
   return { notificationZonedDateTime, restartZonedDateTime };
 }
 
@@ -177,21 +161,14 @@ export function createScheduledRestartTasks(
   notificationZonedDateTime
 ) {
   const notificationTask = new lazy.ScheduledTask(() => {
-    lazy.logConsole.debug(
-      `notification task triggered, will show notification bar`
-    );
     showNotificationToolbar(restartZonedDateTime);
   }, notificationZonedDateTime.epochMilliseconds);
   const restartTask = new lazy.ScheduledTask(
     forceRestart,
-    restartZonedDateTime.epochMilliseconds,
-    postWakeRestartDeferralMilliseconds
+    restartZonedDateTime.epochMilliseconds
   );
   notificationTask.arm();
   restartTask.arm();
-  lazy.logConsole.info(
-    `Restart scheduled for ${restartZonedDateTime}, notification begins at ${notificationZonedDateTime}`
-  );
   return { notificationTask, restartTask };
 }
 
@@ -209,13 +186,9 @@ export function getCompulsoryRestartPolicy() {
       typeof compulsoryRestartSetting.RestartTimeOfDay.Hour === "number" &&
       typeof compulsoryRestartSetting.RestartTimeOfDay.Minute === "number"
     ) {
-      lazy.logConsole.debug(
-        `Compulsory restart policy: ${compulsoryRestartSetting}`
-      );
       return compulsoryRestartSetting;
     }
   }
-  lazy.logConsole.debug(`No compulsory restart policy`);
   return null;
 }
 
@@ -239,7 +212,7 @@ export function handleCompulsoryUpdatePolicy() {
           notificationZonedDateTime
         );
       } else {
-        lazy.logConsole.error(
+        console.error(
           `Invalid restart settings: ${JSON.stringify(compulsoryRestartSetting)}`
         );
       }
