@@ -411,6 +411,16 @@ mozilla::Keyframe* Gecko_GetOrCreateKeyframeAtStart(
     const mozilla::StyleComputedTimingFunction* timingFunction,
     const mozilla::dom::CompositeOperationOrAuto composition);
 
+// The variant of the above method but this is specialized for the keyframe
+// offset with the timeline range name.
+// @param aRangeName The timeline range name to search for.
+mozilla::Keyframe* Gecko_GetOrCreateKeyframeWithRangeName(
+    nsTArray<mozilla::Keyframe>* aKeyframes,
+    const mozilla::StyleTimelineRangeName aRangeName, float aOffset,
+    const mozilla::StyleComputedTimingFunction* aTimingFunction,
+    const mozilla::dom::CompositeOperationOrAuto aComposition,
+    size_t* aMatchedIdx);
+
 // As with Gecko_GetOrCreateKeyframeAtStart except that this method will search
 // from the beginning of |keyframes| for a Keyframe with matching timing
 // function, composition, and an offset of 0.0.

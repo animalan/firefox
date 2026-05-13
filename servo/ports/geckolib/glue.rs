@@ -20,7 +20,7 @@ use selectors::parser::PseudoElement as PseudoElementTrait;
 use selectors::{Element, OpaqueElement};
 use servo_arc::{Arc, ArcBorrow};
 use smallvec::SmallVec;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 use std::fmt::Write;
 use std::iter;
 use std::os::raw::c_void;
@@ -7563,6 +7563,30 @@ fn fill_in_missing_keyframe_values(
     }
 }
 
+fn remove_duplicated_property_value_entry(
+    keyframes: &mut nsTArray<structs::Keyframe>,
+    grouped_keyframes_indexes: HashSet<usize>,
+) {
+    for idx in grouped_keyframes_indexes.into_iter() {
+        debug_assert!(idx < keyframes.len());
+        let k = &mut keyframes[idx];
+        let mut set = HashSet::new();
+        let mut values = nsTArray::new();
+        for pair in k.mPropertyValues.drain(..).rev() {
+            let property =
+                match OwnedPropertyDeclarationId::from_gecko_css_property_id(&pair.mProperty) {
+                    Some(property) => property,
+                    None => continue,
+                };
+            if !set.contains(&property) {
+                set.insert(property);
+                values.push(pair);
+            }
+        }
+        k.mPropertyValues = values;
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
     raw_data: &PerDocumentStyleData,
@@ -7573,6 +7597,8 @@ pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
     keyframes: &mut nsTArray<structs::Keyframe>,
 ) -> bool {
     use style::gecko_bindings::structs::CompositeOperationOrAuto;
+    use style::properties::PropertyDeclaration;
+    use style::stylesheets::keyframes_rule::KeyframesStep;
     use style::values::computed::AnimationComposition;
 
     debug_assert!(keyframes.len() == 0, "keyframes should be initially empty");
@@ -7598,33 +7624,52 @@ pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
 
     let writing_mode = style.writing_mode;
 
+    let get_timing_func_and_composition =
+        |step: &KeyframesStep| -> (ComputedTimingFunction, CompositeOperationOrAuto) {
+            // Override timing_function if the keyframe has an animation-timing-function.
+            let timing_function = match step.get_animation_timing_function(&guard) {
+                Some(val) => val.to_computed_value_without_context(),
+                None => (*inherited_timing_function).clone(),
+            };
+            // Override composite operation if the keyframe has an animation-composition.
+            let composition = step.get_animation_composition(&guard).map_or(
+                CompositeOperationOrAuto::Auto,
+                |val| match val {
+                    AnimationComposition::Replace => CompositeOperationOrAuto::Replace,
+                    AnimationComposition::Add => CompositeOperationOrAuto::Add,
+                    AnimationComposition::Accumulate => CompositeOperationOrAuto::Accumulate,
+                },
+            );
+            (timing_function, composition)
+        };
+    let is_not_animatable = |id: &PropertyDeclarationId| {
+        // Skip non-animatable properties, including the 'display' property because although it is
+        // animatable from SMIL, it should not be animatable from CSS Animations.
+        !id.is_animatable() || id == &PropertyDeclarationId::Longhand(LonghandId::Display)
+    };
+    let make_declaration_pair = |declaration: &PropertyDeclaration| {
+        let id = declaration.id().to_physical(writing_mode);
+        let mut pair = property_value_pair_for(&id);
+        pair.mServoDeclarationBlock
+            .set_arc(Arc::new(global_style_data.shared_lock.wrap(
+                PropertyDeclarationBlock::with_one(
+                    declaration.to_physical(writing_mode),
+                    Importance::Normal,
+                ),
+            )));
+        pair
+    };
+
     // Iterate over the keyframe rules backwards so we can drop overridden
     // properties (since declarations in later rules override those in earlier
     // ones).
     for step in animation.steps.iter().rev() {
-        // TODO: Generate the keyframes with <timeline-range-name> in the following patches.
         debug_assert!(step.start_offset.range_name.is_none());
-
         if step.start_offset.percentage.0 != current_offset {
             properties_set_at_current_offset.clear();
             current_offset = step.start_offset.percentage.0;
         }
-
-        // Override timing_function if the keyframe has an animation-timing-function.
-        let timing_function = match step.get_animation_timing_function(&guard) {
-            Some(val) => val.to_computed_value_without_context(),
-            None => (*inherited_timing_function).clone(),
-        };
-
-        // Override composite operation if the keyframe has an animation-composition.
-        let composition =
-            step.get_animation_composition(&guard)
-                .map_or(CompositeOperationOrAuto::Auto, |val| match val {
-                    AnimationComposition::Replace => CompositeOperationOrAuto::Replace,
-                    AnimationComposition::Add => CompositeOperationOrAuto::Add,
-                    AnimationComposition::Accumulate => CompositeOperationOrAuto::Accumulate,
-                });
-
+        let (timing_function, composition) = get_timing_func_and_composition(step);
         // Look for an existing keyframe with the same offset, timing function, and compsition, or
         // else add a new keyframe at the beginning of the keyframe array.
         let keyframe = &mut *bindings::Gecko_GetOrCreateKeyframeAtStart(
@@ -7668,13 +7713,7 @@ pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
                 // there are logical and physical longhands in the same block.
                 for declaration in guard.normal_declaration_iter().rev() {
                     let id = declaration.id().to_physical(writing_mode);
-
-                    // Skip non-animatable properties, including the 'display' property because
-                    // although it is animatable from SMIL, it should not be animatable from CSS
-                    // Animations.
-                    if !id.is_animatable()
-                        || id == PropertyDeclarationId::Longhand(LonghandId::Display)
-                    {
+                    if is_not_animatable(&id) {
                         continue;
                     }
 
@@ -7682,16 +7721,9 @@ pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
                         continue;
                     }
 
-                    let mut pair = property_value_pair_for(&id);
-                    pair.mServoDeclarationBlock.set_arc(Arc::new(
-                        global_style_data
-                            .shared_lock
-                            .wrap(PropertyDeclarationBlock::with_one(
-                                declaration.to_physical(writing_mode),
-                                Importance::Normal,
-                            )),
-                    ));
-                    keyframe.mPropertyValues.push(pair);
+                    keyframe
+                        .mPropertyValues
+                        .push(make_declaration_pair(declaration));
 
                     if current_offset == 0.0 {
                         properties_set_at_start.insert(id);
@@ -7710,6 +7742,7 @@ pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
     }
 
     // Append property values that are missing in the initial or the final keyframes.
+    // FIXME: Bug 2037642. We shouldn't handle missing keyframes now.
     if !has_complete_initial_keyframe {
         fill_in_missing_keyframe_values(
             &properties_changed,
@@ -7728,6 +7761,73 @@ pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
             keyframes,
         );
     }
+
+    // After appending the missing initial and final keyframes, we start to append the Keyframes
+    // with timeline range names. We create the Keyframes in a temporary array because we need to
+    // reverse it later.
+    let mut keyframes_with_range_names = nsTArray::new();
+    // The indexes of keyframes_with_range_names that correspond to the grouped keyframes.
+    // e.g. If there are 4 keyframes:
+    //   [0] cover 10% {width: 10px; height: 10px;}
+    //   [1] cover 10% {width: 20px;}
+    //   [2] cover 20% {...}
+    //   [3] cover 10% {width: 30px;}
+    //
+    // [0] will store all declared properties of [1] and [3], to be de-duplicated later.
+    // For example, before de-duplication, the generated grouped keyframes may look like:
+    //   [0] cover 10% {width: 10px; height: 10px; width: 20px; width: 30px; }
+    //   [1] cover 20% {...}
+    // The hashset contains {[0]}.
+    //
+    // After the de-duplication, the generated grouped keyframes will look like:
+    // [0] cover 10% {height: 10px; width: 30px; }
+    // [1] cover 20% {...}
+    // Only the last property value of `width` is kept.
+    let mut grouped_keyframes_indexes = HashSet::new();
+    for step in animation.steps_with_range_name.iter() {
+        debug_assert!(!step.start_offset.range_name.is_none());
+        let (timing_function, composition) = get_timing_func_and_composition(step);
+        let mut matched_idx = 0;
+        let keyframe = &mut *bindings::Gecko_GetOrCreateKeyframeWithRangeName(
+            &mut keyframes_with_range_names,
+            step.start_offset.range_name,
+            step.start_offset.percentage.0 as f32,
+            &timing_function,
+            composition,
+            &mut matched_idx,
+        );
+        // Check if we may have to de-duplicate this keyframe's mPropertyValues.
+        if matched_idx != keyframes_with_range_names.len() {
+            grouped_keyframes_indexes.insert(matched_idx);
+        }
+
+        match step.value {
+            KeyframesStepValue::ComputedValues => unreachable!("No implicit keyframes"),
+            KeyframesStepValue::Declarations { ref block } => {
+                let guard = block.read_with(&guard);
+                // Filter out non-animatable properties and properties with
+                // !important.
+                //
+                // Also, iterate in reverse to respect the source order in case
+                // there are logical and physical longhands in the same block.
+                for declaration in guard.normal_declaration_iter().rev() {
+                    let id = declaration.id().to_physical(writing_mode);
+                    if is_not_animatable(&id) {
+                        continue;
+                    }
+                    keyframe
+                        .mPropertyValues
+                        .push(make_declaration_pair(declaration));
+                }
+            },
+        }
+    }
+
+    remove_duplicated_property_value_entry(
+        &mut keyframes_with_range_names,
+        grouped_keyframes_indexes,
+    );
+    keyframes.append(&mut keyframes_with_range_names);
     true
 }
 
