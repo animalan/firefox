@@ -203,7 +203,6 @@ class TabManagementFragment : Fragment() {
             browserStore = requireComponents.core.store,
             settings = requireContext().settings(),
             shareSheetLauncher = DefaultShareSheetLauncher(
-                browserStore = requireComponents.core.store,
                 navController = findNavController(),
                 homeActivityClass = HomeActivity::class.java,
                 scope = viewLifecycleOwner.lifecycleScope,
