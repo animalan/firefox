@@ -1767,6 +1767,8 @@ skip-if = [
 
 ["test_trr_proxy.js"]
 
+["test_trr_preemptive_proxy_auth.js"]
+
 ["test_trr_proxy_auth.js"]
 skip-if = [
   "true",
