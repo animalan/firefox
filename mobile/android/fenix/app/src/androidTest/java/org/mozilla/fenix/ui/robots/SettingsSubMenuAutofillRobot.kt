@@ -180,11 +180,7 @@ class SettingsSubMenuAutofillRobot(private val composeTestRule: ComposeTestRule)
         Log.i(TAG, "verifyAddAddressView: Trying to perform \"Close soft keyboard\" action")
         // Closing the keyboard to ensure full visibility of the "Add address" view
         waitForKeyboardDismiss()
-        composeTestRule.waitForIdle()
         Log.i(TAG, "verifyAddAddressView: Performed \"Close soft keyboard\" action")
-        Log.i(TAG, "verifyAddAddressView: Waiting for address form to be ready")
-        composeTestRule.waitUntilAtLeastOneExists(hasTestTag(EditAddressTestTag.NAME_FIELD), waitingTime)
-        Log.i(TAG, "verifyAddAddressView: Trying to verify the \"Add address\" view items")
         listOf(
             composeTestRule.navigateBackButton(),
             composeTestRule.addAddressToolbarTitle(),
