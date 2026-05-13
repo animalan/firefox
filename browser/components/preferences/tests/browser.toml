@@ -5,7 +5,6 @@ prefs = [
   "browser.backup.archive.enabled=false",
   "browser.backup.restore.enabled=false",
   "browser.settings-redesign.enabled=false",
-  "extensions.getAddons.langpacks.url=https://mochi.test:8000/langpacks",
 ]
 support-files = [
   "head.js",
@@ -27,16 +26,6 @@ run-if = [
 ["browser_backup_visibility.js"]
 
 ["browser_backup_warning_banner.js"]
-
-["browser_browser_languages_main_pane.js"]
-skip-if = [
-  "verify", # bug 2035367
-]
-
-["browser_browser_languages_subdialog.js"]
-skip-if = [
-  "tsan",
-]
 
 ["browser_bug731866.js"]
 
@@ -72,8 +61,6 @@ skip-if = [
 run-if = [
   "os == 'mac'",
 ]
-
-["browser_languages_subdialog.js"]
 
 ["browser_no_id_collision_between_categories_and_mainPane.js"]
 

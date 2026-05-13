@@ -3,10 +3,6 @@
 
 requestLongerTimeout(2);
 
-const { AddonTestUtils } = ChromeUtils.importESModule(
-  "resource://testing-common/AddonTestUtils.sys.mjs"
-);
-
 AddonTestUtils.initMochitest(this);
 
 const BROWSER_LANGUAGES_URL =
@@ -14,50 +10,8 @@ const BROWSER_LANGUAGES_URL =
 const DICTIONARY_ID_PL = "pl@dictionaries.addons.mozilla.org";
 const TELEMETRY_CATEGORY = "intl.ui.browserLanguage";
 
-function langpackId(locale) {
-  return `langpack-${locale}@firefox.mozilla.org`;
-}
-
-function getManifestData(locale, version = "2.0") {
-  return {
-    langpack_id: locale,
-    name: `${locale} Language Pack`,
-    description: `${locale} Language pack`,
-    languages: {
-      [locale]: {
-        chrome_resources: {
-          branding: `browser/chrome/${locale}/locale/branding/`,
-        },
-        version: "1",
-      },
-    },
-    browser_specific_settings: {
-      gecko: {
-        id: langpackId(locale),
-        strict_min_version: AppConstants.MOZ_APP_VERSION,
-        strict_max_version: AppConstants.MOZ_APP_VERSION,
-      },
-    },
-    version,
-    manifest_version: 2,
-    sources: {
-      browser: {
-        base_path: "browser/",
-      },
-    },
-    author: "Mozilla",
-  };
-}
-
 let testLocales = ["fr", "pl", "he"];
 let testLangpacks;
-
-function createLangpack(locale, version) {
-  return AddonTestUtils.createTempXPIFile({
-    "manifest.json": getManifestData(locale, version),
-    [`browser/${locale}/branding/brand.ftl`]: "-brand-short-name = Firefox",
-  });
-}
 
 function createTestLangpacks() {
   if (!testLangpacks) {
@@ -101,7 +55,7 @@ async function createLanguageToolsFile() {
 
 async function createDictionaryBrowseResults() {
   let testDir = gTestPath.substr(0, gTestPath.lastIndexOf("/"));
-  let dictionaryPath = testDir + "/addons/pl-dictionary.xpi";
+  let dictionaryPath = testDir + "/../addons/pl-dictionary.xpi";
   let filename = "dictionaries.json";
   let response = {
     page_size: 25,

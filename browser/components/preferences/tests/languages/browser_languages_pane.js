@@ -12,10 +12,7 @@ const LANGUAGE_GROUP_IDS = [
 ];
 
 add_task(async function testLanguagesPaneHostsAllGroups() {
-  await openPreferencesViaOpenPreferencesAPI("paneGeneral", {
-    leaveOpen: true,
-  });
-  let doc = gBrowser.contentDocument;
+  let doc = await openLanguagesPrefs();
 
   let navButton = doc.getElementById("category-languages");
   ok(navButton, "Languages sidebar entry is rendered");
@@ -35,8 +32,7 @@ add_task(async function testLanguagesPaneHostsAllGroups() {
     ok(group, `paneLanguages hosts the ${groupId} group`);
   }
 
-  // The migrated groups must not also render inside paneGeneral when SRD
-  // is active (the default on nightly).
+  // The migrated groups must not render outside paneLanguages.
   let strayGroups = Array.from(
     doc.querySelectorAll(
       LANGUAGE_GROUP_IDS.map(id => `setting-group[groupid="${id}"]`).join(",")
