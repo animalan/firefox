@@ -3003,7 +3003,7 @@ static nsresult ReadSourceFromFilename(JSContext* cx, const char* filename,
   // Allocate a buffer the size of the file to initially fill with the UTF-8
   // contents of the file.  Use the JS allocator so that if UTF-8 source was
   // requested, we can return this memory directly.
-  JS::UniqueChars buf(js_pod_malloc<char>(rawLen));
+  JS::UniqueChars buf(js_pod_malloc<char>(static_cast<size_t>(rawLen)));
   if (!buf) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
