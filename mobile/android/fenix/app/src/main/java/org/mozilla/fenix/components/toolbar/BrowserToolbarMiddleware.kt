@@ -105,7 +105,9 @@ import org.mozilla.fenix.components.appstate.AppAction.URLCopiedToClipboard
 import org.mozilla.fenix.components.appstate.snackbar.SnackbarState
 import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.components.metrics.MetricsUtils
+import org.mozilla.fenix.components.share.ShareSheetLauncher
 import org.mozilla.fenix.components.share.createPdfShareAction
+import org.mozilla.fenix.components.share.isSystemShareSheetSupported
 import org.mozilla.fenix.components.toolbar.DisplayActions.AddBookmarkClicked
 import org.mozilla.fenix.components.toolbar.DisplayActions.EditBookmarkClicked
 import org.mozilla.fenix.components.toolbar.DisplayActions.HomepageClicked
@@ -203,6 +205,7 @@ internal sealed class PageEndActionsInteractions(override val source: Source) : 
  * @param clipboard [ClipboardHandler] to use for reading from device's clipboard.
  * @param publicSuffixList [PublicSuffixList] used to obtain the base domain of the current site.
  * @param settings [Settings] for accessing user preferences.
+ * @param shareSheetLauncher [ShareSheetLauncher] used to show the system share sheet.
  * @param navController [NavController] to use for navigating to other in-app destinations.
  * @param browsingModeManager [BrowsingModeManager] for querying the current browsing mode.
  * @param readerModeController [ReaderModeController] for showing or hiding the reader view UX.
@@ -229,6 +232,7 @@ class BrowserToolbarMiddleware(
     private val clipboard: ClipboardHandler,
     private val publicSuffixList: PublicSuffixList,
     private val settings: Settings,
+    private val shareSheetLauncher: ShareSheetLauncher,
     private val navController: NavController,
     private val browsingModeManager: BrowsingModeManager,
     private val readerModeController: ReaderModeController,
@@ -586,22 +590,37 @@ class BrowserToolbarMiddleware(
             is ShareClicked -> {
                 val selectedTab = browserStore.state.selectedTab ?: return
                 val shareAction = browserStore.createPdfShareAction(selectedTab.id, selectedTab.content.url)
-                if (shareAction != null) {
-                    browserStore.dispatch(shareAction)
-                } else {
-                    navController.nav(
-                        R.id.browserFragment,
-                        BrowserFragmentDirections.actionGlobalShareFragment(
-                            sessionId = selectedTab.id,
-                            data = arrayOf(
-                                ShareData(
-                                    url = selectedTab.content.url,
-                                    title = selectedTab.content.title,
+
+                when {
+                    shareAction != null -> {
+                        browserStore.dispatch(shareAction)
+                    }
+
+                    settings.nativeShareSheetEnabled && isSystemShareSheetSupported -> {
+                        shareSheetLauncher.showSystemShareSheet(
+                            id = selectedTab.id,
+                            longUrl = selectedTab.content.url,
+                            title = selectedTab.content.title,
+                            isPrivate = selectedTab.content.private,
+                            isCustomTab = false,
+                        )
+                    }
+
+                    else -> {
+                        navController.nav(
+                            R.id.browserFragment,
+                            BrowserFragmentDirections.actionGlobalShareFragment(
+                                sessionId = selectedTab.id,
+                                data = arrayOf(
+                                    ShareData(
+                                        url = selectedTab.content.url,
+                                        title = selectedTab.content.title,
+                                    ),
                                 ),
+                                showPage = true,
                             ),
-                            showPage = true,
-                        ),
-                    )
+                        )
+                    }
                 }
 
                 next(action)
