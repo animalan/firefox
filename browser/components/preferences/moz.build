@@ -23,6 +23,7 @@ BROWSER_CHROME_MANIFESTS += [
     "tests/performance/browser-srd.toml",
     "tests/performance/browser.toml",
     "tests/permissions/browser.toml",
+    "tests/privacy/browser-srd.toml",
     "tests/privacy/browser.toml",
     "tests/search/browser.toml",
     "tests/security/browser.toml",
