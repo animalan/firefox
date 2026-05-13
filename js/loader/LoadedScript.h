@@ -223,9 +223,6 @@ class LoadedScript final : public nsISupports {
   bool IsInvalidatedCachedStencil() const {
     return mDataType == DataType::eInvalidatedCachedStencil;
   }
-  bool OnceCachedStencil() const {
-    return IsCachedStencil() || IsInvalidatedCachedStencil();
-  }
   bool IsWasmBytes() const { return mDataType == DataType::eWasmBytes; }
 
   // ==== Methods to convert the data type ====
@@ -249,7 +246,7 @@ class LoadedScript final : public nsISupports {
   void ConvertToCachedStencil(JS::Stencil* aStencil,
                               mozilla::dom::ReferrerPolicy aReferrerPolicy,
                               nsIURI* aBaseURL) {
-    MOZ_ASSERT(!OnceCachedStencil());
+    MOZ_ASSERT(IsTextSource() || IsSerializedStencil());
     SetUnknownDataType();
     mDataType = DataType::eCachedStencil;
     mCachedStencil = aStencil;
@@ -589,19 +586,6 @@ class LoadedScriptDelegate {
   bool IsTextSource() const { return GetLoadedScript()->IsTextSource(); }
   bool IsSerializedStencil() const {
     return GetLoadedScript()->IsSerializedStencil();
-  }
-  // Returns true if this delegate (ScriptLoadRequest) is loaded from the
-  // SharedScriptCache.
-  //
-  // At the point of using the cache, the item should still be valid,
-  // and the cached stencil should be copied to the ScriptLoadRequest.
-  //
-  // The item in SharedScriptCache can be invalidated after that point,
-  // but the consumers can still use this LoadedScript, in the same way as
-  // `IsCachedStencil`, except that the `GetCachedStencil` can no longer
-  // be called.
-  bool OnceCachedStencil() const {
-    return GetLoadedScript()->OnceCachedStencil();
   }
   bool IsWasmBytes() const { return GetLoadedScript()->IsWasmBytes(); }
 

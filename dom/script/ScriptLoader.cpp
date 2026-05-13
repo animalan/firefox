@@ -1270,7 +1270,8 @@ void ScriptLoader::TryUseCache(ReferrerPolicy aReferrerPolicy,
   ScriptHashKey key(this, aRequest, aReferrerPolicy, aFetchOptions, aURI);
   auto cacheResult = mCache->Lookup(*this, key, /* aSyncLoad = */ true);
   MOZ_ASSERT_IF(cacheResult.mState == CachedSubResourceState::Complete,
-                cacheResult.mCompleteValue->OnceCachedStencil());
+                cacheResult.mCompleteValue->IsCachedStencil() ||
+                    cacheResult.mCompleteValue->IsInvalidatedCachedStencil());
   if (cacheResult.mState != CachedSubResourceState::Complete ||
       !cacheResult.mCompleteValue->IsCachedStencil()) {
     aRequest->NoCacheEntryFound(aReferrerPolicy, aFetchOptions, aURI);
@@ -3564,7 +3565,8 @@ ScriptLoader::CacheBehavior ScriptLoader::GetCacheBehavior(
   auto cacheResult = mCache->Lookup(*this, key,
                                     /* aSyncLoad = */ true);
   MOZ_ASSERT_IF(cacheResult.mState == CachedSubResourceState::Complete,
-                cacheResult.mCompleteValue->OnceCachedStencil());
+                cacheResult.mCompleteValue->IsCachedStencil() ||
+                    cacheResult.mCompleteValue->IsInvalidatedCachedStencil());
   if (cacheResult.mState == CachedSubResourceState::Complete &&
       cacheResult.mCompleteValue->IsCachedStencil()) {
     if (!cacheResult.mCompleteValue->IsSRIMetadataReusableBy(
@@ -4500,8 +4502,10 @@ nsresult ScriptLoader::OnStreamComplete(
           ScriptHashKey key(this, aRequest, aRequest->ReferrerPolicy(),
                             aRequest->FetchOptions(), aRequest->URI());
           auto cacheResult = mCache->Lookup(*this, key, /* aSyncLoad = */ true);
-          MOZ_ASSERT_IF(cacheResult.mState == CachedSubResourceState::Complete,
-                        cacheResult.mCompleteValue->OnceCachedStencil());
+          MOZ_ASSERT_IF(
+              cacheResult.mState == CachedSubResourceState::Complete,
+              cacheResult.mCompleteValue->IsCachedStencil() ||
+                  cacheResult.mCompleteValue->IsInvalidatedCachedStencil());
           if (cacheResult.mState == CachedSubResourceState::Complete &&
               cacheResult.mCompleteValue->IsCachedStencil() &&
               cacheResult.mCompleteValue->IsSRIMetadataReusableBy(
