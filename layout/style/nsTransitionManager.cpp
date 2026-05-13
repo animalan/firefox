@@ -178,7 +178,7 @@ static Keyframe& AppendKeyframe(double aOffset, const CSSPropertyId& aProperty,
                                 AnimationValue&& aValue,
                                 nsTArray<Keyframe>& aKeyframes) {
   Keyframe& frame = *aKeyframes.AppendElement();
-  frame.mOffset.emplace(aOffset);
+  frame.mOffset.emplace(Keyframe::OffsetType::PercentageOffset(aOffset));
   MOZ_ASSERT(aValue.mServo);
   RefPtr<StyleLockedDeclarationBlock> decl =
       Servo_AnimationValue_Uncompute(aValue.mServo).Consume();

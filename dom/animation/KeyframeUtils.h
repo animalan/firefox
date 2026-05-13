@@ -64,14 +64,16 @@ class KeyframeUtils {
 
   /**
    * Calculate the computed offset of keyframes by evenly distributing keyframes
-   * with a missing offset.
+   * with a missing offset. Note that the distribution doesn't take
+   * TimelineRangeOffset into account. We distribute the keyframes by using
+   * percentage (i.e. double) offset only.
    *
    * @see
-   * https://drafts.csswg.org/web-animations/#calculating-computed-keyframes
+   * https://drafts.csswg.org/web-animations-1/#compute-missing-keyframe-offsets
    *
    * @param aKeyframes The set of keyframes to adjust.
    */
-  static void DistributeKeyframes(nsTArray<Keyframe>& aKeyframes);
+  static void ComputeMissingKeyframeOffsets(nsTArray<Keyframe>& aKeframes);
 
   /**
    * Converts an array of Keyframe objects into an array of AnimationProperty

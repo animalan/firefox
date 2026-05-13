@@ -1109,7 +1109,7 @@ static Keyframe* GetOrCreateKeyframe(
 
   Keyframe* keyframe = aKeyframes->InsertElementAt(
       aInsertPosition == KeyframeInsertPosition::Prepend ? 0 : keyframeIndex);
-  keyframe->mOffset.emplace(aOffset);
+  keyframe->mOffset.emplace(Keyframe::OffsetType::PercentageOffset(aOffset));
   if (!aTimingFunction->IsLinearKeyword()) {
     keyframe->mTimingFunction.emplace(*aTimingFunction);
   }
@@ -1123,7 +1123,7 @@ Keyframe* Gecko_GetOrCreateKeyframeAtStart(
     const StyleComputedTimingFunction* aTimingFunction,
     const CompositeOperationOrAuto aComposition) {
   MOZ_ASSERT(aKeyframes->IsEmpty() ||
-                 aKeyframes->ElementAt(0).mOffset.value() >= aOffset,
+                 aKeyframes->ElementAt(0).mOffset->mPercentage >= aOffset,
              "The offset should be less than or equal to the first keyframe's "
              "offset if there are exisiting keyframes");
 

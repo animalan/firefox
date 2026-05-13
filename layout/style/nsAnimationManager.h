@@ -76,9 +76,12 @@ class nsAnimationManager final
       size_t& aIndex) {
     aIndex = 0;
     for (mozilla::Keyframe& keyframe : aIter) {
-      if (keyframe.mOffset.value() != aOffset) {
+      // FIXME: We will generate keyframes with TimelineRangeOffset in the
+      // following patches. For now, it should be double always.
+      if (keyframe.mOffset->mPercentage != aOffset) {
         break;
       }
+
       const bool matches = [&] {
         if (keyframe.mComposite != aCompositionToMatch) {
           return false;

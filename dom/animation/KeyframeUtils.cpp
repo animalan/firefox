@@ -269,7 +269,11 @@ nsTArray<Keyframe> KeyframeUtils::GetKeyframesFromObject(
 }
 
 /* static */
-void KeyframeUtils::DistributeKeyframes(nsTArray<Keyframe>& aKeyframes) {
+void KeyframeUtils::ComputeMissingKeyframeOffsets(
+    nsTArray<Keyframe>& aKeyframes) {
+  // FIXME: Will rewrite this function to handle both timeline range offset and
+  // percentage offset in the following patches.
+
   if (aKeyframes.IsEmpty()) {
     return;
   }
@@ -278,11 +282,13 @@ void KeyframeUtils::DistributeKeyframes(nsTArray<Keyframe>& aKeyframes) {
   // If there is only a single keyframe, then it gets 100%.
   if (aKeyframes.Length() > 1) {
     Keyframe& firstElement = aKeyframes[0];
-    firstElement.mComputedOffset = firstElement.mOffset.valueOr(0.0);
+    firstElement.mComputedOffset =
+        firstElement.mOffset ? firstElement.mOffset->mPercentage : 0.0;
     // We will fill in the last keyframe's offset below
   } else {
     Keyframe& lastElement = aKeyframes.LastElement();
-    lastElement.mComputedOffset = lastElement.mOffset.valueOr(1.0);
+    lastElement.mComputedOffset =
+        lastElement.mOffset ? lastElement.mOffset->mPercentage : 1.0;
   }
 
   // Fill in remaining missing offsets.
@@ -295,7 +301,8 @@ void KeyframeUtils::DistributeKeyframes(nsTArray<Keyframe>& aKeyframes) {
     while (keyframeB->mOffset.isNothing() && keyframeB != last) {
       ++keyframeB;
     }
-    keyframeB->mComputedOffset = keyframeB->mOffset.valueOr(1.0);
+    keyframeB->mComputedOffset =
+        keyframeB->mOffset ? keyframeB->mOffset->mPercentage : 1.0;
 
     // Fill computed offsets in (keyframe A, keyframe B).
     DistributeRange(Range<Keyframe>(keyframeA, keyframeB + 1));
@@ -326,6 +333,11 @@ nsTArray<AnimationProperty> KeyframeUtils::GetAnimationPropertiesFromKeyframes(
   const size_t len = aKeyframes.Length();
   for (size_t i = 0; i < len; ++i) {
     const Keyframe& frame = aKeyframes[i];
+    if (frame.mOffset && frame.mOffset->IsTimelineRangeOffset() &&
+        frame.mComputedOffset == Keyframe::kComputedOffsetNotSet) {
+      // FIXME: Bug 1824875. Resolve the TimelineRangeOffset.
+      continue;
+    }
     for (auto& value : computedValues[i]) {
       MOZ_ASSERT(frame.mComputedOffset != Keyframe::kComputedOffsetNotSet,
                  "Invalid computed offset");
@@ -456,7 +468,9 @@ static bool ConvertKeyframeSequence(JSContext* aCx, dom::Document* aDocument,
     }
 
     if (!keyframeDict.mOffset.IsNull()) {
-      keyframe->mOffset.emplace(keyframeDict.mOffset.Value());
+      // FIXME: Bug 2016574. Support TimelineRangeOffset dictionary.
+      keyframe->mOffset.emplace(
+          Keyframe::OffsetType::PercentageOffset(keyframeDict.mOffset.Value()));
     }
 
     keyframe->mComposite = keyframeDict.mComposite;
@@ -703,7 +717,11 @@ static bool HasValidOffsets(const nsTArray<Keyframe>& aKeyframes) {
   double offset = 0.0;
   for (const Keyframe& keyframe : aKeyframes) {
     if (keyframe.mOffset) {
-      double thisOffset = keyframe.mOffset.value();
+      // FIXME: Bug 2016574. This function is called from the process of
+      // script-generated keyframes, so we don't need to worry about range names
+      // now.
+      MOZ_ASSERT(!keyframe.mOffset->IsTimelineRangeOffset());
+      double thisOffset = keyframe.mOffset->mPercentage;
       if (thisOffset < offset || thisOffset > 1.0f) {
         return false;
       }
@@ -1075,7 +1093,8 @@ static void GetKeyframeListFromPropertyIndexedKeyframe(
       offsets ? std::min(offsets->Length(), aResult.Length()) : 0;
   for (size_t i = 0; i < offsetsToFill; i++) {
     if (!offsets->ElementAt(i).IsNull()) {
-      aResult[i].mOffset.emplace(offsets->ElementAt(i).Value());
+      aResult[i].mOffset.emplace(Keyframe::OffsetType::PercentageOffset(
+          offsets->ElementAt(i).Value()));
     }
   }
 

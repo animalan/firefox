@@ -253,7 +253,7 @@ void KeyframeEffect::SetKeyframes(nsTArray<Keyframe>&& aKeyframes,
   }
 
   mKeyframes = std::move(aKeyframes);
-  KeyframeUtils::DistributeKeyframes(mKeyframes);
+  KeyframeUtils::ComputeMissingKeyframeOffsets(mKeyframes);
 
   if (mAnimation && mAnimation->IsRelevant()) {
     MutationObservers::NotifyAnimationChanged(mAnimation);
@@ -1259,11 +1259,23 @@ void KeyframeEffect::GetKeyframes(JSContext* aCx, nsTArray<JSObject*>& aResult,
     // Set up a dictionary object for the explicit members
     BaseComputedKeyframe keyframeDict;
     if (keyframe.mOffset) {
-      keyframeDict.mOffset.SetValue(keyframe.mOffset.value());
+      // FIXME: Bug 2016574. Add range name to BaseKeyframe.
+      if (!keyframe.mOffset->IsTimelineRangeOffset()) {
+        keyframeDict.mOffset.SetValue(keyframe.mOffset->mPercentage);
+      }
     }
-    MOZ_ASSERT(keyframe.mComputedOffset != Keyframe::kComputedOffsetNotSet,
-               "Invalid computed offset");
-    keyframeDict.mComputedOffset.Construct(keyframe.mComputedOffset);
+    if (keyframe.mComputedOffset == Keyframe::kComputedOffsetNotSet) {
+      MOZ_ASSERT(keyframe.mOffset && keyframe.mOffset->IsTimelineRangeOffset(),
+                 "Invalid computed offset");
+      // FIXME: Bug 2039388. This may happen if the associated timeline doesn't
+      // support this timeline range name, or the layout is not ready so we
+      // cannot resolve the timeline range name. This is not specced so we use
+      // "NaN" to match the behavior of other browsers.
+      keyframeDict.mComputedOffset.Construct(
+          std::numeric_limits<double>::quiet_NaN());
+    } else {
+      keyframeDict.mComputedOffset.Construct(keyframe.mComputedOffset);
+    }
     if (keyframe.mTimingFunction) {
       keyframeDict.mEasing.Truncate();
       keyframe.mTimingFunction.ref().AppendToString(keyframeDict.mEasing);
