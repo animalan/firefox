@@ -1290,7 +1290,7 @@ SettingGroupManager.registerGroups({
             l10nId: "preferences-ai-controls-block-ai",
             control: "moz-toggle",
             controlAttrs: {
-              headinglevel: 3,
+              headinglevel: 2,
               inputlayout: "inline-end",
             },
             options: [

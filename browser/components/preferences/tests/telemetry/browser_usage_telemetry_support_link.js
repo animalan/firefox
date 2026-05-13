@@ -52,13 +52,16 @@ async function createSettingWithSupportLink(doc, win, settingId, config) {
   return doc.getElementById(settingId);
 }
 
+// Finn Note
 async function activateSupportLinkAndVerifyTelemetry(
   supportLink,
   linkId,
   win,
   useKeyboard = false
 ) {
+  console.log("INNER STEP 1");
   let linkClickPromise = BrowserTestUtils.waitForNewTab(gBrowser, null, true);
+  console.log("INNER STEP 2");
 
   if (useKeyboard) {
     supportLink.focus();
@@ -68,12 +71,15 @@ async function activateSupportLinkAndVerifyTelemetry(
     EventUtils.synthesizeMouseAtCenter(supportLink, {}, win);
     // EventUtils.synthesizeMouse(supportLink, {}, win);
   }
+  console.log("INNER STEP 3");
 
   let tab = await linkClickPromise;
   Assert.ok(tab, "support link should open a new tab");
   BrowserTestUtils.removeTab(tab);
 
+  console.log("INNER STEP 4");
   let snapshot = TelemetryTestUtils.getProcessScalars("parent", true, true);
+  console.log("INNER STEP 5");
   TelemetryTestUtils.assertKeyedScalar(
     snapshot,
     "browser.ui.interaction.preferences_paneGeneral",
@@ -84,11 +90,13 @@ async function activateSupportLinkAndVerifyTelemetry(
   await assertSupportLinkInteraction(linkId, 1);
 }
 
+// Finn Note: This is the culprit
 add_task(async function testSupportLinkTelemetry() {
   await openPreferencesViaOpenPreferencesAPI("paneGeneral", {
     leaveOpen: true,
   });
   await resetTelemetry();
+  console.log("STEP 1");
 
   const doc = gBrowser.contentDocument;
   const win = doc.documentGlobal;
@@ -105,6 +113,7 @@ add_task(async function testSupportLinkTelemetry() {
       supportPage: "how-generate-secure-password-firefox",
     }
   );
+  console.log("STEP 3");
   Assert.ok(settingControl, "setting control should exist");
 
   let supportLink = settingControl.shadowRoot.querySelector(
@@ -113,12 +122,18 @@ add_task(async function testSupportLinkTelemetry() {
   Assert.ok(supportLink, "support link should exist in shadow DOM");
 
   info("clicking support link");
+  // Finn Note: This is the await where we're failing
   await activateSupportLinkAndVerifyTelemetry(supportLink, LINK_ID, win);
+  console.log("STEP 4");
 
   await resetTelemetry();
 
+  console.log("STEP 5");
+
   info("activating support link with keyboard");
   await activateSupportLinkAndVerifyTelemetry(supportLink, LINK_ID, win, true);
+
+  console.log("STEP 6");
 
   gBrowser.removeCurrentTab();
 });
