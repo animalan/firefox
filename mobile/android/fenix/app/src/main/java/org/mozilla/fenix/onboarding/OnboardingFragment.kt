@@ -80,7 +80,7 @@ class OnboardingFragment : Fragment() {
     private val removeMarketingFeature = ViewBoundFeatureWrapper<MarketingPageRemovalSupport>()
 
     private val rtamoAttributionHandler by lazy {
-        RtamoAttributionHandler(requireContext().settings(), requireComponents.addonsProvider)
+        RtamoAttributionHandler(requireContext(), requireContext().settings(), requireComponents.addonsProvider)
     }
 
     private val termsOfServiceEventHandler by lazy {

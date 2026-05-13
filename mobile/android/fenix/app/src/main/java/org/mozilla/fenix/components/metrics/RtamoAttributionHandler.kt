@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.components.metrics
 
+import android.content.Context
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +12,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import mozilla.components.feature.addons.AddonsProvider
+import mozilla.components.feature.addons.ui.translateName
 import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.fenix.GleanMetrics.Addons
 import org.mozilla.fenix.utils.Settings
@@ -27,12 +29,14 @@ private const val EXPECTED_UTM_CONTENT_PATTERN_PREFIX = "rta%3A"
  *
  * When detected, the addon's download URL is fetched from AMO and stored in [settings].
  *
+ * @param context [Context] used for various system interactions.
  * @param settings The settings object used to persist RTAMO state.
  * @param addonsProvider The provider used to fetch addon download URLs from AMO.
  * @param ioDispatcher Coroutine dispatcher for IO operations.
  * @param scope Coroutine scope to launch IO work in.
  */
 class RtamoAttributionHandler(
+    private val context: Context,
     private val settings: Settings,
     private val addonsProvider: AddonsProvider,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -53,10 +57,7 @@ class RtamoAttributionHandler(
                 fetchRtamoAddonDownloadUrl(installReferrerResponse)
             } catch (e: Exception) {
                 logger.error("Failed to fetch RTAMO addon", e)
-
-                if (settings.isTelemetryEnabled) {
-                    Addons.rtamoFailed.record(Addons.RtamoFailedExtra(RTAMOFailReason.UNKNOWN_URL.value))
-                }
+                Addons.rtamoFailed.record(Addons.RtamoFailedExtra(RTAMOFailReason.UNKNOWN_URL.value))
             }
         }
     }
@@ -66,20 +67,21 @@ class RtamoAttributionHandler(
         if (utmParams.source != EXPECTED_UTM_SOURCE) return
 
         if (!utmParams.content.startsWith(EXPECTED_UTM_CONTENT_PATTERN_PREFIX)) {
-            if (settings.isTelemetryEnabled) {
-                Addons.rtamoFailed.record(Addons.RtamoFailedExtra(RTAMOFailReason.INVALID_ID.value))
-            }
-
+            Addons.rtamoFailed.record(Addons.RtamoFailedExtra(RTAMOFailReason.INVALID_ID.value))
             return
         }
 
-        val downloadUrl = addonsProvider.getAddonByID(utmParams.content)?.downloadUrl
-        if (!downloadUrl.isNullOrBlank() && currentCoroutineContext().isActive) {
+        val addonDetails = addonsProvider.getAddonByID(utmParams.content)
+        val downloadUrl = addonDetails?.downloadUrl
+        if (downloadUrl.isNullOrBlank()) {
+            logger.error("Failed to fetch RTAMO addon download URL")
+            Addons.rtamoFailed.record(Addons.RtamoFailedExtra(RTAMOFailReason.UNKNOWN_URL.value))
+        } else if (currentCoroutineContext().isActive) {
             settings.rtamoAddonDownloadUrl = downloadUrl
+            settings.rtamoAddonImageUrl = addonDetails.iconUrl
+            settings.rtamoAddonName = addonDetails.translateName(context)
 
-            if (settings.isTelemetryEnabled) {
-                Addons.rtamoIdentified.record(Addons.RtamoIdentifiedExtra(downloadUrl))
-            }
+            Addons.rtamoIdentified.record(Addons.RtamoIdentifiedExtra(downloadUrl))
         }
     }
 
