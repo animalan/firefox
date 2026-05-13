@@ -64,6 +64,7 @@ data class LinkTextState(
  * @param text The complete text.
  * @param linkTextStates The clickable part of the text. The order of the states added in the list
  * should be the same as the links shown in the text.
+ * @param modifier The [Modifier] to be applied to the underlying [Text].
  * @param style [TextStyle] applied to the text.
  * @param linkTextColor [Color] applied to the clickable part of the text.
  * @param linkTextDecoration [TextDecoration] applied to the clickable part of the text.
@@ -75,6 +76,7 @@ data class LinkTextState(
 fun LinkText(
     text: String,
     linkTextStates: List<LinkTextState>,
+    modifier: Modifier = Modifier,
     style: TextStyle = AcornTheme.typography.body2.copy(
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -98,28 +100,30 @@ fun LinkText(
         LinksDialog(linkTextStates) { showDialog.value = false }
     }
 
-    val modifier = if (shouldApplyAccessibleSize) {
-        Modifier.minimumInteractiveComponentSize()
-    } else {
-        Modifier
-    }
-
     Text(
         text = annotatedString,
         style = style,
-        modifier = modifier.clearAndSetSemantics {
-            onClick {
-                if (linkTextStates.size > 1) {
-                    showDialog.value = true
+        modifier = modifier
+            .then(
+                if (shouldApplyAccessibleSize) {
+                    Modifier.minimumInteractiveComponentSize()
                 } else {
-                    linkTextStates.firstOrNull()?.let {
-                        it.onClick(it.url)
+                    Modifier
+                },
+            )
+            .clearAndSetSemantics {
+                onClick {
+                    if (linkTextStates.size > 1) {
+                        showDialog.value = true
+                    } else {
+                        linkTextStates.firstOrNull()?.let {
+                            it.onClick(it.url)
+                        }
                     }
+                    return@onClick true
                 }
-                return@onClick true
-            }
-            contentDescription = "$annotatedString $linksAvailable"
-        },
+                contentDescription = "$annotatedString $linksAvailable"
+            },
         textAlign = textAlign,
     )
 }
