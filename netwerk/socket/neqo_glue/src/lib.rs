@@ -2908,7 +2908,7 @@ fn probe_apple_fast_path_inner(send_fd: c_int, recv_fd: c_int) -> io::Result<()>
     use neqo_common::Ecn;
     use rustix::{
         fs::{fcntl_getfl, fcntl_setfl, OFlags},
-        net::{getsockname, sockopt::{set_socket_timeout, Timeout}, SocketAddrAny},
+        net::{getsockname, sockopt::{set_socket_timeout, Timeout}},
     };
 
     // Wrap a raw fd in neqo_udp::Socket, enable the fast path, restore blocking
@@ -2921,11 +2921,9 @@ fn probe_apple_fast_path_inner(send_fd: c_int, recv_fd: c_int) -> io::Result<()>
         unsafe { socket.enable_apple_fast_path() };
         fcntl_setfl(bfd, fcntl_getfl(bfd)? & !OFlags::NONBLOCK)?;
         set_socket_timeout(bfd, Timeout::Recv, Some(Duration::from_secs(1)))?;
-        let addr: SocketAddr = match getsockname(bfd)? {
-            SocketAddrAny::V4(a) => a.into(),
-            SocketAddrAny::V6(a) => a.into(),
-            _ => return Err(io::Error::other("unexpected address family")),
-        };
+        let addr: SocketAddr = getsockname(bfd)?
+            .try_into()
+            .map_err(|e: rustix::io::Errno| io::Error::from_raw_os_error(e.raw_os_error()))?;
         Ok((socket, addr))
     };
     let (sender, send_addr) = make_socket(send_fd)?;
