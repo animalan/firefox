@@ -590,10 +590,6 @@ class LoadedScriptDelegate {
   bool IsSerializedStencil() const {
     return GetLoadedScript()->IsSerializedStencil();
   }
-  bool IsCachedStencil() const { return GetLoadedScript()->IsCachedStencil(); }
-  bool IsInvalidatedCachedStencil() const {
-    return GetLoadedScript()->IsInvalidatedCachedStencil();
-  }
   // Returns true if this delegate (ScriptLoadRequest) is loaded from the
   // SharedScriptCache.
   //
