@@ -8,7 +8,6 @@ import androidx.annotation.OptIn
 import mozilla.components.ExperimentalAndroidComponentsApi
 import mozilla.components.concept.engine.ipprotection.IPProtectionDelegate
 import mozilla.components.concept.engine.ipprotection.IPProtectionHandler
-import mozilla.components.concept.engine.ipprotection.ServiceState
 import org.mozilla.geckoview.ExperimentalGeckoViewApi
 import org.mozilla.geckoview.IPProtectionController as GeckoViewIPProtectionController
 
@@ -18,22 +17,15 @@ internal class GeckoIPProtectionDelegate(
     private val delegate: IPProtectionDelegate,
 ) : GeckoViewIPProtectionController.Delegate {
 
-    /**
-     * FIXME(IPP) We are keeping a copy of state info that needs to be in-sync to reduce the delegate calls.
-     *  If we notify the delegate separately. The single source of truth there will not be poisoned.
-     */
     private var stateInfo = IPProtectionHandler.StateInfo()
 
     override fun onServiceStateChanged(state: Int) {
-        stateInfo = stateInfo.copy(serviceState = state.toServiceState())
+        stateInfo = stateInfo.copy(serviceState = state.toConceptServiceState())
         delegate.onStateChanged(stateInfo)
     }
 
     override fun onProxyStateChanged(state: GeckoViewIPProtectionController.ProxyState) {
         stateInfo = stateInfo.copy(
-            // FIXME(IPP) this is a footgun waiting to happen. We are relying on the int values from
-            //  org.mozilla.geckoview.IPProtectionController.ProxyState to continue matching with
-            //  mozilla.components.concept.engine.ipprotection.IPProtectionHandler.StateInfo.PROXY_STATE_* values.
             proxyState = state.state,
             lastError = state.errorType,
         )
@@ -52,18 +44,19 @@ internal class GeckoIPProtectionDelegate(
 
 @OptIn(ExperimentalGeckoViewApi::class)
 @kotlin.OptIn(ExperimentalAndroidComponentsApi::class)
-internal fun Int.toServiceState(): ServiceState = when (this) {
+internal fun Int.toConceptServiceState(): Int = when (this) {
     GeckoViewIPProtectionController.SERVICE_STATE_UNINITIALIZED ->
-        ServiceState.Uninitialized
+        IPProtectionHandler.StateInfo.SERVICE_STATE_UNINITIALIZED
     GeckoViewIPProtectionController.SERVICE_STATE_UNAVAILABLE ->
-        ServiceState.Unavailable
+        IPProtectionHandler.StateInfo.SERVICE_STATE_UNAVAILABLE
     GeckoViewIPProtectionController.SERVICE_STATE_UNAUTHENTICATED ->
-        ServiceState.Unauthenticated
+        IPProtectionHandler.StateInfo.SERVICE_STATE_UNAUTHENTICATED
     GeckoViewIPProtectionController.SERVICE_STATE_READY ->
-        ServiceState.Ready
-    GeckoViewIPProtectionController.SERVICE_STATE_OPTED_OUT ->
-        ServiceState.OptedOut
+        IPProtectionHandler.StateInfo.SERVICE_STATE_READY
+    GeckoViewIPProtectionController.SERVICE_STATE_OPTED_OUT -> {
+        IPProtectionHandler.StateInfo.SERVICE_STATE_UNAVAILABLE
+    }
     else -> {
-        ServiceState.Unavailable
+        IPProtectionHandler.StateInfo.SERVICE_STATE_UNINITIALIZED
     }
 }

@@ -62,8 +62,6 @@ import mozilla.components.concept.engine.EngineView
 import mozilla.components.concept.storage.HistoryMetadataKey
 import mozilla.components.feature.contextmenu.DefaultSelectionActionDelegate
 import mozilla.components.feature.customtabs.isCustomTabIntent
-import mozilla.components.feature.ipprotection.IPProtectionFxaAuthFlow
-import mozilla.components.feature.ipprotection.IPProtectionFxaAuthFlow.Companion.EntrypointConfig
 import mozilla.components.feature.media.ext.findActiveMediaTab
 import mozilla.components.feature.privatemode.notification.PrivateNotificationFeature
 import mozilla.components.feature.search.BrowserStoreSearchAdapter
@@ -100,12 +98,9 @@ import org.mozilla.fenix.browser.BrowserFragment
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.browser.browsingmode.BrowsingModeManager
 import org.mozilla.fenix.browser.browsingmode.DefaultBrowsingModeManager
-import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.AppAction.ShareAction
 import org.mozilla.fenix.components.appstate.OrientationMode
-import org.mozilla.fenix.components.ipprotection.ErrorMessages
-import org.mozilla.fenix.components.ipprotection.IPProtectionInfoPrompter
 import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.components.menu.share.QRCodeDialogFragment
 import org.mozilla.fenix.components.metrics.BreadcrumbsRecorder
@@ -238,20 +233,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, Crash
         )
     }
 
-    private val ipProtectionPrompter by lazy {
-        IPProtectionInfoPrompter(
-            store = components.ipProtection.store,
-            appStore = components.appStore,
-            errorMessages = ErrorMessages(
-                connectionError = this.getString(R.string.ip_protection_connection_error_snackbar),
-                dataLimitReached = this.getString(
-                    R.string.ip_protection_data_limit_reached_snackbar,
-                    FxNimbus.features.ipProtection.value().dataLimitGigabyte,
-                ),
-            ),
-        )
-    }
-
     private val translationsAIControllableFeatureRegistrar by lazy {
         with(components) {
             TranslationsAIControllableFeatureRegistrar(
@@ -335,22 +316,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, Crash
                 preferences = settings().preferences,
                 privateBrowsingLockPrefKey = getString(R.string.pref_key_private_browsing_locked),
             ),
-        )
-    }
-
-    private val ipProtectionFxaAccountAuthFlow by lazy {
-        IPProtectionFxaAuthFlow(
-            accountManager = components.backgroundServices.accountManager,
-            store = components.ipProtection.store,
-            entrypointConfig = EntrypointConfig(
-                authorization = FenixFxAEntryPoint.IPProtectionMainMenu,
-                authentication = FenixFxAEntryPoint.IPProtectionOnboarding,
-            ),
-            onAuthRequested = { url, onCompleteAction ->
-                val intent = SupportUtils.createAuthCustomTabIntent(this, url)
-                intent.putExtra("OnCompleteAction", onCompleteAction)
-                startActivity(intent)
-            },
         )
     }
 
@@ -606,9 +571,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, Crash
             summarizeToolbarHighlightBinding,
             components.core.summarizationSettings,
             translationsAIControllableFeatureRegistrar,
-            ipProtectionFxaAccountAuthFlow, // FIXME(IPP) move this to each UI fragment with separate entry points.
-            ipProtectionPrompter,
-            components.ipProtection.storageSynchronizer,
         )
 
         if (!isCustomTabIntent(intent)) {

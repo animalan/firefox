@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@file:OptIn(ExperimentalAndroidComponentsApi::class)
-
 package org.mozilla.fenix.components.toolbar
 
 import android.graphics.Bitmap
@@ -12,6 +10,7 @@ import android.util.Patterns
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import io.mockk.every
 import io.mockk.mockk
@@ -44,12 +43,11 @@ import mozilla.components.compose.browser.toolbar.store.BrowserToolbarStore
 import mozilla.components.compose.browser.toolbar.store.ProgressBarConfig
 import mozilla.components.concept.engine.cookiehandling.CookieBannersStorage
 import mozilla.components.concept.engine.ipprotection.IPProtectionHandler.StateInfo
-import mozilla.components.concept.engine.ipprotection.ServiceState
 import mozilla.components.concept.engine.permission.SitePermissionsStorage
-import mozilla.components.feature.ipprotection.store.IPProtectionAction
-import mozilla.components.feature.ipprotection.store.IPProtectionStore
-import mozilla.components.feature.ipprotection.store.state.Authorized
-import mozilla.components.feature.ipprotection.store.state.IPProtectionState
+import mozilla.components.feature.ipprotection.Authorized
+import mozilla.components.feature.ipprotection.IPProtectionAction
+import mozilla.components.feature.ipprotection.IPProtectionState
+import mozilla.components.feature.ipprotection.IPProtectionStore
 import mozilla.components.feature.session.TrackingProtectionUseCases
 import mozilla.components.feature.tabs.CustomTabsUseCases
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
@@ -77,6 +75,7 @@ import org.mozilla.fenix.components.toolbar.CustomTabBrowserToolbarMiddleware.Co
 import org.mozilla.fenix.components.toolbar.CustomTabBrowserToolbarMiddleware.Companion.StartPageActions.SiteInfoClicked
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.helpers.FenixGleanTestRule
+import org.mozilla.fenix.helpers.lifecycle.TestLifecycleOwner
 import org.mozilla.fenix.telemetry.ACTION_SECURITY_INDICATOR_CLICKED
 import org.mozilla.fenix.telemetry.SOURCE_CUSTOM_BAR
 import org.mozilla.fenix.utils.Settings
@@ -119,6 +118,7 @@ class CustomTabBrowserToolbarMiddlewareTest {
         every { getPublicSuffixPlusOne(any()) } returns CompletableDeferred(null)
     }
     private val clipboard: ClipboardHandler = mockk()
+    private val lifecycleOwner = TestLifecycleOwner(Lifecycle.State.RESUMED)
     private val navController: NavController = mockk()
     private val closeTabDelegate: () -> Unit = {}
     private val settings: Settings = mockk {
@@ -540,7 +540,7 @@ class CustomTabBrowserToolbarMiddlewareTest {
         ipProtectionStore.dispatch(
             IPProtectionAction.EngineStateChanged(
                 StateInfo(
-                    serviceState = ServiceState.Ready,
+                    serviceState = StateInfo.SERVICE_STATE_READY,
                     proxyState = StateInfo.PROXY_STATE_ACTIVE,
                 ),
             ),
@@ -584,7 +584,7 @@ class CustomTabBrowserToolbarMiddlewareTest {
         ipProtectionStore.dispatch(
             IPProtectionAction.EngineStateChanged(
                 StateInfo(
-                    serviceState = ServiceState.Ready,
+                    serviceState = StateInfo.SERVICE_STATE_READY,
                     proxyState = StateInfo.PROXY_STATE_READY,
                 ),
             ),

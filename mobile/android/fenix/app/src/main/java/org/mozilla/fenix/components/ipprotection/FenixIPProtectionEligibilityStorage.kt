@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.map
 import mozilla.components.browser.state.search.RegionState
 import mozilla.components.browser.state.store.BrowserStore
+import mozilla.components.feature.ipprotection.EligibilityStatus
 import mozilla.components.feature.ipprotection.IPProtectionEligibilityStorage
-import mozilla.components.feature.ipprotection.store.state.EligibilityStatus
 import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.settings.registerOnSharedPreferenceChangeListener
 
@@ -38,14 +38,14 @@ class FenixIPProtectionEligibilityStorage(
 
     override val eligibilityStatus: Flow<EligibilityStatus> =
         combine(
-            browserStore.stateFlow.mapNotNull { it.search.region },
+            browserStore.stateFlow.map { it.search.region }.distinctUntilChanged(),
             secretEnabled,
         ) { region, secretOverride ->
             val nimbus = FxNimbus.features.ipProtection.value()
             val status = when {
                 secretOverride -> EligibilityStatus.Eligible
                 !nimbus.enabled -> EligibilityStatus.Ineligible
-                region.home in nimbus.allowedRegions -> EligibilityStatus.Eligible
+                region?.home in nimbus.allowedRegions -> EligibilityStatus.Eligible
                 else -> EligibilityStatus.UnsupportedRegion
             }
             status

@@ -45,13 +45,11 @@ import mozilla.components.ExperimentalAndroidComponentsApi
 import mozilla.components.compose.base.annotation.FlexibleWindowPreview
 import mozilla.components.compose.base.button.FilledButton
 import mozilla.components.concept.engine.ipprotection.IPProtectionHandler
-import mozilla.components.concept.engine.ipprotection.ServiceState
-import mozilla.components.feature.ipprotection.store.state.Authorized
-import mozilla.components.feature.ipprotection.store.state.BYTES_PER_GB
-import mozilla.components.feature.ipprotection.store.state.EligibilityStatus
-import mozilla.components.feature.ipprotection.store.state.IPProtectionState
-import mozilla.components.feature.ipprotection.store.state.maxDataGb
-import mozilla.components.feature.ipprotection.store.state.usedDataGb
+import mozilla.components.feature.ipprotection.AuthenticationRequired
+import mozilla.components.feature.ipprotection.Authorized
+import mozilla.components.feature.ipprotection.BYTES_PER_GB
+import mozilla.components.feature.ipprotection.EligibilityStatus
+import mozilla.components.feature.ipprotection.IPProtectionState
 import org.mozilla.fenix.R
 import org.mozilla.fenix.compose.list.TextListItem
 import org.mozilla.fenix.theme.FirefoxTheme
@@ -342,7 +340,7 @@ private fun IPProtectionScreenNotEnrolledPreview(
         IPProtectionScreen(
             state = IPProtectionState(
                 eligibilityStatus = EligibilityStatus.Eligible,
-                serviceStatus = ServiceState.Unauthenticated,
+                proxyStatus = AuthenticationRequired,
             ),
             onVpnToggle = {},
             onLearnMoreClick = {},

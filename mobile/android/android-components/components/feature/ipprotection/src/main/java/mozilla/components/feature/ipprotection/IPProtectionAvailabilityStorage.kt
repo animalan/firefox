@@ -7,13 +7,13 @@ package mozilla.components.feature.ipprotection
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Storage exposing the eligibility of the IP Protection feature.
+ * Storage exposing the availability of the IP Protection feature.
  */
-interface IPProtectionEligibilityStorage {
+interface IPProtectionAvailabilityStorage {
     /**
-     * Emits the user's current [EligibilityStatus] for IP Protection.
+     * Emits whether the IP Protection feature is currently available to the user.
      */
-    val eligibilityStatus: Flow<EligibilityStatus>
+    val isFeatureAvailable: Flow<Boolean>
 
     /**
      * Initializes the storage.

@@ -2,20 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@file:OptIn(ExperimentalAndroidComponentsApi::class)
-
 package org.mozilla.fenix.components.menu
 
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import mozilla.components.ExperimentalAndroidComponentsApi
 import mozilla.components.concept.engine.ipprotection.IPProtectionHandler.StateInfo
-import mozilla.components.concept.engine.ipprotection.ServiceState
-import mozilla.components.feature.ipprotection.store.IPProtectionAction
-import mozilla.components.feature.ipprotection.store.IPProtectionStore
-import mozilla.components.feature.ipprotection.store.state.Authorized
-import mozilla.components.feature.ipprotection.store.state.BYTES_PER_GB
-import mozilla.components.feature.ipprotection.store.state.IPProtectionState
+import mozilla.components.feature.ipprotection.Authorized
+import mozilla.components.feature.ipprotection.IPProtectionAction
+import mozilla.components.feature.ipprotection.IPProtectionState
+import mozilla.components.feature.ipprotection.IPProtectionStore
 import mozilla.components.support.test.middleware.CaptureActionsMiddleware
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -68,7 +64,7 @@ class IPProtectionMenuBindingTest {
         ipProtectionStore.dispatch(
             IPProtectionAction.EngineStateChanged(
                 StateInfo(
-                    serviceState = ServiceState.Ready,
+                    serviceState = StateInfo.SERVICE_STATE_READY,
                     proxyState = StateInfo.PROXY_STATE_ACTIVE,
                 ),
             ),
@@ -84,29 +80,29 @@ class IPProtectionMenuBindingTest {
     @Test
     fun `WHEN proxy status maps to menu status THEN all statuses are mapped correctly`() = runTest {
         val cases = listOf(
-            StateInfo(serviceState = ServiceState.Uninitialized) to IPProtectionMenuStatus.Disabled,
+            StateInfo(serviceState = StateInfo.SERVICE_STATE_UNINITIALIZED) to IPProtectionMenuStatus.Disabled,
             StateInfo(
-                serviceState = ServiceState.Ready,
+                serviceState = StateInfo.SERVICE_STATE_READY,
                 proxyState = StateInfo.PROXY_STATE_READY,
             ) to IPProtectionMenuStatus.Disabled,
             StateInfo(
-                serviceState = ServiceState.Ready,
+                serviceState = StateInfo.SERVICE_STATE_READY,
                 proxyState = StateInfo.PROXY_STATE_ACTIVATING,
             ) to IPProtectionMenuStatus.Activating,
             StateInfo(
-                serviceState = ServiceState.Ready,
+                serviceState = StateInfo.SERVICE_STATE_READY,
                 proxyState = StateInfo.PROXY_STATE_ACTIVE,
             ) to IPProtectionMenuStatus.Enabled,
             StateInfo(
-                serviceState = ServiceState.Ready,
+                serviceState = StateInfo.SERVICE_STATE_READY,
                 proxyState = StateInfo.PROXY_STATE_PAUSED,
             ) to IPProtectionMenuStatus.DataLimitReached,
             StateInfo(
-                serviceState = ServiceState.Ready,
+                serviceState = StateInfo.SERVICE_STATE_READY,
                 proxyState = StateInfo.PROXY_STATE_ERROR,
             ) to IPProtectionMenuStatus.ConnectionError,
             StateInfo(
-                serviceState = ServiceState.Unauthenticated,
+                serviceState = StateInfo.SERVICE_STATE_UNAUTHENTICATED,
             ) to IPProtectionMenuStatus.AuthRequired,
         )
 

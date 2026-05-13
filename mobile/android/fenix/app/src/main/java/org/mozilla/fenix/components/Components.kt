@@ -18,6 +18,7 @@ import mozilla.components.feature.addons.amo.AMOAddonsProvider
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
 import mozilla.components.feature.addons.update.DefaultAddonUpdater
 import mozilla.components.feature.autofill.AutofillConfiguration
+import mozilla.components.feature.ipprotection.IPProtectionStore
 import mozilla.components.feature.summarize.PageSummaryFeature
 import mozilla.components.feature.summarize.settings.SummarizationSettings
 import mozilla.components.lib.ai.controls.default
@@ -57,7 +58,6 @@ import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.components.appstate.setup.checklist.SetupChecklistState
 import org.mozilla.fenix.components.appstate.setup.checklist.getSetupChecklistCollection
 import org.mozilla.fenix.components.appstate.sports.SportsWidgetState
-import org.mozilla.fenix.components.ipprotection.IPProtection
 import org.mozilla.fenix.components.llm.Llm
 import org.mozilla.fenix.components.llm.ext.accessTokenProvider
 import org.mozilla.fenix.components.metrics.MetricsMiddleware
@@ -254,6 +254,7 @@ class Components(private val context: Context) {
     val clipboardHandler by lazyMonitored { ClipboardHandler(context) }
     val performance by lazyMonitored { PerformanceComponent() }
     val push by lazyMonitored { Push(context, analytics.crashReporter) }
+    val ipProtectionStore by lazyMonitored { IPProtectionStore() }
     val wifiConnectionMonitor by lazyMonitored { WifiConnectionMonitor(context as Application) }
 
     val strictMode by lazyMonitored {
@@ -504,17 +505,6 @@ class Components(private val context: Context) {
     }
 
     val clientUUID by lazyMonitored { ClientUUID.build(context) }
-
-    val ipProtection by lazyMonitored {
-        IPProtection(
-            engine = core.engine,
-            browserStore = core.store,
-            syncStore = backgroundServices.syncStore,
-            lazyFxaAccountManager = lazy { backgroundServices.accountManager },
-            settings = settings,
-            context = context,
-        )
-    }
 }
 
 /**

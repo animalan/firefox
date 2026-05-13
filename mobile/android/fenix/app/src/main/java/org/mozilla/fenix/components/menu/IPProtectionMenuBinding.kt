@@ -4,17 +4,20 @@
 
 package org.mozilla.fenix.components.menu
 
+import androidx.annotation.VisibleForTesting
+import androidx.annotation.VisibleForTesting.Companion.PRIVATE
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import mozilla.components.feature.ipprotection.store.IPProtectionStore
-import mozilla.components.feature.ipprotection.store.state.AccountStatus
-import mozilla.components.feature.ipprotection.store.state.Authorized
-import mozilla.components.feature.ipprotection.store.state.IPProtectionState
-import mozilla.components.feature.ipprotection.store.state.Uninitialized
-import mozilla.components.feature.ipprotection.store.state.maxDataGb
+import mozilla.components.feature.ipprotection.AuthenticationRequired
+import mozilla.components.feature.ipprotection.AuthorizationRequired
+import mozilla.components.feature.ipprotection.Authorized
+import mozilla.components.feature.ipprotection.IPProtectionState
+import mozilla.components.feature.ipprotection.IPProtectionStore
+import mozilla.components.feature.ipprotection.ProxyStatus
+import mozilla.components.feature.ipprotection.Uninitialized
 import mozilla.components.lib.state.Store
 import mozilla.components.lib.state.helpers.AbstractBinding
 import org.mozilla.fenix.components.menu.store.IPProtectionMenuState
@@ -22,6 +25,9 @@ import org.mozilla.fenix.components.menu.store.IPProtectionMenuStatus
 import org.mozilla.fenix.components.menu.store.MenuAction
 import org.mozilla.fenix.components.menu.store.MenuState
 import org.mozilla.fenix.components.menu.store.MenuStore
+
+@VisibleForTesting(otherwise = PRIVATE)
+internal const val BYTES_PER_GB = 1024 * 1024 * 1024f
 
 /**
  * Helper for observing [IPProtectionState] and dispatching menu state updates.
@@ -48,24 +54,22 @@ class IPProtectionMenuBinding(
     }
 
     private fun IPProtectionState.toMenuState() = IPProtectionMenuState(
-        status = this.toMenuStatus(),
+        status = proxyStatus.toMenuStatus(),
         dataLimitGb = if (maxDataBytes > 0) maxDataGb.toInt() else -1,
     )
 
-    private fun IPProtectionState.toMenuStatus() = when {
-        proxyStatus is Uninitialized || proxyStatus is Authorized.Idle -> IPProtectionMenuStatus.Disabled
+    private fun ProxyStatus.toMenuStatus() = when (this) {
+        is Uninitialized,
+        is Authorized.Idle,
+            -> IPProtectionMenuStatus.Disabled
 
-        proxyStatus is Authorized.Activating -> IPProtectionMenuStatus.Activating
-        proxyStatus is Authorized.Active -> IPProtectionMenuStatus.Enabled
-        proxyStatus is Authorized.DataLimitReached -> IPProtectionMenuStatus.DataLimitReached
-        proxyStatus is Authorized.ConnectionError -> IPProtectionMenuStatus.ConnectionError
-        accountState.status == AccountStatus.NeedsAuthentication ||
-            accountState.status == AccountStatus.NeedsAuthorization -> {
-            IPProtectionMenuStatus.AuthRequired
-        }
+        is Authorized.Activating -> IPProtectionMenuStatus.Activating
+        is Authorized.Active -> IPProtectionMenuStatus.Enabled
+        is Authorized.DataLimitReached -> IPProtectionMenuStatus.DataLimitReached
+        is Authorized.ConnectionError -> IPProtectionMenuStatus.ConnectionError
 
-        else -> {
-            IPProtectionMenuStatus.Disabled
-        }
+        AuthenticationRequired,
+        AuthorizationRequired,
+            -> IPProtectionMenuStatus.AuthRequired
     }
 }
