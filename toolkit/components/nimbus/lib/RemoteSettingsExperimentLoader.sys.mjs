@@ -862,9 +862,9 @@ export class RemoteSettingsExperimentLoader {
    * and vice versa.
    */
   async onEnabledPrefChange() {
-    if (lazy.ExperimentAPI.enabled) {
+    if (!this._enabled && lazy.ExperimentAPI.enabled) {
       await this.enable();
-    } else {
+    } else if (this._enabled && !lazy.ExperimentAPI.enabled) {
       this.disable();
     }
   }
