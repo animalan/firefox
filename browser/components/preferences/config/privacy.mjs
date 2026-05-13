@@ -1385,7 +1385,6 @@ SettingGroupManager.registerGroups({
           imagesrc:
             "chrome://browser/content/ipprotection/assets/vpn-settings-get-started.svg",
           imagealignment: "end",
-          imagewidth: "large",
         },
         items: [
           {
