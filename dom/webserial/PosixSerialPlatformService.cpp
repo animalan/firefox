@@ -62,10 +62,23 @@ constexpr size_t kDeviceNameBufferSize = 256;
 static bool IsRealSerialPort(const char* aDevpath) {
   int fd = open(aDevpath, O_RDWR | O_NONBLOCK | O_NOCTTY);
   if (fd < 0) {
+    MOZ_LOG(gWebSerialLog, LogLevel::Debug,
+            ("IsRealSerialPort: open(%s, O_RDWR|O_NONBLOCK|O_NOCTTY) failed: "
+             "errno=%d (%s)",
+             aDevpath, errno, strerror(errno)));
     return false;
   }
   int status;
   bool isReal = ioctl(fd, TIOCMGET, &status) == 0;
+  if (isReal) {
+    MOZ_LOG(gWebSerialLog, LogLevel::Debug,
+            ("IsRealSerialPort: %s accepted (TIOCMGET status=0x%x)", aDevpath,
+             status));
+  } else {
+    MOZ_LOG(gWebSerialLog, LogLevel::Debug,
+            ("IsRealSerialPort: TIOCMGET on %s failed: errno=%d (%s)", aDevpath,
+             errno, strerror(errno)));
+  }
   close(fd);
   return isReal;
 }
