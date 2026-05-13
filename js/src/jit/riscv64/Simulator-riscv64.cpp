@@ -380,8 +380,8 @@ void RiscvDebugger::printAllRegsIncludingFPU() {
 
   printf("\n\n");
   // f0, f1, f2, ... f31.
-  MOZ_ASSERT(kNumFPURegisters % 2 == 0);
-  for (int i = 0; i < kNumFPURegisters; i += 2) {
+  MOZ_ASSERT(FloatRegisters::TotalPhys % 2 == 0);
+  for (uint32_t i = 0; i < FloatRegisters::TotalPhys; i += 2) {
     printf("%3s: 0x%016" PRIx64 "  %16.4e \t%3s: 0x%016" PRIx64 "  %16.4e\n",
            FPU_REG_INFO(i), FPU_REG_INFO(i + 1));
   }
