@@ -24,43 +24,43 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#ifdef JS_SIMULATOR_RISCV64
-#  include "jit/riscv64/Simulator-riscv64.h"
 
-#  include "mozilla/Casting.h"
+#include "jit/riscv64/Simulator-riscv64.h"
 
-#  include <cinttypes>
-#  include <float.h>
-#  include <iostream>
-#  include <limits>
+#include "mozilla/Casting.h"
 
-#  include "jit/AtomicOperations.h"
-#  include "jit/riscv64/Assembler-riscv64.h"
-#  include "js/UniquePtr.h"
-#  include "js/Utility.h"
-#  include "threading/LockGuard.h"
-#  include "vm/JSContext.h"
-#  include "vm/Runtime.h"
-#  include "wasm/WasmSignalHandlers.h"
+#include <cinttypes>
+#include <float.h>
+#include <iostream>
+#include <limits>
 
-#  define I8(v) static_cast<int8_t>(v)
-#  define I16(v) static_cast<int16_t>(v)
-#  define U16(v) static_cast<uint16_t>(v)
-#  define I32(v) static_cast<int32_t>(v)
-#  define U32(v) static_cast<uint32_t>(v)
-#  define I64(v) static_cast<int64_t>(v)
-#  define U64(v) static_cast<uint64_t>(v)
-#  define I128(v) static_cast<__int128_t>(v)
-#  define U128(v) static_cast<__uint128_t>(v)
+#include "jit/AtomicOperations.h"
+#include "jit/riscv64/Assembler-riscv64.h"
+#include "js/UniquePtr.h"
+#include "js/Utility.h"
+#include "threading/LockGuard.h"
+#include "vm/JSContext.h"
+#include "vm/Runtime.h"
+#include "wasm/WasmSignalHandlers.h"
 
-#  define REGIx_FORMAT PRIx64
-#  define REGId_FORMAT PRId64
+#define I8(v) static_cast<int8_t>(v)
+#define I16(v) static_cast<int16_t>(v)
+#define U16(v) static_cast<uint16_t>(v)
+#define I32(v) static_cast<int32_t>(v)
+#define U32(v) static_cast<uint32_t>(v)
+#define I64(v) static_cast<int64_t>(v)
+#define U64(v) static_cast<uint64_t>(v)
+#define I128(v) static_cast<__int128_t>(v)
+#define U128(v) static_cast<__uint128_t>(v)
 
-#  define I32_CHECK(v)                   \
-    ({                                   \
-      MOZ_ASSERT(I64(I32(v)) == I64(v)); \
-      I32((v));                          \
-    })
+#define REGIx_FORMAT PRIx64
+#define REGId_FORMAT PRId64
+
+#define I32_CHECK(v)                   \
+  ({                                   \
+    MOZ_ASSERT(I64(I32(v)) == I64(v)); \
+    I32((v));                          \
+  })
 
 namespace js {
 namespace jit {
@@ -79,14 +79,14 @@ static void UNREACHABLE() {
   MOZ_CRASH();
 }
 
-#  define UNSUPPORTED()                                                  \
-    do {                                                                 \
-      std::cout << "Unrecognized instruction [@pc=0x" << std::hex        \
-                << registers_[pc] << "]: 0x" << instr_.InstructionBits() \
-                << '\n';                                                 \
-      printf("Unsupported instruction.\n");                              \
-      MOZ_CRASH();                                                       \
-    } while (0)
+#define UNSUPPORTED()                                                  \
+  do {                                                                 \
+    std::cout << "Unrecognized instruction [@pc=0x" << std::hex        \
+              << registers_[pc] << "]: 0x" << instr_.InstructionBits() \
+              << '\n';                                                 \
+    printf("Unsupported instruction.\n");                              \
+    MOZ_CRASH();                                                       \
+  } while (0)
 
 static char* ReadLine(const char* prompt) {
   UniqueChars result;
@@ -273,9 +273,9 @@ class RiscvDebugger {
   int64_t GetFPURegisterValue(int regnum);
   float GetFPURegisterValueFloat(int regnum);
   double GetFPURegisterValueDouble(int regnum);
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
   __int128_t GetVRegisterValue(int regnum);
-#  endif
+#endif
   bool GetValue(const char* desc, int64_t* value);
 };
 
@@ -307,7 +307,7 @@ double RiscvDebugger::GetFPURegisterValueDouble(int regnum) {
   return sim_->getFpuRegisterDouble(regnum);
 }
 
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
 __int128_t RiscvDebugger::GetVRegisterValue(int regnum) {
   if (regnum == kNumVRegisters) {
     return sim_->get_pc();
@@ -315,7 +315,7 @@ __int128_t RiscvDebugger::GetVRegisterValue(int regnum) {
     return sim_->get_vregister(regnum);
   }
 }
-#  endif
+#endif
 
 bool RiscvDebugger::GetValue(const char* desc, int64_t* value) {
   int regnum = Registers::FromName(desc);
@@ -335,9 +335,9 @@ bool RiscvDebugger::GetValue(const char* desc, int64_t* value) {
   return sscanf(desc, "%" SCNu64, reinterpret_cast<int64_t*>(value)) == 1;
 }
 
-#  define REG_INFO(name)                               \
-    name, GetRegisterValue(Registers::FromName(name)), \
-        GetRegisterValue(Registers::FromName(name))
+#define REG_INFO(name)                               \
+  name, GetRegisterValue(Registers::FromName(name)), \
+      GetRegisterValue(Registers::FromName(name))
 
 void RiscvDebugger::PrintRegs(char name_prefix, int start_index,
                               int end_index) {
@@ -381,12 +381,12 @@ void RiscvDebugger::printAllRegs() {
   PrintRegs('t', 0, 6);
 }
 
-#  undef REG_INFO
+#undef REG_INFO
 
 void RiscvDebugger::printAllRegsIncludingFPU() {
-#  define FPU_REG_INFO(n)                               \
-    FloatRegisters::GetName(n), GetFPURegisterValue(n), \
-        GetFPURegisterValueDouble(n)
+#define FPU_REG_INFO(n)                               \
+  FloatRegisters::GetName(n), GetFPURegisterValue(n), \
+      GetFPURegisterValueDouble(n)
 
   printAllRegs();
 
@@ -397,18 +397,18 @@ void RiscvDebugger::printAllRegsIncludingFPU() {
     printf("%3s: 0x%016" PRIx64 "  %16.4e \t%3s: 0x%016" PRIx64 "  %16.4e\n",
            FPU_REG_INFO(i), FPU_REG_INFO(i + 1));
   }
-#  undef FPU_REG_INFO
+#undef FPU_REG_INFO
 }
 
 void RiscvDebugger::Debug() {
   intptr_t last_pc = -1;
   bool done = false;
 
-#  define COMMAND_SIZE 63
-#  define ARG_SIZE 255
+#define COMMAND_SIZE 63
+#define ARG_SIZE 255
 
-#  define STR(a) #a
-#  define XSTR(a) STR(a)
+#define STR(a) #a
+#define XSTR(a) STR(a)
 
   char cmd[COMMAND_SIZE + 1];
   char arg1[ARG_SIZE + 1];
@@ -474,9 +474,9 @@ void RiscvDebugger::Debug() {
         } else {
           int regnum = Registers::FromName(arg1);
           int fpuregnum = FloatRegisters::FromName(arg1);
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
           int vregnum = VRegisters::FromName(arg1);
-#  endif
+#endif
           if (regnum != Registers::invalid_reg) {
             value = GetRegisterValue(regnum);
             printf("%s: 0x%08" REGIx_FORMAT "  %" REGId_FORMAT "  \n", arg1,
@@ -486,13 +486,13 @@ void RiscvDebugger::Debug() {
             dvalue = GetFPURegisterValueDouble(fpuregnum);
             printf("%3s: 0x%016" PRIx64 "  %16.4e\n",
                    FloatRegisters::GetName(fpuregnum), fvalue, dvalue);
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
           } else if (vregnum != kInvalidVRegister) {
             __int128_t v = GetVRegisterValue(vregnum);
             printf("\t%s:0x%016" REGIx_FORMAT "%016" REGIx_FORMAT "\n",
                    VRegisters::GetName(vregnum), (uint64_t)(v >> 64),
                    (uint64_t)v);
-#  endif
+#endif
           } else {
             printf("%s unrecognized\n", arg1);
           }
@@ -741,11 +741,11 @@ void RiscvDebugger::Debug() {
     }
   }
 
-#  undef COMMAND_SIZE
-#  undef ARG_SIZE
+#undef COMMAND_SIZE
+#undef ARG_SIZE
 
-#  undef STR
-#  undef XSTR
+#undef STR
+#undef XSTR
 }
 
 void Simulator::SetBreakpoint(const SimInstruction& location, bool is_tbreak) {
@@ -1817,11 +1817,11 @@ void Simulator::InstructionDecode(const SimInstruction& instr) {
     case Instruction::kCSType:
       DecodeCSType();
       break;
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
     case Instruction::kVType:
       DecodeVType();
       break;
-#  endif
+#endif
     default:
       UNSUPPORTED();
   }
@@ -3284,7 +3284,7 @@ void Simulator::DecodeRVR4Type() {
   }
 }
 
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
 bool Simulator::DecodeRvvVL() {
   uint32_t instr_temp =
       instr_.InstructionBits() & (kRvvMopMask | kRvvNfMask | kBaseOpcodeMask);
@@ -3411,7 +3411,7 @@ bool Simulator::DecodeRvvVS() {
     return false;
   }
 }
-#  endif
+#endif
 
 void Simulator::DecodeRVIType() {
   switch (instr_.InstructionBits() & kITypeMask) {
@@ -3790,14 +3790,14 @@ void Simulator::DecodeRVIType() {
       break;
     }
     default: {
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
       if (!DecodeRvvVL()) {
         UNSUPPORTED();
       }
       break;
-#  else
+#else
       UNSUPPORTED();
-#  endif
+#endif
     }
   }
 }
@@ -3829,14 +3829,14 @@ void Simulator::DecodeRVSType() {
       break;
     }
     default:
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
       if (!DecodeRvvVS()) {
         UNSUPPORTED();
       }
       break;
-#  else
+#else
       UNSUPPORTED();
-#  endif
+#endif
   }
 }
 
@@ -4286,5 +4286,3 @@ uintptr_t Simulator::popAddress() {
 }  // namespace js
 
 js::jit::Simulator* JSContext::simulator() const { return simulator_; }
-
-#endif  // JS_SIMULATOR_RISCV64
