@@ -221,6 +221,12 @@ class ConnectionEntry : public SupportsWeakPtr {
 
   bool RemoveTransFromPendingQ(nsHttpTransaction* aTrans);
 
+  // Notify that a transaction was removed directly from a per-window pending
+  // array (not from the urgent-start queue).
+  void OnPendingTransactionRemovedFromTable() {
+    mPendingQ.OnPendingTransactionRemovedFromTable();
+  }
+
   void MaybeUpdateEchConfig(nsHttpConnectionInfo* aConnInfo);
 
   bool AllowToRetryDifferentIPFamilyForHttp3(nsresult aError);

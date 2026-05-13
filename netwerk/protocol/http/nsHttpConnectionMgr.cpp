@@ -3948,6 +3948,9 @@ nsHttpConnectionMgr::FindTransactionHelper(bool removeWhenFound,
     info = (*pendingQ)[index];
     if (removeWhenFound) {
       pendingQ->RemoveElementAt(index);
+      if (!(aTrans->Caps() & NS_HTTP_URGENT_START)) {
+        aEnt->OnPendingTransactionRemovedFromTable();
+      }
     }
   }
   return info.forget();

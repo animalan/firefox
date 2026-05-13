@@ -930,6 +930,9 @@ bool ConnectionEntry::RemoveTransFromPendingQ(nsHttpTransaction* aTrans) {
   if (transIndex >= 0) {
     pendingTransInfo = (*infoArray)[transIndex];
     infoArray->RemoveElementAt(transIndex);
+    if (!(aTrans->Caps() & NS_HTTP_URGENT_START)) {
+      mPendingQ.OnPendingTransactionRemovedFromTable();
+    }
   }
 
   if (!pendingTransInfo) {
