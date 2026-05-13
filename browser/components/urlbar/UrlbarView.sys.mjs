@@ -552,7 +552,9 @@ export class UrlbarView {
 
     this.#stopTail150();
 
-    this.#inputWidthOnLastClose = getBoundsWithoutFlushing(this.input).width;
+    this.#containerWidthOnLastClose = getBoundsWithoutFlushing(
+      this.input.parentElement
+    ).width;
 
     // We exit search mode preview on close since the result previewing it is
     // implicitly unselected.
@@ -725,7 +727,8 @@ export class UrlbarView {
     if (
       this.#rows.firstElementChild &&
       this.#queryContext.searchString == this.input.value &&
-      this.#inputWidthOnLastClose == getBoundsWithoutFlushing(this.input).width
+      this.#containerWidthOnLastClose ==
+        getBoundsWithoutFlushing(this.input.parentElement).width
     ) {
       // We can reuse the current rows.
       queryOptions.allowAutofill = this.#queryContext.allowAutofill;
@@ -1153,7 +1156,7 @@ export class UrlbarView {
   #announceTabToSearchOnSelection;
   #blobUrlsByResultUrl = null;
   #tail150 = null;
-  #inputWidthOnLastClose = 0;
+  #containerWidthOnLastClose = 0;
   #l10nCache;
   #mousedownSelectedElement;
   #openPanelInstance;
