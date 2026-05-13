@@ -217,10 +217,13 @@ add_task(async function () {
   tBodyRows[0].cells[2].firstChild.click();
 
   popover = doc.querySelector(":popover-open");
-  Assert.equal(
-    "title",
-    popover.firstChild.getElementsByTagName("dd")[1].innerText
-  );
+
+  // Small helper to retrieve the title.
+  const getTitle = () =>
+    popover.firstChild.getElementsByTagName("dd")[1].innerText;
+
+  await waitFor(() => getTitle() === "title");
+  Assert.equal("title", getTitle());
 
   info("Set a new title");
   await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
@@ -235,10 +238,8 @@ add_task(async function () {
     );
   });
 
-  Assert.equal(
-    "new title",
-    popover.firstChild.getElementsByTagName("dd")[1].innerText
-  );
+  await waitFor(() => getTitle() === "new title");
+  Assert.equal("new title", getTitle());
 
   info("Navigate to a fragment");
   updated = 0;
