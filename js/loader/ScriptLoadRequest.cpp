@@ -74,9 +74,9 @@ NS_IMPL_CYCLE_COLLECTING_RELEASE(ScriptLoadRequest)
 // Fields that can be modified by the main thread shouldn't be touched by
 // the cycle collection.
 //
-// NOTE: nsIURI and nsIPrincipal doesn't have to be touched here because
-//       they cannot be a part of cycle.
-NS_IMPL_CYCLE_COLLECTION(ScriptLoadRequest, mLoadedScript, mLoadContext)
+// NOTE: LoadedScript, nsIURI, and nsIPrincipal don't have to be touched here
+//       because they cannot be a part of cycle.
+NS_IMPL_CYCLE_COLLECTION(ScriptLoadRequest, mLoadContext)
 
 NS_IMPL_CYCLE_COLLECTION_TRACE_BEGIN(ScriptLoadRequest)
 NS_IMPL_CYCLE_COLLECTION_TRACE_END

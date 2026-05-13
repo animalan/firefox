@@ -138,8 +138,7 @@ class LoadedScript final : public nsISupports {
   size_t SizeOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf) const;
 
  public:
-  NS_DECL_CYCLE_COLLECTING_ISUPPORTS;
-  NS_DECL_CYCLE_COLLECTION_CLASS(LoadedScript)
+  NS_DECL_ISUPPORTS
 
   uint16_t ClampedRefCountForTelemetry() const {
     uintptr_t count = mRefCnt.get();
