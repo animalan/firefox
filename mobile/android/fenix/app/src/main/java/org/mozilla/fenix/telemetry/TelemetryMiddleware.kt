@@ -4,7 +4,11 @@
 
 package org.mozilla.fenix.telemetry
 
+import android.annotation.SuppressLint
+import android.app.ActivityManager
+import android.app.ApplicationExitInfo
 import android.content.Context
+import android.os.Build
 import mozilla.components.browser.state.action.AwesomeBarAction
 import mozilla.components.browser.state.action.BrowserAction
 import mozilla.components.browser.state.action.ContentAction
@@ -55,6 +59,11 @@ class TelemetryMiddleware(
 
     private val logger = Logger("TelemetryMiddleware")
 
+    // ApplicationExitInfo, which we need to distinguish user-requested exits from unexpected
+    // process kills, is only available on API 30+. We skip all engine tab reload telemetry on older
+    // versions to avoid recording false positives.
+    private val androidVersionSupportsEngineTabTelemetry = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+
     // Tab IDs populated from TabListAction.RestoreAction (full app session restore).
     // Used to distinguish session-restored creates from content-process-kill creates.
     private val sessionRestoredTabIds = mutableSetOf<String>()
@@ -74,8 +83,9 @@ class TelemetryMiddleware(
 
         when (action) {
             is TabListAction.RestoreAction -> {
-                val restoredIds = action.tabs.map { it.state.id }
-                sessionRestoredTabIds.addAll(restoredIds)
+                if (androidVersionSupportsEngineTabTelemetry && !wasLastExitUserRequested()) {
+                    sessionRestoredTabIds.addAll(action.tabs.map { it.state.id })
+                }
             }
             is ContentAction.UpdateLoadingStateAction -> {
                 store.state.findTab(action.sessionId)?.let { tab ->
@@ -197,6 +207,22 @@ class TelemetryMiddleware(
         )
     }
 
+    // When the exit buffer is empty (e.g. fresh install, or cleared after a device reboot),
+    // firstOrNull() returns null and ?.reason == REASON_USER_REQUESTED evaluates to false.
+    // This means we cannot confirm the exit was user-requested, so we assume it was unexpected
+    // and fire the metric — a conservative default that prefers occasional false positives over
+    // silently dropping genuine unexpected-kill restores.
+    // Known false positive: if the user explicitly closes Firefox and the device reboots before
+    // the next launch, the OS clears the exit buffer, and we lose the REASON_USER_REQUESTED signal,
+    // causing us to incorrectly record an app_session_restore. These are hard to detect since the
+    // evidence is gone by the time we check.
+    @SuppressLint("NewApi") // Only called when supportsEngineTabTelemetry is true (API >= 30).
+    private fun wasLastExitUserRequested(): Boolean =
+        (context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
+            .getHistoricalProcessExitReasons(null, 0, 0)
+            .firstOrNull { ":" !in it.processName }
+            ?.reason == ApplicationExitInfo.REASON_USER_REQUESTED
+
     private fun computeDurationSinceLastVisible(tab: SessionState): Int {
         val lastVisibleAt = (tab as? TabSessionState)?.lastVisibleAt?.takeIf { it != 0L } ?: return -1
         val elapsed = System.currentTimeMillis() - lastVisibleAt
@@ -207,6 +233,8 @@ class TelemetryMiddleware(
      * Collecting some engine-specific (GeckoView) telemetry.
      */
     private fun onEngineSessionCreated(state: BrowserState, tab: SessionState?) {
+        if (!androidVersionSupportsEngineTabTelemetry) return
+
         if (tab == null) {
             logger.debug("Could not find tab for created engine session")
             return
