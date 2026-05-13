@@ -178,6 +178,13 @@ nsresult HappyEyeballsConnectionAttempt::ProcessConnectionResult(
       entry->RemoveConnectionAttempt(this, true);
     }
     if (mTransaction) {
+      // Remove the real txn from the pending queue before calling Close,
+      // since a 0-rtt retriable error triggers nsHttpTransaction::Restart().
+      if (nsHttpTransaction* trans = mTransaction->QueryHttpTransaction()) {
+        if (entry) {
+          entry->RemoveTransFromPendingQ(trans);
+        }
+      }
       mTransaction->Close(aStatus);
     }
     return NS_OK;
@@ -1034,10 +1041,25 @@ void HappyEyeballsConnectionAttempt::OnSucceeded() {
   // effectively rejected — FinishAdopted0RTT(restart=true) rewinds the stream
   // to 0 and marks mDoNotTryEarlyData / mEarlyDataWasAvailable so the real txn
   // re-sends a fresh request on the winning conn.
+  bool restartedFallback0Rtt = false;
   if (mZeroRttHandle && mZeroRttHandle->AnyStarted() &&
       (!mZeroRttHandle->Winner() || !mZeroRttHandle->Winner()->IsAdopted())) {
     if (nsHttpTransaction* realTxn = mTransaction->QueryHttpTransaction()) {
       realTxn->FinishAdopted0RTT(/*aRestart=*/true);
+      // LockInRealTxnFromPendingQueue removed the real txn from the pending
+      // queue when 0-RTT was entered. Re-queue it so the conn manager can
+      // dispatch it on the winning conn or open a new connection. Guard
+      // against double-queuing (which would trip CheckTransInPendingQueue's
+      // assertion in AddTransaction) by checking first.
+      RefPtr<PendingTransactionInfo> existing;
+      if (entry) {
+        existing = gHttpHandler->ConnMgr()->FindTransactionHelper(
+            /*removeWhenFound=*/false, entry, realTxn);
+      }
+      if (!existing) {
+        gHttpHandler->ConnMgr()->AddTransaction(realTxn, realTxn->Priority());
+      }
+      restartedFallback0Rtt = true;
     }
   }
 
@@ -1045,8 +1067,12 @@ void HappyEyeballsConnectionAttempt::OnSucceeded() {
   // queue. Skip ProcessTCPConn's pending-queue branch — on H1 it
   // would otherwise reclaim the live conn to the idle pool; on H2/H3
   // it's a no-op.
-  bool alreadyOnConn = mZeroRttHandle && mZeroRttHandle->Winner() &&
-                       mZeroRttHandle->Winner()->IsAdopted();
+  // Also skip FindTransactionHelper for the fallback restart case: the
+  // re-inserted trans will be dispatched by ReportSpdyConnection →
+  // ProcessPendingQ once the conn is in the active pool.
+  bool alreadyOnConn = (mZeroRttHandle && mZeroRttHandle->Winner() &&
+                        mZeroRttHandle->Winner()->IsAdopted()) ||
+                       restartedFallback0Rtt;
   RefPtr<nsHttpConnection> connTCP = do_QueryObject(mOutputConn);
   if (connTCP) {
     // If the original request had an alt-svc route but a direct TCP
