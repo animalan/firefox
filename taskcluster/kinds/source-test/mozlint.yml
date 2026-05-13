@@ -103,6 +103,10 @@ dot-mozilla-reference:
         tier: 2
     run:
         mach: lint -v -l dot-mozilla-reference -f treeherder -f json:/builds/worker/mozlint.json .
+
+    fetches:
+        toolchain:
+            - linux64-mozcheck
     when:
         files-changed:
             - '**/*.js'
