@@ -43,6 +43,7 @@ import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.TabCollectionStorage
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.components.appstate.AppAction
+import org.mozilla.fenix.components.share.ShareSheetLauncher
 import org.mozilla.fenix.components.usecases.FenixBrowserUseCases
 import org.mozilla.fenix.ext.DEFAULT_ACTIVE_DAYS
 import org.mozilla.fenix.ext.openToBrowser
@@ -214,6 +215,7 @@ interface TabManagerController :
  * @param tabsTrayStore [TabsTrayStore] used to read/update the [TabsTrayState].
  * @param browserStore [BrowserStore] used to read/update the current [BrowserState].
  * @param settings [Settings] used to update any user preferences.
+ * @param shareSheetLauncher [ShareSheetLauncher] used to show the native share sheet.
  * @param browsingModeManager [BrowsingModeManager] used to read/update the current [BrowsingMode].
  * @param navController [NavController] used to navigate away from the tab manager.
  * @param navigateToHomeAndDeleteSession Lambda used to return to the Homescreen and delete the current session.
@@ -241,6 +243,7 @@ class DefaultTabManagerController(
     private val tabsTrayStore: TabsTrayStore,
     private val browserStore: BrowserStore,
     private val settings: Settings,
+    private val shareSheetLauncher: ShareSheetLauncher,
     private val browsingModeManager: BrowsingModeManager,
     private val navController: NavController,
     private val navigateToHomeAndDeleteSession: (String) -> Unit,
@@ -504,10 +507,17 @@ class DefaultTabManagerController(
         val data = tabs.map {
             ShareData(url = it.url, title = it.title)
         }
-        val directions = TabManagementFragmentDirections.actionGlobalShareFragment(
-            data = data.toTypedArray(),
-        )
-        navController.navigate(directions)
+
+        if (settings.nativeShareSheetEnabled) {
+            shareSheetLauncher.showSystemShareSheet(
+                items = data,
+                isPrivate = tabs.any { it.private },
+            )
+        } else {
+            navController.navigate(
+                TabManagementFragmentDirections.actionGlobalShareFragment(data = data.toTypedArray()),
+            )
+        }
     }
 
     @VisibleForTesting

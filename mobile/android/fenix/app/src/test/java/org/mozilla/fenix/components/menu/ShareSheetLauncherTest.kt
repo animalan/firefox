@@ -42,8 +42,8 @@ import org.junit.runner.RunWith
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.menu.share.QRCodeGenerator
 import org.mozilla.fenix.components.share.CacheHelper
+import org.mozilla.fenix.components.share.DefaultShareSheetLauncher
 import org.mozilla.fenix.components.share.ShareDelegate
-import org.mozilla.fenix.components.share.ShareSheetLauncherImpl
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -78,7 +78,7 @@ class ShareSheetLauncherTest {
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private val launcher = ShareSheetLauncherImpl(
+    private val launcher = DefaultShareSheetLauncher(
         browserStore = browserStore,
         navController = mockNavController,
         onDismiss = {},
@@ -92,7 +92,7 @@ class ShareSheetLauncherTest {
 
     @Test
     fun `WHEN custom share sheet triggered AND non-content url provided THEN navigation updated`() = runTest {
-        launcher.showCustomShareSheet(
+        launcher.showInAppShareSheet(
             id = "123",
             url = "https://www.mozilla.org",
             title = "Mozilla",
@@ -109,7 +109,7 @@ class ShareSheetLauncherTest {
         val url = "content://www.mozilla.org"
         val tab = createTab(url = url, id = id)
         every { browserStore.state } returns BrowserState(tabs = listOf(tab), selectedTabId = tab.id)
-        launcher.showCustomShareSheet(
+        launcher.showInAppShareSheet(
             id = id,
             url = url,
             title = "Mozilla",
@@ -125,7 +125,7 @@ class ShareSheetLauncherTest {
     fun `WHEN native share sheet triggered on older API THEN share is invoked`() {
         val url = "https://www.mozilla.org"
         val title = "Mozilla"
-        launcher.showNativeShareSheet(
+        launcher.showSystemShareSheet(
             id = "123",
             longUrl = url,
             title = title,
@@ -148,7 +148,7 @@ class ShareSheetLauncherTest {
         )
         val directionsSlot = slot<NavDirections>()
         val optionsSlot = slot<NavOptions>()
-        launcher.showCustomShareSheet(
+        launcher.showInAppShareSheet(
             id = readerTab.id,
             url = activeUrl,
             title = title,
@@ -190,7 +190,7 @@ class ShareSheetLauncherTest {
         val directionsSlot = slot<NavDirections>()
         val optionsSlot = slot<NavOptions>()
 
-        launcher.showCustomShareSheet(
+        launcher.showInAppShareSheet(
             id = tab.id,
             url = url,
             title = title,
@@ -227,7 +227,7 @@ class ShareSheetLauncherTest {
         val title = "title"
         val tab = createTab(url = url, id = id)
         every { browserStore.state } returns BrowserState(tabs = listOf(tab), selectedTabId = tab.id)
-        launcher.showCustomShareSheet(
+        launcher.showInAppShareSheet(
             id = tab.id,
             url = url,
             title = title,
@@ -252,7 +252,7 @@ class ShareSheetLauncherTest {
             it.copy(content = it.content.copy(isPdf = true))
         }
         every { browserStore.state } returns BrowserState(tabs = listOf(tab), selectedTabId = tab.id)
-        launcher.showCustomShareSheet(
+        launcher.showInAppShareSheet(
             id = tab.id,
             url = url,
             title = "title",
@@ -277,7 +277,7 @@ class ShareSheetLauncherTest {
     @Config(sdk = [33])
     @Test
     fun `GIVEN API level below 34 WHEN native share sheet triggered THEN basic share is used`() {
-        launcher.showNativeShareSheet(
+        launcher.showSystemShareSheet(
             id = "123",
             longUrl = "https://www.mozilla.org",
             title = "Mozilla",
@@ -290,7 +290,7 @@ class ShareSheetLauncherTest {
     @Config(sdk = [34])
     @Test
     fun `GIVEN API level 34 and valid tab id WHEN native share sheet triggered THEN chooser actions share is used`() {
-        launcher.showNativeShareSheet(
+        launcher.showSystemShareSheet(
             id = "123",
             longUrl = "https://www.mozilla.org",
             title = "Mozilla",
@@ -303,7 +303,7 @@ class ShareSheetLauncherTest {
     @Config(sdk = [34])
     @Test
     fun `GIVEN API level 34 and null tab id WHEN native share sheet triggered THEN basic share is used`() {
-        launcher.showNativeShareSheet(
+        launcher.showSystemShareSheet(
             id = null,
             longUrl = "https://www.mozilla.org",
             title = "Mozilla",
@@ -316,7 +316,7 @@ class ShareSheetLauncherTest {
     @Config(sdk = [34])
     @Test
     fun `GIVEN a private tab WHEN native share sheet triggered THEN chooser actions share is still used`() {
-        launcher.showNativeShareSheet(
+        launcher.showSystemShareSheet(
             id = "123",
             longUrl = "https://www.mozilla.org",
             title = "Mozilla",
@@ -333,7 +333,7 @@ class ShareSheetLauncherTest {
         val actionsSlot = slot<Array<ChooserAction>>()
         every { mockShareDelegate.shareWithChooserActions(any(), any(), capture(actionsSlot)) } just runs
 
-        launcher.showNativeShareSheet(
+        launcher.showSystemShareSheet(
             id = "123",
             longUrl = "https://www.mozilla.org",
             title = "Mozilla",
@@ -356,7 +356,7 @@ class ShareSheetLauncherTest {
 
         val directionsSlot = slot<NavDirections>()
         val optionsSlot = slot<NavOptions>()
-        launcher.showCustomShareSheet(
+        launcher.showInAppShareSheet(
             id = customTab.id,
             url = url,
             title = title,
@@ -391,7 +391,7 @@ class ShareSheetLauncherTest {
         val title = "Mozilla"
 
         // Triggering the custom share sheet with a null URL
-        launcher.showCustomShareSheet(
+        launcher.showInAppShareSheet(
             id = id,
             url = null,
             title = title,
@@ -402,5 +402,50 @@ class ShareSheetLauncherTest {
         verify {
             mockNavController.navigate(any<NavDirections>(), any<NavOptions>())
         }
+    }
+
+    @Test
+    fun `WHEN showSystemShareSheet is called with multiple items THEN share is invoked with urls joined by newlines`() {
+        val items = listOf(
+            ShareData(url = "https://mozilla.org", title = "Mozilla"),
+            ShareData(url = "https://firefox.com", title = "Firefox"),
+        )
+
+        launcher.showSystemShareSheet(items = items)
+
+        verify {
+            mockShareDelegate.share(
+                text = "https://mozilla.org\nhttps://firefox.com",
+                subject = "Mozilla",
+            )
+        }
+    }
+
+    @Test
+    fun `WHEN showSystemShareSheet is called with a single item THEN share is invoked with that url`() {
+        val items = listOf(ShareData(url = "https://mozilla.org", title = "Mozilla"))
+
+        launcher.showSystemShareSheet(items = items)
+
+        verify { mockShareDelegate.share(text = "https://mozilla.org", subject = "Mozilla") }
+    }
+
+    @Test
+    fun `WHEN showSystemShareSheet is called with items containing null urls THEN null urls are excluded from share text`() {
+        val items = listOf(
+            ShareData(url = "https://mozilla.org", title = "Mozilla"),
+            ShareData(url = null, title = "No URL"),
+        )
+
+        launcher.showSystemShareSheet(items = items)
+
+        verify { mockShareDelegate.share(text = "https://mozilla.org", subject = "Mozilla") }
+    }
+
+    @Test
+    fun `WHEN showSystemShareSheet is called with empty items THEN share is invoked with empty text`() {
+        launcher.showSystemShareSheet(items = emptyList())
+
+        verify { mockShareDelegate.share(text = "", subject = "") }
     }
 }

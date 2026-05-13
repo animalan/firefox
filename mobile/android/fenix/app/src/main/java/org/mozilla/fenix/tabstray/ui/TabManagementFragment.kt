@@ -60,6 +60,7 @@ import org.mozilla.fenix.GleanMetrics.PrivateBrowsingLocked
 import org.mozilla.fenix.GleanMetrics.TabsTray
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
+import org.mozilla.fenix.components.share.DefaultShareSheetLauncher
 import org.mozilla.fenix.compose.navigation.BottomSheetSceneStrategy
 import org.mozilla.fenix.ext.actualInactiveTabs
 import org.mozilla.fenix.ext.components
@@ -201,6 +202,13 @@ class TabManagementFragment : Fragment() {
             tabsTrayStore = tabsTrayStore,
             browserStore = requireComponents.core.store,
             settings = requireContext().settings(),
+            shareSheetLauncher = DefaultShareSheetLauncher(
+                browserStore = requireComponents.core.store,
+                navController = findNavController(),
+                homeActivityClass = HomeActivity::class.java,
+                onDismiss = {},
+                scope = viewLifecycleOwner.lifecycleScope,
+            ),
             browsingModeManager = (activity as HomeActivity).browsingModeManager,
             navController = findNavController(),
             navigateToHomeAndDeleteSession = ::navigateToHomeAndDeleteSession,
