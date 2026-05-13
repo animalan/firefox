@@ -826,8 +826,8 @@ firefox-profiler:
     description: firefox profiler source code
     fetch:
         type: git
-        repo: https://github.com/firefox-devtools/profiler
-        revision: 8c0afb1f47190487b08ea2561ae3cc0f7a5d31e9
+        repo: https://github.com/mstange/perf.html
+        revision: fd67c9edbd26238ba648ee011a4ddd999af2e0c2
 
 # See https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads
 windowsappsdk-redist:

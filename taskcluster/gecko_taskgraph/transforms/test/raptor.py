@@ -687,7 +687,7 @@ def add_xperf(config, tests):
                 ])
                 extra_options.remove("--extra-profiler-run")
 
-            # Add win64-samply toolchain to tests run on x64 Windows
+            # Add win64-samply and profiler-node-tools toolchain to tests run on x64 Windows
             fetches = test.setdefault("fetches", {})
             by_apps = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
             for by_app in by_apps.values():
@@ -697,11 +697,12 @@ def add_xperf(config, tests):
                     continue
 
                 for test_platform, test_platform_config in test_platforms.items():
-                    if (
-                        "win" in test_platform
-                        and "win64-samply" not in test_platform_config
-                    ):
-                        test_platform_config.append("win64-samply")
+                    if "win" in test_platform:
+                        if "win64-samply" not in test_platform_config:
+                            test_platform_config.append("win64-samply")
+                        if "profiler-node-tools" not in test_platform_config:
+                            test_platform_config.append("profiler-node-tools")
+
             fetches.setdefault("build", []).append({
                 "artifact": "target.crashreporter-symbols.zip",
                 "extract": False,
