@@ -214,6 +214,9 @@ fuzzy-if(winWidget,0-1,0-5) == grid-fragmentation-027.html grid-fragmentation-02
 == grid-fragmentation-030.html grid-fragmentation-030-ref.html
 == grid-fragmentation-031.html grid-fragmentation-031-ref.html
 == grid-fragmentation-break-before.html grid-fragmentation-break-before-ref.html
+fails == grid-fragmentation-032.html grid-fragmentation-032-ref.html
+fails == grid-fragmentation-033.html grid-fragmentation-033-ref.html
+fails == grid-fragmentation-034.html grid-fragmentation-034-ref.html
 
 # Fragmentation tests that does dynamic content removal/insertions.
 # They should give the same result as the corresponding static test.
