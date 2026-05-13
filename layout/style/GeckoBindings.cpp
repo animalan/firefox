@@ -365,11 +365,7 @@ bool Gecko_HaveSeenPtr(SeenPtrs* aTable, const void* aPtr) {
 
 const StyleLockedDeclarationBlock* Gecko_GetStyleAttrDeclarationBlock(
     const Element* aElement) {
-  DeclarationBlock* decl = aElement->GetInlineStyleDeclaration();
-  if (!decl) {
-    return nullptr;
-  }
-  return decl->Raw();
+  return aElement->GetInlineStyleDeclaration();
 }
 
 const StyleLockedDeclarationBlock*

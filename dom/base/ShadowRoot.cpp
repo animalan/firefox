@@ -430,8 +430,8 @@ void ShadowRoot::RuleChanged(StyleSheet& aSheet, css::Rule* aRule,
     return;
   }
   if (mStyleRuleMap && aChange.mOldBlock != aChange.mNewBlock) {
-    mStyleRuleMap->RuleDeclarationsChanged(*aRule, aChange.mOldBlock->Raw(),
-                                           aChange.mNewBlock->Raw());
+    mStyleRuleMap->RuleDeclarationsChanged(*aRule, aChange.mOldBlock,
+                                           aChange.mNewBlock);
   }
   MOZ_ASSERT(mServoStyles);
   Servo_AuthorStyles_ForceDirty(mServoStyles.get());

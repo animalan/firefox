@@ -10,8 +10,8 @@
 namespace mozilla::dom {
 
 CSSNestedDeclarationsDeclaration::CSSNestedDeclarationsDeclaration(
-    already_AddRefed<StyleLockedDeclarationBlock> aDecls)
-    : mDecls(new DeclarationBlock(std::move(aDecls))) {}
+    already_AddRefed<Block> aDecls)
+    : mDecls(aDecls) {}
 
 CSSNestedDeclarationsDeclaration::~CSSNestedDeclarationsDeclaration() = default;
 
@@ -36,8 +36,9 @@ nsINode* CSSNestedDeclarationsDeclaration::GetAssociatedNode() const {
 nsISupports* CSSNestedDeclarationsDeclaration::GetParentObject() const {
   return Rule()->GetParentObject();
 }
-DeclarationBlock* CSSNestedDeclarationsDeclaration::GetOrCreateCSSDeclaration(
-    Operation aOperation, DeclarationBlock** aCreated) {
+StyleLockedDeclarationBlock*
+CSSNestedDeclarationsDeclaration::GetOrCreateCSSDeclaration(
+    Operation aOperation, Block** aCreated) {
   if (aOperation != Operation::Read) {
     if (StyleSheet* sheet = Rule()->GetStyleSheet()) {
       sheet->WillDirty();
@@ -48,17 +49,16 @@ DeclarationBlock* CSSNestedDeclarationsDeclaration::GetOrCreateCSSDeclaration(
 
 void CSSNestedDeclarationsDeclaration::SetRawAfterClone(
     RefPtr<StyleLockedDeclarationBlock> aRaw) {
-  auto block = MakeRefPtr<DeclarationBlock>(aRaw.forget());
-  mDecls = std::move(block);
+  mDecls = std::move(aRaw);
 }
 
 nsresult CSSNestedDeclarationsDeclaration::SetCSSDeclaration(
-    DeclarationBlock* aDecl, MutationClosureData* aClosureData) {
+    Block* aDecl, MutationClosureData* aClosureData) {
   CSSNestedDeclarations* rule = Rule();
-  RefPtr<DeclarationBlock> oldDecls;
+  RefPtr<Block> oldDecls;
   if (aDecl != mDecls) {
     oldDecls = std::move(mDecls);
-    Servo_NestedDeclarationsRule_SetStyle(rule->Raw(), aDecl->Raw());
+    Servo_NestedDeclarationsRule_SetStyle(rule->Raw(), aDecl);
     mDecls = aDecl;
   }
   if (StyleSheet* sheet = rule->GetStyleSheet()) {
@@ -111,7 +111,7 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(CSSNestedDeclarations,
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 const StyleLockedDeclarationBlock* CSSNestedDeclarations::RawStyle() const {
-  return mDecls.mDecls->Raw();
+  return mDecls.mDecls.get();
 }
 
 bool CSSNestedDeclarations::IsCCLeaf() const {

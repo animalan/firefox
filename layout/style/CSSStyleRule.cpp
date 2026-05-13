@@ -6,7 +6,6 @@
 
 #include "PseudoStyleType.h"
 #include "mozilla/CSSEnabledState.h"
-#include "mozilla/DeclarationBlock.h"
 #include "mozilla/PseudoStyleRequest.h"
 #include "mozilla/PseudoStyleType.h"
 #include "mozilla/ServoBindings.h"
@@ -21,9 +20,8 @@ namespace mozilla::dom {
 
 // -- CSSStyleRuleDeclaration ---------------------------------------
 
-CSSStyleRuleDeclaration::CSSStyleRuleDeclaration(
-    already_AddRefed<StyleLockedDeclarationBlock> aDecls)
-    : mDecls(new DeclarationBlock(std::move(aDecls))) {}
+CSSStyleRuleDeclaration::CSSStyleRuleDeclaration(already_AddRefed<Block> aDecls)
+    : mDecls(aDecls) {}
 
 CSSStyleRuleDeclaration::~CSSStyleRuleDeclaration() = default;
 
@@ -53,8 +51,8 @@ nsISupports* CSSStyleRuleDeclaration::GetParentObject() const {
   return Rule()->GetParentObject();
 }
 
-DeclarationBlock* CSSStyleRuleDeclaration::GetOrCreateCSSDeclaration(
-    Operation aOperation, DeclarationBlock** aCreated) {
+StyleLockedDeclarationBlock* CSSStyleRuleDeclaration::GetOrCreateCSSDeclaration(
+    Operation aOperation, Block** aCreated) {
   if (aOperation != Operation::Read) {
     if (StyleSheet* sheet = Rule()->GetStyleSheet()) {
       sheet->WillDirty();
@@ -63,10 +61,8 @@ DeclarationBlock* CSSStyleRuleDeclaration::GetOrCreateCSSDeclaration(
   return mDecls;
 }
 
-void CSSStyleRuleDeclaration::SetRawAfterClone(
-    RefPtr<StyleLockedDeclarationBlock> aRaw) {
-  auto block = MakeRefPtr<DeclarationBlock>(aRaw.forget());
-  mDecls = std::move(block);
+void CSSStyleRuleDeclaration::SetRawAfterClone(RefPtr<Block> aRaw) {
+  mDecls = std::move(aRaw);
 }
 
 void CSSStyleRule::SetRawAfterClone(RefPtr<StyleLockedStyleRule> aRaw) {
@@ -80,12 +76,12 @@ already_AddRefed<StyleLockedCssRules> CSSStyleRule::GetOrCreateRawRules() {
 }
 
 nsresult CSSStyleRuleDeclaration::SetCSSDeclaration(
-    DeclarationBlock* aDecl, MutationClosureData* aClosureData) {
+    Block* aDecl, MutationClosureData* aClosureData) {
   CSSStyleRule* rule = Rule();
-  RefPtr<DeclarationBlock> oldDecls;
+  RefPtr<Block> oldDecls;
   if (aDecl != mDecls) {
     oldDecls = std::move(mDecls);
-    Servo_StyleRule_SetStyle(rule->Raw(), aDecl->Raw());
+    Servo_StyleRule_SetStyle(rule->Raw(), aDecl);
     mDecls = aDecl;
   }
   if (StyleSheet* sheet = rule->GetStyleSheet()) {
@@ -192,10 +188,10 @@ void CSSStyleRule::GetCssText(nsACString& aCssText) const {
 /* CSSStyleRule implementation */
 
 const StyleLockedDeclarationBlock* CSSStyleRule::RawStyle() const {
-  return mDecls.mDecls->Raw();
+  return mDecls.mDecls.get();
 }
 
-DeclarationBlock& CSSStyleRule::GetDeclarationBlock() const {
+StyleLockedDeclarationBlock& CSSStyleRule::GetDeclarationBlock() const {
   return *mDecls.mDecls;
 }
 

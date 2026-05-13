@@ -23,8 +23,8 @@ const CSSPositionTryRule* CSSPositionTryRuleDeclaration::Rule() const {
 }
 
 CSSPositionTryRuleDeclaration::CSSPositionTryRuleDeclaration(
-    already_AddRefed<StyleLockedDeclarationBlock> aDecls)
-    : mDecls(new DeclarationBlock(std::move(aDecls))) {}
+    already_AddRefed<Block> aDecls)
+    : mDecls(aDecls) {}
 
 CSSPositionTryRuleDeclaration::~CSSPositionTryRuleDeclaration() = default;
 
@@ -56,8 +56,9 @@ JSObject* CSSPositionTryRuleDeclaration::WrapObject(
   return CSSPositionTryDescriptors_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-DeclarationBlock* CSSPositionTryRuleDeclaration::GetOrCreateCSSDeclaration(
-    Operation aOperation, DeclarationBlock** aCreated) {
+StyleLockedDeclarationBlock*
+CSSPositionTryRuleDeclaration::GetOrCreateCSSDeclaration(Operation aOperation,
+                                                         Block** aCreated) {
   if (aOperation != Operation::Read) {
     if (StyleSheet* sheet = Rule()->GetStyleSheet()) {
       sheet->WillDirty();
@@ -67,17 +68,18 @@ DeclarationBlock* CSSPositionTryRuleDeclaration::GetOrCreateCSSDeclaration(
 }
 
 void CSSPositionTryRuleDeclaration::SetRawAfterClone(
-    RefPtr<StyleLockedDeclarationBlock> aDeclarationBlock) {
-  mDecls = new DeclarationBlock(aDeclarationBlock.forget());
+    RefPtr<Block> aDeclarationBlock) {
+  mDecls = std::move(aDeclarationBlock);
 }
 
 nsresult CSSPositionTryRuleDeclaration::SetCSSDeclaration(
-    DeclarationBlock* aDecl, MutationClosureData* aClosureData) {
+    Block* aDecl, MutationClosureData* aClosureData) {
   MOZ_ASSERT(aDecl, "must be non-null");
   CSSPositionTryRule* rule = Rule();
-  RefPtr<DeclarationBlock> oldDecls;
+  RefPtr<Block> oldDecls;
   if (aDecl != mDecls) {
-    Servo_PositionTryRule_SetStyle(rule->Raw(), aDecl->Raw());
+    oldDecls = std::move(mDecls);
+    Servo_PositionTryRule_SetStyle(rule->Raw(), aDecl);
     mDecls = aDecl;
   }
 
@@ -182,7 +184,7 @@ JSObject* CSSPositionTryRule::WrapObject(JSContext* aCx,
 }
 
 const StyleLockedDeclarationBlock* CSSPositionTryRule::RawStyle() const {
-  return mDecls.mDecls->Raw();
+  return mDecls.mDecls.get();
 }
 
 }  // namespace mozilla::dom

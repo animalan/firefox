@@ -739,12 +739,12 @@ void nsComputedDOMStyle::GetCSSImageURLs(const nsACString& aPropertyName,
 // nsDOMCSSDeclaration abstract methods which should never be called
 // on a nsComputedDOMStyle object, but must be defined to avoid
 // compile errors.
-DeclarationBlock* nsComputedDOMStyle::GetOrCreateCSSDeclaration(
-    Operation aOperation, DeclarationBlock** aCreated) {
+StyleLockedDeclarationBlock* nsComputedDOMStyle::GetOrCreateCSSDeclaration(
+    Operation aOperation, StyleLockedDeclarationBlock** aCreated) {
   MOZ_CRASH("called nsComputedDOMStyle::GetCSSDeclaration");
 }
 
-nsresult nsComputedDOMStyle::SetCSSDeclaration(DeclarationBlock*,
+nsresult nsComputedDOMStyle::SetCSSDeclaration(StyleLockedDeclarationBlock*,
                                                MutationClosureData*) {
   MOZ_CRASH("called nsComputedDOMStyle::SetCSSDeclaration");
 }

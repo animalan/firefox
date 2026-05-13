@@ -32,7 +32,7 @@ namespace mozilla {
 
 class ServoCSSRuleList;
 class ServoStyleSet;
-class DeclarationBlock;
+struct StyleLockedDeclarationBlock;
 
 using StyleSheetParsePromise = MozPromise</* Dummy */ bool,
                                           /* Dummy */ bool,
@@ -45,14 +45,15 @@ struct StyleRuleChange {
   StyleRuleChange() = delete;
   MOZ_IMPLICIT StyleRuleChange(StyleRuleChangeKind aKind) : mKind(aKind) {}
   // Only relevant for Kind::*Declarations.
-  StyleRuleChange(StyleRuleChangeKind aKind, const DeclarationBlock* aOldBlock,
-                  const DeclarationBlock* aNewBlock)
+  StyleRuleChange(StyleRuleChangeKind aKind,
+                  const StyleLockedDeclarationBlock* aOldBlock,
+                  const StyleLockedDeclarationBlock* aNewBlock)
       : mKind(aKind), mOldBlock(aOldBlock), mNewBlock(aNewBlock) {}
 
   const StyleRuleChangeKind mKind;
   // mOldBlock and mNewBlock can be the same object.
-  const DeclarationBlock* const mOldBlock = nullptr;
-  const DeclarationBlock* const mNewBlock = nullptr;
+  const StyleLockedDeclarationBlock* const mOldBlock = nullptr;
+  const StyleLockedDeclarationBlock* const mNewBlock = nullptr;
 };
 
 namespace css {

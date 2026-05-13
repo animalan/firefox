@@ -1005,11 +1005,11 @@ void Animation::CommitStyles(ErrorResult& aRv) {
   mozAutoDocUpdate autoUpdate(target.mElement->OwnerDoc(), true);
 
   // Get the inline style to append to
-  RefPtr<DeclarationBlock> declarationBlock;
+  RefPtr<StyleLockedDeclarationBlock> declarationBlock;
   if (auto* existing = target.mElement->GetInlineStyleDeclaration()) {
-    declarationBlock = existing->EnsureMutable();
+    declarationBlock = nsDOMCSSDeclaration::EnsureBlockMutable(existing);
   } else {
-    declarationBlock = new DeclarationBlock();
+    declarationBlock = Servo_DeclarationBlock_CreateEmpty().Consume();
   }
 
   // Prepare the callback
@@ -1030,7 +1030,7 @@ void Animation::CommitStyles(ErrorResult& aRv) {
             .Consume();
     if (computedValue) {
       changed |= Servo_DeclarationBlock_SetPropertyToAnimationValue(
-          declarationBlock->Raw(), computedValue, beforeChangeClosure);
+          declarationBlock.get(), computedValue, beforeChangeClosure);
     }
   }
 

@@ -297,12 +297,10 @@ class ReadOnlyInspectorDeclaration final : public nsDOMCSSDeclaration {
     return CSSStyleProperties_Binding::Wrap(aCx, this, aGivenProto);
   }
   // These ones are a bit sad, but matches e.g. nsComputedDOMStyle.
-  nsresult SetCSSDeclaration(DeclarationBlock* aDecl,
-                             MutationClosureData*) final {
+  nsresult SetCSSDeclaration(Block* aDecl, MutationClosureData*) final {
     MOZ_CRASH("called ReadOnlyInspectorDeclaration::SetCSSDeclaration");
   }
-  DeclarationBlock* GetOrCreateCSSDeclaration(Operation,
-                                              DeclarationBlock**) override {
+  Block* GetOrCreateCSSDeclaration(Operation, Block**) override {
     MOZ_CRASH("called ReadOnlyInspectorDeclaration::GetOrCreateCSSDeclaration");
   }
   ParsingEnvironment GetParsingEnvironment(nsIPrincipal*) const final {

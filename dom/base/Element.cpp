@@ -3237,12 +3237,13 @@ nsDOMCSSAttributeDeclaration* Element::SMILOverrideStyle() {
   return slots->mSMILOverrideStyle;
 }
 
-DeclarationBlock* Element::GetSMILOverrideStyleDeclaration() {
+StyleLockedDeclarationBlock* Element::GetSMILOverrideStyleDeclaration() {
   Element::nsExtendedDOMSlots* slots = GetExistingExtendedDOMSlots();
   return slots ? slots->mSMILOverrideStyleDeclaration.get() : nullptr;
 }
 
-void Element::SetSMILOverrideStyleDeclaration(DeclarationBlock& aDeclaration) {
+void Element::SetSMILOverrideStyleDeclaration(
+    StyleLockedDeclarationBlock& aDeclaration) {
   ExtendedDOMSlots()->mSMILOverrideStyleDeclaration = &aDeclaration;
 
   // Only need to request a restyle if we're in a document.  (We might not
@@ -3259,7 +3260,7 @@ bool Element::IsLabelable() const { return false; }
 
 bool Element::IsInteractiveHTMLContent() const { return false; }
 
-DeclarationBlock* Element::GetInlineStyleDeclaration() const {
+StyleLockedDeclarationBlock* Element::GetInlineStyleDeclaration() const {
   if (!MayHaveStyle()) {
     return nullptr;
   }
@@ -3267,14 +3268,14 @@ DeclarationBlock* Element::GetInlineStyleDeclaration() const {
   if (!attrVal || attrVal->Type() != nsAttrValue::eCSSDeclaration) {
     return nullptr;
   }
-  return attrVal->GetCSSDeclarationValue();
+  return attrVal->GetCSSDeclarationValue()->Raw();
 }
 
 void Element::InlineStyleDeclarationWillChange(MutationClosureData& aData) {
   MOZ_ASSERT_UNREACHABLE("Element::InlineStyleDeclarationWillChange");
 }
 
-nsresult Element::SetInlineStyleDeclaration(DeclarationBlock& aDeclaration,
+nsresult Element::SetInlineStyleDeclaration(StyleLockedDeclarationBlock&,
                                             MutationClosureData& aData) {
   MOZ_ASSERT_UNREACHABLE("Element::SetInlineStyleDeclaration");
   return NS_ERROR_NOT_IMPLEMENTED;

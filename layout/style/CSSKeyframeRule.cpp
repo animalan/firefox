@@ -4,7 +4,7 @@
 
 #include "mozilla/dom/CSSKeyframeRule.h"
 
-#include "mozilla/DeclarationBlock.h"
+#include "mozilla/ServoBindings.h"
 #include "mozilla/dom/CSSKeyframeRuleBinding.h"
 #include "nsDOMCSSDeclaration.h"
 
@@ -17,9 +17,7 @@ namespace mozilla::dom {
 class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
  public:
   explicit CSSKeyframeDeclaration(CSSKeyframeRule* aRule)
-      : mRule(aRule),
-        mDecls(new DeclarationBlock(
-            Servo_Keyframe_GetStyle(aRule->Raw()).Consume())) {}
+      : mRule(aRule), mDecls(Servo_Keyframe_GetStyle(aRule->Raw()).Consume()) {}
 
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS_AMBIGUOUS(CSSKeyframeDeclaration,
@@ -29,8 +27,8 @@ class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
 
   void DropReference() { mRule = nullptr; }
 
-  DeclarationBlock* GetOrCreateCSSDeclaration(
-      Operation aOperation, DeclarationBlock** aCreated) final {
+  Block* GetOrCreateCSSDeclaration(Operation aOperation,
+                                   Block** aCreated) final {
     if (aOperation != Operation::Read && mRule) {
       if (StyleSheet* sheet = mRule->GetStyleSheet()) {
         sheet->WillDirty();
@@ -38,7 +36,7 @@ class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
     }
     return mDecls;
   }
-  nsresult SetCSSDeclaration(DeclarationBlock* aDecls,
+  nsresult SetCSSDeclaration(Block* aDecls,
                              MutationClosureData* aClosureData) final {
     if (!mRule) {
       return NS_OK;
@@ -46,7 +44,7 @@ class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
     mRule->UpdateRule([this, aDecls]() {
       if (mDecls != aDecls) {
         mDecls = aDecls;
-        Servo_Keyframe_SetStyle(mRule->Raw(), mDecls->Raw());
+        Servo_Keyframe_SetStyle(mRule->Raw(), mDecls);
       }
     });
     return NS_OK;
@@ -71,7 +69,7 @@ class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
   }
 
   void SetRawAfterClone(StyleLockedKeyframe* aKeyframe) {
-    mDecls = new DeclarationBlock(Servo_Keyframe_GetStyle(aKeyframe).Consume());
+    mDecls = Servo_Keyframe_GetStyle(aKeyframe).Consume();
   }
 
  private:
@@ -80,7 +78,7 @@ class CSSKeyframeDeclaration final : public nsDOMCSSDeclaration {
   }
 
   CSSKeyframeRule* mRule;
-  RefPtr<DeclarationBlock> mDecls;
+  RefPtr<Block> mDecls;
 };
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(CSSKeyframeDeclaration)

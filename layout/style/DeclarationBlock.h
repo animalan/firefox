@@ -29,8 +29,7 @@ class DeclarationBlock final {
       : mRaw(Servo_DeclarationBlock_Clone(aCopy.mRaw).Consume()) {}
 
  public:
-  explicit DeclarationBlock(
-      already_AddRefed<const StyleLockedDeclarationBlock> aRaw)
+  explicit DeclarationBlock(already_AddRefed<StyleLockedDeclarationBlock> aRaw)
       : mRaw(aRaw) {}
 
   DeclarationBlock()
@@ -106,7 +105,7 @@ class DeclarationBlock final {
     return FromCssText(value, aExtraData, aMode, aLoader, aRuleType);
   }
 
-  const StyleLockedDeclarationBlock* Raw() const { return mRaw; }
+  StyleLockedDeclarationBlock* Raw() const { return mRaw; }
 
   void ToString(nsACString& aResult) const {
     Servo_DeclarationBlock_GetCssText(mRaw, &aResult);
@@ -165,7 +164,7 @@ class DeclarationBlock final {
   // non-null for style attributes.
   AttributeStyles* mAttributeStyles = nullptr;
 
-  RefPtr<const StyleLockedDeclarationBlock> mRaw;
+  RefPtr<StyleLockedDeclarationBlock> mRaw;
 };
 
 }  // namespace mozilla

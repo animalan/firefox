@@ -450,7 +450,7 @@ class Element : public FragmentOrElement {
   /**
    * Get the inline style declaration, if any, for this element.
    */
-  DeclarationBlock* GetInlineStyleDeclaration() const;
+  StyleLockedDeclarationBlock* GetInlineStyleDeclaration() const;
 
   /**
    * Get the mapped attributes, if any, for this element.
@@ -475,21 +475,21 @@ class Element : public FragmentOrElement {
   /**
    * Set the inline style declaration for this element.
    */
-  virtual nsresult SetInlineStyleDeclaration(DeclarationBlock& aDeclaration,
+  virtual nsresult SetInlineStyleDeclaration(StyleLockedDeclarationBlock&,
                                              MutationClosureData& aData);
 
   /**
    * Get the SMIL override style declaration for this element. If the
    * rule hasn't been created, this method simply returns null.
    */
-  DeclarationBlock* GetSMILOverrideStyleDeclaration();
+  StyleLockedDeclarationBlock* GetSMILOverrideStyleDeclaration();
 
   /**
    * Set the SMIL override style declaration for this element. This method will
    * notify the document's pres context, so that the style changes will be
    * noticed.
    */
-  void SetSMILOverrideStyleDeclaration(DeclarationBlock&);
+  void SetSMILOverrideStyleDeclaration(StyleLockedDeclarationBlock&);
 
   /**
    * Returns a new SMILAttr that allows the caller to animate the given
