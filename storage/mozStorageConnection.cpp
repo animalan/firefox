@@ -1502,8 +1502,8 @@ nsresult Connection::internalClose(sqlite3* aNativeConnection) {
       // are done here.
       SQLiteMutexAutoLock lockedScope(sharedDBMutex);
       // We still have non-finalized statements. Finalize them.
-      sqlite3_stmt* stmt = nullptr;
-      while ((stmt = ::sqlite3_next_stmt(aNativeConnection, stmt))) {
+      while (sqlite3_stmt* stmt =
+                 ::sqlite3_next_stmt(aNativeConnection, nullptr)) {
         MOZ_LOG(gStorageLog, LogLevel::Debug,
                 ("Auto-finalizing SQL statement '%s' (%p)", ::sqlite3_sql(stmt),
                  stmt));
@@ -1516,21 +1516,7 @@ nsresult Connection::internalClose(sqlite3* aNativeConnection) {
         NS_WARNING(msg.get());
 #endif  // DEBUG
 
-        srv = ::sqlite3_finalize(stmt);
-
-#ifdef DEBUG
-        if (srv != SQLITE_OK) {
-          SmprintfPointer msg = ::mozilla::Smprintf(
-              "Could not finalize SQL statement (%p)", stmt);
-          NS_WARNING(msg.get());
-        }
-#endif  // DEBUG
-
-        // Ensure that the loop continues properly, whether closing has
-        // succeeded or not.
-        if (srv == SQLITE_OK) {
-          stmt = nullptr;
-        }
+        (void)::sqlite3_finalize(stmt);
       }
       // Scope exiting will unlock the mutex before we invoke sqlite3_close()
       // again, since Sqlite will try to acquire it.

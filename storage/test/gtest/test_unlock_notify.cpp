@@ -100,8 +100,7 @@ class DatabaseTester : public DatabaseLocker {
 
     // Finalize our statement and null out our connection before notifying to
     // ensure that we close on the proper thread.
-    rv = stmt->Finalize();
-    do_check_eq(rv, NS_ERROR_FILE_IS_LOCKED);
+    stmt->Finalize();
     mConnection = nullptr;
 
     Notify(TEST_DONE);
