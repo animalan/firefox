@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 6.0.65
- * pdfjsBuild = 6bbcb46db
+ * pdfjsVersion = 6.0.82
+ * pdfjsBuild = 7f151c777
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -8647,7 +8647,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "6.0.65";
+    const viewerVersion = "6.0.82";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
