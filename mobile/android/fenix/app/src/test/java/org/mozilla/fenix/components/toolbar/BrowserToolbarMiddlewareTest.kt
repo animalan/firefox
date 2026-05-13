@@ -136,6 +136,7 @@ import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.components.search.BOOKMARKS_SEARCH_ENGINE_ID
 import org.mozilla.fenix.components.search.HISTORY_SEARCH_ENGINE_ID
 import org.mozilla.fenix.components.search.TABS_SEARCH_ENGINE_ID
+import org.mozilla.fenix.components.share.ShareSheetLauncher
 import org.mozilla.fenix.components.toolbar.BrowserToolbarMiddleware.ToolbarAction
 import org.mozilla.fenix.components.toolbar.DisplayActions.AddBookmarkClicked
 import org.mozilla.fenix.components.toolbar.DisplayActions.EditBookmarkClicked
@@ -208,6 +209,7 @@ class BrowserToolbarMiddlewareTest {
     private val publicSuffixList = PublicSuffixList(testContext)
     private val bookmarksStorage: BookmarksStorage = mockk()
     private val ipProtectionStore = IPProtectionStore()
+    private val shareSheetLauncher: ShareSheetLauncher = mockk(relaxed = true)
     private lateinit var appStore: AppStore
 
     @Before
@@ -1397,6 +1399,101 @@ class BrowserToolbarMiddlewareTest {
         assertEquals(expectedShareButton(), shareButton)
 
         toolbarStore.dispatch(shareButton.onClick as BrowserToolbarEvent)
+        verify {
+            navController.navigate(
+                directions = directionsEq(
+                    BrowserFragmentDirections.actionGlobalShareFragment(
+                        sessionId = currentTab.id,
+                        data = arrayOf(
+                            ShareData(
+                                url = currentTab.content.url,
+                                title = currentTab.content.title,
+                            ),
+                        ),
+                        showPage = true,
+                    ),
+                ),
+                navOptions = null,
+            )
+        }
+    }
+
+    @Config(sdk = [34])
+    @Test
+    fun `GIVEN native share sheet is enabled AND device supports it WHEN the share shortcut is clicked THEN launch the system share sheet`() {
+        settings.isTabStripEnabled = true
+        settings.shouldUseExpandedToolbar = false
+        settings.shouldShowToolbarCustomization = true
+        settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
+        settings.nativeShareSheetEnabled = true
+
+        every { navController.currentDestination?.id } returns R.id.browserFragment
+
+        val browserScreenStore = buildBrowserScreenStore()
+        val currentTab = createTab(url = "https://www.mozilla.org", title = "Mozilla", private = false)
+        val browserStore = BrowserStore(
+            initialState = BrowserState(
+                tabs = listOf(currentTab),
+                selectedTabId = currentTab.id,
+            ),
+        )
+        val middleware = buildMiddleware(
+            browserScreenStore = browserScreenStore,
+            browserStore = browserStore,
+            isWideScreen = { true },
+        )
+        val toolbarStore = buildStore(middleware)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val shareButton = toolbarStore.state.displayState.browserActionsEnd[0] as ActionButtonRes
+        toolbarStore.dispatch(shareButton.onClick as BrowserToolbarEvent)
+
+        verify {
+            shareSheetLauncher.showSystemShareSheet(
+                id = currentTab.id,
+                longUrl = currentTab.content.url,
+                title = currentTab.content.title,
+                isPrivate = false,
+                isCustomTab = false,
+            )
+        }
+        verify(exactly = 0) { navController.navigate(any<NavDirections>(), null) }
+    }
+
+    @Config(sdk = [33])
+    @Test
+    fun `GIVEN native share sheet is enabled AND device does not support it WHEN the share shortcut is clicked THEN navigate to share fragment`() {
+        settings.isTabStripEnabled = true
+        settings.shouldUseExpandedToolbar = false
+        settings.shouldShowToolbarCustomization = true
+        settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
+        settings.nativeShareSheetEnabled = true
+
+        every { navController.currentDestination?.id } returns R.id.browserFragment
+        every { navController.navigate(any<NavDirections>(), null) } just Runs
+
+        val browserScreenStore = buildBrowserScreenStore()
+        val currentTab = createTab(url = "https://www.mozilla.org", title = "Mozilla", private = false)
+        val browserStore = BrowserStore(
+            initialState = BrowserState(
+                tabs = listOf(currentTab),
+                selectedTabId = currentTab.id,
+            ),
+        )
+        val middleware = buildMiddleware(
+            browserScreenStore = browserScreenStore,
+            browserStore = browserStore,
+            isWideScreen = { true },
+        )
+        val toolbarStore = buildStore(middleware)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val shareButton = toolbarStore.state.displayState.browserActionsEnd[0] as ActionButtonRes
+        toolbarStore.dispatch(shareButton.onClick as BrowserToolbarEvent)
+
+        verify(exactly = 0) {
+            shareSheetLauncher.showSystemShareSheet(any(), any<String>(), any(), any(), any())
+        }
         verify {
             navController.navigate(
                 directions = directionsEq(
@@ -3658,6 +3755,7 @@ class BrowserToolbarMiddlewareTest {
         clipboard: ClipboardHandler = this.clipboard,
         publicSuffixList: PublicSuffixList = this.publicSuffixList,
         settings: Settings = this.settings,
+        shareSheetLauncher: ShareSheetLauncher = this.shareSheetLauncher,
         navController: NavController = this.navController,
         browsingModeManager: BrowsingModeManager = this.browsingModeManager,
         readerModeController: ReaderModeController = this.readerModeController,
@@ -3680,6 +3778,7 @@ class BrowserToolbarMiddlewareTest {
         clipboard = clipboard,
         publicSuffixList = publicSuffixList,
         settings = settings,
+        shareSheetLauncher = shareSheetLauncher,
         navController = navController,
         browsingModeManager = browsingModeManager,
         readerModeController = readerModeController,
