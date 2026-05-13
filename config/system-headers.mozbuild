@@ -220,7 +220,6 @@ system_headers = [
     "exdisp.h",
     "ExDisp.h",
     "exe386.h",
-    "execinfo.h",
     "extras.h",
     "fcntl.h",
     "features.h",
@@ -1025,6 +1024,11 @@ system_headers = [
     "aom/aom_decoder.h",
     "aom/aom_encoder.h",
 ]
+
+if CONFIG["HAVE_EXECINFO"]:
+    system_headers += [
+        "execinfo.h",
+    ]
 
 if CONFIG["MOZ_X11"]:
     system_headers += [

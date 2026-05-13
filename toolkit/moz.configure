@@ -1622,6 +1622,8 @@ with only_when(compile_environment & depends(target.os)(lambda os: os != "WINNT"
 with only_when(compile_environment & depends(target.os)(lambda os: os != "WINNT")):
     set_define("HAVE_SYSIOCCOM_H", check_header("sys/ioccom.h"))
 
+    set_config("HAVE_EXECINFO", check_header("execinfo.h"))
+
 # Elfhack
 # ==============================================================
 with only_when("--enable-compile-environment"):
