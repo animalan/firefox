@@ -11,6 +11,10 @@ requesttimeoutfactor = 2
 
 ["test_ExtensionTaskScheduler.js"]
 
+["test_GuardSets.js"]
+
+["test_GuardSets_propagation.js"]
+
 ["test_QuarantinedDomains.js"]
 
 ["test_change_backgroundServiceWorker_enabled_pref_false.js"]
