@@ -67,7 +67,6 @@ import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.TabCollectionStorage
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.components.appstate.AppState
-import org.mozilla.fenix.components.share.ShareSheetLauncher
 import org.mozilla.fenix.components.usecases.FenixBrowserUseCases
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.maxActiveTime
@@ -117,7 +116,6 @@ class DefaultTabManagerControllerTest {
 
     private val appStore: AppStore = mockk(relaxed = true)
     private val settings: Settings = mockk(relaxed = true)
-    private val shareSheetLauncher: ShareSheetLauncher = mockk(relaxed = true)
 
     private val bookmarksStorage: BookmarksStorage = mockk(relaxed = true)
     private val closeSyncedTabsUseCases: CloseTabsUseCases = mockk(relaxed = true)
@@ -1170,61 +1168,17 @@ class DefaultTabManagerControllerTest {
     }
 
     @Test
-    fun `GIVEN native share is disabled AND one tab is selected WHEN the share button is clicked THEN report telemetry and navigate to share fragment`() {
-        every { settings.nativeShareSheetEnabled } returns false
+    fun `GIVEN one tab is selected WHEN the share button is clicked THEN report the telemetry and navigate away`() {
         every { trayStore.state.mode.selectedTabs } returns setOf(TabsTrayItem.Tab(tab = createTab(url = "https://mozilla.org")))
 
         createController().handleShareSelectedTabsClicked()
 
         verify(exactly = 1) { navController.navigate(any<NavDirections>()) }
-        verify(exactly = 0) { shareSheetLauncher.showSystemShareSheet(items = any(), isPrivate = any()) }
 
         assertNotNull(TabsTray.shareSelectedTabs.testGetValue())
         val snapshot = TabsTray.shareSelectedTabs.testGetValue()!!
         assertEquals(1, snapshot.size)
         assertEquals("1", snapshot.single().extra?.getValue("tab_count"))
-    }
-
-    @Test
-    fun `GIVEN native share is enabled AND one tab is selected WHEN the share button is clicked THEN report telemetry and show native share sheet`() {
-        every { settings.nativeShareSheetEnabled } returns true
-        val tab = createTab(url = "https://mozilla.org", title = "Mozilla")
-        every { trayStore.state.mode.selectedTabs } returns setOf(TabsTrayItem.Tab(tab = tab))
-
-        createController().handleShareSelectedTabsClicked()
-
-        verify(exactly = 0) { navController.navigate(any<NavDirections>()) }
-        verify {
-            shareSheetLauncher.showSystemShareSheet(
-                items = any(),
-                isPrivate = false,
-            )
-        }
-
-        assertNotNull(TabsTray.shareSelectedTabs.testGetValue())
-    }
-
-    @Test
-    fun `GIVEN native share is enabled AND multiple tabs are selected WHEN the share button is clicked THEN show native share sheet with all tabs`() {
-        every { settings.nativeShareSheetEnabled } returns true
-        val tabs = setOf(
-            TabsTrayItem.Tab(tab = createTab(url = "https://mozilla.org", title = "Mozilla")),
-            TabsTrayItem.Tab(tab = createTab(url = "https://firefox.com", title = "Firefox")),
-        )
-        every { trayStore.state.mode.selectedTabs } returns tabs
-
-        createController().handleShareSelectedTabsClicked()
-
-        verify(exactly = 0) { navController.navigate(any<NavDirections>()) }
-        verify {
-            shareSheetLauncher.showSystemShareSheet(
-                items = any(),
-                isPrivate = false,
-            )
-        }
-
-        val snapshot = TabsTray.shareSelectedTabs.testGetValue()!!
-        assertEquals("2", snapshot.single().extra?.getValue("tab_count"))
     }
 
     @Test
@@ -1651,7 +1605,6 @@ class DefaultTabManagerControllerTest {
             tabsTrayStore = trayStore,
             browserStore = browserStore,
             settings = settings,
-            shareSheetLauncher = shareSheetLauncher,
             browsingModeManager = browsingModeManager,
             navController = navController,
             navigateToHomeAndDeleteSession = navigateToHomeAndDeleteSession,

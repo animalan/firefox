@@ -91,7 +91,7 @@ import org.mozilla.fenix.components.menu.store.MenuStore
 import org.mozilla.fenix.components.menu.store.SummarizationMenuState
 import org.mozilla.fenix.components.menu.store.TranslationInfo
 import org.mozilla.fenix.components.menu.store.WebExtensionMenuItem
-import org.mozilla.fenix.components.share.DefaultShareSheetLauncher
+import org.mozilla.fenix.components.share.ShareSheetLauncherImpl
 import org.mozilla.fenix.ext.canGoBackInHistoryOrToStories
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.openSetDefaultBrowserOption
@@ -361,8 +361,14 @@ class MenuDialogFragment : BottomSheetDialogFragment() {
                                 scope = coroutineScope,
                                 customTab = customTab,
                                 webCompatReporterMoreInfoSender = webCompatReporterMoreInfoSender,
-                                shareSheetLauncher = DefaultShareSheetLauncher(
+                                shareSheetLauncher = ShareSheetLauncherImpl(
+                                    browserStore = browserStore,
                                     navController = findNavController(),
+                                    onDismiss = {
+                                        lifecycleScope.launch(Dispatchers.Main) {
+                                            this@MenuDialogFragment.dismiss()
+                                        }
+                                    },
                                     homeActivityClass = HomeActivity::class.java,
                                 ),
                             ),

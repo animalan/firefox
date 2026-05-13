@@ -17,7 +17,6 @@ import mozilla.components.browser.state.state.CustomTabSessionState
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.EngineSession.LoadUrlFlags
-import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.feature.pwa.WebAppUseCases
 import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.lib.state.Middleware
@@ -37,8 +36,6 @@ import org.mozilla.fenix.components.menu.store.MenuState
 import org.mozilla.fenix.components.menu.store.MenuStore
 import org.mozilla.fenix.components.menu.toFenixFxAEntryPoint
 import org.mozilla.fenix.components.share.ShareSheetLauncher
-import org.mozilla.fenix.components.share.createPdfShareAction
-import org.mozilla.fenix.components.share.isSystemShareSheetSupported
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.settings.SupportUtils.AMO_HOMEPAGE_FOR_ANDROID
 import org.mozilla.fenix.utils.Settings
@@ -211,50 +208,25 @@ class MenuNavigationMiddleware(
                 is MenuAction.Navigate.Share -> {
                     val session: SessionState? = customTab ?: currentState.browserMenuState?.selectedTab
                     val url = customTab?.content?.url ?: currentState.browserMenuState?.selectedTab?.getUrl()
-                    val pdfShareAction = browserStore.createPdfShareAction(session?.id, url)
-
-                    when {
-                        pdfShareAction != null -> {
-                            browserStore.dispatch(pdfShareAction)
-                        }
-
-                        // Show the system share sheet if it is supported.
-                        settings.nativeShareSheetEnabled && isSystemShareSheetSupported -> {
-                            url?.let {
-                                shareSheetLauncher.showSystemShareSheet(
-                                    id = session?.id,
-                                    longUrl = it,
-                                    title = session?.content?.title,
-                                    isPrivate = session?.content?.private ?: false,
-                                    isCustomTab = customTab != null,
-                                )
-                            }
-                        }
-
-                        // Show the custom Share fragment when the system share sheet is not supported.
-                        else -> {
-                            val shareData = arrayOf(ShareData(title = session?.content?.title, url = url))
-                            val popUpToId = if (customTab != null) {
-                                R.id.externalAppBrowserFragment
-                            } else {
-                                R.id.browserFragment
-                            }
-
-                            navController.nav(
-                                id = R.id.menuDialogFragment,
-                                directions = MenuDialogFragmentDirections.actionGlobalShareFragment(
-                                    sessionId = session?.id,
-                                    data = shareData,
-                                    showPage = true,
-                                ),
-                                navOptions = NavOptions.Builder()
-                                    .setPopUpTo(popUpToId, false)
-                                    .build(),
+                    if (settings.nativeShareSheetEnabled) {
+                        val title = session?.content?.title
+                        url?.let {
+                            shareSheetLauncher.showNativeShareSheet(
+                                id = session?.id,
+                                longUrl = it,
+                                title = title,
+                                isPrivate = session?.content?.private ?: false,
+                                isCustomTab = customTab != null,
                             )
                         }
+                    } else {
+                        shareSheetLauncher.showCustomShareSheet(
+                            id = session?.id,
+                            url = url,
+                            title = session?.content?.title,
+                            isCustomTab = customTab != null,
+                        )
                     }
-
-                    onDismiss()
                 }
 
                 is MenuAction.Navigate.ManageExtensions -> navController.nav(
