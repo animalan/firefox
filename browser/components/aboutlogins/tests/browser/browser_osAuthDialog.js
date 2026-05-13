@@ -17,6 +17,7 @@ add_setup(async function () {
     set: [
       ["test.wait300msAfterTabSwitch", true],
       ["toolkit.osKeyStore.unofficialBuildOnlyLogin", ""],
+      ["signon.rustMirror.enabled", false],
     ],
   });
 

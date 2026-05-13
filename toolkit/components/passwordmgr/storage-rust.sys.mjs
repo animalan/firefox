@@ -17,6 +17,12 @@ ChromeUtils.defineESModuleGetters(lazy, {
   AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
 });
 
+ChromeUtils.defineLazyGetter(
+  lazy,
+  "l10n",
+  () => new Localization(["toolkit/passwordmgr/passwordmgr.ftl"])
+);
+
 import { initialize as initRustComponents } from "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustInitRustComponents.sys.mjs";
 
 import {
@@ -26,6 +32,7 @@ import {
   BulkResultEntry,
   PrimaryPasswordAuthenticator,
   createLoginStoreWithNssKeymanager,
+  AuthenticationCanceled,
 } from "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustLogins.sys.mjs";
 
 const LoginInfo = Components.Constructor(
@@ -242,10 +249,53 @@ class RustLoginsStoreAdapter {
   }
 }
 
-// This is a mock atm, as the Rust Logins mirror is not enabled for primary
-// password users. A primary password entered outide of Rust will still unlock
-// the Rust encdec, because it uses the same NSS.
-class LoginStorageAuthenticator extends PrimaryPasswordAuthenticator {}
+class RustLoginStorageAuthenticator extends PrimaryPasswordAuthenticator {
+  #logger = null;
+
+  constructor() {
+    super();
+    this.#logger = lazy.LoginHelper.createLogger(
+      "RustLoginStorageAuthenticator"
+    );
+  }
+
+  // Called by Rust when the NSS key needs to be unlocked. Concurrent calls are not
+  // possible: all store operations hold the store's internal Mutex<LoginDb> while
+  // calling get_key(), so this method is always invoked serially.
+  async getPrimaryPassword() {
+    this.#logger.log("getPrimaryPassword called");
+    const win = Services.wm.getMostRecentBrowserWindow();
+    // Empty title causes Prompter.sys.mjs to fall back to the localised
+    // "PromptPassword3" string ("Password Required - <AppName>").
+    const message = await lazy.l10n.formatValue(
+      "primary-password-prompt-message"
+    );
+    const result = await Services.prompt.asyncPromptPassword(
+      win?.browsingContext,
+      Services.prompt.MODAL_TYPE_WINDOW,
+      "",
+      message,
+      ""
+    );
+
+    if (!result.getProperty("ok")) {
+      Services.obs.notifyObservers(null, "passwordmgr-crypto-loginCanceled");
+      throw new AuthenticationCanceled("User cancelled");
+    }
+
+    this.#logger.log("got a password");
+    return result.getProperty("pass");
+  }
+
+  async onAuthenticationSuccess() {
+    Services.obs.notifyObservers(null, "passwordmgr-crypto-login");
+    this.#logger.log("authenticated with success");
+  }
+
+  async onAuthenticationFailure() {
+    this.#logger.log("failed to authenticate");
+  }
+}
 
 export class LoginManagerRustStorage {
   #storageAdapter = null;
@@ -272,7 +322,7 @@ export class LoginManagerRustStorage {
           this.log(`Initializing Rust login storage at ${path}`);
 
           initRustComponents(profilePath).then(() => {
-            const authenticator = new LoginStorageAuthenticator();
+            const authenticator = new RustLoginStorageAuthenticator();
             const store = createLoginStoreWithNssKeymanager(
               path,
               authenticator
