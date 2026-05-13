@@ -6,10 +6,6 @@
 // Regression test for bug 2034243: siteDataSize must leave the "calculating"
 // state when browser.settings-redesign.enabled is true.
 add_task(async function test_siteDataSize_srd() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.settings-redesign.enabled", true]],
-  });
-
   let updatedPromise = promiseSiteDataManagerSitesUpdated();
   await openPreferencesViaOpenPreferencesAPI("privacy", { leaveOpen: true });
   await updatedPromise;
