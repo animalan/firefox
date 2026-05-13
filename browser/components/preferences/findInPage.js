@@ -275,7 +275,6 @@ var gSearchResultsPane = {
     let srHeader = document.getElementById("header-searchResults");
     let noResultsEl = document.getElementById("no-results-message");
     if (this.query) {
-      // Showing the Search Results Tag
       await gotoPref("paneSearchResults");
       srHeader.hidden = false;
 
@@ -302,6 +301,14 @@ var gSearchResultsPane = {
           child.classList.add("visually-hidden");
           child.hidden = false;
         }
+        // For setting-panes, also prepare their setting-group children.
+        if (child.localName === "setting-pane") {
+          for (let group of child.querySelectorAll("setting-group")) {
+            if (group.hidden || group.hasAttribute("data-hidden-from-search")) {
+              group.classList.add("visually-hidden");
+            }
+          }
+        }
       }
 
       let ts = performance.now();
@@ -320,6 +327,34 @@ var gSearchResultsPane = {
           if (query !== this.query) {
             return;
           }
+        }
+
+        // For setting-pane elements, search each setting-group individually
+        // so that only matching groups are shown.
+        if (child.localName === "setting-pane") {
+          let groupSelector = "setting-group:not([data-hidden-from-search])";
+          if (subQuery) {
+            groupSelector += ":not(.visually-hidden)";
+          }
+          let groups = child.querySelectorAll(groupSelector);
+          let anyGroupMatched = false;
+          for (let group of groups) {
+            let matched = await this.searchWithinNode(group, this.query);
+            if (matched) {
+              group.classList.remove("visually-hidden");
+              anyGroupMatched = true;
+            } else {
+              group.classList.add("visually-hidden");
+            }
+          }
+          if (anyGroupMatched) {
+            child.classList.remove("visually-hidden");
+            child.onSearchPane = true;
+            resultsFound = true;
+          } else {
+            child.classList.add("visually-hidden");
+          }
+          continue;
         }
 
         if (
@@ -370,7 +405,9 @@ var gSearchResultsPane = {
     } else {
       noResultsEl.hidden = true;
       document.getElementById("sorry-message-query").textContent = "";
-      // Going back to General when cleared
+      // Going back to General when cleared. visually-hidden cleanup
+      // for setting-panes/setting-groups is handled in preferences.js
+      // `search()`.
       await gotoPref("paneGeneral");
       srHeader.hidden = true;
 
@@ -497,7 +534,7 @@ var gSearchResultsPane = {
       // Creating tooltips for buttons
       if (
         keywordsResult &&
-        (nodeObject instanceof HTMLElement ||
+        (HTMLElement.isInstance(nodeObject) ||
           nodeObject.localName === "button" ||
           nodeObject.localName == "menulist")
       ) {
