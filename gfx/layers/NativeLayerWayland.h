@@ -90,7 +90,7 @@ class NativeLayerRootWayland final : public NativeLayerRoot {
   }
   void SetDRMFormat(widget::DRMFormat* aFormat);
 
-  void FrameCallbackHandler(uint32_t aTime);
+  void VSyncCallbackHandler(uint32_t aTime, bool aEmulated);
 
   RefPtr<widget::WaylandBuffer> BorrowExternalBuffer(
       RefPtr<DMABufSurface> aDMABufSurface);
