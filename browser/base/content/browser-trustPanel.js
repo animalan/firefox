@@ -1599,6 +1599,7 @@ class TrustPanel {
   }
 
   onPopupShown() {
+    PopupNotifications.suppressWhileOpen(this.#popup);
     // Disable the toggles for a short time after opening via SmartBlock placeholder button
     // to prevent clickjacking.
     if (this.#openingReason == "embedPlaceholderButton") {

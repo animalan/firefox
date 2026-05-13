@@ -2,48 +2,35 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-add_setup(async function () {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.urlbar.trustPanel.featureGate", false]],
-  });
-});
-
-add_task(async function test_hide_popup_with_protections_panel_showing() {
+add_task(async function test_displayURI_geo() {
   await BrowserTestUtils.withNewTab(
     "https://test1.example.com/",
     async function (browser) {
-      // Request location permissions and wait for that prompt to appear.
       let popupShownPromise = waitForNotificationPanel();
       await SpecialPowers.spawn(browser, [], async function () {
         content.navigator.geolocation.getCurrentPosition(() => {});
       });
       await popupShownPromise;
 
-      // Click on the icon for the protections panel, to show the panel.
       popupShownPromise = BrowserTestUtils.waitForEvent(
         window,
         "popupshown",
         true,
-        event => event.target == gProtectionsHandler._protectionsPopup
+        event => event.target.id == "trustpanel-popup"
       );
-      EventUtils.synthesizeMouseAtCenter(
-        document.getElementById("tracking-protection-icon-container"),
-        {}
-      );
+      gIdentityHandler._identityIconBox.click();
       await popupShownPromise;
 
-      // Make sure the location permission prompt closed.
+      let trustPanel = document.getElementById("trustpanel-popup");
       Assert.ok(!PopupNotifications.isPanelOpen, "Geolocation popup is hidden");
 
-      // Close the protections panel.
       let popupHidden = BrowserTestUtils.waitForEvent(
-        gProtectionsHandler._protectionsPopup,
+        trustPanel,
         "popuphidden"
       );
-      gProtectionsHandler._protectionsPopup.hidePopup();
+      trustPanel.hidePopup();
       await popupHidden;
 
-      // Make sure the location permission prompt came back.
       Assert.ok(PopupNotifications.isPanelOpen, "Geolocation popup is showing");
     }
   );
