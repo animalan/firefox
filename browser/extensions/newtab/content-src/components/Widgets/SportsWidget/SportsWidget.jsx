@@ -12,6 +12,7 @@ const WIDGET_STATES = {
   INTRO: "sports-intro",
   FOLLOW_TEAMS: "sports-follow-state",
   MATCHES: "sports-matches",
+  KEY_DATES: "sports-key-dates",
 };
 
 const MATCHES_TABS = {
@@ -52,6 +53,7 @@ const USER_ACTION_TYPES = {
   VIEW_UPCOMING: "view_upcoming",
   VIEW_RESULTS: "view_results",
   VIEW_SCHEDULE: "view_schedule",
+  VIEW_KEY_DATES: "view_key_dates",
   CHANGE_SIZE: "change_size",
   LEARN_MORE: "learn_more",
 };
@@ -184,6 +186,29 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
     handleInteraction();
   }
 
+  function handleViewKeyDates(widgetSource) {
+    batch(() => {
+      dispatch(
+        ac.OnlyToMain({
+          type: at.WIDGETS_USER_EVENT,
+          data: {
+            widget_name: "sports_widget",
+            widget_source: widgetSource,
+            user_action: USER_ACTION_TYPES.VIEW_KEY_DATES,
+            widget_size: widgetSize,
+          },
+        })
+      );
+      dispatch(
+        ac.AlsoToMain({
+          type: at.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
+          data: WIDGET_STATES.KEY_DATES,
+        })
+      );
+    });
+    handleInteraction();
+  }
+
   function handleSportsWidgetHide() {
     batch(() => {
       dispatch(
@@ -248,14 +273,14 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
     return () => el.removeEventListener("click", listener);
   }, [handleChangeSize]);
 
-  function handleViewSchedule() {
+  function handleViewMatches(widgetSource) {
     batch(() => {
       dispatch(
         ac.OnlyToMain({
           type: at.WIDGETS_USER_EVENT,
           data: {
             widget_name: "sports_widget",
-            widget_source: "widget",
+            widget_source: widgetSource,
             user_action: USER_ACTION_TYPES.VIEW_SCHEDULE,
             widget_size: widgetSize,
           },
@@ -383,6 +408,18 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
             )}
           </div>
         )}
+        {widgetState === WIDGET_STATES.KEY_DATES && (
+          <>
+            <moz-button
+              className="sports-back-button"
+              type="icon ghost"
+              iconsrc="chrome://global/skin/icons/arrow-left.svg"
+              data-l10n-id="newtab-sports-widget-back-button"
+              onClick={handleViewIntro}
+            />
+            <h3 data-l10n-id="newtab-sports-widget-key-dates"></h3>
+          </>
+        )}
         {widgetState === WIDGET_STATES.INTRO && (
           <div className="sports-intro-wrapper">
             <h2
@@ -413,6 +450,10 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
               <panel-item
                 data-l10n-id="newtab-sports-widget-menu-follow-teams"
                 onClick={() => handleFollowTeams("context_menu")}
+              />
+              <panel-item
+                data-l10n-id="newtab-sports-widget-menu-view-schedule"
+                onClick={() => handleViewKeyDates("context_menu")}
               />
               <panel-item
                 data-l10n-id="newtab-sports-widget-menu-view-upcoming"
@@ -470,6 +511,9 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
             hasLiveGames={hasLiveGames}
           />
         )}
+        {widgetState === WIDGET_STATES.KEY_DATES && (
+          <SportsWidgetKeyDates handleViewMatches={handleViewMatches} />
+        )}
         {widgetState === WIDGET_STATES.INTRO && (
           <>
             <div className="sports-buttons-wrapper">
@@ -478,7 +522,7 @@ function SportsWidget({ dispatch, handleUserInteraction }) {
                 size={widgetSize === "medium" ? "small" : undefined}
                 data-l10n-id="newtab-sports-widget-view-matches"
                 className="sports-view-matches"
-                onClick={handleViewSchedule}
+                onClick={() => handleViewMatches("widget")}
               />
               <moz-button
                 type="secondary"
@@ -566,6 +610,77 @@ function SportsMatchesView({ matchesTab, hasLiveGames }) {
       <div hidden={matchesTab !== MATCHES_TABS.RESULTS} />
       {hasLiveGames && <div hidden={matchesTab !== MATCHES_TABS.NOW} />}
       <div hidden={matchesTab !== MATCHES_TABS.UPCOMING} />
+    </div>
+  );
+}
+
+const keyDatesList = [
+  {
+    stageL10nId: "newtab-sports-widget-group-stage",
+    start: "2026-06-11",
+    end: "2026-06-27",
+  },
+  {
+    stageL10nId: "newtab-sports-widget-round-32",
+    start: "2026-06-28",
+    end: "2026-07-03",
+  },
+  {
+    stageL10nId: "newtab-sports-widget-round-16",
+    start: "2026-07-04",
+    end: "2026-07-07",
+  },
+  {
+    stageL10nId: "newtab-sports-widget-quarter-finals",
+    start: "2026-07-09",
+    end: "2026-07-11",
+  },
+  {
+    stageL10nId: "newtab-sports-widget-semi-finals",
+    start: "2026-07-14",
+    end: "2026-07-15",
+  },
+  {
+    stageL10nId: "newtab-sports-widget-bronze-finals",
+    date: "2026-07-18",
+  },
+  {
+    stageL10nId: "newtab-sports-widget-final",
+    date: "2026-07-19",
+  },
+];
+
+function SportsWidgetKeyDates({ handleViewMatches }) {
+  return (
+    <div className="sports-key-dates">
+      <ul className="sports-key-dates-list">
+        {keyDatesList.map(({ stageL10nId, start, end, date }) => (
+          <li key={stageL10nId} className="sports-key-dates-item">
+            <span data-l10n-id={stageL10nId} />
+            <span
+              data-l10n-id={
+                date
+                  ? "newtab-sports-widget-key-date"
+                  : "newtab-sports-widget-key-date-range"
+              }
+              data-l10n-args={JSON.stringify(
+                date
+                  ? { date: new Date(date).getTime() }
+                  : {
+                      start: new Date(start).getTime(),
+                      end: new Date(end).getTime(),
+                    }
+              )}
+            />
+          </li>
+        ))}
+      </ul>
+      <moz-button
+        type="secondary"
+        size="small"
+        data-l10n-id="newtab-sports-widget-view-matches"
+        onClick={() => handleViewMatches("key_dates_state")}
+      />
     </div>
   );
 }

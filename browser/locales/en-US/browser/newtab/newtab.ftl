@@ -740,6 +740,7 @@ newtab-widget-timer-menu-learn-more = Learn more
 ## Sports widget
 
 newtab-sports-widget-menu-follow-teams = Follow teams
+newtab-sports-widget-menu-view-schedule = View schedule
 newtab-sports-widget-menu-view-upcoming = View upcoming
 newtab-sports-widget-menu-view-results = View results
 # Milestone dates (e.g. group stage, semifinals, etc.). Refers to calendar dates.

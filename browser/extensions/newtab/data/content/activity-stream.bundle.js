@@ -15803,7 +15803,8 @@ function WidgetsRowFeatureHighlight({
 const WIDGET_STATES = {
   INTRO: "sports-intro",
   FOLLOW_TEAMS: "sports-follow-state",
-  MATCHES: "sports-matches"
+  MATCHES: "sports-matches",
+  KEY_DATES: "sports-key-dates"
 };
 const MATCHES_TABS = {
   RESULTS: "results",
@@ -15858,6 +15859,7 @@ const SportsWidget_USER_ACTION_TYPES = {
   VIEW_UPCOMING: "view_upcoming",
   VIEW_RESULTS: "view_results",
   VIEW_SCHEDULE: "view_schedule",
+  VIEW_KEY_DATES: "view_key_dates",
   CHANGE_SIZE: "change_size",
   LEARN_MORE: "learn_more"
 };
@@ -15962,6 +15964,24 @@ function SportsWidget_SportsWidget({
     });
     handleInteraction();
   }
+  function handleViewKeyDates(widgetSource) {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.WIDGETS_USER_EVENT,
+        data: {
+          widget_name: "sports_widget",
+          widget_source: widgetSource,
+          user_action: SportsWidget_USER_ACTION_TYPES.VIEW_KEY_DATES,
+          widget_size: widgetSize
+        }
+      }));
+      dispatch(actionCreators.AlsoToMain({
+        type: actionTypes.WIDGETS_SPORTS_CHANGE_WIDGET_STATE,
+        data: WIDGET_STATES.KEY_DATES
+      }));
+    });
+    handleInteraction();
+  }
   function handleSportsWidgetHide() {
     (0,external_ReactRedux_namespaceObject.batch)(() => {
       dispatch(actionCreators.OnlyToMain({
@@ -16018,13 +16038,13 @@ function SportsWidget_SportsWidget({
     el.addEventListener("click", listener);
     return () => el.removeEventListener("click", listener);
   }, [handleChangeSize]);
-  function handleViewSchedule() {
+  function handleViewMatches(widgetSource) {
     (0,external_ReactRedux_namespaceObject.batch)(() => {
       dispatch(actionCreators.OnlyToMain({
         type: actionTypes.WIDGETS_USER_EVENT,
         data: {
           widget_name: "sports_widget",
-          widget_source: "widget",
+          widget_source: widgetSource,
           user_action: SportsWidget_USER_ACTION_TYPES.VIEW_SCHEDULE,
           widget_size: widgetSize
         }
@@ -16117,7 +16137,15 @@ function SportsWidget_SportsWidget({
     className: `sports-matches-tab${activeTab === id ? " is-active" : ""}${disabled ? " is-disabled" : ""}`,
     onClick: () => handleMatchesTabChange(id),
     "data-l10n-id": `newtab-sports-widget-${id}`
-  }))), widgetState === WIDGET_STATES.INTRO && /*#__PURE__*/external_React_default().createElement("div", {
+  }))), widgetState === WIDGET_STATES.KEY_DATES && /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("moz-button", {
+    className: "sports-back-button",
+    type: "icon ghost",
+    iconsrc: "chrome://global/skin/icons/arrow-left.svg",
+    "data-l10n-id": "newtab-sports-widget-back-button",
+    onClick: handleViewIntro
+  }), /*#__PURE__*/external_React_default().createElement("h3", {
+    "data-l10n-id": "newtab-sports-widget-key-dates"
+  })), widgetState === WIDGET_STATES.INTRO && /*#__PURE__*/external_React_default().createElement("div", {
     className: "sports-intro-wrapper"
   }, /*#__PURE__*/external_React_default().createElement("h2", {
     className: "sports-intro-title",
@@ -16141,6 +16169,9 @@ function SportsWidget_SportsWidget({
   }, /*#__PURE__*/external_React_default().createElement("panel-item", {
     "data-l10n-id": "newtab-sports-widget-menu-follow-teams",
     onClick: () => handleFollowTeams("context_menu")
+  }), /*#__PURE__*/external_React_default().createElement("panel-item", {
+    "data-l10n-id": "newtab-sports-widget-menu-view-schedule",
+    onClick: () => handleViewKeyDates("context_menu")
   }), /*#__PURE__*/external_React_default().createElement("panel-item", {
     "data-l10n-id": "newtab-sports-widget-menu-view-upcoming",
     onClick: handleViewUpcoming
@@ -16177,6 +16208,8 @@ function SportsWidget_SportsWidget({
   }), widgetState === WIDGET_STATES.MATCHES && /*#__PURE__*/external_React_default().createElement(SportsMatchesView, {
     matchesTab: activeTab,
     hasLiveGames: hasLiveGames
+  }), widgetState === WIDGET_STATES.KEY_DATES && /*#__PURE__*/external_React_default().createElement(SportsWidgetKeyDates, {
+    handleViewMatches: handleViewMatches
   }), widgetState === WIDGET_STATES.INTRO && /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("div", {
     className: "sports-buttons-wrapper"
   }, /*#__PURE__*/external_React_default().createElement("moz-button", {
@@ -16184,7 +16217,7 @@ function SportsWidget_SportsWidget({
     size: widgetSize === "medium" ? "small" : undefined,
     "data-l10n-id": "newtab-sports-widget-view-matches",
     className: "sports-view-matches",
-    onClick: handleViewSchedule
+    onClick: () => handleViewMatches("widget")
   }), /*#__PURE__*/external_React_default().createElement("moz-button", {
     type: "secondary",
     size: widgetSize === "medium" ? "small" : undefined,
@@ -16253,6 +16286,65 @@ function SportsMatchesView({
     hidden: matchesTab !== MATCHES_TABS.NOW
   }), /*#__PURE__*/external_React_default().createElement("div", {
     hidden: matchesTab !== MATCHES_TABS.UPCOMING
+  }));
+}
+const keyDatesList = [{
+  stageL10nId: "newtab-sports-widget-group-stage",
+  start: "2026-06-11",
+  end: "2026-06-27"
+}, {
+  stageL10nId: "newtab-sports-widget-round-32",
+  start: "2026-06-28",
+  end: "2026-07-03"
+}, {
+  stageL10nId: "newtab-sports-widget-round-16",
+  start: "2026-07-04",
+  end: "2026-07-07"
+}, {
+  stageL10nId: "newtab-sports-widget-quarter-finals",
+  start: "2026-07-09",
+  end: "2026-07-11"
+}, {
+  stageL10nId: "newtab-sports-widget-semi-finals",
+  start: "2026-07-14",
+  end: "2026-07-15"
+}, {
+  stageL10nId: "newtab-sports-widget-bronze-finals",
+  date: "2026-07-18"
+}, {
+  stageL10nId: "newtab-sports-widget-final",
+  date: "2026-07-19"
+}];
+function SportsWidgetKeyDates({
+  handleViewMatches
+}) {
+  return /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sports-key-dates"
+  }, /*#__PURE__*/external_React_default().createElement("ul", {
+    className: "sports-key-dates-list"
+  }, keyDatesList.map(({
+    stageL10nId,
+    start,
+    end,
+    date
+  }) => /*#__PURE__*/external_React_default().createElement("li", {
+    key: stageL10nId,
+    className: "sports-key-dates-item"
+  }, /*#__PURE__*/external_React_default().createElement("span", {
+    "data-l10n-id": stageL10nId
+  }), /*#__PURE__*/external_React_default().createElement("span", {
+    "data-l10n-id": date ? "newtab-sports-widget-key-date" : "newtab-sports-widget-key-date-range",
+    "data-l10n-args": JSON.stringify(date ? {
+      date: new Date(date).getTime()
+    } : {
+      start: new Date(start).getTime(),
+      end: new Date(end).getTime()
+    })
+  })))), /*#__PURE__*/external_React_default().createElement("moz-button", {
+    type: "secondary",
+    size: "small",
+    "data-l10n-id": "newtab-sports-widget-view-matches",
+    onClick: () => handleViewMatches("key_dates_state")
   }));
 }
 
