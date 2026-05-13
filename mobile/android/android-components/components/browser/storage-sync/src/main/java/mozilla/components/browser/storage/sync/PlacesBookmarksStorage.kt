@@ -249,7 +249,7 @@ open class PlacesBookmarksStorage(
         }
 
     override suspend fun insertTree(tree: InsertableBookmarkTreeRoot): Result<String> {
-        return withContext(writeScope.dispatcher) {
+        return withContext(writeDispatcher) {
             runCatching {
                 // we use a suspendable cancellable coroutine to
                 // 1. create a suspension point around the blocking code
