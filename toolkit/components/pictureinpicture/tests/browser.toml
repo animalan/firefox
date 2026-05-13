@@ -1,4 +1,5 @@
 [DEFAULT]
+subsuite = "media-bc"
 support-files = [
   "click-event-helper.js",
   "head.js",

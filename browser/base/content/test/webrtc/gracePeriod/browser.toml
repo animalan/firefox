@@ -1,4 +1,5 @@
 [DEFAULT]
+subsuite = "media-bc"
 support-files = [
   "../get_user_media.html",
   "../get_user_media_in_frame.html",
