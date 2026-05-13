@@ -28,21 +28,24 @@
 #ifndef jit_riscv64_Simulator_riscv64_h
 #define jit_riscv64_Simulator_riscv64_h
 
-#ifdef JS_SIMULATOR_RISCV64
-#  include "mozilla/Atomics.h"
+#ifndef JS_SIMULATOR_RISCV64
+#  error "simulator disabled"
+#endif
 
-#  include <vector>
+#include "mozilla/Atomics.h"
 
-#  include "jit/IonTypes.h"
-#  include "jit/riscv64/constant/Constant-riscv64.h"
-#  include "jit/riscv64/constant/util-riscv64.h"
-#  include "jit/riscv64/disasm/Disasm-riscv64.h"
-#  include "js/ProfilingFrameIterator.h"
-#  include "js/Utility.h"
-#  include "js/Vector.h"
-#  include "threading/Thread.h"
-#  include "vm/MutexIDs.h"
-#  include "wasm/WasmSignalHandlers.h"
+#include <vector>
+
+#include "jit/IonTypes.h"
+#include "jit/riscv64/constant/Constant-riscv64.h"
+#include "jit/riscv64/constant/util-riscv64.h"
+#include "jit/riscv64/disasm/Disasm-riscv64.h"
+#include "js/ProfilingFrameIterator.h"
+#include "js/Utility.h"
+#include "js/Vector.h"
+#include "threading/Thread.h"
+#include "vm/MutexIDs.h"
+#include "wasm/WasmSignalHandlers.h"
 
 namespace js {
 
@@ -62,12 +65,12 @@ inline Dest bit_cast(const Source& source) {
   return dest;
 }
 
-#  define ASSERT_TRIVIALLY_COPYABLE(T)                  \
-    static_assert(std::is_trivially_copyable<T>::value, \
-                  #T " should be trivially copyable")
-#  define ASSERT_NOT_TRIVIALLY_COPYABLE(T)               \
-    static_assert(!std::is_trivially_copyable<T>::value, \
-                  #T " should not be trivially copyable")
+#define ASSERT_TRIVIALLY_COPYABLE(T)                  \
+  static_assert(std::is_trivially_copyable<T>::value, \
+                #T " should be trivially copyable")
+#define ASSERT_NOT_TRIVIALLY_COPYABLE(T)               \
+  static_assert(!std::is_trivially_copyable<T>::value, \
+                #T " should not be trivially copyable")
 
 constexpr uint32_t kHoleNanUpper32 = 0xFFF7FFFF;
 constexpr uint32_t kHoleNanLower32 = 0xFFF7FFFF;
@@ -219,19 +222,19 @@ using reg_t = uint64_t;
 using freg_t = uint64_t;
 using sfreg_t = int64_t;
 
-#  define sext32(x) ((sreg_t)(int32_t)(x))
-#  define zext32(x) ((reg_t)(uint32_t)(x))
+#define sext32(x) ((sreg_t)(int32_t)(x))
+#define zext32(x) ((reg_t)(uint32_t)(x))
 
-#  define sext_xlen(x) (((sreg_t)(x) << (64 - xlen)) >> (64 - xlen))
-#  define zext_xlen(x) (((reg_t)(x) << (64 - xlen)) >> (64 - xlen))
+#define sext_xlen(x) (((sreg_t)(x) << (64 - xlen)) >> (64 - xlen))
+#define zext_xlen(x) (((reg_t)(x) << (64 - xlen)) >> (64 - xlen))
 
-#  define BIT(n) (0x1LL << (n))
-#  define QUIET_BIT_S(nan) (bit_cast<int32_t>(nan) & BIT(22))
-#  define QUIET_BIT_D(nan) (bit_cast<int64_t>(nan) & BIT(51))
+#define BIT(n) (0x1LL << (n))
+#define QUIET_BIT_S(nan) (bit_cast<int32_t>(nan) & BIT(22))
+#define QUIET_BIT_D(nan) (bit_cast<int64_t>(nan) & BIT(51))
 static inline bool isSnan(float fp) { return !QUIET_BIT_S(fp); }
 static inline bool isSnan(double fp) { return !QUIET_BIT_D(fp); }
-#  undef QUIET_BIT_S
-#  undef QUIET_BIT_D
+#undef QUIET_BIT_S
+#undef QUIET_BIT_D
 
 inline uint64_t mulhu(uint64_t a, uint64_t b) {
   __uint128_t full_result = ((__uint128_t)a) * ((__uint128_t)b);
@@ -249,7 +252,7 @@ inline int64_t mulhsu(int64_t a, uint64_t b) {
 }
 
 // Floating point helpers
-#  define F32_SIGN ((uint32_t)1 << 31)
+#define F32_SIGN ((uint32_t)1 << 31)
 union u32_f32 {
   uint32_t u;
   float f;
@@ -279,7 +282,7 @@ inline Float32 fsgnj32(Float32 rs1, Float32 rs2, bool n, bool x) {
   }
   return Float32::FromBits(res.u);
 }
-#  define F64_SIGN ((uint64_t)1 << 63)
+#define F64_SIGN ((uint64_t)1 << 63)
 union u64_f64 {
   uint64_t u;
   double d;
@@ -554,7 +557,7 @@ class Simulator {
   void DecodeCSType();
   void DecodeCJType();
   void DecodeCBType();
-#  ifdef CAN_USE_RVV_INSTRUCTIONS
+#ifdef CAN_USE_RVV_INSTRUCTIONS
   void DecodeVType();
   void DecodeRvvIVV();
   void DecodeRvvIVI();
@@ -565,7 +568,7 @@ class Simulator {
   void DecodeRvvFVF();
   bool DecodeRvvVL();
   bool DecodeRvvVS();
-#  endif
+#endif
   // The currently executing Simulator instance. Potentially there can be one
   // for each native thread.
   static Simulator* Current();
@@ -1244,7 +1247,5 @@ class SimulatorProcess {
 
 }  // namespace jit
 }  // namespace js
-
-#endif /* JS_SIMULATOR_MIPS64 */
 
 #endif /* jit_riscv64_Simulator_riscv64_h */
