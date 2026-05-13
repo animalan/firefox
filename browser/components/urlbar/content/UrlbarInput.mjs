@@ -10,6 +10,8 @@ const { AppConstants } = ChromeUtils.importESModule(
   "resource://gre/modules/AppConstants.sys.mjs"
 );
 
+import { SearchModeSwitcher } from "chrome://browser/content/urlbar/SearchModeSwitcher.mjs";
+
 /**
  * @import { UrlbarSearchOneOffs } from "moz-src:///browser/components/urlbar/UrlbarSearchOneOffs.sys.mjs"
  * @import { SearchEngine } from "moz-src:///toolkit/components/search/SearchEngine.sys.mjs"
@@ -56,8 +58,6 @@ const lazy = XPCOMUtils.declareLazy({
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   ReaderMode: "moz-src:///toolkit/components/reader/ReaderMode.sys.mjs",
   SearchService: "moz-src:///toolkit/components/search/SearchService.sys.mjs",
-  SearchModeSwitcher:
-    "moz-src:///browser/components/urlbar/SearchModeSwitcher.sys.mjs",
   SharingUtils: "resource:///modules/SharingUtils.sys.mjs",
   SearchUIUtils: "moz-src:///browser/components/search/SearchUIUtils.sys.mjs",
   SearchUtils: "moz-src:///toolkit/components/search/SearchUtils.sys.mjs",
@@ -363,7 +363,7 @@ ${
 
     this.controller = new lazy.UrlbarController({ input: this });
     this.view = new lazy.UrlbarView(this);
-    this.searchModeSwitcher = new lazy.SearchModeSwitcher(this);
+    this.searchModeSwitcher = new SearchModeSwitcher(this);
 
     let searchModeSwitcherDescription = this.querySelector(
       ".searchmode-switcher-panel-description"
@@ -6427,7 +6427,7 @@ class AddSearchEngineHelper {
    * @returns {number}
    */
   get maxInlineEngines() {
-    return lazy.SearchModeSwitcher.MAX_OPENSEARCH_ENGINES;
+    return SearchModeSwitcher.MAX_OPENSEARCH_ENGINES;
   }
 
   /**

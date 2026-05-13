@@ -82,9 +82,9 @@ export class SearchModeSwitcher {
 
     // In XUL documents, wrap in a XUL panel to make sure it's
     // on top of the overflow panel and catches all keypresses.
-    let document = this.#panelList.ownerDocument;
-    if (document.createXULElement) {
-      let panel = document.createXULElement("panel");
+    let doc = this.#panelList.ownerDocument;
+    if (doc.createXULElement) {
+      let panel = doc.createXULElement("panel");
       panel.setAttribute("level", "top");
       panel.setAttribute("consumeoutsideclicks", "false");
       panel.classList.add("searchmode-switcher-panel", "toolbar-menupopup");
@@ -659,19 +659,19 @@ export class SearchModeSwitcher {
   }
 
   async #buildLocalSearchButton(mode) {
-    let name = lazy.UrlbarUtils.getResultSourceName(mode.source);
+    let sourceName = lazy.UrlbarUtils.getResultSourceName(mode.source);
     let { icon } = await this.#getDisplayedEngineDetails(mode);
     let menuitem = this.#createButton(icon);
     menuitem.classList.add(
       "searchmode-switcher-local",
-      `search-button-${name}`
+      `search-button-${sourceName}`
     );
     menuitem.dataset.action = "localsearchmode";
     menuitem.dataset.restrict = mode.restrict;
     this.#addCommandListeners(menuitem);
     this.#input.document.l10n.setAttributes(
       menuitem,
-      `urlbar-searchmode-${name}2`
+      `urlbar-searchmode-${sourceName}2`
     );
     return menuitem;
   }
