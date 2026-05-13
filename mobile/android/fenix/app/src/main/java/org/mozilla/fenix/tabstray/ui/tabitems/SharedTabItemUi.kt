@@ -7,6 +7,7 @@ package org.mozilla.fenix.tabstray.ui.tabitems
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Indication
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -93,6 +95,17 @@ val TabListLastItemShape = RoundedCornerShape(
 
 val TabListSingleItemShape = RoundedCornerShape(AcornCorners.medium)
 val TabListBorderMiddleItemShape = RoundedCornerShape(0.dp)
+
+/**
+ * Shape information for a tab item displayed in a list.
+ *
+ * @property borderShape The outer shape to apply to the item's border.
+ * @property clipTabToFit Whether the item content should be clipped to [borderShape].
+ */
+data class TabListShapeInfo(
+    val borderShape: RoundedCornerShape,
+    val clipTabToFit: Boolean,
+)
 
 //region placeholder strings
 private const val PLACEHOLDER_EDIT = "Edit"
@@ -279,6 +292,32 @@ fun tabItemConditionalBorder(selectionState: TabsTrayItemSelectionState): Border
 @ReadOnlyComposable
 fun tabItemBorderFocused(): BorderStroke {
     return BorderStroke(width = FirefoxTheme.layout.border.thick, color = MaterialTheme.colorScheme.tertiary)
+}
+
+/**
+ * Applies tab list item styling, provided the shape information.
+ *
+ * @param tabShapeInfo The list item shape and clipping behavior.
+ * @param tab The tab item.
+ */
+// todo (Bug 2032255): add a border on hovered when drag and drop for tab groups is added
+@Composable
+fun Modifier.tabListItemShapeStyling(
+    tabShapeInfo: TabListShapeInfo,
+    tab: TabsTrayItem,
+): Modifier {
+    return this
+        .thenConditional(
+            Modifier.clip(tabShapeInfo.borderShape),
+            { tabShapeInfo.clipTabToFit },
+        )
+        .thenConditional(
+            modifier = Modifier.border(
+                border = tabItemBorderFocused(),
+                shape = tabShapeInfo.borderShape,
+            ),
+            { tab.isFocused },
+        )
 }
 
 /**

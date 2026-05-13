@@ -8,7 +8,6 @@ import android.content.res.Configuration
 import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +36,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -53,7 +51,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.LocalPinnableContainer
@@ -101,12 +98,13 @@ import org.mozilla.fenix.tabstray.ui.tabitems.TabGroupMenuButton
 import org.mozilla.fenix.tabstray.ui.tabitems.TabListBorderMiddleItemShape
 import org.mozilla.fenix.tabstray.ui.tabitems.TabListFirstItemShape
 import org.mozilla.fenix.tabstray.ui.tabitems.TabListLastItemShape
+import org.mozilla.fenix.tabstray.ui.tabitems.TabListShapeInfo
 import org.mozilla.fenix.tabstray.ui.tabitems.TabListSingleItemShape
 import org.mozilla.fenix.tabstray.ui.tabitems.TabListTabItem
 import org.mozilla.fenix.tabstray.ui.tabitems.TabsTrayItemClickHandler
 import org.mozilla.fenix.tabstray.ui.tabitems.TabsTrayItemSelectionState
 import org.mozilla.fenix.tabstray.ui.tabitems.gridItemAspectRatio
-import org.mozilla.fenix.tabstray.ui.tabitems.tabItemBorderFocused
+import org.mozilla.fenix.tabstray.ui.tabitems.tabListItemShapeStyling
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.theme.ThemedValue
 import org.mozilla.fenix.theme.ThemedValueProvider
@@ -1148,16 +1146,6 @@ private fun generateFakeTabsList(
     }
 }
 
-/**
- * Data class to store a TabList's item shape information.
- * @property borderShape: The [RoundedCornerShape] representing the item's border
- * @property clipTabToFit: Whether the TabItem will be clipped to fit the border shape
- */
-private data class TabListShapeInfo(
-    val borderShape: RoundedCornerShape,
-    val clipTabToFit: Boolean,
-)
-
 private fun getTabShapeInfo(
     firstVisibleIndex: Int,
     lastVisibleIndex: Int,
@@ -1206,26 +1194,6 @@ private fun defaultCrossAxisStartPadding(): Float =
     } else {
         0f
     }
-
-// todo (Bug 2032255): add a border on hovered when drag and drop for tab groups is added
-@Composable
-private fun Modifier.tabListItemShapeStyling(
-    tabShapeInfo: TabListShapeInfo,
-    tab: TabsTrayItem,
-): Modifier {
-    return this
-        .thenConditional(
-            Modifier.clip(tabShapeInfo.borderShape),
-            { tabShapeInfo.clipTabToFit },
-        )
-        .thenConditional(
-            modifier = Modifier.border(
-                border = tabItemBorderFocused(),
-                shape = tabShapeInfo.borderShape,
-            ),
-            { tab.isFocused },
-        )
-}
 
 /**
  * Draws a line in the 'gutters' between tab items to indicate to the user between which tabs they are attempting
