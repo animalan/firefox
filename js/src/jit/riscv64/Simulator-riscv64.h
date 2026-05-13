@@ -34,6 +34,7 @@
 
 #include "mozilla/Atomics.h"
 #include "mozilla/Casting.h"
+#include "mozilla/FloatingPoint.h"
 
 #include <vector>
 
@@ -183,67 +184,64 @@ inline int64_t mulhsu(int64_t a, uint64_t b) {
 }
 
 // Floating point helpers
-#define F32_SIGN ((uint32_t)1 << 31)
-union u32_f32 {
-  uint32_t u;
-  float f;
-};
+namespace detail {
+template <typename Float, typename Bits>
+inline Bits fsgnj_bits(Bits rs1, Bits rs2, bool n, bool x) {
+  MOZ_ASSERT(!n || !x);
+
+  using FP = mozilla::FloatingPoint<Float>;
+  static_assert(std::is_same_v<Bits, typename FP::Bits>);
+
+  Bits sign;
+  if (n) {
+    // FSGNJN.{S,D}: Result sign bit is the opposite of rs2's sign bit.
+    sign = ~rs2;
+  } else if (x) {
+    // FSGNJX.{S,D}: Result sign bit is the XOR of rs1's and rs2's sign bits.
+    sign = rs1 ^ rs2;
+  } else {
+    // FSGNJ.{S,D}: Result sign bit is rs2's sign bit.
+    sign = rs2;
+  }
+  return (rs1 & ~FP::kSignBit) | (sign & FP::kSignBit);
+}
+
+template <typename Float>
+inline Float fsgnj(Float rs1, Float rs2, bool n, bool x) {
+  if constexpr (std::is_floating_point_v<Float>) {
+    using Bits = typename mozilla::FloatingPoint<Float>::Bits;
+
+    auto rs1_bits = mozilla::BitwiseCast<Bits>(rs1);
+    auto rs2_bits = mozilla::BitwiseCast<Bits>(rs2);
+    auto res_bits = fsgnj_bits<Float>(rs1_bits, rs2_bits, n, x);
+    return mozilla::BitwiseCast<Float>(res_bits);
+  } else {
+    using Scalar = decltype(std::declval<Float>().get_scalar());
+
+    auto res = fsgnj_bits<Scalar>(rs1.get_bits(), rs2.get_bits(), n, x);
+    return Float::FromBits(res);
+  }
+}
+}  // namespace detail
+
 inline float fsgnj32(float rs1, float rs2, bool n, bool x) {
-  u32_f32 a = {.f = rs1}, b = {.f = rs2};
-  u32_f32 res;
-  res.u = (a.u & ~F32_SIGN) | ((((x)   ? a.u
-                                 : (n) ? F32_SIGN
-                                       : 0) ^
-                                b.u) &
-                               F32_SIGN);
-  return res.f;
+  return detail::fsgnj(rs1, rs2, n, x);
 }
 
 inline Float32 fsgnj32(Float32 rs1, Float32 rs2, bool n, bool x) {
-  u32_f32 a = {.u = rs1.get_bits()}, b = {.u = rs2.get_bits()};
-  u32_f32 res;
-  if (x) {  // RO_FSQNJX_S
-    res.u = (a.u & ~F32_SIGN) | ((a.u ^ b.u) & F32_SIGN);
-  } else {
-    if (n) {  // RO_FSGNJN_S
-      res.u = (a.u & ~F32_SIGN) | ((F32_SIGN ^ b.u) & F32_SIGN);
-    } else {  // RO_FSGNJ_S
-      res.u = (a.u & ~F32_SIGN) | ((0 ^ b.u) & F32_SIGN);
-    }
-  }
-  return Float32::FromBits(res.u);
+  return detail::fsgnj(rs1, rs2, n, x);
 }
-#define F64_SIGN ((uint64_t)1 << 63)
-union u64_f64 {
-  uint64_t u;
-  double d;
-};
+
 inline double fsgnj64(double rs1, double rs2, bool n, bool x) {
-  u64_f64 a = {.d = rs1}, b = {.d = rs2};
-  u64_f64 res;
-  res.u = (a.u & ~F64_SIGN) | ((((x)   ? a.u
-                                 : (n) ? F64_SIGN
-                                       : 0) ^
-                                b.u) &
-                               F64_SIGN);
-  return res.d;
+  return detail::fsgnj(rs1, rs2, n, x);
 }
 
 inline Float64 fsgnj64(Float64 rs1, Float64 rs2, bool n, bool x) {
-  u64_f64 a = {.d = rs1.get_scalar()}, b = {.d = rs2.get_scalar()};
-  u64_f64 res;
-  if (x) {  // RO_FSQNJX_D
-    res.u = (a.u & ~F64_SIGN) | ((a.u ^ b.u) & F64_SIGN);
-  } else {
-    if (n) {  // RO_FSGNJN_D
-      res.u = (a.u & ~F64_SIGN) | ((F64_SIGN ^ b.u) & F64_SIGN);
-    } else {  // RO_FSGNJ_D
-      res.u = (a.u & ~F64_SIGN) | ((0 ^ b.u) & F64_SIGN);
-    }
-  }
-  return Float64::FromBits(res.u);
+  return detail::fsgnj(rs1, rs2, n, x);
 }
+
 inline bool is_boxed_float(int64_t v) { return (uint32_t)((v >> 32) + 1) == 0; }
+
 inline int64_t box_float(float v) {
   return (0xFFFFFFFF00000000 | bit_cast<int32_t>(v));
 }
