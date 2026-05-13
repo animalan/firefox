@@ -213,6 +213,16 @@ MediaResult FFmpegDataDecoder<LIBAV_VER>::InitDecoder(AVCodec* aCodec,
   mCodecContext->opaque = this;
 
   InitCodecContext();
+  // Mirror Firefox's existing video dimension policy (IsValidVideoRegion,
+  // applied at WebMDemuxer and the WMF wrappers) into ffvpx via the
+  // documented max_pixels AVOption. Bitstream-driven dimension changes
+  // are otherwise gated only by max_pixels' INT_MAX default and would
+  // accept the VP8 14-bit field maximum (16383x16383).
+#if LIBAVCODEC_VERSION_MAJOR >= 58
+  if (mCodecContext->codec_type == AVMEDIA_TYPE_VIDEO) {
+    mCodecContext->max_pixels = MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT;
+  }
+#endif
   MediaResult ret = AllocateExtraData();
   if (NS_FAILED(ret)) {
     FFMPEG_LOG("  couldn't allocate ffmpeg extra data for codec %s",
