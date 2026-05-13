@@ -222,7 +222,7 @@ class Core(
                     DownloadLocationManager(context).defaultLocation
                 },
             ),
-            useContentBlockingDatabase = context.settings().shouldUseTrackingProtectionDatabase,
+            useContentBlockingDatabase = true,
         )
 
         // Apply fingerprinting protection overrides if the feature is enabled in Nimbus
