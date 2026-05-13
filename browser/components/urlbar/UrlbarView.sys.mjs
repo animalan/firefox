@@ -134,6 +134,15 @@ export class UrlbarView {
   }
 
   /**
+   * The top chrome window. this.window is the owner of the view's panel which
+   * can be a content window for smartbar, so use the window exposed by the
+   * input to consistently get the chrome window for gBrowser and other APIs.
+   */
+  get chromeWindow() {
+    return this.input.window;
+  }
+
+  /**
    * Whether the panel is open.
    *
    * @returns {boolean}
@@ -558,7 +567,7 @@ export class UrlbarView {
     // implicitly unselected.
     if (this.input.searchMode?.isPreview) {
       this.input.searchMode = null;
-      this.window.gBrowser.userTypedValue = null;
+      this.chromeWindow.gBrowser.userTypedValue = null;
     }
 
     this.resultMenu.hidePopup();
@@ -745,7 +754,7 @@ export class UrlbarView {
     // term. If they do want to navigate directly, users can modify their
     // search, which resets persistence and re-enables autofill.
     let state = this.input.getBrowserState(
-      this.window.gBrowser.selectedBrowser
+      this.chromeWindow.gBrowser.selectedBrowser
     );
     if (state.persist?.shouldPersist) {
       queryOptions.allowAutofill = false;
@@ -3517,7 +3526,7 @@ export class UrlbarView {
     } else {
       tabGroupAction?.remove();
     }
-    let splitview = this.window.gBrowser.selectedTab.splitview;
+    let splitview = this.chromeWindow.gBrowser.selectedTab.splitview;
     let shouldMoveTabToSplitView =
       splitview &&
       !splitview.tabs.some(
@@ -3581,7 +3590,9 @@ export class UrlbarView {
   }
 
   #addGroupToSwitchTabChiclet(result, actionNode) {
-    const group = this.window.gBrowser.getTabGroupById(result.payload.tabGroup);
+    const group = this.chromeWindow.gBrowser.getTabGroupById(
+      result.payload.tabGroup
+    );
     if (!group) {
       actionNode.remove();
       return;

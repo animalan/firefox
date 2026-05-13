@@ -98,6 +98,8 @@ skip-if = [
 
 ["browser_aiwindow_smartbar_suggestions.js"]
 
+["browser_aiwindow_smartbar_tab_switch.js"]
+
 ["browser_aiwindow_smartbar_telemetry.js"]
 
 ["browser_aiwindow_stop_generation.js"]
