@@ -2671,6 +2671,7 @@ nsresult ScriptLoader::ProcessRequest(ScriptLoadRequest* aRequest) {
   // no longer necessary.
   if (aRequest->getLoadedScript()->IsTextSource()) {
     aRequest->getLoadedScript()->ClearScriptText();
+    aRequest->getLoadedScript()->DropSRI();
   } else if (aRequest->getLoadedScript()->IsSerializedStencil()) {
     MOZ_ASSERT(!aRequest->HasStencil());
     aRequest->getLoadedScript()->DropSRIOrSRIAndSerializedStencil();

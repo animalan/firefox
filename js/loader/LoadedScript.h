@@ -246,7 +246,19 @@ class LoadedScript final : public nsISupports {
   void ConvertToCachedStencil(JS::Stencil* aStencil,
                               mozilla::dom::ReferrerPolicy aReferrerPolicy,
                               nsIURI* aBaseURL) {
-    MOZ_ASSERT(IsTextSource() || IsSerializedStencil());
+    if (IsTextSource()) {
+      // The text source is no longer necessary, given it's already compiled.
+      // The SRI is still necessary in order to save it to the disk cache.
+      ClearScriptText();
+    } else {
+      // The serialized stencil is no longer necessary, given it's already
+      // decoded, without borrowing.
+      // The SRI is also unnecessary given we don't save serialized stencil
+      // again.
+      MOZ_ASSERT(IsSerializedStencil());
+      MOZ_ASSERT(!JS::StencilIsBorrowed(aStencil));
+      DropSRIOrSRIAndSerializedStencil();
+    }
     SetUnknownDataType();
     mDataType = DataType::eCachedStencil;
     mCachedStencil = aStencil;
