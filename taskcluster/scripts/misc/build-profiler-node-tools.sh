@@ -7,7 +7,8 @@ YARN_VERSION="1.22.22"
 export PATH="$PATH:$MOZ_FETCHES_DIR/node/bin"
 npm install -g yarn@$YARN_VERSION # Use yarn version >1.10
 
-cd $MOZ_FETCHES_DIR/profiler
+PROFILER_DIR="$MOZ_FETCHES_DIR/perf.html"
+cd "$PROFILER_DIR"
 yarn install
 yarn build-node-tools
 

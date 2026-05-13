@@ -552,7 +552,7 @@ class Perftest(metaclass=ABCMeta):
         # ETW profiling symbolication and upload
         if self.config.get("etw_profile") and self.etw_profiler:
             self.etw_profiler.symbolicate()
-            self.etw_profiler.archive()
+            self.etw_profiler.upload()
             self.etw_profiler.clean()
 
         # Simpleperf profiling symbolication. This is currently only enabled for CI runs

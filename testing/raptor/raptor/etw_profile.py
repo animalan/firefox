@@ -28,7 +28,8 @@ SAMPLY_TIMEOUT = 900
 class ETWProfile:
     """Record kernel ETW traces (.etl) using xperf (via pre-configured
     scheduled tasks), then use Samply to convert and symbolicate them
-    into Firefox Profiler JSON profiles.
+    into Firefox Profiler JSON profiles. Profiler-edit filters and
+    adds labelling to the profiles afterwards.
 
     On the Windows pool, scheduled tasks allow an
     unprivileged user to start/stop xperf kernel tracing:
@@ -56,13 +57,17 @@ class ETWProfile:
         self.etl_kernel_dest = self.upload_dir / f"xperf-kernel-{self.test_name}.etl"
         self.etl_user_dest = self.upload_dir / f"xperf-user-{self.test_name}.etl"
 
-        self.profile = self.upload_dir / f"etw-{self.test_name}.json.gz"
+        self.profile = self.upload_dir / f"etw-{self.test_name}-unprocessed.json.gz"
 
         self.running = False
 
         if "MOZ_AUTOMATION" in os.environ:
             moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
             self.samply_path = moz_fetch / "samply" / "samply.exe"
+            self.profiler_edit_path = (
+                moz_fetch / "profiler-node-tools" / "profiler-edit.js"
+            )
+            self.node_path = moz_fetch / "node" / "node.exe"
 
         LOG.info(f"ETW profiling initialized: etl_source={self.etl_source}")
 
@@ -111,21 +116,119 @@ class ETWProfile:
         self.running = False
         LOG.info("xperf kernel trace stopped")
 
-    def archive(self):
-        profile_archive = Path(self.upload_dir, f"profile_{self.test_name}.zip")
+    def _edit_profile(
+        self,
+        input_profile=None,
+        output_profile=None,
+        name=None,
+        labels=False,
+        compact=False,
+        profiler_edit_args=None,
+    ):
+        if input_profile is None:
+            input_profile = self.profile
 
-        try:
-            mode = zipfile.ZIP_DEFLATED
-        except NameError:
-            mode = zipfile.ZIP_STORED
+        if output_profile is None:
+            LOG.error("No output profile path specified.")
+            return None
 
-        with zipfile.ZipFile(profile_archive, "a", mode) as zipf:
-            path_in_zip = f"etw/{self.profile.name}"
-            LOG.info(
-                f"Adding {self.profile.name} to {profile_archive} as {path_in_zip}"
+        input_profile = Path(input_profile)
+        output_profile = Path(output_profile)
+
+        profiler_edit_cmd = [
+            str(self.node_path),
+            str(self.profiler_edit_path),
+            "-i",
+            str(input_profile),
+            "-o",
+            str(output_profile),
+        ]
+
+        if profiler_edit_args is None:
+            profiler_edit_args = []
+
+        if labels:
+            browser_labels_toml = (
+                Path(__file__).resolve().parent / "browser_labels.toml"
             )
-            zipf.write(self.profile, arcname=path_in_zip)
-            self.profile.unlink(missing_ok=True)
+            profiler_edit_args.extend([
+                "--insert-label-frames",
+                str(browser_labels_toml),
+            ])
+
+        if compact:
+            profiler_edit_args.append(
+                "--only-keep-threads-with-markers-matching=-async,-sync"
+            )
+            profiler_edit_args.append("--merge-non-overlapping-threads-by-name")
+
+        if name:
+            profiler_edit_args.extend(["--set-name", name])
+
+        profiler_edit_cmd.extend(profiler_edit_args)
+
+        LOG.info(f"Running: {' '.join(profiler_edit_cmd)}")
+        result = subprocess.run(
+            profiler_edit_cmd,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        for line in result.stdout.splitlines():
+            LOG.info(f"profiler-edit stdout: {line}")
+        for line in result.stderr.splitlines():
+            LOG.info(f"profiler-edit stderr: {line}")
+        if result.returncode != 0:
+            LOG.error(f"profiler-edit exited with code {result.returncode}")
+            return None
+        if not output_profile.exists():
+            LOG.error(f"profiler-edit did not produce a profile at {output_profile}")
+            return None
+
+        return output_profile
+
+    def upload(self):
+        # Process an upload a raw profile
+        output_profile_path = (
+            self.upload_dir / "profile_sp3_etw_raw_all_processes.json.gz"
+        )
+        raw_profile = self._edit_profile(
+            output_profile=output_profile_path, name="Sp3 20x (all processes)"
+        )
+        if raw_profile is None:
+            LOG.error(f"Failed to create {output_profile_path.name}")
+        else:
+            size = output_profile_path.stat().st_size
+            LOG.info(f"Created {output_profile_path.name}: {size} bytes")
+
+        # Process and upload a raw profile with labels
+        output_profile_path = self.upload_dir / "profile_sp3_etw_all_processes.json.gz"
+        labelled_profile = self._edit_profile(
+            output_profile=output_profile_path,
+            name="Sp3 20x (with labels, all processes)",
+            labels=True,
+        )
+        if labelled_profile is None:
+            LOG.error(f"Failed to create {output_profile_path.name}")
+        else:
+            size = output_profile_path.stat().st_size
+            LOG.info(f"Created {output_profile_path.name}: {size} bytes")
+
+        # Process and upload a compact, one thread profile
+        output_profile_path = self.upload_dir / "profile_sp3_etw_compact.json.gz"
+        compact_profile = self._edit_profile(
+            output_profile=output_profile_path,
+            name="Sp3 20x (with labels, combined main threads)",
+            labels=True,
+            compact=True,
+        )
+        if compact_profile is None:
+            LOG.error(f"Failed to create {output_profile_path.name}")
+        else:
+            size = output_profile_path.stat().st_size
+            LOG.info(f"Created {output_profile_path.name}: {size} bytes")
+
+        self.post_process_success = raw_profile and labelled_profile and compact_profile
 
         # Wait for xperf to finishing merging the kernel and user traces
         self._wait_for_combined_etl()
@@ -177,6 +280,7 @@ class ETWProfile:
             "-o",
             str(self.profile),
             "--presymbolicate",
+            "--main-thread-only",
             "--breakpad-symbol-dir",
             str(self.breakpad_symbol_dir),
             "--breakpad-symbol-server",
@@ -213,3 +317,7 @@ class ETWProfile:
 
         if self.breakpad_symbol_dir and self.breakpad_symbol_dir.exists():
             shutil.rmtree(self.breakpad_symbol_dir)
+
+        # If profiler-edit fails, upload the profile produced by Samply for debugging
+        if self.profile.exists() and self.post_process_success:
+            self.profile.unlink()
