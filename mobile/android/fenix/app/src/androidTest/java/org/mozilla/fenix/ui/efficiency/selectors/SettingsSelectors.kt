@@ -249,6 +249,13 @@ object SettingsSelectors {
         groups = listOf("defaultValues"),
     )
 
+    val HTTPS_ONLY_MODE_ON_ALL_TABS_SUMMARY = Selector(
+        strategy = SelectorStrategy.UIAUTOMATOR_WITH_TEXT,
+        value = "On in all tabs",
+        description = "HTTPS-Only Mode summary - On in all tabs",
+        groups = listOf(),
+    )
+
     val all = listOf(
         GO_BACK_BUTTON,
         GENERAL_HEADING,
@@ -284,5 +291,6 @@ object SettingsSelectors {
         SET_AS_DEFAULT_BROWSER_BUTTON,
         DOWNLOADS_BUTTON,
         OPEN_LINKS_IN_APPS_DEFAULT_SUMMARY,
+        HTTPS_ONLY_MODE_ON_ALL_TABS_SUMMARY,
     )
 }

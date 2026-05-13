@@ -578,6 +578,11 @@ abstract class BasePage(
                 if (!obj.exists()) null else obj
             }
 
+            SelectorStrategy.UIAUTOMATOR_WITH_COMPOSE_TAG -> {
+                val obj = mDevice.findObject(UiSelector().resourceId(selector.value))
+                if (!obj.exists()) null else obj
+            }
+
             SelectorStrategy.UIAUTOMATOR_WITH_TEXT -> {
                 val obj = mDevice.findObject(UiSelector().text(selector.value))
                 if (!obj.exists()) null else obj

@@ -31,6 +31,14 @@ object ToolbarSelectors {
         groups = listOf("requiredForPage"),
     )
 
+    // Use UIAutomator when navigating from BrowserPage — avoids Compose sync hanging when GeckoView is active.
+    val TOOLBAR_URL_BOX_UIAUTOMATOR = Selector(
+        strategy = SelectorStrategy.UIAUTOMATOR_WITH_COMPOSE_TAG,
+        value = ADDRESSBAR_URL_BOX,
+        description = "URL box",
+        groups = listOf(),
+    )
+
     val all = listOf(
         TOOLBAR,
         TAB_COUNTER,

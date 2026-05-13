@@ -7,6 +7,7 @@ package org.mozilla.fenix.ui
 import androidx.core.net.toUri
 import org.junit.Rule
 import org.junit.Test
+import org.mozilla.fenix.customannotations.Converted
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.FenixTestRule
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
@@ -73,6 +74,11 @@ class SettingsHTTPSOnlyModeTest {
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1724827
+    @Converted(
+        replacedBy = ["org.mozilla.fenix.ui.efficiency.tests.SettingsHTTPSOnlyModeTest#httpsOnlyModeEnabledInNormalBrowsingTest"],
+        bug = 2037892,
+        since = "2026-05",
+    )
     @SmokeTest
     @Test
     fun httpsOnlyModeEnabledInNormalBrowsingTest() {
