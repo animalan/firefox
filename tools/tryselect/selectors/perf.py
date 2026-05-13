@@ -180,6 +180,15 @@ class PerfParser(CompareParser):
             },
         ],
         [
+            ["--native-profiling"],
+            {
+                "action": "store_true",
+                "default": False,
+                "help": "Use OS-native profilers (Simpleperf for Android and xperf for Windows) "
+                "when running tests. Only available in raptor-browsertime tests at the moment.",
+            },
+        ],
+        [
             ["--single-run"],
             {
                 "action": "store_true",
