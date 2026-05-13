@@ -202,6 +202,7 @@
 }
 
 #sidebar-button {
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("sidebar.revamp") {
     list-style-image: url("chrome://browser/skin/sidebar-collapsed.svg");
 
@@ -211,9 +212,11 @@
     }
   }
 
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("sidebar.revamp") {
     list-style-image: url("chrome://browser/skin/sidebar-collapsed.svg");
 
+    /* stylelint-disable-next-line media-query-no-invalid */
     @media -moz-pref("sidebar.verticalTabs") {
       &:hover {
         list-style-image: url("chrome://browser/skin/sidebar-expanded.svg");
@@ -232,6 +235,7 @@
     &:-moz-locale-dir(rtl):not([sidebar-positionend]) {
       list-style-image: url("chrome://browser/skin/sidebar-collapsed-right.svg");
 
+      /* stylelint-disable-next-line media-query-no-invalid */
       @media -moz-pref("sidebar.verticalTabs") {
         &:hover {
           list-style-image: url("chrome://browser/skin/sidebar-expanded-right.svg");

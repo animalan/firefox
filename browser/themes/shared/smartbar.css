@@ -292,6 +292,7 @@
   position: relative;
 }
 
+/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("browser.nova.enabled") {
   .smartbar {
     @media not (forced-colors) {

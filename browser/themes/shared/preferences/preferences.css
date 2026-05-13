@@ -22,6 +22,7 @@
   --card-padding-inline: var(--space-xlarge);
   --card-padding-block: var(--card-padding-inline);
 
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.settings-redesign.enabled") {
     --background-color-canvas: light-dark(var(--color-gray-05), var(--color-gray-90));
   }
@@ -272,6 +273,7 @@ setting-group:has(> moz-card).spotlight {
   display: flex;
 }
 
+/* stylelint-disable-next-line media-query-no-invalid */
 @media not -moz-pref("browser.settings-redesign.enabled") {
   /* Subcategory title */
 
@@ -301,6 +303,7 @@ setting-group:has(> moz-card).spotlight {
   min-height: calc(64px + 2 * var(--border-width));
 }
 
+/* stylelint-disable-next-line media-query-no-invalid */
 @media not -moz-pref("browser.migrate.preferences-entrypoint.enabled") {
   #dataMigrationGroup {
     display: none;

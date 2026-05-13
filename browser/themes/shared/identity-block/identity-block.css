@@ -30,6 +30,7 @@
   }
 }
 
+/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("browser.urlbar.searchModeSwitcher.featureGate") or -moz-pref("browser.urlbar.scotchBonnet.enableOverride") {
   #identity-box[pageproxystate="invalid"] {
     display: none;
@@ -74,9 +75,11 @@
 #identity-box[pageproxystate="valid"]:is(.notSecureText, .chromeUI, .extensionPage),
 #urlbar-label-box {
   margin-inline-end: 8px;
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.urlbar.searchModeSwitcher.featureGate") or -moz-pref("browser.urlbar.scotchBonnet.enableOverride") {
     margin-inline-end: var(--urlbar-searchmodeswitcher-margin-inline-end);
   }
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("browser.urlbar.trustPanel.featureGate") {
     margin-inline-end: 0;
   }
@@ -298,6 +301,7 @@
   display: none;
 }
 
+/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("browser.urlbar.trustPanel.featureGate") {
   #tracking-protection-icon-container,
   /* Keep displaying the moz-extension or chrome UI chicklet */

@@ -19,6 +19,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 8px;
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media -moz-pref("view_source.wrap_long_lines") {
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -49,6 +50,7 @@ span[id]::before {
   font-style: normal;
 }
 
+/* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("view_source.syntax_highlight") {
   .start-tag,
   .end-tag {
