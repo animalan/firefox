@@ -21,7 +21,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
 });
 
 XPCOMUtils.defineLazyServiceGetters(lazy, {
-  AlertsService: ["@mozilla.org/alerts-service;1", Ci.nsIAlertsService],
+  AlertsService:
+    AppConstants.platform === "win"
+      ? ["@mozilla.org/system-alerts-service;1", Ci.nsIWindowsAlertsService]
+      : ["@mozilla.org/alerts-service;1", Ci.nsIAlertsService],
 });
 
 export const ToastNotification = {
@@ -88,6 +91,13 @@ export const ToastNotification = {
     if (experimentMetadata) {
       // Like `my-experiment:my-branch`.
       tag = `${experimentMetadata.slug}:${experimentMetadata.branch}`;
+    }
+
+    if (AppConstants.platform === "win") {
+      if (this.AlertsService.isFullscreen()) {
+        lazy.logConsole.warn("Suppressing toast notification");
+        return false;
+      }
     }
 
     // There are two events named `IMPRESSION` the first one refers to telemetry
