@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import mozilla.components.compose.base.modifier.thenConditional
+import mozilla.components.compose.base.theme.AcornTheme
 import org.mozilla.fenix.R
 import org.mozilla.fenix.home.sessioncontrol.TrackingProtectionInteractor
 import org.mozilla.fenix.theme.FirefoxTheme
@@ -118,6 +119,9 @@ fun TrackersBlockedCard(
 
             TypewriterText(
                 text = stringResource(R.string.help_catch_trackers),
+                modifier = Modifier
+                    .clickable { interactor?.onLongfoxEntryPointClicked() }
+                    .padding(bottom = AcornTheme.layout.space.static300),
             )
         }
     }
@@ -226,7 +230,7 @@ private fun TrackersBlockedCardPreview() {
                 trackersBlockedCount = 754,
                 interactor = object : TrackingProtectionInteractor {
                     override fun onPrivacyReportTapped() = Unit
-                },
+                override fun onLongfoxEntryPointClicked() = Unit },
                 showLongfoxEntryPoint = true,
             )
         }
@@ -242,7 +246,7 @@ private fun TrackersBlockedCardEmptyPreview() {
                 trackersBlockedCount = 0,
                 interactor = object : TrackingProtectionInteractor {
                     override fun onPrivacyReportTapped() = Unit
-                },
+                override fun onLongfoxEntryPointClicked() = Unit },
                 showLongfoxEntryPoint = false,
             )
         }
@@ -277,6 +281,7 @@ private fun TrackersBlockedCardInteractivePreview() {
                         trackersBlockedCount = 754,
                         interactor = object : TrackingProtectionInteractor {
                             override fun onPrivacyReportTapped() = Unit
+                            override fun onLongfoxEntryPointClicked() = Unit
                         },
                         showLongfoxEntryPoint = true,
                     )

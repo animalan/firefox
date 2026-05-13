@@ -177,6 +177,11 @@ interface TrackingProtectionInteractor {
      * Invoked when the privacy report card is tapped.
      */
     fun onPrivacyReportTapped()
+
+    /**
+     * Invoked when the longfox entry point text is clicked.
+     */
+    fun onLongfoxEntryPointClicked()
 }
 
 /**
@@ -201,10 +206,6 @@ class SessionControlInteractor(
     private val logoController: LogoController,
     private val sportsController: SportsController,
 ) : HomepageInteractor {
-
-    override fun onLogoLongClicked() {
-        logoController.handleLogoLongClicked()
-    }
 
     override fun onCollectionAddTabTapped(collection: TabCollection) {
         controller.handleCollectionAddTabTapped(collection)
@@ -450,6 +451,10 @@ class SessionControlInteractor(
 
     override fun onPrivacyReportTapped() {
         Homepage.privacyReportTapped.record(NoExtras())
+    }
+
+    override fun onLongfoxEntryPointClicked() {
+        logoController.handleLongfoxEntryPointClicked()
     }
 
     override fun onGetCustomWallpaperClicked() {

@@ -275,12 +275,6 @@ class SessionControlInteractorTest {
     }
 
     @Test
-    fun `WHEN logo is long clicked THEN logo controller click handler is called`() {
-        interactor.onLogoLongClicked()
-        verify { logoController.handleLogoLongClicked() }
-    }
-
-    @Test
     fun `GIVEN a set of country codes WHEN countries are selected THEN sports controller handles the selection`() {
         val countryCodes = setOf("US", "JP", "BR")
         interactor.onCountriesSelected(countryCodes)

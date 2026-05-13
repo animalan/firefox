@@ -167,7 +167,6 @@ internal fun Homepage(
                         onLogoClicked = {
                             if (settings.showHomepageSportsWidget) showSportsCountrySelector = true
                         },
-                        onLogoLongClicked = interactor::onLogoLongClicked,
                     )
                 }
 
@@ -189,7 +188,6 @@ internal fun Homepage(
                         onLogoClicked = {
                             if (settings.showHomepageSportsWidget) showSportsCountrySelector = true
                         },
-                        onLogoLongClicked = interactor::onLogoLongClicked,
                     )
                 }
             }
@@ -246,6 +244,7 @@ internal fun Homepage(
                                     interactor = interactor,
                                     cardBackgroundColor = cardBackgroundColor,
                                     recentTabs = recentTabs,
+                                    reducedTopSpacing = showPrivacyReport && showLongfoxEntryPoint,
                                 )
 
                                 if (showRecentSyncedTab) {
@@ -427,8 +426,10 @@ private fun RecentTabsSection(
     interactor: RecentTabInteractor,
     cardBackgroundColor: Color,
     recentTabs: List<RecentTab>,
+    reducedTopSpacing: Boolean = false,
 ) {
-    Spacer(modifier = Modifier.height(40.dp))
+    val topSpacing = if (reducedTopSpacing) 16.dp else 40.dp
+    Spacer(modifier = Modifier.height(topSpacing))
 
     Column(modifier = Modifier.padding(horizontal = horizontalMargin)) {
         HomeSectionHeader(
