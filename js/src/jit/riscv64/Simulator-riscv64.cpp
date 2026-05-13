@@ -43,24 +43,13 @@
 #include "vm/Runtime.h"
 #include "wasm/WasmSignalHandlers.h"
 
-#define I8(v) static_cast<int8_t>(v)
-#define I16(v) static_cast<int16_t>(v)
-#define U16(v) static_cast<uint16_t>(v)
 #define I32(v) static_cast<int32_t>(v)
 #define U32(v) static_cast<uint32_t>(v)
 #define I64(v) static_cast<int64_t>(v)
 #define U64(v) static_cast<uint64_t>(v)
-#define I128(v) static_cast<__int128_t>(v)
-#define U128(v) static_cast<__uint128_t>(v)
 
 #define REGIx_FORMAT PRIx64
 #define REGId_FORMAT PRId64
-
-#define I32_CHECK(v)                   \
-  ({                                   \
-    MOZ_ASSERT(I64(I32(v)) == I64(v)); \
-    I32((v));                          \
-  })
 
 namespace js {
 namespace jit {
@@ -140,7 +129,6 @@ static char* ReadLine(const char* prompt) {
 // C/C++ argument slots size.
 const int kCArgSlotCount = 0;
 const int kCArgsSlotsSize = kCArgSlotCount * sizeof(uintptr_t);
-const int kBranchReturnOffset = 2 * kInstrSize;
 
 class CachePage {
  public:
