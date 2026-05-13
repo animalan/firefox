@@ -262,7 +262,7 @@ Object.assign(Chat, {
     if (!fxAccountToken) {
       console.error("fetchWithHistory Account Token null or undefined");
       const fxaError = new Error("FxA token unavailable");
-      fxaError.error = 4; // ACCOUNT_ERROR: triggers FxA sign-in prompt in the UI
+      fxaError.clientReason = "fxaTokenUnavailable";
       throw fxaError;
     }
 

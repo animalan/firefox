@@ -107,6 +107,41 @@ const PREF_CHAT_INTERACTION_COUNT = "browser.smartwindow.chat.interactionCount";
 const MAX_INTERACTION_COUNT = 1000;
 const MAX_SIDEBAR_STARTER_CACHE_KEYS = 20;
 
+// 1-6 are MLPA spec codes; 7 is set locally for Fastly-blocked 406s.
+const ERROR_TELEMETRY_NAME_BY_CODE = {
+  1: "budgetExceeded",
+  2: "rateLimitExceeded",
+  3: "contextTooLarge",
+  4: "maxUsersReached",
+  5: "upstreamRateLimit",
+  6: "fastlyWafRateLimit",
+  7: "invalidPageContent",
+};
+
+// Fastly errors don't have the error attribute; map the 406 to invalidPageContent.
+function getErrorCode(error) {
+  return (
+    error.error ??
+    error.metadata?.errorMessage ??
+    (error.status === 406 ? 7 : undefined)
+  );
+}
+
+function resolveModelResponseError(error) {
+  const httpStatus = error.status ?? 0;
+  if (error.clientReason) {
+    return { name: error.clientReason, httpStatus };
+  }
+  const code = getErrorCode(error);
+  if (code in ERROR_TELEMETRY_NAME_BY_CODE) {
+    return { name: ERROR_TELEMETRY_NAME_BY_CODE[code], httpStatus };
+  }
+  if (httpStatus) {
+    return { name: "serverError", httpStatus };
+  }
+  return { name: error.name || "genericError", httpStatus };
+}
+
 /**
  * A custom element for managing AI Window
  *
@@ -1521,7 +1556,7 @@ export class AIWindow extends MozLitElement {
       });
 
       this.#sendModelResponseTelemetryEvent(
-        "",
+        null,
         this.#getModelRequestLatencyAndDuration(requestStart, firstTokenTime)
       );
     } catch (e) {
@@ -1603,18 +1638,9 @@ export class AIWindow extends MozLitElement {
   #sendModelResponseTelemetryEvent(error, { duration, latency }) {
     const { lastMessage: lastAssistantMessage, messageCount } =
       this.#getConversationLastMessageAndCount(lazy.MESSAGE_ROLE.ASSISTANT);
-    const ERROR_CODE_TEXT = {
-      1: "Budget exceeded",
-      2: "Rate limit exceeded",
-      3: "Chat maximum length hit",
-      4: "Account error",
-      7: "Invalid page content",
-    };
-    let errorText = "";
-
-    if (error) {
-      errorText = ERROR_CODE_TEXT[error] ?? "Generic error";
-    }
+    const { name: errorName, httpStatus } = error
+      ? resolveModelResponseError(error)
+      : { name: "", httpStatus: 0 };
 
     Glean.smartWindow.modelResponse.record({
       location: this.mode === MODE.FULLPAGE ? "home" : MODE.SIDEBAR,
@@ -1626,7 +1652,8 @@ export class AIWindow extends MozLitElement {
       memories: lastAssistantMessage?.memoriesApplied?.length ?? 0,
       latency,
       duration,
-      error: errorText,
+      error: errorName,
+      http_status: httpStatus,
       model: this.modelName,
     });
   }
@@ -1658,20 +1685,16 @@ export class AIWindow extends MozLitElement {
 
   #handleError(error, { latency, duration }) {
     console.error(error);
-    let errorCode = error.error ?? error.metadata?.errorMessage;
-    // fastly errors don't have the error attribute
-    if (error.status === 406) {
-      errorCode = 7;
-    }
-
     const newErrorMessage = {
       role: "",
       content: {
         isError: true,
-        error: errorCode,
+        error: getErrorCode(error),
+        httpStatus: error.status ?? 0,
+        clientReason: error.clientReason,
       },
     };
-    this.#sendModelResponseTelemetryEvent(errorCode ?? true, {
+    this.#sendModelResponseTelemetryEvent(error, {
       latency,
       duration,
     });

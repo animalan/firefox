@@ -463,6 +463,7 @@ smart_window:
       A response is received from the backend model
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=2021947
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2035241
     data_reviews:
       - https://phabricator.services.mozilla.com/D287710
     data_sensitivity:
@@ -494,7 +495,12 @@ smart_window:
       error: &error
         type: string
         description: >
-          Error code if it's not a successful response
+          Canonical chat error name, or empty on success
+      http_status:
+        type: quantity
+        unit: count
+        description: >
+          HTTP status from the inference back-end, or 0 if no response
       model: *model
 
   chat_storage:
