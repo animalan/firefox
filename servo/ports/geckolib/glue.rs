@@ -7602,9 +7602,12 @@ pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
     // properties (since declarations in later rules override those in earlier
     // ones).
     for step in animation.steps.iter().rev() {
-        if step.start_percentage.0 != current_offset {
+        // TODO: Generate the keyframes with <timeline-range-name> in the following patches.
+        debug_assert!(step.start_offset.range_name.is_none());
+
+        if step.start_offset.percentage.0 != current_offset {
             properties_set_at_current_offset.clear();
-            current_offset = step.start_percentage.0;
+            current_offset = step.start_offset.percentage.0;
         }
 
         // Override timing_function if the keyframe has an animation-timing-function.
@@ -7626,7 +7629,7 @@ pub unsafe extern "C" fn Servo_StyleSet_GetKeyframesForName(
         // else add a new keyframe at the beginning of the keyframe array.
         let keyframe = &mut *bindings::Gecko_GetOrCreateKeyframeAtStart(
             keyframes,
-            step.start_percentage.0 as f32,
+            step.start_offset.percentage.0 as f32,
             &timing_function,
             composition,
         );
