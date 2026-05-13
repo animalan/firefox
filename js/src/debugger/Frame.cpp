@@ -176,16 +176,8 @@ js::Debugger* js::DebuggerFrame::owner() const {
 }
 
 const JSClassOps DebuggerFrame::classOps_ = {
-    nullptr,                         // addProperty
-    nullptr,                         // delProperty
-    nullptr,                         // enumerate
-    nullptr,                         // newEnumerate
-    nullptr,                         // resolve
-    nullptr,                         // mayResolve
-    finalize,                        // finalize
-    nullptr,                         // call
-    nullptr,                         // construct
-    CallTraceMethod<DebuggerFrame>,  // trace
+    .finalize = finalize,
+    .trace = CallTraceMethod<DebuggerFrame>,
 };
 
 const JSClass DebuggerFrame::class_ = {

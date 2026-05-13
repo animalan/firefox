@@ -1125,16 +1125,11 @@ size_t ArgumentsObject::sizeOfData() const {
  * arguments object.
  */
 const JSClassOps MappedArgumentsObject::classOps_ = {
-    nullptr,                               // addProperty
-    ArgumentsObject::obj_delProperty,      // delProperty
-    MappedArgumentsObject::obj_enumerate,  // enumerate
-    nullptr,                               // newEnumerate
-    MappedArgumentsObject::obj_resolve,    // resolve
-    ArgumentsObject::obj_mayResolve,       // mayResolve
-    nullptr,                               // finalize
-    nullptr,                               // call
-    nullptr,                               // construct
-    ArgumentsObject::trace,                // trace
+    .delProperty = ArgumentsObject::obj_delProperty,
+    .enumerate = MappedArgumentsObject::obj_enumerate,
+    .resolve = MappedArgumentsObject::obj_resolve,
+    .mayResolve = ArgumentsObject::obj_mayResolve,
+    .trace = ArgumentsObject::trace,
 };
 
 const js::ClassExtension MappedArgumentsObject::classExt_ = {
@@ -1169,16 +1164,11 @@ const JSClass MappedArgumentsObject::class_ = {
  * it is represented by a different class while sharing some functionality.
  */
 const JSClassOps UnmappedArgumentsObject::classOps_ = {
-    nullptr,                                 // addProperty
-    ArgumentsObject::obj_delProperty,        // delProperty
-    UnmappedArgumentsObject::obj_enumerate,  // enumerate
-    nullptr,                                 // newEnumerate
-    UnmappedArgumentsObject::obj_resolve,    // resolve
-    ArgumentsObject::obj_mayResolve,         // mayResolve
-    nullptr,                                 // finalize
-    nullptr,                                 // call
-    nullptr,                                 // construct
-    ArgumentsObject::trace,                  // trace
+    .delProperty = ArgumentsObject::obj_delProperty,
+    .enumerate = UnmappedArgumentsObject::obj_enumerate,
+    .resolve = UnmappedArgumentsObject::obj_resolve,
+    .mayResolve = ArgumentsObject::obj_mayResolve,
+    .trace = ArgumentsObject::trace,
 };
 
 const js::ClassExtension UnmappedArgumentsObject::classExt_ = {

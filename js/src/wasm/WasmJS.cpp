@@ -1295,16 +1295,7 @@ static JSObject* TagTypeToObject(JSContext* cx,
 // WebAssembly.Module class and methods
 
 const JSClassOps WasmModuleObject::classOps_ = {
-    nullptr,                     // addProperty
-    nullptr,                     // delProperty
-    nullptr,                     // enumerate
-    nullptr,                     // newEnumerate
-    nullptr,                     // resolve
-    nullptr,                     // mayResolve
-    WasmModuleObject::finalize,  // finalize
-    nullptr,                     // call
-    nullptr,                     // construct
-    nullptr,                     // trace
+    .finalize = WasmModuleObject::finalize,
 };
 
 const JSClass WasmModuleObject::class_ = {
@@ -2016,16 +2007,8 @@ const Module& WasmModuleObject::module() const {
 // WebAssembly.Instance class and methods
 
 const JSClassOps WasmInstanceObject::classOps_ = {
-    nullptr,                       // addProperty
-    nullptr,                       // delProperty
-    nullptr,                       // enumerate
-    nullptr,                       // newEnumerate
-    nullptr,                       // resolve
-    nullptr,                       // mayResolve
-    WasmInstanceObject::finalize,  // finalize
-    nullptr,                       // call
-    nullptr,                       // construct
-    WasmInstanceObject::trace,     // trace
+    .finalize = WasmInstanceObject::finalize,
+    .trace = WasmInstanceObject::trace,
 };
 
 const JSClass WasmInstanceObject::class_ = {
@@ -2385,16 +2368,7 @@ WasmFunctionScope* WasmInstanceObject::getFunctionScope(
 // WebAssembly.Memory class and methods
 
 const JSClassOps WasmMemoryObject::classOps_ = {
-    nullptr,                     // addProperty
-    nullptr,                     // delProperty
-    nullptr,                     // enumerate
-    nullptr,                     // newEnumerate
-    nullptr,                     // resolve
-    nullptr,                     // mayResolve
-    WasmMemoryObject::finalize,  // finalize
-    nullptr,                     // call
-    nullptr,                     // construct
-    nullptr,                     // trace
+    .finalize = WasmMemoryObject::finalize,
 };
 
 const JSClass WasmMemoryObject::class_ = {
@@ -3064,16 +3038,8 @@ bool js::wasm::IsSharedWasmMemoryObject(JSObject* obj) {
 // WebAssembly.Table class and methods
 
 const JSClassOps WasmTableObject::classOps_ = {
-    nullptr,                    // addProperty
-    nullptr,                    // delProperty
-    nullptr,                    // enumerate
-    nullptr,                    // newEnumerate
-    nullptr,                    // resolve
-    nullptr,                    // mayResolve
-    WasmTableObject::finalize,  // finalize
-    nullptr,                    // call
-    nullptr,                    // construct
-    WasmTableObject::trace,     // trace
+    .finalize = WasmTableObject::finalize,
+    .trace = WasmTableObject::trace,
 };
 
 const JSClass WasmTableObject::class_ = {
@@ -3495,16 +3461,8 @@ bool WasmTableObject::fillRange(JSContext* cx, uint32_t index, uint32_t length,
 // WebAssembly.global class and methods
 
 const JSClassOps WasmGlobalObject::classOps_ = {
-    nullptr,                     // addProperty
-    nullptr,                     // delProperty
-    nullptr,                     // enumerate
-    nullptr,                     // newEnumerate
-    nullptr,                     // resolve
-    nullptr,                     // mayResolve
-    WasmGlobalObject::finalize,  // finalize
-    nullptr,                     // call
-    nullptr,                     // construct
-    WasmGlobalObject::trace,     // trace
+    .finalize = WasmGlobalObject::finalize,
+    .trace = WasmGlobalObject::trace,
 };
 
 const JSClass WasmGlobalObject::class_ = {
@@ -3787,16 +3745,7 @@ bool WasmGlobalObject::type(JSContext* cx, unsigned argc, Value* vp) {
 // WebAssembly.Tag class and methods
 
 const JSClassOps WasmTagObject::classOps_ = {
-    nullptr,                  // addProperty
-    nullptr,                  // delProperty
-    nullptr,                  // enumerate
-    nullptr,                  // newEnumerate
-    nullptr,                  // resolve
-    nullptr,                  // mayResolve
-    WasmTagObject::finalize,  // finalize
-    nullptr,                  // call
-    nullptr,                  // construct
-    nullptr,                  // trace
+    .finalize = WasmTagObject::finalize,
 };
 
 const JSClass WasmTagObject::class_ = {
@@ -3962,16 +3911,8 @@ const wasm::ValTypeVector& WasmTagObject::valueTypes() const {
 // WebAssembly.Exception class and methods
 
 const JSClassOps WasmExceptionObject::classOps_ = {
-    nullptr,                        // addProperty
-    nullptr,                        // delProperty
-    nullptr,                        // enumerate
-    nullptr,                        // newEnumerate
-    nullptr,                        // resolve
-    nullptr,                        // mayResolve
-    WasmExceptionObject::finalize,  // finalize
-    nullptr,                        // call
-    nullptr,                        // construct
-    WasmExceptionObject::trace,     // trace
+    .finalize = WasmExceptionObject::finalize,
+    .trace = WasmExceptionObject::trace,
 };
 
 const JSClass WasmExceptionObject::class_ = {
@@ -5482,16 +5423,7 @@ class ResolveResponseClosure : public NativeObject {
 };
 
 const JSClassOps ResolveResponseClosure::classOps_ = {
-    nullptr,                           // addProperty
-    nullptr,                           // delProperty
-    nullptr,                           // enumerate
-    nullptr,                           // newEnumerate
-    nullptr,                           // resolve
-    nullptr,                           // mayResolve
-    ResolveResponseClosure::finalize,  // finalize
-    nullptr,                           // call
-    nullptr,                           // construct
-    nullptr,                           // trace
+    .finalize = ResolveResponseClosure::finalize,
 };
 
 const JSClass ResolveResponseClosure::class_ = {

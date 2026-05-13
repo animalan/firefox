@@ -224,16 +224,7 @@ const ClassSpec ErrorObject::classSpecs[JSEXN_ERROR_LIMIT] = {
 static void exn_finalize(JS::GCContext* gcx, JSObject* obj);
 
 static const JSClassOps ErrorObjectClassOps = {
-    nullptr,       // addProperty
-    nullptr,       // delProperty
-    nullptr,       // enumerate
-    nullptr,       // newEnumerate
-    nullptr,       // resolve
-    nullptr,       // mayResolve
-    exn_finalize,  // finalize
-    nullptr,       // call
-    nullptr,       // construct
-    nullptr,       // trace
+    .finalize = exn_finalize,
 };
 
 const JSClass ErrorObject::classes[JSEXN_ERROR_LIMIT] = {
