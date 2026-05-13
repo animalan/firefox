@@ -523,7 +523,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   //
   // Useragent/prefs helper methods
   //
-  void BuildUserAgent();
+  void BuildUserAgent() MOZ_REQUIRES(mUserAgentLock);
   void InitUserAgentComponents();
 #ifdef XP_MACOSX
   void InitMSAuthorities();
@@ -626,9 +626,10 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   nsCString mDocumentAcceptHeader;
 
   nsCString mAcceptLanguages;
-  nsCString mHttpAcceptEncodings;
-  nsCString mHttpsAcceptEncodings;
-  nsCString mDictionaryAcceptEncodings;
+  Mutex mAcceptEncodingLock{"nsHttpHandler::AcceptEncoding"};
+  nsCString mHttpAcceptEncodings MOZ_GUARDED_BY(mAcceptEncodingLock);
+  nsCString mHttpsAcceptEncodings MOZ_GUARDED_BY(mAcceptEncodingLock);
+  nsCString mDictionaryAcceptEncodings MOZ_GUARDED_BY(mAcceptEncodingLock);
 
   nsCString mDefaultSocketType;
 
@@ -653,10 +654,11 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   nsCString mCompatDevice;
   nsCString mDeviceModelId;
 
-  nsCString mUserAgent;
+  Mutex mUserAgentLock{"nsHttpHandler::UserAgent"};
+  nsCString mUserAgent MOZ_GUARDED_BY(mUserAgentLock);
   nsCString mSpoofedUserAgent;
-  nsCString mUserAgentOverride;
-  bool mUserAgentIsDirty{true};  // true if mUserAgent should be rebuilt
+  nsCString mUserAgentOverride MOZ_GUARDED_BY(mUserAgentLock);
+  bool mUserAgentIsDirty MOZ_GUARDED_BY(mUserAgentLock){true};
   bool mAcceptLanguagesIsDirty{true};
 
   bool mPromptTempRedirect{true};
