@@ -4020,6 +4020,36 @@ static NSURL* GetPasteLocation(NSPasteboard* aPasteboard, bool aUseFallback) {
       [aPasteboard setString:[pasteboardOutputDict valueForKey:aType]
                      forType:aType];
     } else if ([aType
+                   isEqualToString:
+                       [UTIHelper
+                           stringFromPboardType:
+                               (NSString*)kPasteboardTypeFilePromiseContent]]) {
+      // The Carbon file promise protocol requires that we provide the
+      // content type UTI so Finder can recognize this as a valid file
+      // promise and use the promise-based drop path (which positions
+      // the file icon at the drop coordinates on the desktop).
+      nsCOMPtr<nsISupports> mimeDataWrapper;
+      if (NS_SUCCEEDED(currentTransferable->GetTransferData(
+              kImageRequestMime, getter_AddRefs(mimeDataWrapper)))) {
+        nsCOMPtr<nsISupportsString> mimeStr =
+            do_QueryInterface(mimeDataWrapper);
+        if (mimeStr) {
+          nsAutoString mimeType;
+          mimeStr->GetData(mimeType);
+          if (!mimeType.IsEmpty()) {
+            NSString* nsMimeType = nsCocoaUtils::ToNSString(mimeType);
+            CFStringRef uti = UTTypeCreatePreferredIdentifierForTag(
+                kUTTagClassMIMEType, (CFStringRef)nsMimeType, nullptr);
+            if (uti) {
+              [aPasteboard setData:[(NSString*)uti
+                                       dataUsingEncoding:NSUTF8StringEncoding]
+                           forType:aType];
+              CFRelease(uti);
+            }
+          }
+        }
+      }
+    } else if ([aType
                    isEqualToString:[UTIHelper stringFromPboardType:
                                                   (NSString*)kUTTypeFileURL]] ||
                [aType isEqualToString:
@@ -4091,23 +4121,30 @@ static NSURL* GetPasteLocation(NSPasteboard* aPasteboard, bool aUseFallback) {
           continue;
         }
 
+        // Report the created file's URL back to the pasteboard. For
+        // kPasteboardTypeFileURLPromise, this is required by the Carbon
+        // file promise protocol — without it, Finder cannot associate
+        // the new file with the drop point and won't position it at
+        // the correct coordinates on the desktop.
+        nsCOMPtr<nsIFile> file = do_QueryInterface(fileDataPrimitive);
+        if (!file) {
+          continue;
+        }
+        nsAutoCString finalPath;
+        file->GetNativePath(finalPath);
+        NSString* filePath =
+            [NSString stringWithUTF8String:(const char*)finalPath.get()];
+        NSString* fileURLString =
+            [[NSURL fileURLWithPath:filePath] absoluteString];
         if ([aType
                 isEqualToString:[UTIHelper
                                     stringFromPboardType:(NSString*)
                                                              kUTTypeFileURL]]) {
-          // In case of a file URL we need to populate the pasteboard with the
-          // path to the file.
-          nsCOMPtr<nsIFile> file = do_QueryInterface(fileDataPrimitive);
-          if (!file) {
-            continue;
-          }
-          nsAutoCString finalPath;
-          file->GetNativePath(finalPath);
-          NSString* filePath =
-              [NSString stringWithUTF8String:(const char*)finalPath.get()];
+          [aPasteboard setString:fileURLString forType:aType];
+        } else {
           [aPasteboard
-              setString:[[NSURL fileURLWithPath:filePath] absoluteString]
-                forType:aType];
+              setData:[fileURLString dataUsingEncoding:NSUTF8StringEncoding]
+              forType:aType];
         }
       }
     } else if ([aType
