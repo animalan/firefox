@@ -49,6 +49,7 @@ namespace layers {
   ColorSpace2 colorSpace;
   ColorRange colorRange;
   TransferFunction transferFunction;
+  HDRMetadata? hdrMetadata;
   bool hasKeyedMutex;
   CompositeProcessFencesHolderId? fencesHolderId;
 };
