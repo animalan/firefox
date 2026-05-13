@@ -1395,7 +1395,8 @@ class nsLayoutUtils {
   static already_AddRefed<nsFontMetrics> GetFontMetricsForComputedStyle(
       const ComputedStyle* aComputedStyle, nsPresContext* aPresContext,
       float aSizeInflation = 1.0f,
-      uint8_t aVariantWidth = NS_FONT_VARIANT_WIDTH_NORMAL);
+      uint8_t aVariantWidth = NS_FONT_VARIANT_WIDTH_NORMAL,
+      bool aForceHorizontalMetrics = false);
 
   /**
    * Get the font metrics of emphasis marks corresponding to the given
