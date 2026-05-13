@@ -453,6 +453,8 @@ class MenuNavigationMiddlewareTest {
 
     @Test
     fun `GIVEN native share sheet is active WHEN navigate to share action is dispatched THEN navigate to native share sheet`() = runTest {
+        every { settings.nativeShareSheetEnabled } returns true
+
         val title = "Mozilla"
         val url = "https://mozilla.org"
         val id = "123"
@@ -461,15 +463,15 @@ class MenuNavigationMiddlewareTest {
             url = url,
             title = title,
         )
-        settings.apply {
-            every { nativeShareSheetEnabled } returns true
-        }
+        var dismissWasCalled = false
+
         val store = createStore(
             menuState = MenuState(
                 browserMenuState = BrowserMenuState(
                     selectedTab = tab,
                 ),
             ),
+            onDismiss = { dismissWasCalled = true },
             scope = this,
         )
         store.dispatch(MenuAction.Navigate.Share)
@@ -478,6 +480,7 @@ class MenuNavigationMiddlewareTest {
         verify {
             shareSheetLauncher.showSystemShareSheet(id, url, title, false)
         }
+        assertTrue(dismissWasCalled)
     }
 
     @Test

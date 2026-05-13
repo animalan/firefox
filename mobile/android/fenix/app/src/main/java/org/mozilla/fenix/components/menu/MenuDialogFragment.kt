@@ -365,11 +365,6 @@ class MenuDialogFragment : BottomSheetDialogFragment() {
                                     browserStore = browserStore,
                                     navController = findNavController(),
                                     homeActivityClass = HomeActivity::class.java,
-                                    onDismiss = {
-                                        lifecycleScope.launch(Dispatchers.Main) {
-                                            this@MenuDialogFragment.dismiss()
-                                        }
-                                    },
                                 ),
                             ),
                             MenuTelemetryMiddleware(

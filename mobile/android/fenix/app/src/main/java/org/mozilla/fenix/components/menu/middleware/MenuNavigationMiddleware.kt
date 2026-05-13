@@ -228,6 +228,8 @@ class MenuNavigationMiddleware(
                             isCustomTab = customTab != null,
                         )
                     }
+
+                    onDismiss()
                 }
 
                 is MenuAction.Navigate.ManageExtensions -> navController.nav(

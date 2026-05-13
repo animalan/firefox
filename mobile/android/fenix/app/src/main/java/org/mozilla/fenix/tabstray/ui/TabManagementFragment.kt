@@ -206,7 +206,6 @@ class TabManagementFragment : Fragment() {
                 browserStore = requireComponents.core.store,
                 navController = findNavController(),
                 homeActivityClass = HomeActivity::class.java,
-                onDismiss = {},
                 scope = viewLifecycleOwner.lifecycleScope,
             ),
             browsingModeManager = (activity as HomeActivity).browsingModeManager,
