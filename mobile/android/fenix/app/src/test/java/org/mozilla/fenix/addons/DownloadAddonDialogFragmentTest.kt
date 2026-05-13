@@ -4,18 +4,12 @@
 
 package org.mozilla.fenix.addons
 
-import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.mockk.mockk
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import mozilla.components.concept.engine.CancellableOperation
 import mozilla.components.concept.engine.webextension.InstallationMethod
-import mozilla.components.feature.addons.Addon
 import mozilla.components.support.test.robolectric.createAddedTestFragment
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
@@ -31,92 +25,60 @@ class DownloadAddonDialogFragmentTest {
     val composeRule = createEmptyComposeRule()
 
     private var fragment: DownloadAddonDialogFragment? = null
-    private val fakeInstaller = FakeAddonInstaller()
 
     @Test
-    fun `GIVEN addon details WHEN valid THEN show addon details and start installing the addon`() {
+    fun `GIVEN addon details WHEN valid THEN show header, addon details and cancel button`() {
         launchDialog()
 
         composeRule.onNodeWithText(headerText).assertIsDisplayed()
         composeRule.onNodeWithText(ADDON_NAME).assertIsDisplayed()
         composeRule.onNodeWithText(cancelText).assertIsDisplayed()
-
-        assertEquals(1, fakeInstaller.installCalls)
-        assertEquals(DOWNLOAD_URL, fakeInstaller.url)
-        assertEquals(InstallationMethod.RTAMO, fakeInstaller.installationMethod)
     }
 
     @Test
-    fun `GIVEN addon details WHEN the addon download URL is blank THEN don't show addon details and don't attempt installing an addon`() {
-        launchDialog(downloadUrl = "")
+    fun `GIVEN addon name is null WHEN dialog is shown THEN show header and cancel but no addon details`() {
+        launchDialog(addonName = null)
 
-        composeRule.onNodeWithText(headerText).assertDoesNotExist()
+        composeRule.onNodeWithText(headerText).assertIsDisplayed()
+        composeRule.onNodeWithText(cancelText).assertIsDisplayed()
         composeRule.onNodeWithText(ADDON_NAME).assertDoesNotExist()
-        composeRule.onNodeWithText(cancelText).assertDoesNotExist()
-
-        assertEquals(0, fakeInstaller.installCalls)
     }
 
     @Test
-    fun `GIVEN install is in progress WHEN install succeeds THEN dismiss the dialog`() {
-        launchDialog()
-        assertEquals(1, fakeInstaller.installCalls)
+    fun `GIVEN addon name is blank WHEN dialog is shown THEN show header and cancel but no addon details`() {
+        launchDialog(addonName = "")
 
-        fakeInstaller.onSuccess(mockk())
-        executePendingFragmentTransactions()
-        composeRule.waitForIdle()
-
-        composeRule.onNodeWithText(headerText).assertDoesNotExist()
+        composeRule.onNodeWithText(headerText).assertIsDisplayed()
+        composeRule.onNodeWithText(cancelText).assertIsDisplayed()
         composeRule.onNodeWithText(ADDON_NAME).assertDoesNotExist()
-        composeRule.onNodeWithText(cancelText).assertDoesNotExist()
     }
 
     @Test
-    fun `GIVEN install is in progress WHEN install fails THEN dismiss the dialog`() {
-        launchDialog()
-        assertEquals(1, fakeInstaller.installCalls)
-
-        fakeInstaller.onError(RuntimeException("Install failed"))
-        executePendingFragmentTransactions()
-        composeRule.waitForIdle()
-
-        composeRule.onNodeWithText(headerText).assertDoesNotExist()
-        composeRule.onNodeWithText(ADDON_NAME).assertDoesNotExist()
-        composeRule.onNodeWithText(cancelText).assertDoesNotExist()
-    }
-
-    @Test
-    fun `GIVEN install is in progress WHEN cancel button is tapped THEN cancel operation and dismiss dialog after cancellation completes`() {
-        val cancelDeferred = CompletableDeferred<Boolean>()
-        fakeInstaller.operation = FakeCancellableOperation(cancelDeferred)
-        launchDialog()
-        assertEquals(1, fakeInstaller.installCalls)
+    fun `GIVEN dialog is shown WHEN cancel button is tapped THEN invoke onCancelled and dismiss dialog`() {
+        var cancelledCalls = 0
+        launchDialog(onCancelled = { cancelledCalls++ })
 
         composeRule.onNodeWithText(cancelText).performClick()
-        composeRule.waitForIdle()
-        assertEquals(1, fakeInstaller.operation.cancelCalls)
-
-        // Check waiting for the cancel operation to finish before dismissing the dialog.
-        composeRule.onNodeWithText(cancelText).assertIsDisplayed()
-        cancelDeferred.complete(false)
+        executePendingFragmentTransactions()
         composeRule.waitForIdle()
 
+        assertEquals(1, cancelledCalls)
         composeRule.onNodeWithText(headerText).assertDoesNotExist()
         composeRule.onNodeWithText(ADDON_NAME).assertDoesNotExist()
         composeRule.onNodeWithText(cancelText).assertDoesNotExist()
     }
 
     @Test
-    fun `GIVEN install is in progress WHEN dialog is cancelled by system back THEN cancel the operation`() {
-        fakeInstaller.operation = FakeCancellableOperation()
-        launchDialog()
-        assertEquals(1, fakeInstaller.installCalls)
+    fun `GIVEN dialog is shown WHEN cancelled by system back THEN invoke onCancelled and dismiss dialog`() {
+        var cancelledCalls = 0
+        launchDialog(onCancelled = { cancelledCalls++ })
 
         // The system back calls the cancel() method on the dialog.
         fragment?.requireDialog()?.cancel()
+        executePendingFragmentTransactions()
         composeRule.waitForIdle()
 
-        assertEquals(1, fakeInstaller.operation.cancelCalls)
+        assertEquals(1, cancelledCalls)
         composeRule.onNodeWithText(headerText).assertDoesNotExist()
         composeRule.onNodeWithText(ADDON_NAME).assertDoesNotExist()
         composeRule.onNodeWithText(cancelText).assertDoesNotExist()
@@ -130,6 +92,7 @@ class DownloadAddonDialogFragmentTest {
         addonName: String? = ADDON_NAME,
         addonImageUrl: String? = ADDON_IMAGE_URL,
         installationMethod: InstallationMethod = InstallationMethod.RTAMO,
+        onCancelled: () -> Unit = {},
     ) {
         val fragmentArgs = DownloadAddonDialogFragmentArgs(
             addonDownloadUrl = downloadUrl,
@@ -141,7 +104,7 @@ class DownloadAddonDialogFragmentTest {
         fragment = createAddedTestFragment {
             DownloadAddonDialogFragment().apply {
                 arguments = fragmentArgs
-                installAddon = fakeInstaller::install
+                this.onCancelled = onCancelled
                 overriddenTheme = Theme.Dark
             }
         }
@@ -156,43 +119,5 @@ class DownloadAddonDialogFragmentTest {
         const val DOWNLOAD_URL = "https://example.com/addon.xpi"
         const val ADDON_NAME = "uBlock Origin"
         const val ADDON_IMAGE_URL = "https://example.com/icon.png"
-    }
-
-    private class FakeAddonInstaller {
-        var installCalls = 0
-        var url: String? = null
-        var installationMethod: InstallationMethod? = null
-        var operation = FakeCancellableOperation()
-
-        lateinit var onSuccess: (Addon) -> Unit
-        lateinit var onError: (Throwable) -> Unit
-
-        fun install(
-            context: Context,
-            url: String,
-            installationMethod: InstallationMethod?,
-            onSuccess: (Addon) -> Unit,
-            onError: (Throwable) -> Unit,
-        ): CancellableOperation {
-            installCalls++
-            this.url = url
-            this.installationMethod = installationMethod
-            this.onSuccess = onSuccess
-            this.onError = onError
-
-            return operation
-        }
-    }
-
-    private class FakeCancellableOperation(
-        private val cancelDeferred: CompletableDeferred<Boolean> = CompletableDeferred(true),
-    ) : CancellableOperation {
-        var cancelCalls = 0
-            private set
-
-        override fun cancel(): Deferred<Boolean> {
-            cancelCalls++
-            return cancelDeferred
-        }
     }
 }

@@ -6,11 +6,13 @@ package org.mozilla.fenix.extension
 
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -18,12 +20,16 @@ import kotlinx.coroutines.test.runTest
 import mozilla.components.browser.state.action.WebExtensionAction.UpdatePromptRequestWebExtensionAction
 import mozilla.components.browser.state.state.extension.WebExtensionPromptRequest
 import mozilla.components.browser.state.store.BrowserStore
+import mozilla.components.concept.engine.webextension.InstallationMethod
 import mozilla.components.concept.engine.webextension.WebExtensionInstallException
 import mozilla.components.feature.addons.Addon
+import mozilla.components.feature.addons.AddonManager
 import mozilla.components.support.ktx.android.content.appVersionName
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -31,6 +37,7 @@ import org.junit.runner.RunWith
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.addons.AddonsManagementFragmentDirections
+import org.mozilla.fenix.addons.DownloadAddonDialogFragment
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.utils.LinkTextView
 import org.robolectric.RobolectricTestRunner
@@ -47,6 +54,8 @@ class WebExtensionPromptFeatureTest {
         onLinkClickedCalls.add(url to isFirstParty)
     }
     private val navController: NavController = mockk(relaxed = true)
+    private val fragmentManager: FragmentManager = mockk(relaxed = true)
+    private val addonManager: AddonManager = mockk(relaxed = true)
 
     private val testDispatcher = StandardTestDispatcher()
 
@@ -57,10 +66,10 @@ class WebExtensionPromptFeatureTest {
             WebExtensionPromptFeature(
                 store = store,
                 context = testContext,
-                fragmentManager = mockk(relaxed = true),
+                fragmentManager = fragmentManager,
                 onLinkClicked = onLinkClicked,
                 navController = navController,
-                addonManager = mockk(relaxed = true),
+                addonManager = addonManager,
                 mainDispatcher = testDispatcher,
             ),
         )
@@ -242,6 +251,149 @@ class WebExtensionPromptFeatureTest {
         verify { webExtensionPromptFeature.showDialog(expectedTitle, expectedMessage) }
         val linkView = dialog?.findViewById<LinkTextView>(R.id.link)
         assertFalse(linkView!!.isVisible)
+    }
+
+    @Test
+    fun `WHEN handling InstallationRequested THEN start installing the addon and show a dialog informing about this`() = runTest(testDispatcher) {
+        val downloadUrl = "https://example.com/addon.xpi"
+        val addonName = "uBlock Origin"
+        val addonIconUrl = "https://example.com/icon.png"
+        val method = InstallationMethod.RTAMO
+        val request = WebExtensionPromptRequest.InstallationRequested(
+            url = downloadUrl,
+            name = addonName,
+            iconUrl = addonIconUrl,
+            installationMethod = method,
+        )
+        every { webExtensionPromptFeature.startInstallingAddon(any(), any()) } just runs
+        every { webExtensionPromptFeature.showDownloadAddonDialog(any(), any(), any(), any()) } returns null
+        webExtensionPromptFeature.start()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        store.dispatch(UpdatePromptRequestWebExtensionAction(request))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        verify {
+            webExtensionPromptFeature.startInstallingAddon(
+                addonDownloadUrl = downloadUrl,
+                addonInstallationSource = method,
+            )
+        }
+        verify {
+            webExtensionPromptFeature.showDownloadAddonDialog(
+                addonDownloadUrl = downloadUrl,
+                addonName = addonName,
+                addonImageUrl = addonIconUrl,
+                addonInstallationSource = method,
+            )
+        }
+        assertNull(store.state.webExtensionPromptRequest)
+    }
+
+    @Test
+    fun `WHEN installing an addon THEN use the provided arguments`() = runTest(testDispatcher) {
+        val downloadUrl = "https://example.com/addon.xpi"
+        val method = InstallationMethod.RTAMO
+
+        webExtensionPromptFeature.startInstallingAddon(
+            addonDownloadUrl = downloadUrl,
+            addonInstallationSource = method,
+        )
+
+        verify {
+            addonManager.installAddon(
+                url = downloadUrl,
+                installationMethod = method,
+                onSuccess = any(),
+                onError = any(),
+            )
+        }
+    }
+
+    @Test
+    fun `GIVEN installing an addon WHEN this succeeds THEN dismiss the existing dialog informing about the progress`() = runTest(testDispatcher) {
+        val existingDialog: DownloadAddonDialogFragment = mockk(relaxed = true)
+        every { fragmentManager.findFragmentByTag("DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG") } returns existingDialog
+        val onSuccessSlot = slot<(Addon) -> Unit>()
+        every {
+            addonManager.installAddon(
+                url = any(),
+                installationMethod = any(),
+                onSuccess = capture(onSuccessSlot),
+                onError = any(),
+            )
+        } returns mockk()
+        webExtensionPromptFeature.startInstallingAddon(
+            addonDownloadUrl = "https://example.com/addon.xpi",
+            addonInstallationSource = InstallationMethod.RTAMO,
+        )
+
+        onSuccessSlot.captured(mockk())
+
+        verify { existingDialog.dismissAllowingStateLoss() }
+    }
+
+    @Test
+    fun `GIVEN installing an addon WHEN this fails THEN dismiss the existing dialog informing about the progress`() = runTest(testDispatcher) {
+        val existingDialog: DownloadAddonDialogFragment = mockk(relaxed = true)
+        every { fragmentManager.findFragmentByTag("DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG") } returns existingDialog
+        val onErrorSlot = slot<(Throwable) -> Unit>()
+        every {
+            addonManager.installAddon(
+                url = any(),
+                installationMethod = any(),
+                onSuccess = any(),
+                onError = capture(onErrorSlot),
+            )
+        } returns mockk()
+        webExtensionPromptFeature.startInstallingAddon(
+            addonDownloadUrl = "https://example.com/addon.xpi",
+            addonInstallationSource = InstallationMethod.RTAMO,
+        )
+
+        onErrorSlot.captured(RuntimeException("Install failed"))
+
+        verify { existingDialog.dismissAllowingStateLoss() }
+    }
+
+    @Test
+    fun `GIVEN a request to show a dialog informing about the addon install progress WHEN such a dialog does not yet exist THEN a new instance is built`() = runTest(testDispatcher) {
+        every { fragmentManager.findFragmentByTag(any()) } returns null
+
+        val dialog = webExtensionPromptFeature.showDownloadAddonDialog(
+            addonDownloadUrl = "https://example.com/addon.xpi",
+            addonName = "uBlock Origin",
+            addonImageUrl = "https://example.com/icon.png",
+            addonInstallationSource = InstallationMethod.RTAMO,
+        )
+
+        assertNotNull(dialog)
+    }
+
+    @Test
+    fun `GIVEN a request to show a dialog informing about the addon install progress WHEN such a dialog already exists THEN don't build a new one`() = runTest(testDispatcher) {
+        val existingDialog: DownloadAddonDialogFragment = mockk(relaxed = true)
+        every { fragmentManager.findFragmentByTag("DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG") } returns existingDialog
+
+        val dialog = webExtensionPromptFeature.showDownloadAddonDialog(
+            addonDownloadUrl = "https://example.com/addon.xpi",
+            addonName = "uBlock Origin",
+            addonImageUrl = "https://example.com/icon.png",
+            addonInstallationSource = InstallationMethod.RTAMO,
+        )
+
+        assertNull(dialog)
+    }
+
+    @Test
+    fun `GIVEN the feature is restarted WHEN a previous DownloadAddonDialogFragment exists THEN reattach the onCancelled handler`() = runTest(testDispatcher) {
+        val previousDialog: DownloadAddonDialogFragment = mockk(relaxed = true)
+        every { fragmentManager.findFragmentByTag("DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG") } returns previousDialog
+
+        webExtensionPromptFeature.start()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        verify { previousDialog.onCancelled = any() }
     }
 
     @Test

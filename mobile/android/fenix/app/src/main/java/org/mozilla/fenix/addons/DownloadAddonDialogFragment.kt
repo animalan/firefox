@@ -5,13 +5,11 @@
 package org.mozilla.fenix.addons
 
 import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import androidx.annotation.VisibleForTesting
@@ -43,16 +41,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.core.graphics.drawable.toDrawable
 import androidx.fragment.compose.content
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import mozilla.components.compose.base.button.TextButton
-import mozilla.components.concept.engine.CancellableOperation
-import mozilla.components.concept.engine.webextension.InstallationMethod
-import mozilla.components.feature.addons.Addon
 import org.mozilla.fenix.compose.Favicon
-import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.theme.PreviewThemeProvider
 import org.mozilla.fenix.theme.Theme
@@ -61,17 +52,21 @@ import mozilla.components.feature.addons.R as addonsR
 import mozilla.components.ui.icons.R as iconsR
 
 /**
- * [AppCompatDialogFragment] handling the process of starting to install a specific addon and
- * showing a modal message to users to inform about the progress.
+ * [AppCompatDialogFragment] showing a modal message to users to inform about the progress of installing an addon.
+ * This dialog will have a single negative button which will automatically dismiss it and inform on this through
+ * the [onCancelled] callback.
  *
- * All data about the addon to install is to be passed as navigation arguments.
- * At least the [DownloadAddonDialogFragmentArgs.addonDownloadUrl] needs to be provided.
+ * All data about the addon being installed is to be passed as navigation arguments.
  *
  * @see [DownloadAddonDialogFragmentArgs].
  */
 class DownloadAddonDialogFragment : AppCompatDialogFragment() {
-    private var downloadAddonOperation: CancellableOperation? = null
     private val args by navArgs<DownloadAddonDialogFragmentArgs>()
+
+    /**
+     * Optional callback for when this dialog has been canceled by the user.
+     */
+    var onCancelled: (() -> Unit)? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         isCancelable = false
@@ -89,25 +84,9 @@ class DownloadAddonDialogFragment : AppCompatDialogFragment() {
             DownloadAddonDialogContent(
                 addonName = args.addonName,
                 addonImageUrl = args.addonImageUrl,
-                onCancel = { stopInProgressAction() },
+                onCancel = { cancelDownloadingAddon() },
             )
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val downloadUrl = args.addonDownloadUrl
-        if (downloadUrl.isBlank()) {
-            dismissAllowingStateLoss()
-            return
-        }
-
-        downloadAddonOperation = installAddon(
-            view.context,
-            downloadUrl,
-            args.addonInstallationSource,
-            { dismissAllowingStateLoss() },
-            { dismissAllowingStateLoss() },
-        )
     }
 
     override fun onStart() {
@@ -121,34 +100,16 @@ class DownloadAddonDialogFragment : AppCompatDialogFragment() {
     }
 
     override fun onCancel(dialog: DialogInterface) {
-        stopInProgressAction()
+        cancelDownloadingAddon()
     }
 
-    private fun stopInProgressAction() {
-        lifecycleScope.launch(Dispatchers.Main) {
-            downloadAddonOperation?.cancel()?.await()
-            dismissAllowingStateLoss()
-        }
+    private fun cancelDownloadingAddon() {
+        dismissAllowingStateLoss()
+        onCancelled?.invoke()
     }
 
     @VisibleForTesting
     internal var overriddenTheme: Theme? = null
-
-    @VisibleForTesting
-    internal var installAddon: (
-        context: Context,
-        url: String,
-        installationMethod: InstallationMethod?,
-        onSuccess: ((Addon) -> Unit),
-        onError: ((Throwable) -> Unit),
-    ) -> CancellableOperation = { context, url, installationMethod, onSuccess, onError ->
-        context.components.addonManager.installAddon(
-            url = url,
-            installationMethod = installationMethod,
-            onSuccess = onSuccess,
-            onError = onError,
-        )
-    }
 }
 
 @Composable

@@ -21,9 +21,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import mozilla.components.browser.state.action.WebExtensionAction
 import mozilla.components.browser.state.state.extension.WebExtensionPromptRequest
 import mozilla.components.browser.state.store.BrowserStore
+import mozilla.components.concept.engine.CancellableOperation
+import mozilla.components.concept.engine.webextension.InstallationMethod
 import mozilla.components.concept.engine.webextension.PermissionPromptResponse
 import mozilla.components.concept.engine.webextension.WebExtensionInstallException
 import mozilla.components.feature.addons.Addon
@@ -38,6 +41,8 @@ import mozilla.components.ui.widgets.withCenterAlignedButtons
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.R
 import org.mozilla.fenix.addons.AddonsManagementFragmentDirections
+import org.mozilla.fenix.addons.DownloadAddonDialogFragment
+import org.mozilla.fenix.addons.DownloadAddonDialogFragmentArgs
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.pixelSizeFor
 import org.mozilla.fenix.settings.SupportUtils
@@ -63,6 +68,7 @@ class WebExtensionPromptFeature(
      * Whether or not an add-on installation is in progress.
      */
     private var isInstallationInProgress = false
+    private var downloadAddonOperation: CancellableOperation? = null
     private var scope: CoroutineScope? = null
 
     /**
@@ -76,6 +82,11 @@ class WebExtensionPromptFeature(
             }.distinctUntilChanged().collect { promptRequest ->
 
                 when (promptRequest) {
+                    is WebExtensionPromptRequest.InstallationRequested -> {
+                        handleInstallationStartedRequest(promptRequest)
+                        consumePromptRequest()
+                    }
+
                     is WebExtensionPromptRequest.AfterInstallation -> {
                         handleAfterInstallationRequest(promptRequest)
                     }
@@ -88,6 +99,20 @@ class WebExtensionPromptFeature(
             }
         }
         tryToReAttachButtonHandlersToPreviousDialog()
+    }
+
+    private fun handleInstallationStartedRequest(promptRequest: WebExtensionPromptRequest.InstallationRequested) {
+        startInstallingAddon(
+            addonDownloadUrl = promptRequest.url,
+            addonInstallationSource = promptRequest.installationMethod,
+        )
+
+        showDownloadAddonDialog(
+            addonDownloadUrl = promptRequest.url,
+            addonName = promptRequest.name,
+            addonImageUrl = promptRequest.iconUrl,
+            addonInstallationSource = promptRequest.installationMethod,
+        )
     }
 
     @VisibleForTesting
@@ -266,6 +291,48 @@ class WebExtensionPromptFeature(
     }
 
     @VisibleForTesting
+    internal fun startInstallingAddon(
+        addonDownloadUrl: String,
+        addonInstallationSource: InstallationMethod,
+    ) {
+        downloadAddonOperation = addonManager.installAddon(
+            url = addonDownloadUrl,
+            installationMethod = addonInstallationSource,
+            onSuccess = {
+                findPreviousDownloadAddonDialogFragment()?.dismissAllowingStateLoss()
+            },
+            onError = {
+                findPreviousDownloadAddonDialogFragment()?.dismissAllowingStateLoss()
+            },
+        )
+    }
+
+    @VisibleForTesting
+    internal fun showDownloadAddonDialog(
+        addonDownloadUrl: String,
+        addonName: String?,
+        addonImageUrl: String?,
+        addonInstallationSource: InstallationMethod,
+    ): DownloadAddonDialogFragment? {
+        if (hasExistingDownloadAddonDialogFragment()) {
+            return null
+        }
+
+        val dialog = DownloadAddonDialogFragment().apply {
+            arguments = DownloadAddonDialogFragmentArgs(
+                addonDownloadUrl = addonDownloadUrl,
+                addonName = addonName,
+                addonImageUrl = addonImageUrl,
+                addonInstallationSource = addonInstallationSource,
+            ).toBundle()
+        }
+        dialog.onCancelled = ::handleDownloadAddonDialogCancelled
+        dialog.show(fragmentManager, DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG)
+
+        return dialog
+    }
+
+    @VisibleForTesting
     internal fun showPermissionDialog(
         addon: Addon,
         promptRequest: WebExtensionPromptRequest.AfterInstallation.Permissions,
@@ -341,6 +408,10 @@ class WebExtensionPromptFeature(
     }
 
     private fun tryToReAttachButtonHandlersToPreviousDialog() {
+        findPreviousDownloadAddonDialogFragment()?.let { dialog ->
+            dialog.onCancelled = ::handleDownloadAddonDialogCancelled
+        }
+
         findPreviousPermissionDialogFragment()?.let { dialog ->
             dialog.onPositiveButtonClicked = { addon, privateBrowsingAllowed, technicalAndInteractionDataGranted ->
                 store.state.webExtensionPromptRequest?.let { promptRequest ->
@@ -392,6 +463,12 @@ class WebExtensionPromptFeature(
         }
     }
 
+    private fun handleDownloadAddonDialogCancelled() {
+        scope?.launch(mainDispatcher) {
+            downloadAddonOperation?.cancel()?.await()
+        }
+    }
+
     private fun handlePermissions(
         promptRequest: WebExtensionPromptRequest.AfterInstallation.Permissions,
         granted: Boolean,
@@ -420,6 +497,10 @@ class WebExtensionPromptFeature(
         store.dispatch(WebExtensionAction.ConsumePromptRequestWebExtensionAction)
     }
 
+    private fun hasExistingDownloadAddonDialogFragment(): Boolean {
+        return findPreviousDownloadAddonDialogFragment() != null
+    }
+
     private fun hasExistingPermissionDialogFragment(): Boolean {
         return findPreviousPermissionDialogFragment() != null
     }
@@ -427,6 +508,10 @@ class WebExtensionPromptFeature(
     private fun hasExistingAddonPostInstallationDialogFragment(): Boolean {
         return fragmentManager.findFragmentByTag(POST_INSTALLATION_DIALOG_FRAGMENT_TAG)
             as? AddonInstallationDialogFragment != null
+    }
+
+    private fun findPreviousDownloadAddonDialogFragment(): DownloadAddonDialogFragment? {
+        return fragmentManager.findFragmentByTag(DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG) as? DownloadAddonDialogFragment
     }
 
     private fun findPreviousPermissionDialogFragment(): PermissionsDialogFragment? {
@@ -514,6 +599,7 @@ class WebExtensionPromptFeature(
     }
 
     companion object {
+        private const val DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG = "DOWNLOAD_ADDON_DIALOG_FRAGMENT_TAG"
         private const val PERMISSIONS_DIALOG_FRAGMENT_TAG = "ADDONS_PERMISSIONS_DIALOG_FRAGMENT"
         private const val POST_INSTALLATION_DIALOG_FRAGMENT_TAG =
             "ADDONS_INSTALLATION_DIALOG_FRAGMENT"

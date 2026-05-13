@@ -23,6 +23,8 @@ import androidx.fragment.compose.content
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
+import mozilla.components.browser.state.action.WebExtensionAction
+import mozilla.components.browser.state.state.extension.WebExtensionPromptRequest
 import mozilla.components.compose.base.LinkTextState
 import mozilla.components.concept.engine.webextension.InstallationMethod
 import mozilla.components.lib.state.helpers.StoreProvider.Companion.fragmentStore
@@ -527,21 +529,20 @@ class OnboardingFragment : Fragment() {
 
         val downloadUrl = settings.rtamoAddonDownloadUrl
         if (downloadUrl.isNotBlank()) {
-            val addonName = settings.rtamoAddonName
-            val addonImageUrl = settings.rtamoAddonImageUrl
-
-            findNavController().navigate(
-                directions = OnboardingFragmentDirections.actionGlobalToDownloadAddonDialogFragment(
-                    addonDownloadUrl = downloadUrl,
-                    addonName = addonName,
-                    addonImageUrl = addonImageUrl,
-                    addonInstallationSource = InstallationMethod.RTAMO,
+            requireComponents.core.store.dispatch(
+                WebExtensionAction.UpdatePromptRequestWebExtensionAction(
+                    WebExtensionPromptRequest.InstallationRequested(
+                        url = downloadUrl,
+                        name = settings.rtamoAddonName,
+                        iconUrl = settings.rtamoAddonImageUrl,
+                        installationMethod = InstallationMethod.RTAMO,
+                    ),
                 ),
             )
-            settings.rtamoAddonDownloadUrl = ""
-            settings.rtamoAddonName = ""
-            settings.rtamoAddonImageUrl = ""
         }
+        settings.rtamoAddonDownloadUrl = ""
+        settings.rtamoAddonName = ""
+        settings.rtamoAddonImageUrl = ""
 
         maybeAddMenuNotification()
     }
