@@ -404,9 +404,14 @@ menupopup[emptyplacesresult] > .hide-if-empty-places-result {
     align-items: center;
   }
 
-  /* Don't show the checkmark if there is a description */
-  &.with-description #confirmation-hint-checkmark-animation-container {
+  /* Don't show the checkmark if there is a description or if we don't want to show one */
+  &.with-description #confirmation-hint-checkmark-animation-container,
+  &:not(.with-checkmark) #confirmation-hint-checkmark-animation-container {
     display: none;
+  }
+
+  &:not(.with-checkmark) #confirmation-hint-message-container {
+    margin-inline-start: 0;
   }
 
   &[data-message-id="loginRemoved"] #confirmation-hint-checkmark-image {
@@ -470,9 +475,11 @@ menupopup[emptyplacesresult] > .hide-if-empty-places-result {
   }
 }
 
-#confirmation-hint-message {
-  margin-inline: 7px 0;
+#confirmation-hint-message-container {
+  margin-inline-start: var(--space-small);
+}
 
+#confirmation-hint-message {
   #confirmation-hint.with-description & {
     font-size: 1.2em;
     font-weight: var(--font-weight-semibold);
@@ -2433,16 +2440,6 @@ radiogroup:focus-visible > .subviewradio[focused="true"] {
   margin-inline-start: var(--space-xsmall);
   display: inline-block;
   color: var(--text-color-deemphasized);
-}
-
-#confirmation-hint[data-message-id="confirmation-hint-ipprotection-navigated-to-excluded-site"] {
-  #confirmation-hint-checkmark-animation-container {
-    display: none;
-  }
-
-  #confirmation-hint-message {
-    margin-inline-start: 0;
-  }
 }
 
 #PanelUI-ipprotection-locations {
