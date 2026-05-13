@@ -372,7 +372,7 @@
   "link/color/visited": {
     "light": "{Theme$link/color}",
     "dark": "{Theme$link/color}",
-    "forcedColors": "{HCM Theme$VisitedText}"
+    "forcedColors": "{Theme$link/color}"
   },
   "panel/background/color": {
     "light": "{Theme$background/color/box}",
