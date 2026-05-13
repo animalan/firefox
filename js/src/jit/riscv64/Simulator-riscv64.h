@@ -152,13 +152,13 @@ using sfreg_t = int64_t;
 #define sext_xlen(x) (((sreg_t)(x) << (64 - xlen)) >> (64 - xlen))
 #define zext_xlen(x) (((reg_t)(x) << (64 - xlen)) >> (64 - xlen))
 
-#define BIT(n) (0x1LL << (n))
-#define QUIET_BIT_S(nan) (bit_cast<int32_t>(nan) & BIT(22))
-#define QUIET_BIT_D(nan) (bit_cast<int64_t>(nan) & BIT(51))
-static inline bool isSnan(float fp) { return !QUIET_BIT_S(fp); }
-static inline bool isSnan(double fp) { return !QUIET_BIT_D(fp); }
-#undef QUIET_BIT_S
-#undef QUIET_BIT_D
+inline bool isSnan(float fp) {
+  return !(bit_cast<int32_t>(fp) & (int32_t(1) << 22));
+}
+
+inline bool isSnan(double fp) {
+  return !(bit_cast<int64_t>(fp) & (int64_t(1) << 51));
+}
 
 inline uint64_t mulhu(uint64_t a, uint64_t b) {
   __uint128_t full_result = ((__uint128_t)a) * ((__uint128_t)b);
