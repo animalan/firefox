@@ -58,10 +58,6 @@ inline Dest bit_cast(const Source& source) {
   return mozilla::BitwiseCast<Dest>(source);
 }
 
-#define ASSERT_TRIVIALLY_COPYABLE(T)                  \
-  static_assert(std::is_trivially_copyable<T>::value, \
-                #T " should be trivially copyable")
-
 // Safety wrapper for a 32-bit floating-point value to make sure we don't lose
 // the exact bit pattern during deoptimization when passing this value.
 class Float32 {
@@ -90,7 +86,8 @@ class Float32 {
       : bit_pattern_(bit_pattern) {}
 };
 
-ASSERT_TRIVIALLY_COPYABLE(Float32);
+static_assert(std::is_trivially_copyable_v<Float32>,
+              "Float32 should be trivially copyable");
 
 // Safety wrapper for a 64-bit floating-point value to make sure we don't lose
 // the exact bit pattern during deoptimization when passing this value.
@@ -120,7 +117,8 @@ class Float64 {
       : bit_pattern_(bit_pattern) {}
 };
 
-ASSERT_TRIVIALLY_COPYABLE(Float64);
+static_assert(std::is_trivially_copyable_v<Float64>,
+              "Float64 should be trivially copyable");
 
 class Simulator;
 class Redirection;
