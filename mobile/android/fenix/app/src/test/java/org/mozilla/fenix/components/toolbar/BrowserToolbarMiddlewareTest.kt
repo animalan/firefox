@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+@file:OptIn(ExperimentalAndroidComponentsApi::class)
+
 package org.mozilla.fenix.components.toolbar
 
 import androidx.navigation.NavController
@@ -72,14 +74,15 @@ import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.EngineSession.LoadUrlFlags
 import mozilla.components.concept.engine.cookiehandling.CookieBannersStorage
 import mozilla.components.concept.engine.ipprotection.IPProtectionHandler.StateInfo
+import mozilla.components.concept.engine.ipprotection.ServiceState
 import mozilla.components.concept.engine.permission.SitePermissionsStorage
 import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.concept.engine.utils.ABOUT_HOME_URL
 import mozilla.components.concept.storage.BookmarksStorage
-import mozilla.components.feature.ipprotection.Authorized
-import mozilla.components.feature.ipprotection.IPProtectionAction
-import mozilla.components.feature.ipprotection.IPProtectionState
-import mozilla.components.feature.ipprotection.IPProtectionStore
+import mozilla.components.feature.ipprotection.store.IPProtectionAction
+import mozilla.components.feature.ipprotection.store.IPProtectionStore
+import mozilla.components.feature.ipprotection.store.state.Authorized
+import mozilla.components.feature.ipprotection.store.state.IPProtectionState
 import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.feature.session.TrackingProtectionUseCases
 import mozilla.components.feature.tabs.TabsUseCases
@@ -2368,7 +2371,7 @@ class BrowserToolbarMiddlewareTest {
             ipProtectionStore.dispatch(
                 IPProtectionAction.EngineStateChanged(
                     StateInfo(
-                        serviceState = StateInfo.SERVICE_STATE_READY,
+                        serviceState = ServiceState.Ready,
                         proxyState = StateInfo.PROXY_STATE_ACTIVE,
                     ),
                 ),
@@ -2415,7 +2418,7 @@ class BrowserToolbarMiddlewareTest {
             ipProtectionStore.dispatch(
                 IPProtectionAction.EngineStateChanged(
                     StateInfo(
-                        serviceState = StateInfo.SERVICE_STATE_READY,
+                        serviceState = ServiceState.Ready,
                         proxyState = StateInfo.PROXY_STATE_READY,
                     ),
                 ),

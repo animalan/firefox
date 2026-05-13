@@ -60,6 +60,7 @@ import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.concept.engine.translate.TranslationSupport
 import mozilla.components.concept.engine.translate.findLanguage
 import mozilla.components.feature.addons.Addon
+import mozilla.components.feature.ipprotection.store.state.isEligible
 import mozilla.components.service.fxa.manager.AccountState.NotAuthenticated
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
 import mozilla.components.support.ktx.android.util.dpToPx
@@ -463,7 +464,7 @@ class MenuDialogFragment : BottomSheetDialogFragment() {
 
                     ipProtectionMenuBinding.set(
                         feature = IPProtectionMenuBinding(
-                            ipProtectionStore = components.ipProtectionStore,
+                            ipProtectionStore = components.ipProtection.store,
                             menuStore = store,
                         ),
                         owner = this@MenuDialogFragment,
@@ -687,7 +688,7 @@ class MenuDialogFragment : BottomSheetDialogFragment() {
                                     isDownloadHighlighted = isDownloadHighlighted,
                                     webExtensionMenuCount = webExtensionsCount,
                                     isAllWebExtensionsDisabled = isAllWebExtensionsDisabled,
-                                    showIPProtection = components.ipProtectionStore.state.isEligible,
+                                    showIPProtection = components.ipProtection.store.state.isEligible,
                                     ipProtectionMenuState = ipProtectionMenuState,
                                     onMozillaAccountButtonClick = {
                                         store.dispatch(

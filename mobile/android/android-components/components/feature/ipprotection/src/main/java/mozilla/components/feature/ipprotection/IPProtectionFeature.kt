@@ -7,22 +7,11 @@ package mozilla.components.feature.ipprotection
 /**
  * Public interface for the IP protection feature.
  */
+@Deprecated("No longer needed.")
 interface IPProtectionFeature {
     /** Activates the IP protection proxy */
     fun activate()
 
     /** Deactivates the IP protection proxy */
     fun deactivate()
-
-    /** Starts the enrollment for eligible users  */
-    fun beginEnrollment()
-
-    /**
-     * Re-fires the token provider to trigger a fresh Guardian entitlement check.
-     * Called after the enrollment tab completes successfully.
-     *
-     * Might need to remove it; might have added it as a workaround for not
-     * very straightforward bridge to the toolkit code.
-     */
-    fun retriggerEnrollment()
 }

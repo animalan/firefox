@@ -23,16 +23,18 @@ import mozilla.components.concept.engine.ipprotection.IPProtectionHandler
 import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.AuthType
 import mozilla.components.concept.sync.OAuthAccount
+import mozilla.components.feature.ipprotection.store.IPProtectionAction
+import mozilla.components.feature.ipprotection.store.IPProtectionStore
+import mozilla.components.feature.ipprotection.store.state.AccountStatus
+import mozilla.components.feature.ipprotection.store.state.Authorized
+import mozilla.components.feature.ipprotection.store.state.EligibilityStatus
 import mozilla.components.feature.tabs.TabsUseCases
 import mozilla.components.lib.state.ext.flow
 import mozilla.components.service.fxa.manager.FxaAccountManager
 import mozilla.components.support.base.log.logger.Logger
 
-private val logger = Logger("DefaultIPProtectionFeature")
-private const val TOKEN_SCOPE = "https://identity.mozilla.com/apps/vpn"
-
 /**
-  * AC feature that brings IP protection proxy functionality to Android.
+ * AC feature that brings IP protection proxy functionality to Android.
  *
  * @param engine [Engine] used to register the IP protection delegate and obtain the handler.
  * @param lazyAccountManager [Lazy] wrapper around [FxaAccountManager] that is used to supply
@@ -43,6 +45,8 @@ private const val TOKEN_SCOPE = "https://identity.mozilla.com/apps/vpn"
  * @param tabsUseCases [TabsUseCases] to open/remove the enrollment tab.
  */
 @OptIn(ExperimentalAndroidComponentsApi::class)
+@Suppress("Deprecation")
+@Deprecated("No longer needed.")
 class DefaultIPProtectionFeature(
     private val engine: Engine,
     private val lazyAccountManager: Lazy<FxaAccountManager>,
@@ -51,6 +55,8 @@ class DefaultIPProtectionFeature(
     private val browserStore: BrowserStore,
     private val tabsUseCases: TabsUseCases,
 ) : IPProtectionFeature {
+
+    private val logger = Logger("DefaultIPProtectionFeature")
     private val scope = CoroutineScope(Dispatchers.Main)
     private var handler: IPProtectionHandler? = null
     private var enrollmentTabId: String? = null
@@ -58,18 +64,18 @@ class DefaultIPProtectionFeature(
 
     private val accountObserver = object : AccountObserver {
         override fun onAuthenticated(account: OAuthAccount, authType: AuthType) {
-            store.dispatch(IPProtectionAction.AccountStateChanged(isSignedIn = true))
-            scope.launch { setTokenProvider(account) }
+            store.dispatch(IPProtectionAction.AccountStateChanged(AccountStatus.NeedsAuthorization))
+            scope.launch { setAuthProvider(account) }
         }
 
         override fun onLoggedOut() {
-            store.dispatch(IPProtectionAction.AccountStateChanged(isSignedIn = false))
-            scope.launch { handler?.setTokenProvider(null) }
+            store.dispatch(IPProtectionAction.AccountStateChanged(AccountStatus.NeedsAuthentication))
+            scope.launch { handler?.setAuthProvider(null) }
         }
 
         override fun onAuthenticationProblems() {
-            store.dispatch(IPProtectionAction.AccountStateChanged(isSignedIn = false))
-            scope.launch { handler?.setTokenProvider(null) }
+            store.dispatch(IPProtectionAction.AccountStateChanged(AccountStatus.NeedsAuthentication))
+            scope.launch { handler?.setAuthProvider(null) }
         }
     }
 
@@ -88,7 +94,7 @@ class DefaultIPProtectionFeature(
 
                         EligibilityStatus.Ineligible,
                         EligibilityStatus.UnsupportedRegion,
-                        -> {
+                            -> {
                             tearDown()
                         }
 
@@ -116,16 +122,16 @@ class DefaultIPProtectionFeature(
         // NB: this is possibly a footgun, refactoring tracked in
         // https://bugzilla.mozilla.org/show_bug.cgi?id=2035937
         if (account != null) {
-            setTokenProvider(account)
+            setAuthProvider(account)
         } else {
-            handler?.setTokenProvider(null)
+            handler?.setAuthProvider(null)
         }
     }
 
     private fun tearDown() {
         lazyAccountManager.value.unregister(accountObserver)
         engine.unregisterIPProtectionDelegate()
-        handler?.setTokenProvider(null)
+        handler?.setAuthProvider(null)
         handler = null
         cancelEnrollment()
     }
@@ -134,7 +140,7 @@ class DefaultIPProtectionFeature(
 
     override fun deactivate() { handler?.deactivate() }
 
-    override fun beginEnrollment() {
+    private fun beginEnrollment() {
         cancelEnrollment()
         logger.debug("beginEnrollment: opening background tab → $GUARDIAN_ENROLLMENT_URL")
         val tabId = tabsUseCases.addTab(url = GUARDIAN_ENROLLMENT_URL, selectTab = false)
@@ -196,15 +202,15 @@ class DefaultIPProtectionFeature(
         tabsUseCases.removeTab(tabId)
     }
 
-    override fun retriggerEnrollment() {
+    private fun retriggerEnrollment() {
         val account = lazyAccountManager.value.authenticatedAccount() ?: return
         logger.debug("retriggerEnrollment: re-firing token provider")
-        setTokenProvider(account)
+        setAuthProvider(account)
     }
 
-    private fun setTokenProvider(account: OAuthAccount) {
-        handler?.setTokenProvider(
-            provider = object : IPProtectionHandler.TokenProvider {
+    private fun setAuthProvider(account: OAuthAccount) {
+        handler?.setAuthProvider(
+            provider = object : IPProtectionHandler.AuthProvider {
                 override fun getToken(onComplete: (String?) -> Unit) {
                     scope.launch {
                         val tokenInfo = withContext(Dispatchers.IO) {
@@ -214,10 +220,6 @@ class DefaultIPProtectionFeature(
                     }
                 }
             },
-            onInitialState = { info ->
-                logger.debug("setTokenProvider result: serviceState = $info")
-                store.dispatch(IPProtectionAction.EngineStateChanged(info))
-            },
         )
     }
 
@@ -225,5 +227,6 @@ class DefaultIPProtectionFeature(
         const val GUARDIAN_ENROLLMENT_URL = "https://vpn.mozilla.org/api/v1/fpn/auth?experiment=alpha"
         const val GUARDIAN_SUCCESS_URL = "https://vpn.mozilla.org/oauth/success"
         const val GUARDIAN_ERROR_URL = "https://vpn.mozilla.org/api/v1/fpn/error"
+        const val TOKEN_SCOPE = "https://identity.mozilla.com/apps/vpn"
     }
 }

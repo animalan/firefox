@@ -63,8 +63,8 @@ import mozilla.components.concept.engine.permission.SitePermissionsStorage
 import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.concept.engine.utils.ABOUT_HOME_URL
 import mozilla.components.concept.storage.BookmarksStorage
-import mozilla.components.feature.ipprotection.Authorized
-import mozilla.components.feature.ipprotection.IPProtectionStore
+import mozilla.components.feature.ipprotection.store.IPProtectionStore
+import mozilla.components.feature.ipprotection.store.state.Authorized
 import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.feature.session.TrackingProtectionUseCases
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList

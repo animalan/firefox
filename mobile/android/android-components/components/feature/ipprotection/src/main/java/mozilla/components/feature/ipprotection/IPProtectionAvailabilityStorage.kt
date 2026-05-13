@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Storage exposing the availability of the IP Protection feature.
  */
+@Deprecated("No longer needed.")
 interface IPProtectionAvailabilityStorage {
     /**
      * Emits whether the IP Protection feature is currently available to the user.
