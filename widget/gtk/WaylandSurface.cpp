@@ -117,8 +117,10 @@ WaylandSurface::~WaylandSurface() {
       "We can't release WaylandSurface with DMABufFormatRefreshCallback!");
   MOZ_RELEASE_ASSERT(!mGdkCommitCallback,
                      "We can't release WaylandSurface with GdkCommitCallback!");
+  MOZ_RELEASE_ASSERT(!mMapCallback,
+                     "We can't release WaylandSurface with map callback!");
   MOZ_RELEASE_ASSERT(!mUnmapCallback,
-                     "We can't release WaylandSurface with numap callback!");
+                     "We can't release WaylandSurface with unmap callback!");
 }
 
 bool WaylandSurface::HasEmulatedVSyncCallbackLocked(
@@ -493,6 +495,24 @@ bool WaylandSurface::MapLocked(const WaylandSurfaceLock& aProofOfLock,
   return MapLocked(aProofOfLock, nullptr, aParentWaylandSurfaceLock,
                    aSubsurfacePosition,
                    /* aSubsurfaceDesync */ false);
+}
+
+void WaylandSurface::SetMapCallbackLocked(
+    const WaylandSurfaceLock& aProofOfLock,
+    const std::function<void(WaylandSurfaceLock& aProofOfLock)>& aMapCB) {
+  mMapCallback = aMapCB;
+}
+
+void WaylandSurface::ClearMapCallbackLocked(
+    const WaylandSurfaceLock& aProofOfLock) {
+  mMapCallback = nullptr;
+}
+
+void WaylandSurface::RunMapCallbackLocked(WaylandSurfaceLock& aProofOfLock) {
+  AssertIsOnMainThread();
+  if (mMapCallback) {
+    mMapCallback(aProofOfLock);
+  }
 }
 
 void WaylandSurface::SetUnmapCallbackLocked(

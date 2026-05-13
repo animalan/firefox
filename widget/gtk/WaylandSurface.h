@@ -129,13 +129,21 @@ class WaylandSurface final {
   // Clean up Gdk resources, on main thread only
   void GdkCleanUpLocked(const WaylandSurfaceLock& aProofOfLock);
 
+  // Allow to register and run map callback.
+  // Map callback needs to be called *after* MapLocked() call
+  // on main thread.
+  void SetMapCallbackLocked(
+      const WaylandSurfaceLock& aProofOfLock,
+      const std::function<void(WaylandSurfaceLock& aProofOfLock)>& aMapCB);
+  void ClearMapCallbackLocked(const WaylandSurfaceLock& aProofOfLock);
+  void RunMapCallbackLocked(WaylandSurfaceLock& aProofOfLock);
+
   // Allow to register and run unmap callback.
   // Unmap callback needs to be called *before* UnmapLocked() call
   // on main thread.
   void SetUnmapCallbackLocked(const WaylandSurfaceLock& aProofOfLock,
                               const std::function<void(void)>& aUnmapCB);
   void ClearUnmapCallbackLocked(const WaylandSurfaceLock& aProofOfLock);
-
   void RunUnmapCallback();
 
   // Create Viewport to manage surface transformations.
@@ -346,6 +354,7 @@ class WaylandSurface final {
   mozilla::Atomic<bool, mozilla::Relaxed> mIsPendingGdkCleanup{false};
 
   std::function<void(void)> mGdkCommitCallback;
+  std::function<void(WaylandSurfaceLock& aProofOfLock)> mMapCallback;
   std::function<void(void)> mUnmapCallback;
 
   DesktopIntSize mSize;
