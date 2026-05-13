@@ -119,14 +119,6 @@
     }
   }
 
-  &.medium-widget {
-    grid-row: span 2;
-  }
-
-  &.large-widget {
-    grid-row: span 4;
-  }
-
   @include widget-celebration-styles('lists-celebration');
 
   .lists-header {
@@ -620,8 +612,6 @@
 
   &.compact-widget {
     .nova-enabled & {
-      align-self: flex-start;
-      grid-row: span 2;
       height: var(--newtab-card-height-small);
     }
 

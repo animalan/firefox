@@ -24,6 +24,7 @@ import {
   getHideAllTargets,
 } from "common/WidgetsRegistry.mjs";
 import { WIDGET_ROW_COMPONENTS } from "./WidgetsComponentRegistry.jsx";
+import { WidgetWrapper } from "./WidgetWrapper";
 
 const CONTAINER_ACTION_TYPES = {
   HIDE_ALL: "hide_all",
@@ -491,15 +492,24 @@ function Widgets() {
           {widgetOrder.map(id => {
             if (novaEnabled) {
               const Component = WIDGET_ROW_COMPONENTS[id];
-              return Component && widgetEnabledMap[id] ? (
-                <Component
+              if (!Component || !widgetEnabledMap[id]) {
+                return null;
+              }
+              const entry = WIDGET_REGISTRY.find(w => w.id === id);
+              const size = entry ? resolveWidgetSize(entry, prefs) : null;
+              return (
+                <WidgetWrapper
                   key={id}
-                  dispatch={dispatch}
-                  handleUserInteraction={handleUserInteraction}
-                  isMaximized={isMaximized}
-                  widgetsMayBeMaximized={widgetsMayBeMaximized}
-                />
-              ) : null;
+                  className={size ? `${size}-widget` : ""}
+                >
+                  <Component
+                    dispatch={dispatch}
+                    handleUserInteraction={handleUserInteraction}
+                    isMaximized={isMaximized}
+                    widgetsMayBeMaximized={widgetsMayBeMaximized}
+                  />
+                </WidgetWrapper>
+              );
             }
             // @nova-cleanup: remove below
             return (

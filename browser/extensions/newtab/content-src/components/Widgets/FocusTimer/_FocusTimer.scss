@@ -20,6 +20,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 100%;
 
   // Classic layout (when Nova is disabled)
   // @nova-cleanup(remove-conditional): Remove classic fixed-width/height styles after Nova ships
@@ -33,14 +34,6 @@
     .has-sections-grid & {
       width: var(--newtab-card-width-medium);
     }
-  }
-
-  &.medium-widget {
-    grid-row: span 2;
-  }
-
-  &.large-widget {
-    grid-row: span 4;
   }
 
   // @nova-cleanup(remove-conditional): Once Nova ships, hoist these rules to the root selector

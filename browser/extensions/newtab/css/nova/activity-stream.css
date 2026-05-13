@@ -4623,6 +4623,20 @@ button.arrow-button:dir(rtl) {
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
+.nova-enabled .widget-wrapper.small-widget {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.nova-enabled .widget-wrapper.medium-widget {
+  grid-row: span 2;
+}
+.nova-enabled .widget-wrapper.large-widget {
+  grid-row: span 4;
+}
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
 @keyframes widget-celebration-lifecycle {
   from {
     opacity: 1;
@@ -4857,12 +4871,6 @@ button.arrow-button:dir(rtl) {
     -webkit-text-fill-color: CanvasText;
     color: CanvasText;
   }
-}
-.lists.medium-widget {
-  grid-row: span 2;
-}
-.lists.large-widget {
-  grid-row: span 4;
 }
 .lists .lists-celebration {
   animation: widget-celebration-lifecycle calc(var(--widget-celebration-hold-duration) + var(--widget-celebration-exit-duration)) linear forwards;
@@ -5412,8 +5420,6 @@ button.arrow-button:dir(rtl) {
   transform: translateY(-50%) rotate(-90deg);
 }
 .nova-enabled .lists.compact-widget {
-  align-self: flex-start;
-  grid-row: span 2;
   height: var(--newtab-card-height-small);
 }
 .lists.compact-widget .lists-celebration-copy {
@@ -5499,6 +5505,7 @@ button.arrow-button:dir(rtl) {
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 100%;
 }
 .focus-timer:hover {
   background: var(--newtab-background-color-secondary);
@@ -5518,12 +5525,6 @@ button.arrow-button:dir(rtl) {
 }
 .has-sections-grid .classic-enabled .focus-timer {
   width: var(--newtab-card-width-medium);
-}
-.focus-timer.medium-widget {
-  grid-row: span 2;
-}
-.focus-timer.large-widget {
-  grid-row: span 4;
 }
 .nova-enabled .focus-timer {
   --timer-focus-color: var(--color-orange-30, #FF8D5B);
@@ -6170,6 +6171,7 @@ button.arrow-button:dir(rtl) {
   display: flex;
   flex-direction: column;
   box-shadow: var(--box-shadow-level-2);
+  height: 100%;
 }
 .sports:hover {
   background: var(--newtab-background-color-secondary);
@@ -6177,9 +6179,6 @@ button.arrow-button:dir(rtl) {
 .sports:hover, .sports:has(:focus-visible) {
   outline: 1px solid var(--border-color-deemphasized);
   box-shadow: var(--card-box-shadow-hover);
-}
-.sports.medium-widget {
-  grid-row: span 2;
 }
 .sports.medium-widget .sports-title-wrapper {
   align-items: center;
@@ -6193,9 +6192,6 @@ button.arrow-button:dir(rtl) {
 }
 .sports.medium-widget .sports-buttons-wrapper {
   margin-block-start: var(--space-medium);
-}
-.sports.large-widget {
-  grid-row: span 4;
 }
 .sports.large-widget .sports-intro-wrapper {
   margin-block-start: var(--space-large);
@@ -6496,6 +6492,7 @@ button.arrow-button:dir(rtl) {
   flex-direction: column;
   position: relative;
   z-index: 1;
+  height: 100%;
   --weather-sunny-background-color: light-dark(var(--color-yellow-0), var(--color-yellow-90));
   --weather-cloudy-background-color: light-dark(var(--color-gray-20), var(--color-gray-80));
   --weather-rainy-background-color: light-dark(var(--color-blue-0), var(--color-blue-90));
@@ -6685,10 +6682,6 @@ button.arrow-button:dir(rtl) {
   grid-column: span 2;
   grid-row: span 2;
 }
-.nova-enabled .weather-widget.medium-widget {
-  grid-column: span 4;
-  grid-row: span 2;
-}
 .nova-enabled .weather-widget.medium-widget .weather-container {
   align-items: center;
   justify-content: space-between;
@@ -6725,10 +6718,6 @@ button.arrow-button:dir(rtl) {
 .nova-enabled .weather-widget.medium-widget .forecast-footer {
   inset-inline-end: auto;
   inset-inline-start: 0;
-}
-.nova-enabled .weather-widget.large-widget {
-  grid-column: span 4;
-  grid-row: span 4;
 }
 .nova-enabled .weather-widget.large-widget .weather-container {
   flex: 1;
@@ -6990,17 +6979,7 @@ button.arrow-button:dir(rtl) {
   outline: 1px solid var(--border-color-deemphasized);
   box-shadow: var(--card-box-shadow-hover);
 }
-.nova-enabled .clocks-widget.small-widget {
-  grid-column: span 2;
-  grid-row: span 2;
-}
-.nova-enabled .clocks-widget.medium-widget {
-  grid-column: span 4;
-  grid-row: span 2;
-}
 .nova-enabled .clocks-widget.large-widget {
-  grid-column: span 4;
-  grid-row: span 4;
   height: var(--newtab-card-height);
 }
 .nova-enabled .clocks-widget .widget-toolbar {

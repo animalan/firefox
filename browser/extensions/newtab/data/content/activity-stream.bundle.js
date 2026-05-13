@@ -17650,6 +17650,26 @@ const WIDGET_ROW_COMPONENTS = {
 const WIDGET_SIDEBAR_COMPONENTS = {
   weather: WeatherSidebarWidget
 };
+;// CONCATENATED MODULE: ./content-src/components/Widgets/WidgetWrapper.jsx
+function WidgetWrapper_extends() { return WidgetWrapper_extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, WidgetWrapper_extends.apply(null, arguments); }
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+
+// Widget wrapper can be a place to normalize widget functionality, and
+// wrap the more widget specific functionality.
+function WidgetWrapper({
+  className,
+  children,
+  ...rest
+}) {
+  const merged = ["widget-wrapper", "col-4", className].filter(Boolean).join(" ");
+  return /*#__PURE__*/external_React_default().createElement("div", WidgetWrapper_extends({}, rest, {
+    className: merged
+  }), children);
+}
 ;// CONCATENATED MODULE: ./content-src/components/Widgets/Widgets.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -17660,6 +17680,7 @@ const WIDGET_SIDEBAR_COMPONENTS = {
 
 // Bug 2034542: these per-widget imports can be removed once the non-Nova render
 // path (@nova-cleanup) is gone and all widgets render via WIDGET_ROW_COMPONENTS.
+
 
 
 
@@ -18041,13 +18062,20 @@ function Widgets() {
   }, widgetOrder.map(id => {
     if (novaEnabled) {
       const Component = WIDGET_ROW_COMPONENTS[id];
-      return Component && widgetEnabledMap[id] ? /*#__PURE__*/external_React_default().createElement(Component, {
+      if (!Component || !widgetEnabledMap[id]) {
+        return null;
+      }
+      const entry = WIDGET_REGISTRY.find(w => w.id === id);
+      const size = entry ? resolveWidgetSize(entry, prefs) : null;
+      return /*#__PURE__*/external_React_default().createElement(WidgetWrapper, {
         key: id,
+        className: size ? `${size}-widget` : ""
+      }, /*#__PURE__*/external_React_default().createElement(Component, {
         dispatch: dispatch,
         handleUserInteraction: handleUserInteraction,
         isMaximized: isMaximized,
         widgetsMayBeMaximized: widgetsMayBeMaximized
-      }) : null;
+      }));
     }
     // @nova-cleanup: remove below
     return /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, {
