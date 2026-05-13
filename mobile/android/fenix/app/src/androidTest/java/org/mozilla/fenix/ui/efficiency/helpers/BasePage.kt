@@ -7,6 +7,8 @@ package org.mozilla.fenix.ui.efficiency.helpers
 import android.util.Log
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onFirst
@@ -24,12 +26,15 @@ import androidx.test.espresso.action.ViewActions.pressImeActionButton
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isNotSelected
+import androidx.test.espresso.matcher.ViewMatchers.isSelected
 import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiObject
 import androidx.test.uiautomator.UiSelector
+import mozilla.components.support.android.test.espresso.matcher.isSelected
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.helpers.TestHelper.packageName
@@ -479,6 +484,52 @@ abstract class BasePage(
         } catch (e: Throwable) {
             rep?.endCmd(success = false, message = "Press Enter failed for '${selector.description}': ${e.message ?: "exception"}")
             throw AssertionError("Failed to press Enter for selector: ${selector.description}", e)
+        }
+    }
+
+    fun mozVerifyElementIsSelected(selector: Selector, applyPreconditions: Boolean = true): Boolean {
+        val element = mozGetElement(selector, applyPreconditions = applyPreconditions)
+
+        return when (element) {
+            is ViewInteraction -> {
+                try {
+                    element.check(matches(isSelected())); true
+                } catch (_: Exception) {
+                    false
+                }
+            }
+            is UiObject -> element.isSelected()
+            is SemanticsNodeInteraction -> {
+                try {
+                    element.assertExists(); element.assertIsSelected(); true
+                } catch (_: AssertionError) {
+                    false
+                }
+            }
+            else -> false
+        }
+    }
+
+    fun mozVerifyElementIsNotSelected(selector: Selector, applyPreconditions: Boolean = true): Boolean {
+        val element = mozGetElement(selector, applyPreconditions = applyPreconditions)
+
+        return when (element) {
+            is ViewInteraction -> {
+                try {
+                    element.check(matches(isNotSelected())); true
+                } catch (_: Exception) {
+                    false
+                }
+            }
+            is UiObject -> element.isSelected.not()
+            is SemanticsNodeInteraction -> {
+                try {
+                    element.assertExists(); element.assertIsNotSelected(); true
+                } catch (_: AssertionError) {
+                    false
+                }
+            }
+            else -> false
         }
     }
 

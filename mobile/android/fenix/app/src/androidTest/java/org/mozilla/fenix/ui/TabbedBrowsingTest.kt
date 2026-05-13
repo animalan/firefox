@@ -7,6 +7,7 @@ package org.mozilla.fenix.ui
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.mozilla.fenix.customannotations.Converted
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.helpers.FenixTestRule
@@ -416,6 +417,11 @@ class TabbedBrowsingTest {
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1046683
+    @Converted(
+        replacedBy = ["org.mozilla.fenix.ui.efficiency.tests.TabbedBrowsingTest#verifySyncedTabsWhenUserIsNotSignedInTest"],
+        bug = 2039245,
+        since = "2026-05",
+    )
     @Test
     fun verifySyncedTabsWhenUserIsNotSignedInTest() {
         homeScreen(composeTestRule) {
