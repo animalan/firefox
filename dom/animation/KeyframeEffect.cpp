@@ -1264,7 +1264,7 @@ void KeyframeEffect::GetKeyframes(JSContext* aCx, nsTArray<JSObject*>& aResult,
         keyframeDict.mOffset.SetValue(keyframe.mOffset->mPercentage);
       }
     }
-    if (keyframe.mComputedOffset == Keyframe::kComputedOffsetNotSet) {
+    if (std::isnan(keyframe.mComputedOffset)) {
       MOZ_ASSERT(keyframe.mOffset && keyframe.mOffset->IsTimelineRangeOffset(),
                  "Invalid computed offset");
       // FIXME: Bug 2039388. This may happen if the associated timeline doesn't

@@ -94,8 +94,9 @@ struct Keyframe {
   // |mOffset| could be a null, a percentage, or a |range name, percentage|
   // pair.
   Maybe<OffsetType> mOffset;
-  static constexpr double kComputedOffsetNotSet = -1.0;
-  double mComputedOffset = kComputedOffsetNotSet;
+  // The computed offset could be any real number (as percentage), so we use NaN
+  // to represent the unresolved computed offset.
+  double mComputedOffset = std::numeric_limits<double>::quiet_NaN();
   Maybe<StyleComputedTimingFunction> mTimingFunction;  // Nothing() here means
                                                        // "linear"
   dom::CompositeOperationOrAuto mComposite =
