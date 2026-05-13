@@ -1829,6 +1829,12 @@ export class AIWindow extends MozLitElement {
         isPreviousMessage: true,
       });
     });
+
+    // send a message to restore the scroll position after a conversation was restored
+    this.#dispatchMessageToActor(actor, {
+      role: "restored-all-messages-in-a-conversation",
+      convId: this.#conversation.id,
+    });
   }
 
   /**
