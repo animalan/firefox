@@ -81,7 +81,6 @@ class ShareSheetLauncherTest {
     private val launcher = DefaultShareSheetLauncher(
         browserStore = browserStore,
         navController = mockNavController,
-        onDismiss = {},
         qrCodeGenerator = mockQRCodeGenerator,
         cacheHelper = mockCacheHelper,
         scope = CoroutineScope(testDispatcher),

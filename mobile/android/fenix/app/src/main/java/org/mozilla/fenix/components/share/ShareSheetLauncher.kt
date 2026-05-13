@@ -130,7 +130,6 @@ interface ShareSheetLauncher {
  * the selected tab.
  * @param navController [NavController] used for navigation.
  * @param homeActivityClass The [Class] of the activity used to handle send-to-devices and display QR codes.
- * @param onDismiss Callback invoked to dismiss the menu dialog.
  * @param qrCodeGenerator [QRCodeGenerator] used to generate QR codes for URLs.
  * @param cacheHelper [CacheHelper] used to store image in cache.
  * @param shareDelegate [ShareDelegate] used to invoke share actions.
@@ -141,7 +140,6 @@ class DefaultShareSheetLauncher(
     private val browserStore: BrowserStore,
     private val navController: NavController,
     private val homeActivityClass: Class<out Activity>,
-    private val onDismiss: () -> Unit,
     private val qrCodeGenerator: QRCodeGenerator = QRCodeGenerator(),
     private val cacheHelper: CacheHelper = CacheHelper(),
     private val shareDelegate: ShareDelegate = ContextShareDelegate { navController.context },
@@ -172,7 +170,6 @@ class DefaultShareSheetLauncher(
         val shareAction = browserStore.createPdfShareAction(id, url)
         if (shareAction != null) {
             browserStore.dispatch(shareAction)
-            onDismiss()
         } else {
             dismissMenu(title, url, id, isCustomTab)
         }
@@ -196,7 +193,6 @@ class DefaultShareSheetLauncher(
     ) {
         val displayUrl = longUrl.trimmed()
         val context = navController.context
-        dismissMenu(title, displayUrl, id, isCustomTab)
         if (id != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             scope.launch {
                 val qrCodeAction = withContext(ioDispatcher) {
