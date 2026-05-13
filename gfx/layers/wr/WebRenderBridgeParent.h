@@ -244,6 +244,8 @@ class WebRenderBridgeParent final : public PWebRenderBridgeParent,
 
   wr::Epoch GetCurrentEpoch() const { return mWrEpoch; }
 
+  bool HasReceivedDisplayList() const { return mReceivedDisplayList; }
+
   bool MatchesNamespace(const wr::ImageKey& aImageKey) const {
     return aImageKey.mNamespace == mLateInit->mIdNamespace;
   }
