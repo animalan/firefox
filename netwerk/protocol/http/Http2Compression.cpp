@@ -102,10 +102,15 @@ static void AddStaticElement(const nsCString& name) {
   AddStaticElement(name, ""_ns);
 }
 
+class nvPairDeallocator : public nsDequeFunctor<nvPair> {
+ public:
+  void operator()(nvPair* aPair) override { delete aPair; }
+};
+
 static void InitializeStaticHeaders() {
   MOZ_ASSERT(OnSocketThread(), "not on socket thread");
   if (!gStaticHeaders) {
-    gStaticHeaders = new nsDeque<nvPair>();
+    gStaticHeaders = new nsDeque<nvPair>(new nvPairDeallocator());
     gStaticReporter = new HpackStaticTableReporter();
     RegisterStrongMemoryReporter(do_AddRef(gStaticReporter));
     AddStaticElement(":authority"_ns);
