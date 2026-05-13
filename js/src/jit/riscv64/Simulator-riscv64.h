@@ -36,7 +36,10 @@
 #include "mozilla/Casting.h"
 #include "mozilla/FloatingPoint.h"
 
-#include <vector>
+#include <cmath>
+#include <limits>
+#include <type_traits>
+#include <utility>
 
 #include "jit/IonTypes.h"
 #include "jit/riscv64/constant/Constant-riscv64.h"
