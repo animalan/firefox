@@ -25,16 +25,7 @@ using namespace js;
 // FinalizationRecordObject
 
 const JSClassOps FinalizationRecordObject::classOps_ = {
-    nullptr,   // addProperty
-    nullptr,   // delProperty
-    nullptr,   // enumerate
-    nullptr,   // newEnumerate
-    nullptr,   // resolve
-    nullptr,   // mayResolve
-    finalize,  // finalize
-    nullptr,   // call
-    nullptr,   // construct
-    nullptr,   // trace
+    .finalize = finalize,
 };
 
 const JSClass FinalizationRecordObject::class_ = {
@@ -155,16 +146,8 @@ const JSClass FinalizationRegistryObject::protoClass_ = {
 };
 
 const JSClassOps FinalizationRegistryObject::classOps_ = {
-    nullptr,                               // addProperty
-    nullptr,                               // delProperty
-    nullptr,                               // enumerate
-    nullptr,                               // newEnumerate
-    nullptr,                               // resolve
-    nullptr,                               // mayResolve
-    FinalizationRegistryObject::finalize,  // finalize
-    nullptr,                               // call
-    nullptr,                               // construct
-    FinalizationRegistryObject::trace,     // trace
+    .finalize = FinalizationRegistryObject::finalize,
+    .trace = FinalizationRegistryObject::trace,
 };
 
 const ClassSpec FinalizationRegistryObject::classSpec_ = {
@@ -637,16 +620,8 @@ const JSClass FinalizationQueueObject::class_ = {
 };
 
 const JSClassOps FinalizationQueueObject::classOps_ = {
-    nullptr,                            // addProperty
-    nullptr,                            // delProperty
-    nullptr,                            // enumerate
-    nullptr,                            // newEnumerate
-    nullptr,                            // resolve
-    nullptr,                            // mayResolve
-    FinalizationQueueObject::finalize,  // finalize
-    nullptr,                            // call
-    nullptr,                            // construct
-    FinalizationQueueObject::trace,     // trace
+    .finalize = FinalizationQueueObject::finalize,
+    .trace = FinalizationQueueObject::trace,
 };
 
 /* static */
