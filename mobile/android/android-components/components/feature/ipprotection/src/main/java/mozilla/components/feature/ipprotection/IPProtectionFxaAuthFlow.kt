@@ -13,7 +13,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import mozilla.components.concept.sync.FxAEntryPoint
-import mozilla.components.feature.ipprotection.store.IPProtectionAction
 import mozilla.components.feature.ipprotection.store.IPProtectionStore
 import mozilla.components.feature.ipprotection.store.state.AccountStatus
 import mozilla.components.lib.state.ext.flowScoped
@@ -61,11 +60,9 @@ class IPProtectionFxaAuthFlow(
                             return@collect
                         }
 
-                        val onComplete = {
-                            store.dispatch(IPProtectionAction.AccountReady(true))
-                        }
+                        val notifyOnComplete = true
 
-                        onAuthRequested(url, onComplete)
+                        onAuthRequested(url, notifyOnComplete)
                     } else if (status == AccountStatus.RequestingAuthentication) {
                         // If we're the first service that needs to authenticate the account, we need to
                         // request all the scopes needed for the device, which includes sync and session.
@@ -83,11 +80,9 @@ class IPProtectionFxaAuthFlow(
                             return@collect
                         }
 
-                        val onComplete = {
-                            store.dispatch(IPProtectionAction.AccountReady(true))
-                        }
+                        val notifyOnComplete = true
 
-                        onAuthRequested(url, onComplete)
+                        onAuthRequested(url, notifyOnComplete)
                     }
                 }
         }
@@ -114,8 +109,16 @@ class IPProtectionFxaAuthFlow(
         const val SCOPE_IPPROTECTION = "https://identity.mozilla.com/apps/vpn"
 
         /**
-         * The callback when the auth flow is completed, whether successful or not.
+         * Whether the notify if the auth was successful.
+         *
+         * N.B: This was originally a callback when the auth flow is completed, whether successful or not.
+         * See comment in AuthCustomTabActivity.
          */
-        typealias AuthCompletionCallback = () -> Unit
+        typealias AuthCompletionCallback = Boolean
+
+        /**
+         * Intent key for knowing if a complete notification needs to be sent.
+         */
+        const val INTENT_ON_COMPLETE = "OnCompleteAction"
     }
 }

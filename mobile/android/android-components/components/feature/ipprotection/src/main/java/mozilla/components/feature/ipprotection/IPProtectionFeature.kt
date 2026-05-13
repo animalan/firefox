@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import mozilla.appservices.fxaclient.FxaException
 import mozilla.components.ExperimentalAndroidComponentsApi
 import mozilla.components.concept.engine.Engine
 import mozilla.components.concept.engine.ipprotection.IPProtectionDelegate
@@ -150,10 +151,18 @@ class IPProtectionFeature(
                 object : IPProtectionHandler.AuthProvider {
                     override fun getToken(onComplete: (String?) -> Unit) {
                         mainScope.launch {
-                            // FIXME(IPP) wrap in a try-catch.
-                            val tokenInfo = accountManager.authenticatedAccount()
-                                ?.getAccessToken("$SCOPE_PROFILE $SCOPE_IPPROTECTION")
-                            onComplete(tokenInfo?.token)
+                            try {
+                                val tokenInfo = accountManager.authenticatedAccount()
+                                    ?.getAccessToken("$SCOPE_PROFILE $SCOPE_IPPROTECTION")
+                                onComplete(tokenInfo?.token)
+                            } catch (e: FxaException.Forbidden) {
+                                logger.error(
+                                    "We don't have a scope that gives us an token. Moving to needs authorization.",
+                                    e,
+                                )
+                                store.dispatch(IPProtectionAction.AccountStateChanged(AccountStatus.NeedsAuthorization))
+                                onComplete(null)
+                            }
                         }
                     }
                 },
@@ -161,11 +170,6 @@ class IPProtectionFeature(
             // Initialization needs to be done ASAP whether we are using the service or not to avoid start-up delays.
             // We do need to register our
             init()
-
-            // This shouldn't be necessary but it helps for now until we get
-            // state updates after init is called.
-            // FIXME(IPP) remove this when we don't need to rely on `browser.ipProtection.cacheDisabled`.
-            // getState { store.dispatch(InternalAction.UpdateServiceState(it)) }
         }
     }
 
