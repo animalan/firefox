@@ -138,8 +138,19 @@ void NativeLayerRootWayland::Init() {
     SetDRMFormat(format);
   }
 
-  // Unmap all layers if nsWindow is unmapped
   WaylandSurfaceLock lock(mRootSurface);
+
+  // Repaint layers if we're mapped
+  mRootSurface->SetMapCallbackLocked(
+      lock,
+      [this, self = RefPtr{this}](WaylandSurfaceLock& aProofOfLock) -> void {
+        if (mMissingRootCommit) {
+          LOG("NativeLayerRootWayland map callback - missing root commit");
+          CommitToScreenLocked(aProofOfLock);
+        }
+      });
+
+  // Unmap all layers if nsWindow is unmapped
   mRootSurface->SetUnmapCallbackLocked(
       lock, [this, self = RefPtr{this}]() -> void {
         LOG("NativeLayerRootWayland Unmap callback");
@@ -236,6 +247,7 @@ void NativeLayerRootWayland::Shutdown() {
     if (mRootSurface->IsMapped()) {
       mRootSurface->RemoveAttachedBufferLocked(lock);
     }
+    mRootSurface->ClearMapCallbackLocked(lock);
     mRootSurface->ClearUnmapCallbackLocked(lock);
     mRootSurface->ClearGdkCommitCallbackLocked(lock);
     mRootSurface->DisableDMABufFormatsLocked(lock);
@@ -417,7 +429,7 @@ void NativeLayerRootWayland::SetLayers(
     for (const RefPtr<NativeLayerWayland>& layer : newLayers) {
       if (layer->IsNew()) {
         LOG("  Map new child layer [%p]", layer.get());
-        if (!layer->Map(&lock)) {
+        if (!layer->Map(lock)) {
           continue;
         }
         if (layer->IsOpaque() && WaylandSurface::IsOpaqueRegionEnabled()) {
@@ -529,18 +541,6 @@ void NativeLayerRootWayland::LogStatsLocked(
 bool NativeLayerRootWayland::CommitToScreen() {
   WaylandSurfaceLock lock(mRootSurface);
 
-  mFrameInProcess = false;
-
-  if (!mRootSurface->IsMapped()) {
-    // TODO: Register frame callback to paint again? Are we hidden?
-    // TODO: Allow offscreen rendering to layers, attach them as subsurfaces
-    // on map
-    LOG("NativeLayerRootWayland::CommitToScreen() root surface is not mapped");
-    return false;
-  }
-
-  LOG("NativeLayerRootWayland::CommitToScreen()");
-
   // Attach empty tmp buffer to root layer (nsWindow).
   // We need to have any content to attach child layers to it.
   if (!mRootSurface->HasBufferAttached()) {
@@ -548,10 +548,24 @@ bool NativeLayerRootWayland::CommitToScreen() {
     mRootSurface->ClearOpaqueRegionLocked(lock);
   }
 
+  if (!mRootSurface->IsMapped()) {
+    LOG("NativeLayerRootWayland::CommitToScreen() root surface is not mapped");
+    mMissingRootCommit = true;
+    return false;
+  }
+
+  return CommitToScreenLocked(lock);
+}
+
+bool NativeLayerRootWayland::CommitToScreenLocked(WaylandSurfaceLock& aLock) {
+  mFrameInProcess = false;
+
+  LOG("NativeLayerRootWayland::CommitToScreen()");
+
   // Try to map all missing surfaces
   for (RefPtr<NativeLayerWayland>& layer : mSublayers) {
     if (!layer->IsMapped()) {
-      if (!layer->Map(&lock)) {
+      if (!layer->Map(aLock)) {
         LOGVERBOSE(
             "NativeLayerRootWayland::CommitToScreen() failed to map layer [%p]",
             layer.get());
@@ -565,7 +579,7 @@ bool NativeLayerRootWayland::CommitToScreen() {
   }
 
   if (mRootMutatedStackingOrder) {
-    RequestUpdateOnMainThreadLocked(lock);
+    RequestUpdateOnMainThreadLocked(aLock);
   }
 
   const double scale = mRootSurface->GetScale();
@@ -601,20 +615,21 @@ bool NativeLayerRootWayland::CommitToScreen() {
 
   LOGVERBOSE("NativeLayerRootWayland::CommitToScreen(): %s root commit",
              mRootAllLayersRendered ? "enabled" : "disabled");
-  mRootSurface->SetCommitStateLocked(lock, mRootAllLayersRendered);
+  mRootSurface->SetCommitStateLocked(aLock, mRootAllLayersRendered);
 
 #ifdef MOZ_LOGGING
-  LogStatsLocked(lock);
+  LogStatsLocked(aLock);
 #endif
 
   // Commit all layers changes now so we can unmap removed layers without
   // flickering.
-  lock.Commit();
+  aLock.Commit();
 
   if (mRootAllLayersRendered && !mRemovedSublayers.IsEmpty()) {
-    ClearLayersLocked(lock);
+    ClearLayersLocked(aLock);
   }
 
+  mMissingRootCommit = false;
   return true;
 }
 
@@ -951,7 +966,7 @@ void NativeLayerWayland::RenderLayer(double aScale) {
   LOG("NativeLayerWayland::RenderLayer(): rendered [%d]", mState.mIsRendered);
 }
 
-bool NativeLayerWayland::Map(WaylandSurfaceLock* aParentWaylandSurfaceLock) {
+bool NativeLayerWayland::Map(WaylandSurfaceLock& aParentWaylandSurfaceLock) {
   WaylandSurfaceLock surfaceLock(mSurface);
 
   if (mNeedsMainThreadUpdate == MainThreadUpdate::Unmap) {
@@ -964,7 +979,7 @@ bool NativeLayerWayland::Map(WaylandSurfaceLock* aParentWaylandSurfaceLock) {
   MOZ_DIAGNOSTIC_ASSERT(!mSurface->IsMapped());
   MOZ_DIAGNOSTIC_ASSERT(mNeedsMainThreadUpdate != MainThreadUpdate::Map);
 
-  if (!mSurface->MapLocked(surfaceLock, aParentWaylandSurfaceLock,
+  if (!mSurface->MapLocked(surfaceLock, &aParentWaylandSurfaceLock,
                            DesktopIntPoint())) {
     gfxCriticalError() << "NativeLayerWayland::Map() failed!";
     return false;
