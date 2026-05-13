@@ -220,28 +220,10 @@ void ScriptLoadRequest::NoCacheEntryFound(
     mozilla::dom::ReferrerPolicy aReferrerPolicy,
     ScriptFetchOptions* aFetchOptions, nsIURI* aURI) {
   MOZ_ASSERT(IsCheckingCache());
+  MOZ_ASSERT(mKind != ScriptKind::eEvent, "eEvent is only for ScriptFetchInfo");
 
   mFetchInfo = new ScriptFetchInfo(mKind, aReferrerPolicy, aFetchOptions, aURI);
-
-  // At the time where we check in the cache, the BaseURL() is not set, as this
-  // is resolved by the network. Thus we use the aURI passed by the consumer,
-  // which is the original URI used for the request, for checking the cache
-  // and later replace the BaseURL() using what the Channel->GetURI will
-  // provide.
-  switch (mKind) {
-    case ScriptKind::eClassic:
-      mLoadedScript = new ClassicScript(aURI);
-      break;
-    case ScriptKind::eImportMap:
-      mLoadedScript = new ImportMapScript(aURI);
-      break;
-    case ScriptKind::eModule:
-      mLoadedScript = new LoadedModuleScript(aURI);
-      break;
-    case ScriptKind::eEvent:
-      MOZ_ASSERT_UNREACHABLE("eEvent is only for ScriptFetchInfo");
-      break;
-  }
+  mLoadedScript = new LoadedScript(mKind, aURI);
   mState = State::Fetching;
 }
 
