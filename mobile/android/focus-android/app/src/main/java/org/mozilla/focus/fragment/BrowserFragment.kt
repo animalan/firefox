@@ -614,8 +614,8 @@ class BrowserFragment :
         }
     }
 
-    override fun onPictureInPictureModeChanged(enabled: Boolean) {
-        pictureInPictureFeature?.onPictureInPictureModeChanged(enabled)
+    override fun onPictureInPictureModeChanged(isInPipMode: Boolean) {
+        pictureInPictureFeature?.onPictureInPictureModeChanged(isInPipMode)
         if (lifecycle.currentState == Lifecycle.State.CREATED) {
             onBackPressed()
         }
