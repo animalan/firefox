@@ -252,43 +252,8 @@ void Simulator::TraceRegWr(int64_t value, TraceType t) {
     }
   }
 }
-
-#  elif JS_CODEGEN_RISCV32
-template <typename T>
-void Simulator::TraceRegWr(T value, TraceType t) {
-  if (::v8::internal::FLAG_trace_sim) {
-    union {
-      int32_t fmt_int32;
-      float fmt_float;
-      double fmt_double;
-    } v;
-    if (t != DOUBLE) {
-      v.fmt_int32 = value;
-    } else {
-      DCHECK_EQ(sizeof(T), 8);
-      v.fmt_double = value;
-    }
-    switch (t) {
-      case WORD:
-        SNPrintF(trace_buf_,
-                 "%016" REGIx_FORMAT "    (%" PRId64 ")    int32:%" REGId_FORMAT
-                 " uint32:%" PRIu32,
-                 v.fmt_int32, icount_, v.fmt_int32, v.fmt_int32);
-        break;
-      case FLOAT:
-        SNPrintF(trace_buf_, "%016" REGIx_FORMAT "    (%" PRId64 ")    flt:%e",
-                 v.fmt_int32, icount_, v.fmt_float);
-        break;
-      case DOUBLE:
-        SNPrintF(trace_buf_, "%016" PRIx64 "    (%" PRId64 ")    dbl:%e",
-                 static_cast<int64_t>(v.fmt_double), icount_, v.fmt_double);
-        break;
-      default:
-        UNREACHABLE();
-    }
-  }
-}
 #  endif
+
 // The RiscvDebugger class is used by the simulator while debugging simulated
 // code.
 class RiscvDebugger {
@@ -3660,8 +3625,6 @@ void Simulator::DecodeRVIType() {
         case RO_RORI: {
 #  ifdef JS_CODEGEN_RISCV64
           int16_t shamt = shamt6();
-#  else
-          int16_t shamt = shamt5();
 #  endif
           set_rd((static_cast<reg_t>(rs1()) >> shamt) |
                  (static_cast<reg_t>(rs1()) << (xlen - shamt)));
@@ -4086,22 +4049,6 @@ void Simulator::DecodeCIType() {
       TraceMemRd(addr, val, getRegister(rvc_rd_reg()));
       break;
     }
-#  elif JS_CODEGEN_RISCV32
-    case RO_C_FLWSP: {
-      sreg_t addr = getRegister(sp) + rvc_imm6_ldsp();
-      uint32_t val = ReadMem<uint32_t>(addr, instr_.instr());
-      set_rvc_frd(Float32::FromBits(val), false);
-      TraceMemRdFloat(addr, Float32::FromBits(val),
-                      getFpuRegister(rvc_frd_reg()));
-      break;
-    }
-    case RO_C_LWSP: {
-      sreg_t addr = getRegister(sp) + rvc_imm6_lwsp();
-      int32_t val = ReadMem<int32_t>(addr, instr_.instr());
-      set_rvc_rd(sext_xlen(val), false);
-      TraceMemRd(addr, val, getRegister(rvc_rd_reg()));
-      break;
-    }
 #  endif
     default:
       UNSUPPORTED();
@@ -4127,14 +4074,6 @@ void Simulator::DecodeCSSType() {
                         instr_.instr());
       break;
     }
-#  if JS_CODEGEN_RISCV32
-    case RO_C_FSWSP: {
-      sreg_t addr = getRegister(sp) + rvc_imm6_sdsp();
-      WriteMem<Float32>(addr, getFpuRegisterFloat32(rvc_rs2_reg()),
-                        instr_.instr());
-      break;
-    }
-#  endif
     case RO_C_SWSP: {
       sreg_t addr = getRegister(sp) + rvc_imm6_swsp();
       WriteMem<int32_t>(addr, (int32_t)rvc_rs2(), instr_.instr());
@@ -4173,13 +4112,6 @@ void Simulator::DecodeCLType() {
       int64_t val = ReadMem<int64_t>(addr, instr_.instr());
       set_rvc_rs2s(sext_xlen(val), false);
       TraceMemRd(addr, val, getRegister(rvc_rs2s_reg()));
-      break;
-    }
-#  elif JS_CODEGEN_RISCV32
-    case RO_C_FLW: {
-      sreg_t addr = rvc_rs1s() + rvc_imm5_d();
-      uint32_t val = ReadMem<uint32_t>(addr, instr_.instr());
-      set_rvc_frs2s(Float32::FromBits(val), false);
       break;
     }
 #  endif

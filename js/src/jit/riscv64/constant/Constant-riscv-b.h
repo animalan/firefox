@@ -47,9 +47,6 @@ enum OpcodeRISCVB : uint32_t {
 #ifdef JS_CODEGEN_RISCV64
   RO_ZEXTH = OP_32 | (0b100 << kFunct3Shift) | (0b0000100 << kFunct7Shift) |
              (0b00000 << kShamtShift),
-#else
-  RO_ZEXTH = OP | (0b100 << kFunct3Shift) | (0b0000100 << kFunct7Shift) |
-             (0b00000 << kShamtShift),
 #endif
 
   // Zbb: bitwise rotation
@@ -58,8 +55,6 @@ enum OpcodeRISCVB : uint32_t {
   RO_ORCB = OP_IMM | (0b101 << kFunct3Shift) | (0b001010000111 << kImm12Shift),
 #ifdef JS_CODEGEN_RISCV64
   RO_RORI = OP_IMM | (0b101 << kFunct3Shift) | (0b011000 << kFunct6Shift),
-#else
-  RO_RORI = OP_IMM | (0b101 << kFunct3Shift) | (0b0110000 << kFunct7Shift),
 #endif
 
 #ifdef JS_CODEGEN_RISCV64
@@ -71,8 +66,6 @@ enum OpcodeRISCVB : uint32_t {
   RO_REV8 = OP_IMM | (0b101 << kFunct3Shift) | (0b011010 << kFunct6Shift),
 #ifdef JS_CODEGEN_RISCV64
   RO_REV8_IMM12 = 0b011010111000,
-#else
-  RO_REV8_IMM12 = 0b011010011000,
 #endif
 
   // Zbs

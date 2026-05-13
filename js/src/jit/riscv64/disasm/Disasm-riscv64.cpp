@@ -1670,9 +1670,6 @@ void Decoder::DecodeIType(Instruction* instr) {
 #ifdef JS_CODEGEN_RISCV64
           Format(instr, "rori      'rd, 'rs1, 's64");
           break;
-#else
-          Format(instr, "rori      'rd, 'rs1, 's32");
-          break;
 #endif
         case RO_REV8: {
           if (instr->Imm12Value() == RO_REV8_IMM12) {
@@ -2052,10 +2049,6 @@ void Decoder::DecodeCIType(Instruction* instr) {
     case RO_C_LDSP:
       Format(instr, "ld        'Crd, 'Cimm6Ldsp(sp)");
       break;
-#elif defined(JS_CODEGEN_RISCV32)
-    case RO_C_FLWSP:
-      Format(instr, "flw       'Cfd, 'Cimm6Ldsp(sp)");
-      break;
 #endif
     default:
       UNSUPPORTED_RISCV();
@@ -2081,10 +2074,6 @@ void Decoder::DecodeCSSType(Instruction* instr) {
     case RO_C_SDSP:
       Format(instr, "sd        'Crs2, 'Cimm6Sdsp(sp)");
       break;
-#elif defined(JS_CODEGEN_RISCV32)
-    case RO_C_FSWSP:
-      Format(instr, "fsw       'Cfs2, 'Cimm6Sdsp(sp)");
-      break;
 #endif
     case RO_C_FSDSP:
       Format(instr, "fsd       'Cfs2, 'Cimm6Sdsp(sp)");
@@ -2106,10 +2095,6 @@ void Decoder::DecodeCLType(Instruction* instr) {
     case RO_C_LD:
       Format(instr, "ld       'Crs2s, 'Cimm5D('Crs1s)");
       break;
-#elif defined(JS_CODEGEN_RISCV32)
-    case RO_C_FLW:
-      Format(instr, "fld       'Cfs2s, 'Cimm5D('Crs1s)");
-      break;
 #endif
 
     default:
@@ -2128,10 +2113,6 @@ void Decoder::DecodeCSType(Instruction* instr) {
 #ifdef JS_CODEGEN_RISCV64
     case RO_C_SD:
       Format(instr, "sd       'Crs2s, 'Cimm5D('Crs1s)");
-      break;
-#elif defined(JS_CODEGEN_RISCV32)
-    case RO_C_FSW:
-      Format(instr, "fsw       'Cfs2s, 'Cimm5D('Crs1s)");
       break;
 #endif
     default:
