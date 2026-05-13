@@ -77,6 +77,7 @@ import org.mozilla.fenix.theme.Theme
 
 private val formFieldShape = RoundedCornerShape(16.dp)
 private const val COLOR_PICKER_MAX_ITEMS_PER_ROW = 5
+internal const val MAX_TAB_GROUP_NAME_LENGTH = 256
 
 /**
  * Prompt to edit a tab group.
@@ -326,7 +327,9 @@ private fun TabGroupNameTextField(
 
     OutlinedTextField(
         value = tabGroupName,
-        onValueChange = onTabGroupNameChange,
+        onValueChange = {
+            onTabGroupNameChange(it.copy(text = it.text.take(MAX_TAB_GROUP_NAME_LENGTH)))
+        },
         label = {
             Text(
                 text = stringResource(R.string.create_tab_group_name_label),
