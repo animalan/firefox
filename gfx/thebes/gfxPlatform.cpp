@@ -3123,11 +3123,6 @@ void gfxPlatform::InitHardwareVideoConfig() {
           vulkanDecFailureId, &vulkanDecStatus)) &&
       vulkanDecStatus == nsIGfxInfo::FEATURE_STATUS_OK) {
     canUseVulkanDecode = true;
-#ifdef MOZ_WIDGET_GTK
-    if (!IsWaylandDisplay()) {
-      mozilla::widget::GetGlobalDMABufFormats()->AppendEGLVideoModifiers();
-    }
-#endif
   }
 
   nsCString message;

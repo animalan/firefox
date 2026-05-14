@@ -5,34 +5,29 @@
 #include <xf86drm.h>
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <gbm.h>
+#include <mutex>
 
 #include "DMABufDevice.h"
 #include "DMABufFormats.h"
+#include "WidgetUtilsGtk.h"
 #ifdef MOZ_WAYLAND
 #  include "nsWaylandDisplay.h"
-#  include "WidgetUtilsGtk.h"
 #  include "mozilla/widget/mozwayland.h"
 #  include "mozilla/widget/linux-dmabuf-unstable-v1-client-protocol.h"
 #endif
-#include <gbm.h>
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/ClearOnShutdown.h"
-
 #include "mozilla/gfx/Logging.h"  // for gfxCriticalNote
 
-#include <mutex>
-
-#if defined(MOZ_WIDGET_GTK)
-#  include "WidgetUtilsGtk.h"
 // drm_fourcc.h defines DRM_FORMAT_MOD_INVALID without a guard; undef the
 // fallback from DMABufFormats.h first so the unified build doesn't see a
 // redefinition (same pattern as DMABufSurface.cpp).
-#  ifdef DRM_FORMAT_MOD_INVALID
-#    undef DRM_FORMAT_MOD_INVALID
-#  endif
-#  include <libdrm/drm_fourcc.h>
-#  include "GLContextEGL.h"
+#ifdef DRM_FORMAT_MOD_INVALID
+#  undef DRM_FORMAT_MOD_INVALID
 #endif
+#include <libdrm/drm_fourcc.h>
+#include "GLContextEGL.h"
 
 using namespace mozilla::gfx;
 
@@ -43,9 +38,8 @@ using namespace mozilla::gfx;
 
 namespace mozilla::widget {
 
-#if defined(MOZ_WIDGET_GTK)
-static void AppendDmaBufModifiersFromEGLIfEmpty(uint32_t aDrmFourcc,
-                                                nsTArray<uint64_t>& aOut) {
+static void AppendDmaBufModifiersFromEGL(uint32_t aDrmFourcc,
+                                         nsTArray<uint64_t>& aOut) {
   if (!aOut.IsEmpty()) {
     return;
   }
@@ -74,7 +68,6 @@ static void AppendDmaBufModifiersFromEGLIfEmpty(uint32_t aDrmFourcc,
   }
   aOut.AppendElements(mods.Elements(), n);
 }
-#endif
 
 // Table of all supported DRM formats, every format is stored as
 // FOURCC format + modifier pair and
@@ -388,26 +381,29 @@ DRMFormat* DMABufFormats::GetFormat(uint32_t aFormat,
   return mDMABufFeedback->GetFormat(aFormat, aRequestScanoutFormat);
 }
 
+void DMABufFormats::EnsureBasicFormat(uint32_t aDrmFourcc) {
+  MOZ_DIAGNOSTIC_ASSERT(mDMABufFeedback);
+  if (!GetFormat(aDrmFourcc)) {
+    LOGDMABUF(("DMABufFormats::EnsureBasicFormat(): %x is missing, adding.",
+               aDrmFourcc));
+    mDMABufFeedback->PendingTranche()->AddFormat(aDrmFourcc,
+                                                 DRM_FORMAT_MOD_INVALID);
+  }
+}
+
 void DMABufFormats::EnsureBasicFormats() {
   MOZ_DIAGNOSTIC_ASSERT(!mPendingDMABufFeedback,
                         "Can't add extra formats during init!");
   if (!mDMABufFeedback) {
     mDMABufFeedback = MakeUnique<DMABufFeedback>();
   }
-  if (!GetFormat(GBM_FORMAT_XRGB8888)) {
-    LOGDMABUF(
-        ("DMABufFormats::EnsureBasicFormats(): GBM_FORMAT_XRGB8888 is missing, "
-         "adding."));
-    mDMABufFeedback->PendingTranche()->AddFormat(GBM_FORMAT_XRGB8888,
-                                                 DRM_FORMAT_MOD_INVALID);
-  }
-  if (!GetFormat(GBM_FORMAT_ARGB8888)) {
-    LOGDMABUF(
-        ("DMABufFormats::EnsureBasicFormats(): GBM_FORMAT_ARGB8888 is missing, "
-         "adding."));
-    mDMABufFeedback->PendingTranche()->AddFormat(GBM_FORMAT_ARGB8888,
-                                                 DRM_FORMAT_MOD_INVALID);
-  }
+
+  EnsureBasicFormat(GBM_FORMAT_XRGB8888);
+  EnsureBasicFormat(GBM_FORMAT_ARGB8888);
+  EnsureBasicFormat(GBM_FORMAT_P010);
+  EnsureBasicFormat(GBM_FORMAT_NV12);
+  EnsureBasicFormat(GBM_FORMAT_YUV420);
+
   mDMABufFeedback->PendingTrancheDone();
 }
 
@@ -434,6 +430,36 @@ RefPtr<DMABufFormats> CreateDMABufFeedbackFormats(
 }
 #endif
 
+bool GlobalDMABufFormats::ConfigureFormat(RefPtr<DMABufFormats> aFormats,
+                                          RefPtr<DRMFormat>& aTargetFormat,
+                                          uint32_t aDrmFourcc) {
+  DRMFormat* format = aFormats->GetFormat(aDrmFourcc);
+  if (!format) {
+    LOGDMABUF(
+        ("GlobalDMABufFormats::ConfigureFormat(): missing %x fourcc format.",
+         aDrmFourcc));
+    return false;
+  }
+  nsTArray<uint64_t> mods;
+  if (!format->UseModifiers()) {
+    AppendDmaBufModifiersFromEGL(aDrmFourcc, mods);
+    LOGDMABUF(
+        ("GlobalDMABufFormats::ConfigureFormat(): Adding %x fourcc format EGL "
+         "modifiers num [%d].",
+         aDrmFourcc, (int)mods.Length()));
+  }
+  if (mods.IsEmpty()) {
+    mods.Assign(*format->GetModifiers());
+    LOGDMABUF(
+        ("GlobalDMABufFormats::ConfigureFormat(): Adding %x fourcc format "
+         "dmabuf "
+         "modifiers num [%d].",
+         aDrmFourcc, (int)mods.Length()));
+  }
+  aTargetFormat = new DRMFormat(aDrmFourcc, mods);
+  return true;
+}
+
 void GlobalDMABufFormats::SetModifiersToGfxVars() {
   RefPtr<DMABufFormats> formats;
 #ifdef MOZ_WAYLAND
@@ -446,67 +472,25 @@ void GlobalDMABufFormats::SetModifiersToGfxVars() {
   }
   formats->EnsureBasicFormats();
 
-  DRMFormat* format = formats->GetFormat(GBM_FORMAT_XRGB8888);
-  MOZ_DIAGNOSTIC_ASSERT(format, "Missing GBM_FORMAT_XRGB8888 dmabuf format!");
-  mFormatRGBX = new DRMFormat(*format);
-  gfxVars::SetDMABufModifiersXRGB(*format->GetModifiers());
-
-  format = formats->GetFormat(GBM_FORMAT_ARGB8888);
-  MOZ_DIAGNOSTIC_ASSERT(format, "Missing GBM_FORMAT_ARGB8888 dmabuf format!");
-  mFormatRGBA = new DRMFormat(*format);
-  gfxVars::SetDMABufModifiersARGB(*format->GetModifiers());
-
-  format = formats->GetFormat(GBM_FORMAT_P010);
-  nsTArray<uint64_t> modsP010;
-  if (format) {
-    LOGDMABUF(("GBM_FORMAT_P010 is directly composited"));
-    modsP010.Assign(*format->GetModifiers());
+  if (!ConfigureFormat(formats, mFormatRGBX, GBM_FORMAT_XRGB8888)) {
+    MOZ_DIAGNOSTIC_CRASH("Missing GBM_FORMAT_XRGB8888 dmabuf format!");
   }
-  if (!modsP010.IsEmpty()) {
-    mFormatP010 = new DRMFormat(GBM_FORMAT_P010, modsP010);
-    gfxVars::SetDMABufModifiersP010(modsP010);
+  gfxVars::SetDMABufModifiersXRGB(*mFormatRGBX->GetModifiers());
+
+  if (!ConfigureFormat(formats, mFormatRGBA, GBM_FORMAT_ARGB8888)) {
+    MOZ_DIAGNOSTIC_CRASH("Missing GBM_FORMAT_ARGB8888 dmabuf format!");
+  }
+  gfxVars::SetDMABufModifiersARGB(*mFormatRGBA->GetModifiers());
+
+  if (ConfigureFormat(formats, mFormatP010, GBM_FORMAT_P010)) {
+    gfxVars::SetDMABufModifiersP010(*mFormatP010->GetModifiers());
   }
 
-  format = formats->GetFormat(GBM_FORMAT_NV12);
-  nsTArray<uint64_t> modsNV12;
-  if (format) {
-    LOGDMABUF(("GBM_FORMAT_NV12 is directly composited"));
-    modsNV12.Assign(*format->GetModifiers());
-  }
-  if (!modsNV12.IsEmpty()) {
-    mFormatNV12 = new DRMFormat(GBM_FORMAT_NV12, modsNV12);
-    gfxVars::SetDMABufModifiersNV12(modsNV12);
-  }
-  format = formats->GetFormat(GBM_FORMAT_YUV420);
-  if (format) {
-    LOGDMABUF(("GBM_FORMAT_YUV420 is directly composited"));
-    mFormatYUV420 = new DRMFormat(*format);
-  }
-}
-
-void GlobalDMABufFormats::AppendEGLVideoModifiers() {
-#if defined(MOZ_WIDGET_GTK)
-  if (GdkIsWaylandDisplay()) {
-    return;
-  }
-  // On X11 there is no Wayland compositor feedback for video format modifiers,
-  // so we fall back to querying EGL directly.  This must only be called when
-  // hardware video decoding is actually enabled to avoid paying the EGL
-  // initialisation cost on every startup (Bug 2036839).
-  nsTArray<uint64_t> modsP010;
-  AppendDmaBufModifiersFromEGLIfEmpty(DRM_FORMAT_P010, modsP010);
-  if (!modsP010.IsEmpty()) {
-    mFormatP010 = new DRMFormat(GBM_FORMAT_P010, modsP010);
-    gfxVars::SetDMABufModifiersP010(modsP010);
+  if (ConfigureFormat(formats, mFormatNV12, GBM_FORMAT_NV12)) {
+    gfxVars::SetDMABufModifiersNV12(*mFormatNV12->GetModifiers());
   }
 
-  nsTArray<uint64_t> modsNV12;
-  AppendDmaBufModifiersFromEGLIfEmpty(DRM_FORMAT_NV12, modsNV12);
-  if (!modsNV12.IsEmpty()) {
-    mFormatNV12 = new DRMFormat(GBM_FORMAT_NV12, modsNV12);
-    gfxVars::SetDMABufModifiersNV12(modsNV12);
-  }
-#endif
+  ConfigureFormat(formats, mFormatYUV420, GBM_FORMAT_YUV420);
 }
 
 void GlobalDMABufFormats::GetModifiersFromGfxVars() {
