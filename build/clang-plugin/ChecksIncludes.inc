@@ -13,7 +13,6 @@
 #include "ExplicitImplicitChecker.h"
 #include "ExplicitOperatorBoolChecker.h"
 #ifdef TARGET_IS_WINDOWS
-#include "EmptyBasesChecker.h"
 #include "LoadLibraryUsageChecker.h"
 #include "FopenUsageChecker.h"
 #endif

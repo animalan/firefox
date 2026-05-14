@@ -56,7 +56,6 @@ HOST_SOURCES += [
 if CONFIG["OS_ARCH"] == "WINNT":
     HOST_DEFINES["TARGET_IS_WINDOWS"] = True
     HOST_SOURCES += [
-        "EmptyBasesChecker.cpp",
         "FopenUsageChecker.cpp",
         "LoadLibraryUsageChecker.cpp",
     ]

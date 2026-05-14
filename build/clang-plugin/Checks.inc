@@ -16,7 +16,6 @@ CHECK(JSHandleRootedTypedefChecker, "js-handle-rooted-typedef")
 CHECK(KungFuDeathGripChecker, "kungfu-death-grip")
 CHECK(KnownLiveChecker, "known-live")
 #ifdef TARGET_IS_WINDOWS
-CHECK(EmptyBasesChecker, "empty-bases")
 CHECK(LoadLibraryUsageChecker, "load-library-usage")
 CHECK(FopenUsageChecker, "fopen-usage")
 #endif

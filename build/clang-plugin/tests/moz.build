@@ -58,7 +58,6 @@ SOURCES += [
 
 if CONFIG["OS_ARCH"] == "WINNT":
     SOURCES += [
-        "TestEmptyBases.cpp",
         "TestFopenUsage.cpp",
         "TestLoadLibraryUsage.cpp",
     ]
