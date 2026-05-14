@@ -487,6 +487,7 @@ function init_all() {
   if (!redesignEnabled) {
     register_module("paneGeneral", gMainPane);
     document.getElementById("category-general").hidden = false;
+    document.getElementById("nav-separator").hidden = true;
   }
   register_module("paneHome", gHomePane);
   register_module("paneSearch", gSearchPane);
