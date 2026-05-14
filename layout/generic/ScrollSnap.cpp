@@ -10,6 +10,7 @@
 #include "mozilla/ScrollSnapTargetId.h"
 #include "mozilla/ServoStyleConsts.h"
 #include "mozilla/StaticPrefs_layout.h"
+#include "nsContentUtils.h"
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsPresContext.h"
@@ -584,6 +585,24 @@ ScrollSnapTargetId ScrollSnapUtils::GetTargetIdFor(const nsIFrame* aFrame) {
   return ScrollSnapTargetId{reinterpret_cast<uintptr_t>(aFrame->GetContent())};
 }
 
+static const nsIContent* ResolveSnapTargetToContent(
+    const ScrollSnapTargetId& aId) {
+  if (aId == ScrollSnapTargetId::None) {
+    return nullptr;
+  }
+  return reinterpret_cast<const nsIContent*>(aId);
+}
+
+static bool SnapTargetIsFlattenedTreeDescendantOf(
+    const ScrollSnapTargetId& aPossibleDescendant,
+    const ScrollSnapTargetId& aPossibleAncestor) {
+  MOZ_ASSERT(aPossibleAncestor != ScrollSnapTargetId::None &&
+             aPossibleDescendant != ScrollSnapTargetId::None);
+  return nsContentUtils::ContentIsFlattenedTreeDescendantOf(
+      ResolveSnapTargetToContent(aPossibleDescendant),
+      ResolveSnapTargetToContent(aPossibleAncestor));
+}
+
 static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
     const ScrollSnapInfo& aSnapInfo, const nsPoint& aCurrentPosition,
     const UniquePtr<ScrollSnapTargetIds>& aLastSnapTargetIds,
@@ -666,6 +685,35 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
       blockSet = {targetedTarget};
     }
   }
+
+  // Step 4.3: For each box in a set, remove any box from the set that is an
+  // ancestor of that box.
+  auto removeAncestors =
+      [](AutoTArray<const ScrollSnapInfo::SnapTarget*, 2>& aSet) {
+        if (aSet.Length() <= 1) {
+          return;
+        }
+        AutoTArray<const ScrollSnapInfo::SnapTarget*, 2> result;
+        for (const auto* candidate : aSet) {
+          bool isAncestorOfAnotherInSet = false;
+          for (const auto* other : aSet) {
+            if (other == candidate) {
+              continue;
+            }
+            if (SnapTargetIsFlattenedTreeDescendantOf(other->mTargetId,
+                                                      candidate->mTargetId)) {
+              isAncestorOfAnotherInSet = true;
+              break;
+            }
+          }
+          if (!isAncestorOfAnotherInSet) {
+            result.AppendElement(candidate);
+          }
+        }
+        aSet = std::move(result);
+      };
+  removeAncestors(inlineSet);
+  removeAncestors(blockSet);
 
   // Step 5: If the inline and block sets overlap (share at least one element),
   // replace both with their intersection. If they are disjoint, the block axis
