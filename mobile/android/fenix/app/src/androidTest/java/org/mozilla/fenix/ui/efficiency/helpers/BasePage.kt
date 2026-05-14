@@ -114,6 +114,7 @@ abstract class BasePage(
                     is NavigationStep.OpenNotificationsTray -> mozOpenNotificationsTray()
                     is NavigationStep.EnterText -> mozEnterText(url, step.selector)
                     is NavigationStep.PressEnter -> mozPressEnter(step.selector)
+                    is NavigationStep.PressBack -> mDevice.pressBack()
                 }
             }
 

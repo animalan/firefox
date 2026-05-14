@@ -39,9 +39,18 @@ object ToolbarSelectors {
         groups = listOf(),
     )
 
+    val NEW_TAB_BUTTON = Selector(
+        strategy = SelectorStrategy.UIAUTOMATOR_WITH_DESCRIPTION_CONTAINS,
+        value = "New tab",
+        description = "New tab button",
+        groups = listOf(),
+    )
+
     val all = listOf(
         TOOLBAR,
         TAB_COUNTER,
         TOOLBAR_URL_BOX,
+        TOOLBAR_URL_BOX_UIAUTOMATOR,
+        NEW_TAB_BUTTON,
     )
 }

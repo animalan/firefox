@@ -14,4 +14,5 @@ sealed class NavigationStep {
     data class OpenNotificationsTray(val openNotificationsTrayAction: () -> Unit) : NavigationStep()
     data class EnterText(val selector: Selector) : NavigationStep()
     data class PressEnter(val selector: Selector) : NavigationStep()
+    object PressBack : NavigationStep()
 }

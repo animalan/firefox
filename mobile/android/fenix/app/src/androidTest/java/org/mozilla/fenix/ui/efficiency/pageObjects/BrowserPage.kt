@@ -64,6 +64,16 @@ class BrowserPage(composeRule: AndroidComposeTestRule<HomeActivityIntentTestRule
             to = "MainMenuPage",
             steps = listOf(NavigationStep.Click(HomeSelectors.MAIN_MENU_BUTTON_UIAUTOMATOR)),
         )
+
+        // Use UIAutomator selector to avoid Compose sync hanging when GeckoView is active.
+        NavigationRegistry.register(
+            from = pageName,
+            to = "HomePage",
+            steps = listOf(
+                NavigationStep.Click(ToolbarSelectors.NEW_TAB_BUTTON),
+                NavigationStep.PressBack,
+            ),
+        )
     }
 
     override fun navigateToPage(url: String): BrowserPage {

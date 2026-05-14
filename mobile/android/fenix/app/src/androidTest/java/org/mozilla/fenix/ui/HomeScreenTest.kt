@@ -6,6 +6,7 @@ package org.mozilla.fenix.ui
 
 import org.junit.Rule
 import org.junit.Test
+import org.mozilla.fenix.customannotations.Converted
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.FenixTestRule
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
@@ -77,6 +78,11 @@ class HomeScreenTest {
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1364362
+    @Converted(
+        replacedBy = ["org.mozilla.fenix.ui.efficiency.tests.HomeTest#verifyJumpBackInSectionTest"],
+        bug = 2039207,
+        since = "2026-05",
+    )
     @SmokeTest
     @Test
     fun verifyJumpBackInSectionTest() {
