@@ -10,6 +10,7 @@
 #include "mozilla/ScrollSnapTargetId.h"
 #include "mozilla/ServoStyleConsts.h"
 #include "mozilla/StaticPrefs_layout.h"
+#include "mozilla/dom/Document.h"
 #include "nsContentUtils.h"
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
@@ -890,15 +891,42 @@ Maybe<SnapDestination> ScrollSnapUtils::GetSnapPointForResnap(
 }
 
 void ScrollSnapUtils::PostPendingResnapIfNeededFor(nsIFrame* aFrame) {
+  MOZ_ASSERT(aFrame);
+
   ScrollSnapTargetId id = GetTargetIdFor(aFrame);
   if (id == ScrollSnapTargetId::None) {
     return;
   }
 
-  if (ScrollContainerFrame* sf = nsLayoutUtils::GetNearestScrollContainerFrame(
-          aFrame, nsLayoutUtils::SCROLLABLE_SAME_DOC |
-                      nsLayoutUtils::SCROLLABLE_INCLUDE_HIDDEN)) {
-    sf->PostPendingResnapIfNeeded(aFrame);
+  ScrollContainerFrame* sf = nsLayoutUtils::GetNearestScrollContainerFrame(
+      aFrame, nsLayoutUtils::SCROLLABLE_SAME_DOC |
+                  nsLayoutUtils::SCROLLABLE_INCLUDE_HIDDEN);
+  if (!sf) {
+    return;
+  }
+
+  sf->PostPendingResnapIfNeeded(aFrame);
+
+  nsIContent* focusedContent =
+      aFrame->PresContext()->Document()->GetUnretargetedFocusedContent(
+          dom::Document::IncludeChromeOnly::No);
+  // If the focused content is a descendant of |aFrame|, ancestor scroll
+  // containers may also need to re-snap since |sf| or other ancestors may be
+  // registered as their snap target.
+  if (!focusedContent || !nsContentUtils::ContentIsFlattenedTreeDescendantOf(
+                             focusedContent, aFrame->GetContent())) {
+    return;
+  }
+
+  AutoTArray<nsIFrame*, 2> targets = {sf};
+  for (nsIFrame* f = sf->GetParent(); f; f = f->GetParent()) {
+    if (ScrollContainerFrame* ancestorSf = do_QueryFrame(f)) {
+      for (nsIFrame* target : targets) {
+        ancestorSf->PostPendingResnapIfNeeded(target);
+      }
+      targets.ClearAndRetainStorage();
+    }
+    targets.AppendElement(f);
   }
 }
 
