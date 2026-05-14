@@ -1657,7 +1657,7 @@ HTMLOptionElement* HTMLSelectElement::GetCurrentOption() const {
   int32_t endIndex = GetEndSelectionIndex();
   int32_t focusedIndex =
       endIndex == kNothingSelected ? SelectedIndex() : endIndex;
-  if (focusedIndex != kNothingSelected) {
+  if (focusedIndex >= 0) {
     return Item(AssertedCast<uint32_t>(focusedIndex));
   }
   return GetNonDisabledOptionFrom(0);
