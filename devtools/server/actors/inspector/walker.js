@@ -45,12 +45,10 @@ loader.lazyRequireGetter(
 loader.lazyRequireGetter(
   this,
   [
-    "allAnonymousContentTreeWalkerFilter",
     "findGridParentContainerForNode",
     "isNodeDead",
-    "noAnonymousContentTreeWalkerFilter",
     "nodeDocument",
-    "standardTreeWalkerFilter",
+    "getTreeWalkerFilter",
   ],
   "resource://devtools/server/actors/inspector/utils.js",
   true
@@ -221,9 +219,14 @@ class WalkerActor extends Actor {
 
     this.showAllAnonymousContent = options.showAllAnonymousContent;
     // Allow native anonymous content (like <video> controls) if preffed on
-    this.documentWalkerFilter = this.showAllAnonymousContent
-      ? allAnonymousContentTreeWalkerFilter
-      : standardTreeWalkerFilter;
+    this.documentWalkerFilter = getTreeWalkerFilter({
+      includeNativeAnonymousContent: this.showAllAnonymousContent,
+      includePseudoElements: true,
+    });
+    this.noAnonymousContentDocumentWalkerFilter = getTreeWalkerFilter({
+      includeNativeAnonymousContent: false,
+      includePseudoElements: false,
+    });
 
     this.walkerSearch = new WalkerSearch(this);
 
@@ -2117,7 +2120,7 @@ class WalkerActor extends Actor {
     const nextWalkerSibling = this._getNextTraversalSibling(targetNode);
 
     const walker = new DocumentWalker(targetNode, this.rootWin, {
-      filter: noAnonymousContentTreeWalkerFilter,
+      filter: this.noAnonymousContentDocumentWalkerFilter,
       skipTo: SKIP_TO_SIBLING,
     });
 
@@ -2128,7 +2131,7 @@ class WalkerActor extends Actor {
 
   _getNextTraversalSibling(targetNode) {
     const walker = new DocumentWalker(targetNode, this.rootWin, {
-      filter: noAnonymousContentTreeWalkerFilter,
+      filter: this.noAnonymousContentDocumentWalkerFilter,
       skipTo: SKIP_TO_SIBLING,
     });
 
