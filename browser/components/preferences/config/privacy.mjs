@@ -315,6 +315,7 @@ Preferences.addAll([
   // Trust Panel
   { id: "browser.urlbar.trustPanel.breachAlerts", type: "bool" },
   { id: "browser.urlbar.trustPanel.featureGate", type: "bool" },
+  { id: "browser.urlbar.trustPanel.breachAlerts.featureGate", type: "bool" },
 
   // Button prefs
   { id: "pref.privacy.disable_button.cookie_exceptions", type: "bool" },
@@ -1464,10 +1465,16 @@ Preferences.addSetting({
 });
 
 Preferences.addSetting({
+  id: "trustPanelBreachAlertsFeatureGate",
+  pref: "browser.urlbar.trustPanel.breachAlerts.featureGate",
+});
+
+Preferences.addSetting({
   id: "trustPanelBreachAlertsMain",
   pref: "browser.urlbar.trustPanel.breachAlerts",
-  deps: ["trustPanelFeatureGate"],
-  visible: ({ trustPanelFeatureGate }) => trustPanelFeatureGate.value,
+  deps: ["trustPanelFeatureGate", "trustPanelBreachAlertsFeatureGate"],
+  visible: ({ trustPanelFeatureGate, trustPanelBreachAlertsFeatureGate }) =>
+    trustPanelFeatureGate.value && trustPanelBreachAlertsFeatureGate.value,
 });
 
 /**
