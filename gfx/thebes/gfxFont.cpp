@@ -840,24 +840,34 @@ void gfxShapedText::SetMissingGlyph(uint32_t aIndex, uint32_t aChar,
 }
 
 bool gfxShapedText::FilterIfIgnorable(uint32_t aIndex, uint32_t aCh) {
-  if (IsIgnorable(aCh)) {
-    // There are a few default-ignorables of Letter category (currently,
-    // just the Hangul filler characters) that we'd better not discard
-    // if they're followed by additional characters in the same cluster.
-    // Some fonts use them to carry the width of a whole cluster of
-    // combining jamos; see bug 1238243.
-    auto* charGlyphs = GetCharacterGlyphs();
-    if (GetGenCategory(aCh) == nsUGenCategory::kLetter &&
-        aIndex + 1 < GetLength() && !charGlyphs[aIndex + 1].IsClusterStart()) {
+  if (!IsIgnorable(aCh)) {
+    return false;
+  }
+  // There are a few default-ignorables of Letter category (currently,
+  // just the Hangul filler characters) that we'd better not discard
+  // if they're followed by additional characters in the same cluster.
+  // Some fonts use them to carry the width of a whole cluster of
+  // combining jamos; see bug 1238243.
+  auto* charGlyphs = GetCharacterGlyphs();
+  auto category = GetGeneralCategory(aCh);
+  if (category == HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER &&
+      aIndex + 1 < GetLength() && !charGlyphs[aIndex + 1].IsClusterStart()) {
+    return false;
+  }
+  CompressedGlyph& g = charGlyphs[aIndex];
+  // For Format-Control characters, we avoid filtering if the glyph is _not_
+  // .notdef and has a positive advance width (e.g. Mongolian Vowel Separator
+  // in some fonts).
+  if (category == HB_UNICODE_GENERAL_CATEGORY_FORMAT) {
+    if (!g.IsSimpleGlyph() ||
+        (g.GetSimpleGlyph() != 0 && g.GetSimpleAdvance() > 0)) {
       return false;
     }
-    // A compressedGlyph that is set to MISSING but has no DetailedGlyphs list
-    // will be zero-width/invisible, which is what we want here.
-    CompressedGlyph& g = charGlyphs[aIndex];
-    g.SetComplex(g.IsClusterStart(), g.IsLigatureGroupStart()).SetMissing();
-    return true;
   }
-  return false;
+  // A compressedGlyph that is set to MISSING but has no DetailedGlyphs list
+  // will be zero-width/invisible, which is what we want here.
+  g.SetComplex(g.IsClusterStart(), g.IsLigatureGroupStart()).SetMissing();
+  return true;
 }
 
 void gfxShapedText::ApplyTrackingToClusters(gfxFloat aTrackingAdjustment,
