@@ -484,6 +484,7 @@ SettingGroupManager.registerGroups({
       },
       {
         id: "updateApp",
+        subcategory: "update-box-group",
         control: "moz-box-group",
         items: [
           {
