@@ -7,9 +7,9 @@ requestLongerTimeout(3);
 
 const evalMetadata = {
   owner: "Smart Window",
-  name: "Smart Window Chat Eval - gemini-3.1-flash-lite",
+  name: "Smart Window Chat Eval - gemini-2.5-flash-lite",
   description:
-    "Sends a user message to MLPA via gemini-3.1-flash-lite and uses LLMaaJ to determine if the response is appropriate.",
+    "Sends a user message to MLPA via gemini-2.5-flash-lite and uses LLMaaJ to determine if the response is appropriate.",
   test: "mochitest",
   options: {
     default: {
@@ -27,8 +27,8 @@ const { runChatEvalForModel } = ChromeUtils.importESModule(
   "chrome://mochitests/content/browser/browser/components/aiwindow/models/tests/browser_eval/tests/basic_quality.sys.mjs"
 );
 
-add_task(async function test_chat_basic_quality_gemini31flashlite() {
-  await runChatEvalForModel("gemini-3.1-flash-lite", {
+add_task(async function test_chat_basic_quality_gemini25flashlite() {
+  await runChatEvalForModel("gemini-2.5-flash-lite", {
     Assert,
     SpecialPowers,
     setupEvaluation,
