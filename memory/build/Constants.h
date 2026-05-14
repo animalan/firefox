@@ -56,6 +56,9 @@
 // minimums and how memory is allocated in each range the maximums can be
 // calculated.
 
+// In general this should match the logical page size.
+static constexpr size_t kMinLargeClass = 4_KiB;
+
 // On Windows the smallest allocation size must be 8 bytes on 32-bit, 16 bytes
 // on 64-bit.  On Linux and Mac, even malloc(1) must reserve a word's worth of
 // memory (see Mozilla bug 691003).   Mozjemalloc's minimum allocation size is
@@ -70,7 +73,6 @@
 // them.
 static constexpr size_t kMinQuantumClass = 16;
 static constexpr size_t kMinQuantumWideClass = 512;
-static constexpr size_t kMinSubPageClass = 4_KiB;
 
 // Amount (quantum) separating quantum-spaced size classes.
 static constexpr size_t kQuantum = 16;
@@ -79,7 +81,7 @@ static constexpr size_t kQuantumWide = 256;
 static constexpr size_t kQuantumWideMask = kQuantumWide - 1;
 
 static constexpr size_t kMaxQuantumClass = kMinQuantumWideClass - kQuantum;
-static constexpr size_t kMaxQuantumWideClass = kMinSubPageClass - kQuantumWide;
+static constexpr size_t kMaxQuantumWideClass = kMinLargeClass - kQuantumWide;
 
 // We can optimise some divisions to shifts if these are powers of two.
 static_assert(std::has_single_bit(kQuantum), "kQuantum is not a power of two");
@@ -92,8 +94,6 @@ static_assert(kMaxQuantumWideClass % kQuantumWide == 0,
               "kMaxQuantumWideClass is not a multiple of kQuantumWide");
 static_assert(kQuantum < kQuantumWide,
               "kQuantum must be smaller than kQuantumWide");
-static_assert(std::has_single_bit(kMinSubPageClass),
-              "kMinSubPageClass is not a power of two");
 
 // Number of quantum-spaced classes.  We add kQuantum(Max) before subtracting to
 // avoid underflow when a class is empty (Max<Min).
