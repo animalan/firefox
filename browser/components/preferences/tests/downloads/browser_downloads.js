@@ -39,6 +39,7 @@ async function assertTelemetry(id, count, message) {
 add_task(async function testSelectDownloadDir() {
   await Services.fog.testFlushAllChildren();
   Services.fog.testResetFOG();
+  Services.telemetry.clearScalars();
 
   // Setup
   const tempDirPath = await IOUtils.createUniqueDirectory(
