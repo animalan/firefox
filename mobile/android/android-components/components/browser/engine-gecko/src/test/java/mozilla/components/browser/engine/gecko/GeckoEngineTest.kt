@@ -62,7 +62,6 @@ import mozilla.components.support.test.whenever
 import mozilla.components.test.ReflectionUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
@@ -114,6 +113,7 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import java.io.IOException
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import org.mozilla.geckoview.WebExtension as GeckoWebExtension
 
 typealias GeckoInstallException = org.mozilla.geckoview.WebExtension.InstallException
@@ -2483,7 +2483,7 @@ class GeckoEngineTest {
 
         assertFalse(onErrorCalled)
         assertNotNull(result)
-        verify(webExtensionsDelegate).onAllowedInPrivateBrowsingChanged(result!!)
+        verify(webExtensionsDelegate).onAllowedInPrivateBrowsingChanged(result)
     }
 
     @Test
@@ -3005,7 +3005,7 @@ class GeckoEngineTest {
 
         assertFalse(onErrorCalled)
         assertNotNull(events)
-        assertTrue(events!!.isEmpty())
+        assertTrue(events.isEmpty())
     }
 
     @Test

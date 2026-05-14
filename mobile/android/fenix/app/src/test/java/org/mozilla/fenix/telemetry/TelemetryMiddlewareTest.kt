@@ -35,7 +35,6 @@ import mozilla.components.support.test.robolectric.testContext
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -57,6 +56,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLooper
+import kotlin.test.assertNotNull
 import org.mozilla.fenix.GleanMetrics.EngineTab as EngineMetrics
 
 @RunWith(RobolectricTestRunner::class)
@@ -358,7 +358,7 @@ class TelemetryMiddlewareTest {
 
         val recordedEvents = EngineMetrics.reloaded.testGetValue()
         assertNotNull(recordedEvents)
-        assertEquals(1, recordedEvents!!.size)
+        assertEquals(1, recordedEvents.size)
         assertEquals("-1", recordedEvents[0].extra?.get("duration_since_last_visible_seconds"))
         assertEquals("content_process_kill", recordedEvents[0].extra?.get("reason"))
 
@@ -385,9 +385,9 @@ class TelemetryMiddlewareTest {
 
             val recordedEvents = EngineMetrics.reloaded.testGetValue()
             assertNotNull(recordedEvents)
-            val duration = recordedEvents!![0].extra?.get("duration_since_last_visible_seconds")?.toInt()
+            val duration = recordedEvents[0].extra?.get("duration_since_last_visible_seconds")?.toInt()
             assertNotNull(duration)
-            assertTrue("Expected ~300s, got $duration", duration!! in 298..305)
+            assertTrue("Expected ~300s, got $duration", duration in 298..305)
         }
 
     @Test
@@ -409,7 +409,7 @@ class TelemetryMiddlewareTest {
 
             val recordedEvents = EngineMetrics.reloaded.testGetValue()
             assertNotNull(recordedEvents)
-            assertEquals("-1", recordedEvents!![0].extra?.get("duration_since_last_visible_seconds"))
+            assertEquals("-1", recordedEvents[0].extra?.get("duration_since_last_visible_seconds"))
         }
 
     @Test
@@ -446,7 +446,7 @@ class TelemetryMiddlewareTest {
 
             val recordedEvents = EngineMetrics.reloaded.testGetValue()
             assertNotNull(recordedEvents)
-            assertEquals(2, recordedEvents!!.size)
+            assertEquals(2, recordedEvents.size)
 
             // Events are recorded in dispatch order: switched tab first, foreground tab second.
             val switchedDuration = recordedEvents[0].extra?.get("duration_since_last_visible_seconds")?.toInt()
@@ -455,9 +455,9 @@ class TelemetryMiddlewareTest {
             assertNotNull(switchedDuration)
             assertNotNull(foregroundDuration)
             // Switched tab: ~1200s (20 min)
-            assertTrue("Expected ~1200s, got $switchedDuration", switchedDuration!! in 1198..1205)
+            assertTrue("Expected ~1200s, got $switchedDuration", switchedDuration in 1198..1205)
             // Foreground tab: ~600s (10 min)
-            assertTrue("Expected ~600s, got $foregroundDuration", foregroundDuration!! in 598..605)
+            assertTrue("Expected ~600s, got $foregroundDuration", foregroundDuration in 598..605)
             // The switched-away tab always has a longer duration than the foregrounded one.
             assertTrue(switchedDuration > foregroundDuration)
         }
@@ -483,7 +483,7 @@ class TelemetryMiddlewareTest {
 
         val recordedEvents = EngineMetrics.reloaded.testGetValue()
         assertNotNull(recordedEvents)
-        assertEquals(1, recordedEvents!!.size)
+        assertEquals(1, recordedEvents.size)
         assertEquals("app_session_restore", recordedEvents[0].extra?.get("reason"))
     }
 
@@ -630,7 +630,7 @@ class TelemetryMiddlewareTest {
             ShadowLooper.idleMainLooper()
             val recordedEventsAfter = EngineMetrics.reloaded.testGetValue()
             assertNotNull(recordedEventsAfter)
-            assertEquals(recordedEventsBefore + 1, recordedEventsAfter!!.size)
+            assertEquals(recordedEventsBefore + 1, recordedEventsAfter.size)
             assertEquals("content_process_kill", recordedEventsAfter.last().extra?.get("reason"))
         }
 

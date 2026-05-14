@@ -82,7 +82,6 @@ import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.whenever
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -98,6 +97,7 @@ import java.lang.ref.WeakReference
 import java.security.InvalidParameterException
 import java.util.Date
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class PromptFeatureTest {
@@ -3042,7 +3042,7 @@ class PromptFeatureTest {
 
         val prompt = feature.activePrompt?.get()
         assertNotNull(prompt)
-        assertFalse(prompt!!.shouldDismissOnLoad)
+        assertFalse(prompt.shouldDismissOnLoad)
     }
 
     @Test

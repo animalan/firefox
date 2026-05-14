@@ -19,7 +19,6 @@ import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.whenever
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -36,6 +35,7 @@ import java.io.InputStream
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class AMOAddonsProviderTest {
@@ -684,7 +684,7 @@ class AMOAddonsProviderTest {
         val addon = provider.getAddonByID("{58c32ac4-0d6c-4d6f-ae2c-96aaf8ffcb66}")
 
         assertNotNull(addon)
-        assertEquals("uBlock0@raymondhill.net", addon!!.id)
+        assertEquals("uBlock0@raymondhill.net", addon.id)
         assertEquals(
             "https://addons.mozilla.org/firefox/downloads/file/4141256/ublock_origin-1.51.0.xpi",
             addon.downloadUrl,
@@ -699,7 +699,7 @@ class AMOAddonsProviderTest {
         val addon = provider.getAddonByID("58c32ac4-0d6c-4d6f-ae2c-96aaf8ffcb66")
 
         assertNotNull(addon)
-        assertEquals("uBlock0@raymondhill.net", addon!!.id)
+        assertEquals("uBlock0@raymondhill.net", addon.id)
     }
 
     @Test

@@ -43,7 +43,6 @@ import mozilla.components.support.test.whenever
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -58,6 +57,7 @@ import org.mockito.Mockito.verify
 import org.robolectric.annotation.Config
 import java.io.File
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class FilePickerTest {
@@ -756,7 +756,7 @@ class FilePickerTest {
         val intent = image.buildCaptureIntent(mockContext, captureRequest)
 
         assertNotNull(intent)
-        assertTrue(intent!!.flags and Intent.FLAG_GRANT_WRITE_URI_PERMISSION != 0)
+        assertTrue(intent.flags and Intent.FLAG_GRANT_WRITE_URI_PERMISSION != 0)
         assertTrue(intent.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
     }
 

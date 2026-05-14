@@ -9,12 +9,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import mozilla.components.support.test.any
 import mozilla.components.support.test.mock
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.doReturn
+import kotlin.test.assertNotNull
 
 private val TEST_JSON = MerinoManifestProviderTest::class.java.classLoader!!
     .getResourceAsStream(ASSET_FILE_PATH)!!
@@ -56,7 +56,7 @@ class MerinoManifestProviderTest {
         val entry = provider.getManifestEntry("facebook.com")
 
         assertNotNull(entry)
-        assertEquals("facebook", entry!!.domain)
+        assertEquals("facebook", entry.domain)
         assertEquals("Facebook", entry.title)
         assertTrue(entry.rank > 0)
         assertTrue("expected at least one category", entry.categories.isNotEmpty())
