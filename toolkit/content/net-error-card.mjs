@@ -61,6 +61,7 @@ export class NetErrorCard extends MozLitElement {
     advancedContainer: ".advanced-container",
     advancedButton: "#advanced-button",
     errorIntro: "#error-intro",
+    dnsSuggestion: "#dns-suggestion",
     certErrorDebugInfo: "#certificateErrorDebugInformation",
     certErrorText: "#certificateErrorText",
     viewCertificate: "#viewCertificate",
