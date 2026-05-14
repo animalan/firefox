@@ -467,7 +467,7 @@ dependencies = [
  "jwcrypto",
  "lazy_static",
  "libsqlite3-sys",
- "nss",
+ "nss-as",
  "rusqlite 0.37.0",
  "serde",
  "serde_derive",
@@ -2673,7 +2673,7 @@ dependencies = [
  "log",
  "mockall",
  "mockito",
- "nss",
+ "nss-as",
  "parking_lot",
  "payload-support",
  "rate-limiter",
@@ -3798,7 +3798,7 @@ dependencies = [
 name = "init_rust_components"
 version = "0.1.0"
 dependencies = [
- "nss",
+ "nss-as",
  "uniffi",
  "viaduct",
 ]
@@ -3978,7 +3978,7 @@ version = "0.1.0"
 dependencies = [
  "base64 0.21.999",
  "error-support",
- "nss",
+ "nss-as",
  "rc_crypto",
  "serde",
  "serde_derive",
@@ -4387,7 +4387,7 @@ dependencies = [
  "interrupt-support",
  "jwcrypto",
  "lazy_static",
- "nss",
+ "nss-as",
  "parking_lot",
  "rusqlite 0.37.0",
  "serde",
@@ -5580,7 +5580,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nss"
+name = "nss-as"
 version = "0.1.0"
 dependencies = [
  "base64 0.21.999",
@@ -6466,7 +6466,7 @@ dependencies = [
  "lazy_static",
  "mockall",
  "mockito",
- "nss",
+ "nss-as",
  "rc_crypto",
  "rusqlite 0.37.0",
  "serde",
@@ -6665,7 +6665,7 @@ dependencies = [
  "error-support",
  "hawk",
  "hex",
- "nss",
+ "nss-as",
  "thiserror 2.0.12",
 ]
 
@@ -6780,7 +6780,7 @@ dependencies = [
  "jexl-eval",
  "mockall",
  "mockito",
- "nss",
+ "nss-as",
  "parking_lot",
  "rc_crypto",
  "regex",
@@ -7742,7 +7742,7 @@ dependencies = [
  "error-support",
  "interrupt-support",
  "lazy_static",
- "nss",
+ "nss-as",
  "payload-support",
  "rc_crypto",
  "serde",
