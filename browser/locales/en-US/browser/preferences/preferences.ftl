@@ -347,7 +347,7 @@ settings-tabs-drag-to-create-tab-groups =
     .label = Drag tabs together to create tab groups
 
 browser-layout-header2 =
-    .label = Browser Layout
+    .label = Browser layout
 
 browser-layout-horizontal-tabs2 =
     .label = Horizontal tabs
@@ -2470,6 +2470,9 @@ related-settings-accessibility-link =
 
 related-settings-home-link =
     .label = Customize { -firefox-home-brand-name }
+
+related-settings-tabs-browsing-link =
+    .label = Customize browser layout
 
 ## Accessibility page
 
