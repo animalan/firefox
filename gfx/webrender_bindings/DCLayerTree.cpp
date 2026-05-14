@@ -2520,7 +2520,11 @@ void DCSurfaceVideo::PresentVideo() {
                          presentDurationMs);
   PROFILER_MARKER_TEXT("PresentWait", GRAPHICS, {}, marker);
 
-  if (mRenderTextureHostUsageInfo) {
+  // RenderTextureHostUsageInfo::OnVideoPresent() is called to disable video
+  // overlay if present is slow. However, HDR requires video overlay to show
+  // correct colors. To avoid displaying incorrect color, don't make this call
+  // if the content is HDR.
+  if (!mContentIsHDR && mRenderTextureHostUsageInfo) {
     mRenderTextureHostUsageInfo->OnVideoPresent(mDCLayerTree->GetFrameId(),
                                                 presentDurationMs);
   }
