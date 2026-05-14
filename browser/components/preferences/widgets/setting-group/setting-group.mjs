@@ -5,6 +5,7 @@
 import { html } from "chrome://global/content/vendor/lit.all.mjs";
 import {
   SettingElement,
+  bumpHeadingLevelForSrd,
   spread,
 } from "chrome://browser/content/preferences/widgets/setting-element.mjs";
 import { SettingControl } from "chrome://browser/content/preferences/widgets/setting-control.mjs";
@@ -258,9 +259,13 @@ export class SettingGroup extends SettingElement {
     if (!this.config) {
       return "";
     }
+    let headingLevel = this.config.headingLevel;
+    if (this.srdEnabled) {
+      headingLevel = bumpHeadingLevelForSrd(headingLevel ?? 2, true);
+    }
     return this.containerTemplate(
       html`<moz-fieldset
-        .headingLevel=${this.srdEnabled ? 2 : this.config.headingLevel}
+        .headingLevel=${headingLevel}
         @change=${this.onChange}
         @toggle=${this.onChange}
         @click=${this.onClick}
