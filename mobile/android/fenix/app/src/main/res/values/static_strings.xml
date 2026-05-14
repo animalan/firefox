@@ -109,8 +109,6 @@
     <string name="preferences_debug_settings_merino_manifest" translatable="false">Enable Merino Manifest</string>
     <!-- Label for enabling Mozilla Ads Client -->
     <string name="preferences_debug_settings_mozilla_ads_client" translatable="false">Enable Mozilla Ads Client</string>
-    <!-- Label for enabling Privacy Report on homepage -->
-    <string name="preferences_debug_settings_privacy_report" translatable="false">Enable Privacy Report</string>
     <!-- Label for enabling the custom tab extension -->
     <string name="preferences_debug_settings_custom_tab_extensions" translatable="false">Enable Custom Tab Extension List</string>
     <!-- Label for enabling Firefox Suggest -->

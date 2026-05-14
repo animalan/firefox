@@ -51,7 +51,7 @@ features:
             "pocket-sponsored-stories": true,
             "synced-tabs": true,
             "collections": true,
-            "privacy-report": false,
+            "privacy-report": true,
           }
     defaults:
       - channel: nightly
@@ -64,7 +64,7 @@ features:
             "pocket": true,
             "synced-tabs": true,
             "collections": true,
-            "privacy-report": false,
+            "privacy-report": true,
           }
         }
   nimbus-validation:

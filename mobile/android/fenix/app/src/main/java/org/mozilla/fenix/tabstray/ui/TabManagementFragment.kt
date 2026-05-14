@@ -1018,8 +1018,7 @@ class TabManagementFragment : Fragment() {
     }
 
     private fun shouldShowPrivacyReport(settings: Settings): Boolean =
-        settings.showPrivacyReportSectionToggle &&
-            settings.showPrivacyReportFeature &&
+        settings.showPrivacyReportFeature &&
             settings.shouldShowTrackingProtectionDashboard
 
     private companion object {
