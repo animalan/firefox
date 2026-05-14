@@ -31,10 +31,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.map
+import mozilla.components.compose.base.LinkText
+import mozilla.components.compose.base.LinkTextState
 import mozilla.components.compose.base.PromoCard
 import mozilla.components.compose.base.annotation.FlexibleWindowLightDarkPreview
 import mozilla.components.compose.base.button.FilledButton
@@ -61,11 +64,14 @@ import mozilla.components.ui.icons.R as iconsR
  *
  * @param store The [LabsStore] used to observe the screen state and dispatch actions.
  * @param onNavigationIconClick Callback invoked when the navigation icon is clicked.
+ * @param onShareFeedbackClick Callback invoked when a feature's "Share feedback" link is clicked,
+ * with the feedback URL as the argument.
  */
 @Composable
 fun FirefoxLabsScreen(
     store: LabsStore,
     onNavigationIconClick: () -> Unit,
+    onShareFeedbackClick: (String) -> Unit,
 ) {
     val labsFeatures by remember { store.stateFlow.map { state -> state.labsFeatures } }
         .collectAsState(initial = store.state.labsFeatures)
@@ -89,6 +95,7 @@ fun FirefoxLabsScreen(
                 paddingValues = paddingValues,
                 onToggleFeature = { feature -> store.dispatch(LabsAction.ShowToggleFeatureDialog(feature)) },
                 onRestoreDefaultsButtonClick = { store.dispatch(LabsAction.ShowRestoreDefaultsDialog) },
+                onShareFeedbackClick = onShareFeedbackClick,
             )
         }
     }
@@ -102,6 +109,7 @@ private fun FirefoxLabsScreenContent(
     paddingValues: PaddingValues,
     onToggleFeature: (LabsFeature) -> Unit,
     onRestoreDefaultsButtonClick: () -> Unit,
+    onShareFeedbackClick: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -113,13 +121,10 @@ private fun FirefoxLabsScreenContent(
         }
 
         items(labsFeatures) { feature ->
-            SwitchListItem(
-                label = stringResource(id = feature.name),
-                checked = feature.enabled,
-                description = stringResource(id = feature.description),
-                maxDescriptionLines = Int.MAX_VALUE,
-                showSwitchAfter = true,
-                onClick = { onToggleFeature(feature) },
+            LabsFeatureItem(
+                feature = feature,
+                onToggle = onToggleFeature,
+                onShareFeedbackClick = onShareFeedbackClick,
             )
         }
 
@@ -133,6 +138,57 @@ private fun FirefoxLabsScreenContent(
             )
         }
     }
+}
+
+@Composable
+private fun LabsFeatureItem(
+    feature: LabsFeature,
+    onToggle: (LabsFeature) -> Unit,
+    onShareFeedbackClick: (String) -> Unit,
+) {
+    val featureName = stringResource(id = feature.name)
+    SwitchListItem(
+        label = featureName,
+        checked = feature.enabled,
+        description = stringResource(id = feature.description),
+        maxDescriptionLines = Int.MAX_VALUE,
+        showSwitchAfter = true,
+        belowListItemContent = {
+            feature.feedbackUrl?.let { url ->
+                LabsShareFeedbackLink(
+                    featureName = featureName,
+                    url = url,
+                    onShareFeedbackClick = onShareFeedbackClick,
+                )
+            }
+        },
+        onClick = { onToggle(feature) },
+    )
+}
+
+@Composable
+private fun LabsShareFeedbackLink(
+    featureName: String,
+    url: String,
+    onShareFeedbackClick: (String) -> Unit,
+) {
+    val shareFeedbackText = stringResource(R.string.firefox_labs_share_feedback)
+    val shareFeedbackContentDescription = stringResource(
+        R.string.firefox_labs_share_feedback_content_description,
+        featureName,
+    )
+    LinkText(
+        text = shareFeedbackText,
+        linkTextStates = listOf(
+            LinkTextState(
+                text = shareFeedbackText,
+                url = url,
+                onClick = onShareFeedbackClick,
+            ),
+        ),
+        linkTextDecoration = TextDecoration.Underline,
+        contentDescription = shareFeedbackContentDescription,
+    )
 }
 
 @Composable
@@ -335,6 +391,13 @@ private class FirefoxLabsScreenPreviewProvider : ThemedValueProvider<List<LabsFe
                 description = R.string.firefox_labs_homepage_as_a_new_tab_description,
                 enabled = true,
             ),
+            LabsFeature(
+                key = FeatureKey.HOMEPAGE_AS_A_NEW_TAB,
+                name = R.string.firefox_labs_homepage_as_a_new_tab,
+                description = R.string.firefox_labs_homepage_as_a_new_tab_description,
+                enabled = false,
+                feedbackUrl = "https://connect.mozilla.org/",
+            ),
         ),
         emptyList(),
     ),
@@ -354,6 +417,7 @@ private fun FirefoxLabsScreenPreview(
                 ),
             ),
             onNavigationIconClick = {},
+            onShareFeedbackClick = {},
         )
     }
 }

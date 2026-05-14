@@ -475,7 +475,8 @@ fun RadioButtonListItem(
  * @param maxDescriptionLines An optional maximum number of lines for the description text to span.
  * @param enabled Controls the enabled state of the list item. When `false`, the list item will not
  * be clickable.
- * @param showSwitchAfter [Boolean] That indicates whether the [RadioButton] is after the [ListItem].
+ * @param showSwitchAfter [Boolean] That indicates whether the [Switch] is after the [ListItem].
+ * @param belowListItemContent Optional composable rendered below the description text.
  * @param onClick Called when the user clicks the [Switch].
  */
 @Composable
@@ -488,6 +489,7 @@ fun SwitchListItem(
     maxDescriptionLines: Int = 1,
     enabled: Boolean = true,
     showSwitchAfter: Boolean = false,
+    belowListItemContent: @Composable ColumnScope.() -> Unit = {},
     onClick: (Boolean) -> Unit,
 ) {
     val switch: @Composable RowScope.() -> Unit = {
@@ -512,6 +514,7 @@ fun SwitchListItem(
         maxDescriptionLines = maxDescriptionLines,
         enabled = enabled,
         onClick = { onClick(!checked) },
+        belowListItemContent = belowListItemContent,
         beforeListItemAction = if (showSwitchAfter) EmptyListItemSlot else switch,
         afterListItemAction = if (showSwitchAfter) switch else EmptyListItemSlot,
     )

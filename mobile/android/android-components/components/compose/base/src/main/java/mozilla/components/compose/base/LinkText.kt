@@ -69,6 +69,8 @@ data class LinkTextState(
  * @param linkTextColor [Color] applied to the clickable part of the text.
  * @param linkTextDecoration [TextDecoration] applied to the clickable part of the text.
  * @param textAlign The alignment of the text within the lines of the paragraph. See [TextStyle.textAlign].
+ * @param contentDescription Optional accessibility content description. When provided, overrides
+ * the default description that is derived from the text content. Used for when more custom context is needed.
  * @param shouldApplyAccessibleSize determines whether a minimum interactive size should be applied
  * to improve accessibility touch targets.
  */
@@ -84,6 +86,7 @@ fun LinkText(
     linkTextColor: Color = MaterialTheme.colorScheme.tertiary,
     linkTextDecoration: TextDecoration = TextDecoration.None,
     textAlign: TextAlign? = null,
+    contentDescription: String? = null,
     shouldApplyAccessibleSize: Boolean = false,
 ) {
     val annotatedString = buildUrlAnnotatedString(
@@ -122,7 +125,7 @@ fun LinkText(
                     }
                     return@onClick true
                 }
-                contentDescription = "$annotatedString $linksAvailable"
+                this.contentDescription = contentDescription ?: "$annotatedString $linksAvailable"
             },
         textAlign = textAlign,
     )

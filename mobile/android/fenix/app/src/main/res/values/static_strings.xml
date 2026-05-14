@@ -369,6 +369,10 @@
     <string name="firefox_labs_restore_defaults_dialog_title">Restore defaults?</string>
     <!-- The description used in a confirmation dialog when restoring the application to its defaults by turning off any experimental features. -->
     <string name="firefox_labs_restore_defaults_dialog_message">Resetting experimental features will restart %s.</string>
+    <!-- The link text shown when a feedback URL for a labs feature is available. The feedback URL page will allow users to provide opinions and suggestions. -->
+    <string name="firefox_labs_share_feedback">Share feedback</string>
+    <!-- Content description for the share feedback link on a labs feature. This text will be used by screen readers to provide more context on the feedback link. %s is the name of the labs feature. -->
+    <string name="firefox_labs_share_feedback_content_description">Share feedback for %s</string>
 
     <!-- Debug drawer tab group tools -->
     <!-- The title of the debug drawer tab to help populate tab groups-->
