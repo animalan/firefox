@@ -344,15 +344,13 @@ nsPIDOMWindowOuter* nsPIDOMWindowOuter::GetFromCurrentInner(
 // nsOuterWindowProxy: Outer Window Proxy
 //*****************************************************************************
 
-// Give OuterWindowProxyClass 2 reserved slots, like the other wrappers, so
-// JSObject::swap can swap it with CrossCompartmentWrappers without requiring
-// malloc.
+// OuterWindowProxyClass has 2 (SwappableProxyReservedSlots) reserved slots.
 //
 // We store the nsGlobalWindowOuter* in our first slot.
 //
 // We store our holder weakmap in the second slot.
 const JSClass OuterWindowProxyClass = PROXY_CLASS_DEF(
-    "Proxy", JSCLASS_HAS_RESERVED_SLOTS(2)); /* additional class flags */
+    "Proxy", JSCLASS_HAS_RESERVED_SLOTS(js::SwappableProxyReservedSlots));
 
 static const size_t OUTER_WINDOW_SLOT = 0;
 static const size_t HOLDER_WEAKMAP_SLOT = 1;

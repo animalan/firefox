@@ -25,24 +25,14 @@
 using namespace js;
 
 struct ObjectConfig {
-  const JSClass* clasp;
   bool nurseryAllocated;
   bool hasUniqueId;
 };
 
 using ObjectConfigVector = Vector<ObjectConfig, 0, SystemAllocPolicy>;
 
-static const JSClass TestProxyClasses[] = {
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(1 /* Min */)),
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(2)),
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(3)),
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(4)),
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(5)),
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(6)),
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(7)),
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(8)),
-    PROXY_CLASS_DEF("TestProxy", JSCLASS_HAS_RESERVED_SLOTS(14 /* Max */)),
-};
+static const JSClass TestProxyClass = PROXY_CLASS_DEF(
+    "TestProxy", JSCLASS_HAS_RESERVED_SLOTS(SwappableProxyReservedSlots));
 
 static bool Verbose = false;
 
@@ -71,20 +61,6 @@ BEGIN_TEST(testObjectSwap) {
 
   for (const ObjectConfig& config1 : objectConfigs) {
     for (const ObjectConfig& config2 : objectConfigs) {
-      // JSObject::swap requires both objects to have the same alloc kind.
-      if (JSCLASS_RESERVED_SLOTS(config1.clasp) !=
-          JSCLASS_RESERVED_SLOTS(config2.clasp)) {
-        gc::AllocKind k1 =
-            gc::GetGCObjectKind(js::detail::ProxyValueArray::allocCount(
-                JSCLASS_RESERVED_SLOTS(config1.clasp)));
-        gc::AllocKind k2 =
-            gc::GetGCObjectKind(js::detail::ProxyValueArray::allocCount(
-                JSCLASS_RESERVED_SLOTS(config2.clasp)));
-        if (k1 != k2) {
-          continue;
-        }
-      }
-
       {
         uint32_t id1;
         RootedObject obj1(cx, CreateObject(config1, &id1));
@@ -113,8 +89,8 @@ BEGIN_TEST(testObjectSwap) {
           JSObject::swap(cx, obj1, obj2, oomUnsafe);
         }
 
-        CHECK(CheckObject(obj1, config2, id2));
-        CHECK(CheckObject(obj2, config1, id1));
+        CHECK(CheckObject(obj1, id2));
+        CHECK(CheckObject(obj2, id1));
 
         CHECK(CheckUniqueIds(obj1, config1.hasUniqueId, uid1, obj2,
                              config2.hasUniqueId, uid2));
@@ -145,11 +121,7 @@ ObjectConfigVector CreateObjectConfigs() {
 
     for (bool hasUniqueId : {false, true}) {
       config.hasUniqueId = hasUniqueId;
-
-      for (const JSClass& jsClass : TestProxyClasses) {
-        config.clasp = &jsClass;
-        MOZ_RELEASE_ASSERT(configs.append(config));
-      }
+      MOZ_RELEASE_ASSERT(configs.append(config));
     }
   }
 
@@ -187,7 +159,7 @@ JSObject* CreateProxy(const ObjectConfig& config) {
   }
 
   ProxyOptions options;
-  options.setClass(config.clasp);
+  options.setClass(&TestProxyClass);
   options.setLazyProto(true);
 
   const Wrapper* handler;
@@ -205,7 +177,7 @@ JSObject* CreateProxy(const ObjectConfig& config) {
   Rooted<ProxyObject*> proxy(cx, &obj->as<ProxyObject>());
   proxy->setExpando(expando);
 
-  for (uint32_t i = 0; i < JSCLASS_RESERVED_SLOTS(config.clasp); i++) {
+  for (uint32_t i = 0; i < SwappableProxyReservedSlots; i++) {
     JS::SetReservedSlot(proxy, i, Int32Value(nextId++));
   }
 
@@ -214,15 +186,12 @@ JSObject* CreateProxy(const ObjectConfig& config) {
   return proxy;
 }
 
-bool CheckObject(HandleObject obj, const ObjectConfig& config, uint32_t id) {
+bool CheckObject(HandleObject obj, uint32_t id) {
   CHECK(obj->is<ProxyObject>());
-  CHECK(obj->getClass() == config.clasp);
-
-  uint32_t reservedSlots = JSCLASS_RESERVED_SLOTS(config.clasp);
+  CHECK(obj->getClass() == &TestProxyClass);
 
   if (Verbose) {
-    fprintf(stderr, "Check %p is a proxy object with %u reserved slots\n",
-            obj.get(), reservedSlots);
+    fprintf(stderr, "Check %p is a proxy object\n", obj.get());
   }
 
   CHECK(GetProxyPrivate(obj) == Int32Value(id++));
@@ -235,7 +204,7 @@ bool CheckObject(HandleObject obj, const ObjectConfig& config, uint32_t id) {
   JS_GetProperty(cx, expando, "id", &expandoId);
   CHECK(expandoId == Int32Value(id++));
 
-  for (uint32_t i = 0; i < reservedSlots; i++) {
+  for (uint32_t i = 0; i < SwappableProxyReservedSlots; i++) {
     CHECK(JS::GetReservedSlot(obj, i) == Int32Value(id++));
   }
 

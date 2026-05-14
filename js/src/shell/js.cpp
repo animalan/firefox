@@ -906,10 +906,15 @@ static JSObject* NewGlobalObject(
 /*
  * A toy WindowProxy class for the shell. This is intended for testing code
  * where global |this| is a WindowProxy. All requests are forwarded to the
- * underlying global and no navigation is supported.
+ * underlying global.
+ *
+ * The newGlobal testing function has a transplantWindowProxy option that can be
+ * used to transplant/change a WindowProxy for a new global, similar to what
+ * happens in the browser on navigation.
  */
 const JSClass ShellWindowProxyClass =
-    PROXY_CLASS_DEF("ShellWindowProxy", JSCLASS_HAS_RESERVED_SLOTS(1));
+    PROXY_CLASS_DEF("ShellWindowProxy",
+                    JSCLASS_HAS_RESERVED_SLOTS(SwappableProxyReservedSlots));
 
 JSObject* NewShellWindowProxy(JSContext* cx, JS::HandleObject global) {
   MOZ_ASSERT(global->is<GlobalObject>());
@@ -9043,7 +9048,8 @@ static constexpr uint32_t DOM_OBJECT_SLOT2 = 1;
 static const JSClass* GetDomClass();
 
 static const JSClass TransplantableProxyObjectClass =
-    PROXY_CLASS_DEF("TransplantableProxyObject", JSCLASS_HAS_RESERVED_SLOTS(1));
+    PROXY_CLASS_DEF("TransplantableProxyObject",
+                    JSCLASS_HAS_RESERVED_SLOTS(SwappableProxyReservedSlots));
 
 // A non-Wrapper proxy that can be transplanted. We want to have shell coverage
 // of this to match the non-wrapper RemoteObjectProxy{Base} proxies in the

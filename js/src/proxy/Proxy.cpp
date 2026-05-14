@@ -965,7 +965,8 @@ static const ClassSpec ProxyClassSpec = {
 
 const JSClass js::ProxyClass = PROXY_CLASS_DEF_WITH_CLASS_SPEC(
     "Proxy",
-    JSCLASS_HAS_CACHED_PROTO(JSProto_Proxy) | JSCLASS_HAS_RESERVED_SLOTS(2),
+    JSCLASS_HAS_CACHED_PROTO(JSProto_Proxy) |
+        JSCLASS_HAS_RESERVED_SLOTS(SwappableProxyReservedSlots),
     &ProxyClassSpec);
 
 JS_PUBLIC_API JSObject* js::NewProxyObject(JSContext* cx,
