@@ -47,7 +47,6 @@ import mozilla.components.support.utils.ClipboardHandler
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -92,6 +91,7 @@ import org.mozilla.fenix.search.fixtures.buildExpectedSearchSelector
 import org.mozilla.fenix.settings.ShortcutType
 import org.mozilla.fenix.tabstray.redux.state.Page
 import org.mozilla.fenix.utils.Settings
+import kotlin.test.assertNotNull
 import mozilla.components.ui.icons.R as iconsR
 import mozilla.components.ui.tabcounter.R as tabcounterR
 

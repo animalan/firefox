@@ -97,6 +97,7 @@ dependencies {
 
     androidTestImplementation project(':components:support-android-test')
     androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation libs.kotlin.test
     androidTestImplementation libs.mozilla.glean
 
     // Depend on browser-engine-gecko to get the libcrashtools.so binary for tests. We don't use jniLibs because it

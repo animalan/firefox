@@ -8,7 +8,6 @@ import io.mockk.mockk
 import junit.framework.TestCase
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
@@ -32,6 +31,7 @@ import org.mozilla.fenix.tabstray.redux.state.TabGroupFormState
 import org.mozilla.fenix.tabstray.redux.state.TabsTrayState
 import org.mozilla.fenix.tabstray.redux.store.TabsTrayStore
 import org.robolectric.RobolectricTestRunner
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class) // for gleanTestRule
 class TabsTrayTelemetryMiddlewareTest {

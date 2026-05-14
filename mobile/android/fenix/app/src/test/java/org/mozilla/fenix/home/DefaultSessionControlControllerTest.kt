@@ -27,7 +27,6 @@ import mozilla.components.service.nimbus.messaging.Message
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -63,6 +62,7 @@ import org.mozilla.fenix.wallpapers.WallpaperState
 import org.robolectric.RobolectricTestRunner
 import java.io.File
 import java.lang.ref.WeakReference
+import kotlin.test.assertNotNull
 import mozilla.components.feature.tab.collections.Tab as ComponentTab
 
 @RunWith(RobolectricTestRunner::class) // For gleanTestRule

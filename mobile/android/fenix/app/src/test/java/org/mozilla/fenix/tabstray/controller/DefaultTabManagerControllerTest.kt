@@ -49,7 +49,6 @@ import mozilla.telemetry.glean.private.NoExtras
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -83,6 +82,7 @@ import org.mozilla.fenix.tabstray.ui.TabManagementFragmentDirections
 import org.mozilla.fenix.utils.Settings
 import org.robolectric.RobolectricTestRunner
 import java.util.concurrent.TimeUnit
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class) // for gleanTestRule
 class DefaultTabManagerControllerTest {

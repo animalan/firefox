@@ -26,7 +26,6 @@ import mozilla.components.concept.engine.EngineView
 import mozilla.components.concept.engine.permission.SitePermissions
 import mozilla.components.feature.contextmenu.ContextMenuCandidate
 import mozilla.components.ui.widgets.VerticalSwipeRefreshLayout
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
@@ -40,6 +39,7 @@ import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.utils.Settings
+import kotlin.test.assertNotNull
 
 class BaseBrowserFragmentTest {
     private lateinit var fragment: TestBaseBrowserFragment

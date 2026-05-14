@@ -36,7 +36,6 @@ import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.webextensions.facts.WebExtensionFacts
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
@@ -58,6 +57,7 @@ import org.mozilla.fenix.components.metrics.ReleaseMetricController.Companion
 import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.utils.Settings
 import org.robolectric.RobolectricTestRunner
+import kotlin.test.assertNotNull
 import mozilla.components.compose.browser.awesomebar.AwesomeBarFacts as ComposeAwesomeBarFacts
 
 @RunWith(RobolectricTestRunner::class)

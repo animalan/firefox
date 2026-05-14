@@ -44,7 +44,6 @@ import mozilla.components.support.test.whenever
 import mozilla.components.support.utils.ext.stopForegroundCompat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -57,6 +56,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.robolectric.annotation.Config
+import kotlin.test.assertNotNull
 import android.media.session.PlaybackState as AndroidPlaybackState
 
 @RunWith(AndroidJUnit4::class)

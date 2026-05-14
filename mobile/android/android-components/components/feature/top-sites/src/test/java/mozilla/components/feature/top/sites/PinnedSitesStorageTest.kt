@@ -10,10 +10,10 @@ import mozilla.components.feature.top.sites.db.PinnedSiteEntity
 import mozilla.components.feature.top.sites.db.TopSiteDatabase
 import mozilla.components.support.test.mock
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import kotlin.test.assertNotNull
 
 class PinnedSitesStorageTest {
 

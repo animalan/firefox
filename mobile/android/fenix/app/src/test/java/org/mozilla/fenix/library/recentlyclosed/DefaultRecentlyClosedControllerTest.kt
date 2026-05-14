@@ -6,7 +6,6 @@ package org.mozilla.fenix.library.recentlyclosed
 
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
-import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
@@ -26,7 +25,6 @@ import mozilla.components.feature.tabs.TabsUseCases
 import mozilla.components.support.test.middleware.CaptureActionsMiddleware
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
@@ -41,6 +39,7 @@ import org.mozilla.fenix.ext.directionsEq
 import org.mozilla.fenix.ext.optionsEq
 import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.robolectric.RobolectricTestRunner
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class DefaultRecentlyClosedControllerTest {

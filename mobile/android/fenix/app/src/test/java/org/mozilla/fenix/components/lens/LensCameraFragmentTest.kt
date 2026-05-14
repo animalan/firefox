@@ -33,7 +33,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -46,6 +45,7 @@ import org.robolectric.shadows.ShadowLooper
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.concurrent.ExecutorService
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class LensCameraFragmentTest {

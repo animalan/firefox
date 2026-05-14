@@ -27,7 +27,6 @@ import mozilla.components.feature.top.sites.TopSitesUseCases
 import mozilla.components.service.mars.MozAdsUseCases
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -49,6 +48,7 @@ import org.mozilla.fenix.home.topsites.ShortcutsFragmentDirections
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.utils.Settings
 import java.lang.ref.WeakReference
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class DefaultTopSiteControllerTest {

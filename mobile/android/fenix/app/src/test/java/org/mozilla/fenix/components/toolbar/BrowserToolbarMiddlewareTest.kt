@@ -96,7 +96,6 @@ import mozilla.components.support.utils.INTENT_TYPE_PDF
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -170,6 +169,7 @@ import org.mozilla.fenix.utils.Settings
 import org.mozilla.fenix.utils.Stories.markAsOpenedFromHomeScreen
 import org.mozilla.fenix.utils.Stories.markAsOpenedFromStoriesScreen
 import org.robolectric.annotation.Config
+import kotlin.test.assertNotNull
 import mozilla.components.browser.toolbar.R as toolbarR
 import mozilla.components.ui.icons.R as iconsR
 import mozilla.components.ui.tabcounter.R as tabcounterR

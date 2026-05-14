@@ -374,6 +374,7 @@ dependencies {
     androidTestImplementation libs.androidx.test.monitor
     androidTestImplementation libs.androidx.test.runner
     androidTestImplementation libs.androidx.test.uiautomator
+    androidTestImplementation libs.kotlin.test
     androidTestImplementation libs.mockwebserver
     androidTestImplementation libs.okhttp
     androidTestRuntimeOnly libs.okio
@@ -571,10 +572,10 @@ def enabledLocales = project.provider { getEnabledLocales() }
 
 tasks.register('generateLocaleList') {
     def localeList = file(new File(generatedLocaleListDir, generatedLocaleListFilename))
-    
+
     inputs.property("enabledLocales", enabledLocales)
     outputs.file(localeList)
-    
+
     doLast {
         generatedLocaleListDir.mkdir()
         localeList.delete()

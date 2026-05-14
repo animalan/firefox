@@ -44,7 +44,6 @@ import mozilla.components.support.test.middleware.CaptureActionsMiddleware
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -69,6 +68,7 @@ import org.mozilla.fenix.webcompat.fake.FakeWebCompatReporterMoreInfoSender
 import org.mozilla.fenix.webcompat.store.WebCompatReporterState
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class MenuNavigationMiddlewareTest {

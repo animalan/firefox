@@ -23,7 +23,6 @@ import mozilla.components.feature.summarize.content.PageMetadata
 import mozilla.components.lib.state.Store
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
@@ -32,6 +31,7 @@ import org.junit.runner.RunWith
 import org.mozilla.fenix.GleanMetrics.AiSummarize
 import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.robolectric.RobolectricTestRunner
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class SummarizationTelemetryMiddlewareTest {
