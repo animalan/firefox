@@ -162,6 +162,11 @@ function getTreeWalkerFilter(options) {
         : nodeFilterConstants.FILTER_SKIP;
     }
 
+    // If comments should be excluded, ignore comment nodes.
+    if (!options.includeComments && isCommentNode(node)) {
+      return nodeFilterConstants.FILTER_SKIP;
+    }
+
     // There are a few native anonymous content pseudo-elements that we want to show in markup
     // if pseudo-elements should be included.
     if (
@@ -216,6 +221,16 @@ function getTreeWalkerFilter(options) {
  */
 function isWhitespaceTextNode(node) {
   return node.nodeType == Node.TEXT_NODE && !/[^\s]/.exec(node.nodeValue);
+}
+
+/**
+ * Is the given node a comment node?
+ *
+ * @param {DOMNode} node
+ * @return {boolean}
+ */
+function isCommentNode(node) {
+  return node.nodeType === Node.COMMENT_NODE;
 }
 
 /**

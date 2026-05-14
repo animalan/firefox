@@ -49,6 +49,7 @@ class DocumentWalker {
       filter = getTreeWalkerFilter({
         includeNativeAnonymousContent: false,
         includePseudoElements: true,
+        includeComments: true,
       }),
       skipTo = SKIP_TO_PARENT,
       showAnonymousContent = true,

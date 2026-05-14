@@ -195,6 +195,7 @@ class WalkerActor extends Actor {
    *        The top-level Actor for this tab.
    * @param {object} options
    *        - {Boolean} showAllAnonymousContent: Show all native anonymous content
+   *        - {Boolean} showComments: Show comment nodes
    */
   constructor(conn, targetActor, options) {
     super(conn, walkerSpec);
@@ -218,14 +219,19 @@ class WalkerActor extends Actor {
     this.overflowCausingElementsMap = new Map();
 
     this.showAllAnonymousContent = options.showAllAnonymousContent;
-    // Allow native anonymous content (like <video> controls) if preffed on
+    this.showComments = options.showComments;
     this.documentWalkerFilter = getTreeWalkerFilter({
+      // Allow native anonymous content (like <video> controls) if preffed on
       includeNativeAnonymousContent: this.showAllAnonymousContent,
       includePseudoElements: true,
+      // Allow comment nodes if preffed on
+      includeComments: this.showComments,
     });
     this.noAnonymousContentDocumentWalkerFilter = getTreeWalkerFilter({
       includeNativeAnonymousContent: false,
       includePseudoElements: false,
+      // Allow comment nodes if preffed on
+      includeComments: this.showComments,
     });
 
     this.walkerSearch = new WalkerSearch(this);
