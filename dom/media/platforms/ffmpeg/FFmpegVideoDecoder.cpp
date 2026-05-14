@@ -3029,17 +3029,12 @@ MediaResult FFmpegVideoDecoder<LIBAV_VER>::AllocateH264ExtraData() {
     return NS_OK;
   }
 
-  mCodecContext->extradata =
-      static_cast<uint8_t*>(mLib->av_malloc(extradata->Length()));
-  if (!mCodecContext->extradata) {
-    return MediaResult(NS_ERROR_OUT_OF_MEMORY,
-                       RESULT_DETAIL("Couldn't init ffmpeg extradata"));
+  MediaResult rv = AssignCodecContextExtraData(extradata);
+  if (NS_FAILED(rv)) {
+    return rv;
   }
-
+  mCodecContext->moz_extradata_offset = AssertedCast<int>(spsLength);
   FFMPEG_LOG("  extracted %zu bytes of H264 extradata", extradata->Length());
-  mCodecContext->extradata_size = extradata->Length();
-  mCodecContext->moz_extradata_offset = spsLength;
-  memcpy(mCodecContext->extradata, extradata->Elements(), extradata->Length());
   return NS_OK;
 }
 
@@ -3053,16 +3048,11 @@ MediaResult FFmpegVideoDecoder<LIBAV_VER>::AllocateHEVCExtraData() {
     return NS_OK;
   }
 
-  mCodecContext->extradata =
-      static_cast<uint8_t*>(mLib->av_malloc(extradata->Length()));
-  if (!mCodecContext->extradata) {
-    return MediaResult(NS_ERROR_OUT_OF_MEMORY,
-                       RESULT_DETAIL("Couldn't init ffmpeg extradata"));
+  MediaResult rv = AssignCodecContextExtraData(extradata);
+  if (NS_FAILED(rv)) {
+    return rv;
   }
-
   FFMPEG_LOG("  extracted %zu bytes of HEVC extradata", extradata->Length());
-  mCodecContext->extradata_size = extradata->Length();
-  memcpy(mCodecContext->extradata, extradata->Elements(), extradata->Length());
   return NS_OK;
 }
 #  endif
