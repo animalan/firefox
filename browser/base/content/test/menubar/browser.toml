@@ -33,6 +33,10 @@ run-if = [
   "os == 'win'",
 ] # No menubar on macOS.
 
+["browser_macos_application_set_as_default.js"]
+run-if = [
+  "os == 'mac'", # Mac only feature
+]
 ["browser_search_bookmarks.js"]
 
 ["browser_search_history.js"]

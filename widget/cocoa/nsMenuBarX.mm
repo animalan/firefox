@@ -4,10 +4,12 @@
 
 #include <objc/objc-runtime.h>
 
+#include "nsChangeObserver.h"
 #include "nsCocoaFeatures.h"
 #include "nsCocoaUtils.h"
 #include "nsCocoaWindow.h"
 #include "nsMenuBarX.h"
+#include "nsMenuGroupOwnerX.h"
 #include "nsMenuItemX.h"
 #include "nsMenuUtilsX.h"
 #include "nsMenuX.h"
@@ -19,6 +21,7 @@
 #include "nsThreadUtils.h"
 
 #include "nsIContent.h"
+#include "nsIShellService.h"
 #include "mozilla/dom/Document.h"
 #include "nsIAppStartup.h"
 #include "nsIStringBundle.h"
@@ -52,6 +55,7 @@ extern BOOL sTouchBarIsInitialized;
 // (instance variable).
 static nsIContent* sAboutItemContent = nullptr;
 static nsIContent* sPrefItemContent = nullptr;
+static nsIContent* sSetAsDefaultItemContent = nullptr;
 static nsIContent* sAccountItemContent = nullptr;
 static nsIContent* sQuitItemContent = nullptr;
 
@@ -66,6 +70,14 @@ static nsIContent* sQuitItemContent = nullptr;
     mApplicationMenu = aApplicationMenu;
   }
   return self;
+}
+
+- (void)setSetAsDefaultMenuItem:(NSMenuItem*)menuItem {
+  mSetAsDefaultMenuItem = menuItem;
+}
+
+- (NSMenuItem*)setAsDefaultMenuItem {
+  return mSetAsDefaultMenuItem;
 }
 
 - (void)menuWillOpen:(NSMenu*)menu {
@@ -560,6 +572,7 @@ void nsMenuBarX::ResetNativeApplicationMenu() {
 
 void nsMenuBarX::SetNeedsRebuild() { mNeedsRebuild = true; }
 
+#define NS_SHELLSERVICE_CONTRACTID "@mozilla.org/browser/shell-service;1"
 void nsMenuBarX::ApplicationMenuOpened() {
   glean::widget::mac_application_menu_opened.Add(1);
 
@@ -570,6 +583,16 @@ void nsMenuBarX::ApplicationMenuOpened() {
     }
     mNeedsRebuild = false;
   }
+
+  // Only show the Set as Default Browser item if not default.
+  bool isDefaultBrowser = false;
+  nsCOMPtr<nsIShellService> shell(do_GetService(NS_SHELLSERVICE_CONTRACTID));
+  if (!shell) {
+    NS_WARNING("Couldn't get ShellService to check default browser state");
+  } else {
+    shell->IsDefaultBrowser(false, &isDefaultBrowser);
+  }
+  [[mApplicationMenuDelegate setAsDefaultMenuItem] setHidden:isDefaultBrowser];
 }
 
 bool nsMenuBarX::PerformKeyEquivalent(NSEvent* aEvent) {
@@ -653,6 +676,12 @@ void nsMenuBarX::AquifyMenuBar() {
 
     if (!sPrefItemContent) {
       sPrefItemContent = mPrefItemContent;
+    }
+
+    // remove Set As Default item.
+    mSetAsDefaultItemContent = HideItem(domDoc, u"menu_setAsDefault"_ns);
+    if (!sSetAsDefaultItemContent) {
+      sSetAsDefaultItemContent = mSetAsDefaultItemContent;
     }
 
     // remove Account Settings item.
@@ -770,6 +799,8 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
     = About This App       = <- aboutName
     ========================
     = Preferences...       = <- menu_preferences
+    = Set As Default       = <- menu_setAsDefault    Only if browser is not
+                                                     default
     = Account Settings     = <- menu_accountmgr      Only on Thunderbird
     ========================
     = Services     >       = <- menu_mac_services    <- (do not define key
@@ -850,6 +881,18 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
         eCommand_ID_Account, nsMenuBarX::sNativeEventTarget);
     if (itemBeingAdded) {
       [sApplicationMenu addItem:itemBeingAdded];
+      [itemBeingAdded release];
+      itemBeingAdded = nil;
+    }
+
+    // Add the Set As Default menu item
+    itemBeingAdded = CreateNativeAppMenuItem(
+        aMenu, u"menu_setAsDefault"_ns, @selector(menuItemHit:),
+        eCommand_ID_SetAsDefault, nsMenuBarX::sNativeEventTarget);
+    if (itemBeingAdded) {
+      [sApplicationMenu addItem:itemBeingAdded];
+      [mApplicationMenuDelegate setSetAsDefaultMenuItem:itemBeingAdded];
+
       [itemBeingAdded release];
       itemBeingAdded = nil;
     }
@@ -1166,6 +1209,19 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
     }
     return;
   }
+  if (tag == eCommand_ID_SetAsDefault) {
+    nsIContent* mostSpecificContent = sSetAsDefaultItemContent;
+    if (menuBar && menuBar->mSetAsDefaultItemContent) {
+      mostSpecificContent = menuBar->mSetAsDefaultItemContent;
+    }
+
+    if (mostSpecificContent) {
+      nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags,
+                                      button);
+    }
+    return;
+  }
+
   if (tag == eCommand_ID_Account) {
     nsIContent* mostSpecificContent = sAccountItemContent;
     if (menuBar && menuBar->mAccountItemContent) {
