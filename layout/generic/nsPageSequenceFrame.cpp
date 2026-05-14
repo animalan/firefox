@@ -13,8 +13,6 @@
 #include "mozilla/ReflowInput.h"
 #include "mozilla/StaticPresData.h"
 #include "mozilla/dom/HTMLCanvasElement.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/gfx/DrawEventRecorder.h"
 #include "mozilla/gfx/Point.h"
 #include "mozilla/intl/AppDateTimeFormat.h"
 #include "nsCOMPtr.h"
@@ -656,18 +654,16 @@ nsresult nsPageSequenceFrame::PrePrintNextSheet(nsITimerCallback* aCallback,
       UniquePtr<gfxContext> renderingContext = dc->CreateRenderingContext();
       NS_ENSURE_TRUE(renderingContext, NS_ERROR_OUT_OF_MEMORY);
 
-      DrawTarget* referenceDt = renderingContext->GetDrawTarget();
-      if (NS_WARN_IF(!referenceDt)) {
+      DrawTarget* drawTarget = renderingContext->GetDrawTarget();
+      if (NS_WARN_IF(!drawTarget)) {
         return NS_ERROR_FAILURE;
       }
 
       for (HTMLCanvasElement* canvas : Reversed(mCurrentCanvasList)) {
         CSSIntSize size = canvas->GetSize();
-        RefPtr recorder = MakeAndAddRef<gfx::DrawEventRecorderMemory>(nullptr);
-        RefPtr<DrawTarget> canvasTarget =
-            gfx::Factory::CreateRecordingDrawTarget(
-                recorder, referenceDt,
-                gfx::IntRect(gfx::IntPoint(), size.ToUnknownSize()));
+
+        RefPtr<DrawTarget> canvasTarget = drawTarget->CreateSimilarDrawTarget(
+            size.ToUnknownSize(), drawTarget->GetFormat());
         if (!canvasTarget) {
           continue;
         }
