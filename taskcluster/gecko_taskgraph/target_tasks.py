@@ -1719,7 +1719,12 @@ def target_tasks_os_integration(full_task_graph, parameters, graph_config):
 
     labels = []
     for label, task in full_task_graph.tasks.items():
-        if task.kind not in TEST_KINDS + ("source-test", "perftest", "startup-test"):
+        if task.kind not in TEST_KINDS + (
+            "source-test",
+            "perftest",
+            "startup-test",
+            "snap-upstream-test",
+        ):
             continue
 
         # Match tasks against attribute sets defined in os-integration.yml.
@@ -1734,6 +1739,12 @@ def target_tasks_os_integration(full_task_graph, parameters, graph_config):
                 task.attributes.get("build_platform") == "macosx64"
                 or "android-hw" in label
             ):
+                continue
+
+            # The `-local` snap variants depend on local gecko checkouts and
+            # aren't meaningful on m-c; match the exclusion used by
+            # `snap_upstream_tasks`.
+            if task.kind == "snap-upstream-test" and "-local" in label:
                 continue
 
             # Perform additional filtering for non-try repos. We don't want to
