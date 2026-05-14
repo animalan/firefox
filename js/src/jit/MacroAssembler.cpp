@@ -3880,11 +3880,7 @@ void MacroAssembler::loadDOMExpandoValueGuardGeneration(
     Register obj, ValueOperand output,
     JS::ExpandoAndGeneration* expandoAndGeneration, uint64_t generation,
     Label* fail) {
-  loadPtr(Address(obj, ProxyObject::offsetOfReservedSlots()),
-          output.scratchReg());
-  loadValue(Address(output.scratchReg(),
-                    js::detail::ProxyReservedSlots::offsetOfPrivateSlot()),
-            output);
+  loadValue(Address(obj, ProxyObject::offsetOfPrivateSlot()), output);
 
   // Guard the ExpandoAndGeneration* matches the proxy's ExpandoAndGeneration
   // privateSlot.

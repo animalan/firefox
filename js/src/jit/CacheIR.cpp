@@ -14763,10 +14763,8 @@ static JSObject* NewWrapperWithObjectShape(JSContext* cx,
 
 void jit::LoadShapeWrapperContents(MacroAssembler& masm, Register obj,
                                    Register dst, Label* failure) {
-  masm.loadPtr(Address(obj, ProxyObject::offsetOfReservedSlots()), dst);
-  Address privateAddr(dst,
-                      js::detail::ProxyReservedSlots::offsetOfPrivateSlot());
-  masm.fallibleUnboxObject(privateAddr, dst, failure);
+  masm.fallibleUnboxObject(Address(obj, ProxyObject::offsetOfPrivateSlot()),
+                           dst, failure);
   masm.unboxNonDouble(
       Address(dst, NativeObject::getFixedSlotOffset(SHAPE_CONTAINER_SLOT)), dst,
       JSVAL_TYPE_PRIVATE_GCTHING);

@@ -425,12 +425,6 @@ namespace detail {
 struct ProxyReservedSlots {
   JS::Value slots[1];
 
-  static constexpr ptrdiff_t offsetOfPrivateSlot();
-
-  static inline int offsetOfSlot(size_t slot) {
-    return offsetof(ProxyReservedSlots, slots[0]) + slot * sizeof(JS::Value);
-  }
-
   void init(size_t nreserved) {
     for (size_t i = 0; i < nreserved; i++) {
       slots[i] = JS::UndefinedValue();
@@ -472,12 +466,6 @@ struct ProxyValueArray {
   ProxyValueArray(const ProxyValueArray&) = delete;
   void operator=(const ProxyValueArray&) = delete;
 };
-
-/* static */
-constexpr ptrdiff_t ProxyReservedSlots::offsetOfPrivateSlot() {
-  return -ptrdiff_t(ProxyValueArray::offsetOfReservedSlots()) +
-         offsetof(ProxyValueArray, privateSlot);
-}
 
 // All proxies share the same data layout. Following the object's shape, the
 // proxy has a ProxyDataLayout structure with a pointer to an array of values

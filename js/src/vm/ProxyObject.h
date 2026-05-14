@@ -36,6 +36,12 @@ class ProxyObject : public JSObject {
                   "Proxy reservedSlots must overlay native object slots field");
   }
 
+  // The ProxyValueArray is always stored inline immediately after the
+  // ProxyObject header.
+  static constexpr size_t offsetOfProxyValueArray() {
+    return sizeof(ProxyObject);
+  }
+
  public:
   static ProxyObject* New(JSContext* cx, const BaseProxyHandler* handler,
                           HandleValue priv, TaggedProto proto_,
@@ -43,14 +49,10 @@ class ProxyObject : public JSObject {
 
   void init(const BaseProxyHandler* handler, HandleValue priv, JSContext* cx);
 
-  // Proxies always store their ProxyValueArray inline in the object.
-  void* inlineDataStart() const {
-    return (void*)(uintptr_t(this) + sizeof(ProxyObject));
-  }
   void setInlineValueArray() {
-    data.reservedSlots =
-        &reinterpret_cast<detail::ProxyValueArray*>(inlineDataStart())
-             ->reservedSlots;
+    uintptr_t valuesAddr = uintptr_t(this) + offsetOfProxyValueArray();
+    auto* values = reinterpret_cast<detail::ProxyValueArray*>(valuesAddr);
+    data.reservedSlots = &values->reservedSlots;
   }
 
   const Value& private_() const { return GetProxyPrivate(this); }
@@ -69,11 +71,17 @@ class ProxyObject : public JSObject {
     detail::GetProxyDataLayout(this)->handler = handler;
   }
 
-  static size_t offsetOfReservedSlots() {
-    return offsetof(ProxyObject, data.reservedSlots);
-  }
-  static size_t offsetOfHandler() {
+  static constexpr size_t offsetOfHandler() {
     return offsetof(ProxyObject, data.handler);
+  }
+  static constexpr size_t offsetOfPrivateSlot() {
+    return offsetOfProxyValueArray() +
+           offsetof(detail::ProxyValueArray, privateSlot);
+  }
+  static constexpr size_t offsetOfReservedSlot(size_t n) {
+    return offsetOfProxyValueArray() +
+           offsetof(detail::ProxyValueArray, reservedSlots) +
+           n * sizeof(JS::Value);
   }
 
   size_t numReservedSlots() const { return JSCLASS_RESERVED_SLOTS(getClass()); }
