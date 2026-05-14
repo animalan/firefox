@@ -60,4 +60,6 @@ skip-if = [
 
 ["browser_loadPKCS11Module_ui.js"]
 
+["browser_protectedAuth.js"]
+
 ["browser_setDisableAllSecurityChecksAndLetAttackersInterceptMyData.js"]
