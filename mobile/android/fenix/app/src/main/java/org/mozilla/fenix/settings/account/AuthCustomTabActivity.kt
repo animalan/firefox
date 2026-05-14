@@ -7,6 +7,7 @@ package org.mozilla.fenix.settings.account
 import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.AuthType
 import mozilla.components.concept.sync.OAuthAccount
+import mozilla.components.feature.ipprotection.store.IPProtectionAction
 import org.mozilla.fenix.customtabs.ExternalAppBrowserActivity
 import org.mozilla.fenix.ext.components
 
@@ -20,6 +21,8 @@ class AuthCustomTabActivity : ExternalAppBrowserActivity() {
          * Navigate away from this activity when we have successful authentication
          */
         override fun onAuthenticated(account: OAuthAccount, authType: AuthType) {
+            // FIXME(IPP) this should only fire when auth is from an IP protection auth request
+            components.ipProtection.store.dispatch(IPProtectionAction.AccountReady(true))
             finish()
         }
     }

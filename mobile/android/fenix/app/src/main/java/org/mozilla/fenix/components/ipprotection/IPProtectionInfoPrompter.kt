@@ -8,10 +8,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import mozilla.components.feature.ipprotection.Authorized
-import mozilla.components.feature.ipprotection.EligibilityStatus
-import mozilla.components.feature.ipprotection.IPProtectionState
-import mozilla.components.feature.ipprotection.IPProtectionStore
+import mozilla.components.feature.ipprotection.store.IPProtectionStore
+import mozilla.components.feature.ipprotection.store.state.Authorized
+import mozilla.components.feature.ipprotection.store.state.EligibilityStatus
+import mozilla.components.feature.ipprotection.store.state.IPProtectionState
 import mozilla.components.lib.state.helpers.AbstractBinding
 import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.appstate.AppAction

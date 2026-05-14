@@ -2,10 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+@file:Suppress("DEPRECATION")
+
 package org.mozilla.fenix.components.ipprotection
 
 import mozilla.components.feature.ipprotection.DefaultIPProtectionFeature
-import mozilla.components.feature.ipprotection.IPProtectionStore
+import mozilla.components.feature.ipprotection.store.IPProtectionStore
 import mozilla.components.support.base.feature.LifecycleAwareFeature
 import org.mozilla.fenix.components.AppStore
 
@@ -17,6 +19,7 @@ import org.mozilla.fenix.components.AppStore
  * @param appStore The app store used to dispatch snackbar actions.
  * @param errorMessages Localized error messages to display in snackbars.
  */
+@Deprecated("No longer needed.")
 class IPProtectionFeatureIntegration(
     private val feature: DefaultIPProtectionFeature,
     private val store: IPProtectionStore,

@@ -15,7 +15,7 @@ import mozilla.components.browser.state.search.RegionState
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.SearchState
 import mozilla.components.browser.state.store.BrowserStore
-import mozilla.components.feature.ipprotection.EligibilityStatus
+import mozilla.components.feature.ipprotection.store.state.EligibilityStatus
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Before

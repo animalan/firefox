@@ -34,7 +34,7 @@ class IPProtectionFragment : Fragment(), SystemInsetsPaddedFragment {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             FirefoxTheme {
-                val state = components.ipProtectionStore.observeAsComposableState { it }
+                val state = components.ipProtection.store.observeAsComposableState { it }
                 IPProtectionScreen(
                     state = state.value,
                     onVpnToggle = { enabled ->
