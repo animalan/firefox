@@ -21,27 +21,21 @@ add_task(async function openLoginExceptionsSubDialog() {
     },
   });
 
-  info("Opening privacy panel");
   await openPreferencesViaOpenPreferencesAPI("privacy", { leaveOpen: true });
 
   let dialogOpened = promiseLoadSubDialog(PERMISSIONS_URL);
 
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     let doc = content.document;
     let savePasswordCheckBox = doc.getElementById("savePasswords");
     savePasswordCheckBox.click();
 
-    let loginExceptionsButton = doc.getElementById("managePasswordExceptions");
-    await ContentTaskUtils.waitForCondition(
-      () => !loginExceptionsButton.disabled
-    );
+    let loginExceptionsButton = doc.getElementById("passwordExceptions");
     loginExceptionsButton.click();
   });
 
-  info("Waiting for dialog to open");
   exceptionsDialog = await dialogOpened;
 
-  info("Assert remove permission is disabled");
   let doc = exceptionsDialog.document;
 
   let richlistbox = doc.getElementById("permissionsBox");

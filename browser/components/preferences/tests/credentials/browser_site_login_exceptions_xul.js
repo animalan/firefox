@@ -15,7 +15,7 @@ add_task(async function openLoginExceptionsSubDialog() {
 
   let dialogOpened = promiseLoadSubDialog(PERMISSIONS_URL);
 
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     let doc = content.document;
     let savePasswordCheckBox = doc.getElementById("savePasswords");
     Assert.ok(
@@ -24,10 +24,7 @@ add_task(async function openLoginExceptionsSubDialog() {
     );
     savePasswordCheckBox.click();
 
-    let loginExceptionsButton = doc.getElementById("managePasswordExceptions");
-    await ContentTaskUtils.waitForCondition(
-      () => !loginExceptionsButton.disabled
-    );
+    let loginExceptionsButton = doc.getElementById("passwordExceptions");
     loginExceptionsButton.click();
   });
 
@@ -66,6 +63,7 @@ async function addALoginException() {
 
   await TestUtils.waitForCondition(() => richlistbox.itemCount == 2);
 
+  // eslint-disable-next-line @microsoft/sdl/no-insecure-url
   let expectedResult = ["http://www.example.com", "https://www.example.com"];
   for (let website of expectedResult) {
     let elements = richlistbox.getElementsByAttribute("origin", website);
