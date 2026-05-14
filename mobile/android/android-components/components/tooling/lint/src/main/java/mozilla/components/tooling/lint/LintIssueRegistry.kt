@@ -37,6 +37,7 @@ class LintIssueRegistry : IssueRegistry() {
         ShowSnackbarDetector.ISSUE_NO_DIRECT_SHOW_SNACKBAR,
         ComposeIconButtonDetector.ISSUE_ICON_BUTTON_USAGE,
         AssertIsDetector.ISSUE_USE_ASSERT_IS,
+        JUnitAssertNotNullDetector.ISSUE_USE_KOTLIN_TEST_ASSERT_NOT_NULL,
     ) + ConstraintLayoutPerfDetector.ISSUES + ContextCompatDetector.ISSUES
     override val vendor: Vendor = Vendor(
         vendorName = "Mozilla",
