@@ -17,6 +17,7 @@ import java.security.Security
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
+import kotlin.test.assertNotNull
 
 private val DEFAULTPASS = "testit!".toCharArray()
 
@@ -81,7 +82,7 @@ class KeystoreTest {
         Assert.assertTrue(keystore.available())
         cipher = keystore.createEncryptCipher()
         Assert.assertEquals(CIPHER_SPEC, cipher.algorithm)
-        Assert.assertNotNull(cipher.iv)
+        assertNotNull(cipher.iv)
     }
 
     @Test
@@ -118,9 +119,9 @@ class KeystoreTest {
 
         var cipher: Cipher?
         cipher = keystore.createEncryptCipher()
-        Assert.assertNotNull(cipher)
+        assertNotNull(cipher)
         cipher = keystore.createDecryptCipher(ByteArray(12))
-        Assert.assertNotNull(cipher)
+        assertNotNull(cipher)
     }
 
     @Ignore("https://github.com/mozilla-mobile/android-components/issues/4956")
@@ -130,7 +131,7 @@ class KeystoreTest {
 
         var input = "classic plaintext 'hello, world'".toByteArray(StandardCharsets.UTF_8)
         var encrypted = keystore.encryptBytes(input)
-        Assert.assertNotNull(encrypted)
+        assertNotNull(encrypted)
         var output = keystore.decryptBytes(encrypted)
         Assert.assertArrayEquals(input, output)
     }

@@ -21,7 +21,6 @@ import mozilla.components.feature.addons.ui.AddonDialogFragment.PromptsStyling
 import mozilla.components.support.test.mock
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.utils.ext.getParcelableCompat
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
@@ -33,6 +32,7 @@ import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class PermissionsDialogFragmentTest {
@@ -94,7 +94,7 @@ class PermissionsDialogFragmentTest {
         // T&I checkbox is not shown, unless the extension declares it in its manifest.
         assertFalse(technicalAndInteractionDataCheckbox.isVisible)
 
-        Assert.assertNotNull(recyclerAdapter)
+        assertNotNull(recyclerAdapter)
         assertEquals(3, recyclerAdapter.itemCount)
 
         val firstItem = recyclerAdapter

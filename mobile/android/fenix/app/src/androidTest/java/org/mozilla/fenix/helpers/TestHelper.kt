@@ -35,7 +35,6 @@ import androidx.test.uiautomator.Until
 import mozilla.components.support.ktx.android.content.appName
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.Matcher
-import org.junit.Assert
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.mozilla.fenix.R
@@ -51,6 +50,7 @@ import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeShort
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeVeryShort
 import org.mozilla.fenix.helpers.ext.waitNotNull
+import kotlin.test.assertNotNull
 
 object TestHelper {
 
@@ -219,7 +219,7 @@ object TestHelper {
         this.waitForIdle()
         Log.i(TAG, "waitForObjects: Waited for device to be idle")
         Log.i(TAG, "waitForObjects: Waiting for $waitingTime ms to assert that ${obj.selector} is not null")
-        Assert.assertNotNull(obj.waitForExists(waitingTime))
+        assertNotNull(obj.waitForExists(waitingTime))
         Log.i(TAG, "waitForObjects: Waited for $waitingTime ms and asserted that ${obj.selector} is not null")
     }
 
