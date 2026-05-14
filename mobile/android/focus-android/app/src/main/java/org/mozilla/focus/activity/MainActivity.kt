@@ -31,6 +31,7 @@ import mozilla.components.lib.auth.canUseBiometricFeature
 import mozilla.components.lib.crash.Crash
 import mozilla.components.lib.state.ext.flow
 import mozilla.components.support.base.feature.UserInteractionHandler
+import mozilla.components.support.utils.DefaultDateTimeProvider
 import mozilla.components.support.utils.SafeIntent
 import mozilla.components.support.utils.StatusBarUtils
 import mozilla.telemetry.glean.private.NoExtras
@@ -186,12 +187,15 @@ open class MainActivity : EdgeToEdgeActivity() {
         }
     }
 
-    private fun setSplashScreenPreDrawListener(safeIntent: SafeIntent) {
-        val endTime = System.currentTimeMillis() + REQUEST_TIME_OUT
+    private fun setSplashScreenPreDrawListener(
+        safeIntent: SafeIntent,
+        currentTimeProvider: () -> Long = DefaultDateTimeProvider()::currentTimeMillis,
+    ) {
+        val endTime = currentTimeProvider() + REQUEST_TIME_OUT
         binding.container.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
-                    return if (System.currentTimeMillis() >= endTime) {
+                    return if (currentTimeProvider() >= endTime) {
                         ExternalIntentNavigation.handleAppNavigation(
                             bundle = safeIntent.extras,
                             context = this@MainActivity,

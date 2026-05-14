@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.Task
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
 import mozilla.components.browser.state.state.SessionState
+import mozilla.components.support.utils.DefaultDateTimeProvider
 import org.mozilla.focus.R
 import org.mozilla.focus.ext.components
 import org.mozilla.focus.state.AppAction
@@ -94,7 +95,10 @@ object AppReviewUtils {
         }
     }
 
-    private fun shouldShowInAppReview(context: Context): Boolean {
+    private fun shouldShowInAppReview(
+        context: Context,
+        currentTimeProvider: () -> Long = DefaultDateTimeProvider()::currentTimeMillis,
+    ): Boolean {
         val inAppReviewStep = PreferenceManager.getDefaultSharedPreferences(context).getString(
             context.getString(R.string.pref_in_app_review_step),
             AppReviewStep.Pending.name,
@@ -106,7 +110,7 @@ object AppReviewUtils {
 
         return inAppReviewStep == AppReviewStep.ReviewNeeded.name || (
             lastReviewedTime +
-                APP_REVIEW_TIME_TRIGGER <= System.currentTimeMillis() &&
+                APP_REVIEW_TIME_TRIGGER <= currentTimeProvider() &&
                 inAppReviewStep == AppReviewStep.Reviewed.name
             )
     }
@@ -147,12 +151,15 @@ object AppReviewUtils {
             }
     }
 
-    private fun setLastReviewedTime(context: Context) {
+    private fun setLastReviewedTime(
+        context: Context,
+        currentTimeProvider: () -> Long = DefaultDateTimeProvider()::currentTimeMillis,
+    ) {
         PreferenceManager.getDefaultSharedPreferences(context)
             .edit {
                 putLong(
                     context.getString(R.string.pref_in_app_review_time),
-                    System.currentTimeMillis(),
+                    currentTimeProvider(),
                 )
             }
     }

@@ -36,9 +36,5 @@
     <ID>HardcodedPaddingUsage:SitePermissionOptionsFragmentCompose.kt$(start = 8.dp, end = 8.dp)</ID>
     <ID>HardcodedPaddingUsage:SitePermissionOptionsFragmentCompose.kt$(top = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:TopSites.kt$(horizontal = 10.dp)</ID>
-    <ID>NoSystemCurrentTimeMillis:AppReviewUtils.kt$AppReviewUtils$System.currentTimeMillis()</ID>
-    <ID>NoSystemCurrentTimeMillis:GleanUsageReportingLifecycleObserver.kt$GleanUsageReportingLifecycleObserver$System.currentTimeMillis()</ID>
-    <ID>NoSystemCurrentTimeMillis:MainActivity.kt$MainActivity$System.currentTimeMillis()</ID>
-    <ID>NoSystemCurrentTimeMillis:MainActivity.kt$MainActivity.&lt;no name provided&gt;$System.currentTimeMillis()</ID>
   </CurrentIssues>
 </SmellBaseline>
