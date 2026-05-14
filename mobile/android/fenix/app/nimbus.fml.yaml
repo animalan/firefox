@@ -1003,7 +1003,7 @@ features:
           enabled: false
       - channel: beta
         value:
-          enabled: false
+          enabled: true
       - channel: nightly
         value:
           enabled: true
@@ -1021,10 +1021,10 @@ features:
           enabled: false
       - channel: beta
         value:
-          enabled: false
+          enabled: true
       - channel: nightly
         value:
-          enabled: false
+          enabled: true
 
   marketing-onboarding-card:
     description: A temporary feature to control the marketing onboarding card shown during the onboarding flow.

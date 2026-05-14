@@ -43,13 +43,10 @@ data object DefaultTabManagementFeatureHelper : TabManagementFeatureHelper {
         get() = Config.channel.isDebug || FxNimbus.features.tabManagementEnhancements.value().openingAnimationEnabled
 
     override val tabGroupsEnabled: Boolean
-        get() = FxNimbus.features.tabGroups.value().enabled
+        get() = Config.channel.isDebug || FxNimbus.features.tabGroups.value().enabled
 
     override val tabGroupsDragAndDropEnabled: Boolean
-        get() = when {
-            Config.channel.isDebug -> true
-            else -> FxNimbus.features.tabGroups.value().enabled
-        }
+        get() = Config.channel.isDebug || FxNimbus.features.tabGroupsDragAndDrop.value().enabled
 
     override val shareTabGroupEnabled: Boolean
         get() = false
