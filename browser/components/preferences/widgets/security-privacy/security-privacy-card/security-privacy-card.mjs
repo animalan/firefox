@@ -324,11 +324,11 @@ export default class SecurityPrivacyCard extends MozLitElement {
       <moz-card aria-labelledby="heading">
         <div class="card-contents">
           <div class="status-text-container">
-            <h3
+            <h2
               id="heading"
               class="text-box-trim-start"
               data-l10n-id=${headerL10nId}
-            ></h3>
+            ></h2>
             <ul>
               ${this.buildIssuesElement()} ${this.buildTrackersElement()}
               ${this.buildUpdateElement()}

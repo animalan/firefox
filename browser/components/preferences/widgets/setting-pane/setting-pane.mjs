@@ -33,7 +33,6 @@ export class SettingPane extends MozLitElement {
     isSubPane: { type: Boolean },
     config: { type: Object },
     showRedesignPromo: { type: Boolean, attribute: false },
-    onSearchPane: { type: Boolean, reflect: true },
   };
 
   /** @returns {MozPageHeader} */
@@ -55,12 +54,6 @@ export class SettingPane extends MozLitElement {
     this.config = undefined;
     /** @type {boolean} */
     this.showRedesignPromo = false;
-    /**
-     * True while this pane is rendered as part of a search result. When set,
-     * the pane's heading is rendered one level deeper so the "Search results"
-     * h2 stays above it in the heading hierarchy.
-     */
-    this.onSearchPane = false;
   }
 
   createRenderRoot() {
@@ -206,11 +199,9 @@ export class SettingPane extends MozLitElement {
 
   /**
    * Shows the settings redesign promo if user hasn't dismissed it.
-   * Suppressed while the pane is displayed as a search result so the
-   * promo doesn't repeat above every matching pane.
    */
   settingsRedesignPromoTemplate() {
-    if (!this.showRedesignPromo || this.onSearchPane) {
+    if (!this.showRedesignPromo) {
       return "";
     }
 
@@ -237,7 +228,6 @@ export class SettingPane extends MozLitElement {
           .supportPage=${this.config.supportPage}
           .badge=${this.config.badge}
           .backButton=${this.isSubPane}
-          .headingLevel=${this.onSearchPane ? 3 : 2}
           @navigate-back=${this.goBack}
           >${this.breadcrumbsTemplate()}</moz-page-header
         >
