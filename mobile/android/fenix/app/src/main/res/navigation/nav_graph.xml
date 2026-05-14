@@ -1506,8 +1506,7 @@
     </fragment>
     <fragment
         android:id="@+id/addonPermissionsDetailFragment"
-        android:name="org.mozilla.fenix.addons.AddonPermissionsDetailsFragment"
-        tools:layout="@layout/fragment_add_on_permissions">
+        android:name="org.mozilla.fenix.addons.AddonPermissionsDetailsFragment">
         <argument
             android:name="addon"
             app:argType="mozilla.components.feature.addons.Addon" />
