@@ -78,6 +78,7 @@ add_task(async function test_status_card_disconnected() {
 
   let statusBoxEl = statusCard.statusBoxEl;
   Assert.ok(statusBoxEl, "Status box should be present");
+  await checkStatusBoxAriaLabel(statusBoxEl);
 
   const bandwidthEl = statusBoxEl.shadowRoot
     .querySelector(`slot[name="bandwidth"]`)
@@ -113,6 +114,7 @@ add_task(async function test_status_card_connected() {
 
   let statusBoxEl = statusCard.statusBoxEl;
   Assert.ok(statusBoxEl, "Status box should be present");
+  await checkStatusBoxAriaLabel(statusBoxEl);
 
   const bandwidthEl = statusBoxEl.shadowRoot
     .querySelector(`slot[name="bandwidth"]`)
@@ -254,6 +256,7 @@ add_task(async function test_status_card_excluded() {
 
   let statusBoxEl = statusCard.statusBoxEl;
   Assert.ok(statusBoxEl, "Status box should be present");
+  await checkStatusBoxAriaLabel(statusBoxEl);
 
   Assert.equal(
     statusBoxEl.type,
@@ -297,6 +300,7 @@ add_task(async function test_status_card_connecting() {
 
   let statusBoxEl = statusCard.statusBoxEl;
   Assert.ok(statusBoxEl, "Status box should be present");
+  await checkStatusBoxAriaLabel(statusBoxEl);
 
   Assert.equal(
     statusBoxEl.type,

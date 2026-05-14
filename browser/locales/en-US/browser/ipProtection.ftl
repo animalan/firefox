@@ -93,10 +93,14 @@ ipprotection-settings-link =
 
 ## Status card
 
-ipprotection-connection-status-connected = VPN is on
-ipprotection-connection-status-disconnected = VPN is off
-ipprotection-connection-status-excluded = VPN is off for this site
-ipprotection-connection-status-connecting = VPN is connecting…
+ipprotection-connection-status-connected-1 = VPN is on
+  .aria-label = VPN is on
+ipprotection-connection-status-disconnected-1 = VPN is off
+  .aria-label = VPN is off
+ipprotection-connection-status-excluded-1 = VPN is off for this site
+  .aria-label = VPN is off for this site
+ipprotection-connection-status-connecting-1 = VPN is connecting…
+  .aria-label = VPN is connecting…
 
 # Button to turn off the VPN
 ipprotection-button-turn-vpn-off = Turn off VPN
@@ -134,7 +138,8 @@ ipprotection-locations-subview-promo-button = Get { -mozilla-vpn-brand-name }
 
 ## VPN paused state
 
-ipprotection-connection-status-paused-title-1 = VPN is paused
+ipprotection-connection-status-paused-title-2 = VPN is paused
+  .aria-label = VPN is paused
 # Variables
 #   $maxUsage (number) - The maximum amount of data a user can use in a month (in GB)
 ipprotection-connection-status-paused-description-1 = You’ve used all { $maxUsage } GB of your VPN data. Access resets next month.
@@ -144,14 +149,17 @@ upgrade-vpn-button = Try { -mozilla-vpn-brand-name }
 
 ## Messages and errors
 
-ipprotection-connection-status-generic-error-title = Couldn’t connect to VPN
+ipprotection-connection-status-generic-error-title-1 = Couldn’t connect to VPN
+  .aria-label = Couldn’t connect to VPN
 ipprotection-connection-status-generic-error-description = Try again in a few minutes.
 ipprotection-connection-status-generic-error-try-again = Please try again later.
 
-ipprotection-connection-status-network-error-title = Check your internet connection
+ipprotection-connection-status-network-error-title-1 = Check your internet connection
+  .aria-label = Check your internet connection
 ipprotection-connection-status-network-error-description = Connect to the internet, then try turning VPN on.
 
-ipprotection-connection-status-blocked-error-title = VPN is unavailable
+ipprotection-connection-status-blocked-error-title-1 = VPN is unavailable
+  .aria-label = VPN is unavailable
 ipprotection-connection-status-blocked-error-description = Local laws prevent us from providing VPN service in this region. <a data-l10n-name="learn-more-link">Learn more</a>
 
 # Variables

@@ -48,6 +48,7 @@ add_task(async function test_paused_content() {
 
   Assert.ok(pausedTitle, "Paused title should be present");
   Assert.ok(pausedDescription, "Paused description should be present");
+  await checkStatusBoxAriaLabel(statusBox);
   Assert.ok(
     upgradeContent,
     "Upgrade content should be present when not upgraded"
@@ -107,6 +108,7 @@ add_task(async function test_paused_content_upgraded() {
 
   Assert.ok(pausedTitle, "Paused title should be present");
   Assert.ok(pausedDescription, "Paused description should be present");
+  await checkStatusBoxAriaLabel(statusBox);
   Assert.ok(
     !upgradeContent,
     "Upgrade content should not be present when user has upgraded"
@@ -135,6 +137,7 @@ add_task(async function test_generic_error() {
 
   Assert.ok(errorTitle, "Error title should be present");
   Assert.ok(errorDescription, "Error description should be present");
+  await checkStatusBoxAriaLabel(statusBox);
 
   Assert.equal(
     statusBox.type,
@@ -167,6 +170,7 @@ add_task(async function test_network_error() {
 
   Assert.ok(errorTitle, "Error title should be present");
   Assert.ok(errorDescription, "Error description should be present");
+  await checkStatusBoxAriaLabel(statusBox);
 
   Assert.equal(
     statusBox.type,
@@ -203,6 +207,7 @@ add_task(async function test_catastrophic_error() {
 
   Assert.ok(errorTitle, "Error title should be present");
   Assert.ok(errorDescription, "Error description should be present");
+  await checkStatusBoxAriaLabel(statusBox);
 
   Assert.equal(
     statusBox.type,

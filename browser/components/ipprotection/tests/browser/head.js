@@ -646,6 +646,24 @@ function checkBandwidth(bandwidthEl, bandwidthUsage) {
   );
 }
 
+async function checkStatusBoxAriaLabel(statusBox) {
+  let titleEl = statusBox.titleEl;
+  Assert.ok(titleEl, "Status box title should be present");
+
+  await BrowserTestUtils.waitForMutationCondition(
+    titleEl,
+    { attributes: true, attributeFilter: ["aria-label"] },
+    () => titleEl.hasAttribute("aria-label")
+  );
+
+  Assert.equal(
+    titleEl.getAttribute("aria-label"),
+    titleEl.textContent.trim(),
+    "Status box title aria-label should match the displayed text"
+  );
+}
+/* exported checkStatusBoxAriaLabel */
+
 // Borrowed from browser_PanelMultiView_keyboard.js
 async function expectFocusAfterKey(aKey, aFocus) {
   let res = aKey.match(/^(Shift\+)?(.+)$/);
