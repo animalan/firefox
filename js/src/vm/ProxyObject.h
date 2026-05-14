@@ -31,9 +31,6 @@ class ProxyObject : public JSObject {
                   "proxy object size must match GC thing size");
     static_assert(offsetof(ProxyObject, data) == detail::ProxyDataOffset,
                   "proxy object layout must match shadow interface");
-    static_assert(offsetof(ProxyObject, data.reservedSlots) ==
-                      offsetof(JS::shadow::NativeObject, slots),
-                  "Proxy reservedSlots must overlay native object slots field");
   }
 
   // The ProxyValueArray is always stored inline immediately after the
@@ -48,12 +45,6 @@ class ProxyObject : public JSObject {
                           const JSClass* clasp);
 
   void init(const BaseProxyHandler* handler, HandleValue priv, JSContext* cx);
-
-  void setInlineValueArray() {
-    uintptr_t valuesAddr = uintptr_t(this) + offsetOfProxyValueArray();
-    auto* values = reinterpret_cast<detail::ProxyValueArray*>(valuesAddr);
-    data.reservedSlots = &values->reservedSlots;
-  }
 
   const Value& private_() const { return GetProxyPrivate(this); }
   const Value& expando() const { return GetProxyExpando(this); }
@@ -98,7 +89,7 @@ class ProxyObject : public JSObject {
  private:
   GCPtr<Value>* reservedSlotPtr(size_t n) {
     return reinterpret_cast<GCPtr<Value>*>(
-        &detail::GetProxyDataLayout(this)->reservedSlots->slots[n]);
+        &detail::GetProxyDataLayout(this)->values()->reservedSlots[n]);
   }
 
   GCPtr<Value>* slotOfPrivate() {

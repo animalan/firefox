@@ -250,8 +250,6 @@ static void RelocateCell(Zone* zone, TenuredCell* src, AllocKind thingKind,
             srcNative->getElementsHeader()->numShiftedElements();
         dstNative->setFixedElements(numShifted);
       }
-    } else if (srcObj->is<ProxyObject>()) {
-      dstObj->as<ProxyObject>().setInlineValueArray();
     }
 
     // Call object moved hook if present.

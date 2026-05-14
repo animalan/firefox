@@ -46,8 +46,6 @@ static gc::AllocKind GetProxyGCObjectKind(const JSClass* clasp,
 
 void ProxyObject::init(const BaseProxyHandler* handler, HandleValue priv,
                        JSContext* cx) {
-  setInlineValueArray();
-
   detail::ProxyValueArray* values = detail::GetProxyDataLayout(this)->values();
   values->init(numReservedSlots());
 

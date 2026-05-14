@@ -1017,9 +1017,6 @@ void JSObject::swap(JSContext* cx, HandleObject a, HandleObject b,
   js_memcpy(a, b, size);
   js_memcpy(b, tmp, size);
 
-  a->as<ProxyObject>().setInlineValueArray();
-  b->as<ProxyObject>().setInlineValueArray();
-
   MOZ_ASSERT_IF(aid, gc::GetUniqueIdInfallible(a) == aid);
   MOZ_ASSERT_IF(bid, gc::GetUniqueIdInfallible(b) == bid);
 

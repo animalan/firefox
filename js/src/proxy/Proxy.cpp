@@ -926,7 +926,6 @@ static void proxy_Finalize(JS::GCContext* gcx, JSObject* obj) {
 
 size_t js::proxy_ObjectMoved(JSObject* obj, JSObject* old) {
   ProxyObject& proxy = obj->as<ProxyObject>();
-  proxy.setInlineValueArray();
   return proxy.handler()->objectMoved(obj, old);
 }
 
