@@ -346,8 +346,9 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity, Crash
                 authorization = FenixFxAEntryPoint.IPProtectionMainMenu,
                 authentication = FenixFxAEntryPoint.IPProtectionOnboarding,
             ),
-            onAuthRequested = { url, _ ->
+            onAuthRequested = { url, onCompleteAction ->
                 val intent = SupportUtils.createAuthCustomTabIntent(this, url)
+                intent.putExtra("OnCompleteAction", onCompleteAction)
                 startActivity(intent)
             },
         )

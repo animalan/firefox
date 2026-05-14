@@ -76,8 +76,7 @@ internal class FxaAccountStoreSync(
                 .collect { state ->
                     val mappedState = when (state) {
                         AccountState.Authenticated -> {
-                            // We got here after an authorization, otherwise it was an authentication that
-                            // may have come from a cold-start or another service that authenticated.
+                            // TODO(jonalmeida) simplify this when you have thinking-time...
                             if (ipProtectionStore.state.accountState.isFirstEnrollment) {
                                 AccountStatus.Ready
                             } else {
