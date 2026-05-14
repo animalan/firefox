@@ -924,6 +924,11 @@ tab-split-view-wrapper[dragtarget] {
   outline: var(--tab-outline);
   outline-offset: var(--tab-outline-offset);
 
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media -moz-pref("browser.nova.enabled") {
+    border: 1px solid transparent;
+  }
+
   .tabbrowser-tab:hover > .tab-stack > &:not([selected], [multiselected]) {
     background-color: var(--tab-background-color-hover);
     outline-color: var(--tab-hover-outline-color);
@@ -941,7 +946,6 @@ tab-split-view-wrapper[dragtarget] {
     /* stylelint-disable-next-line media-query-no-invalid */
     @media (not ((forced-colors) or (-moz-native-theme))) and (-moz-pref("browser.nova.enabled")) {
       :root:not([lwtheme]) & {
-        border: 1px solid transparent;
         background:
           linear-gradient(var(--tab-background-color-selected)) padding-box,
           var(--tab-border-color-accent) border-box;
