@@ -4268,6 +4268,9 @@ void AsyncPanZoomController::SmoothScrollTo(
   // If no scroll is required, we should exit early to avoid triggering
   // a scrollend event when no scrolling occurred.
   if (ConvertDestinationToDelta(aDestination.mPosition) == ParentLayerPoint()) {
+    RecursiveMutexAutoLock lock(mRecursiveMutex);
+    mLastSnapTargetIds = std::move(aDestination.mTargetIds);
+    RequestContentRepaint();  // push new snap target ids to main thread
     return;
   }
 
@@ -7024,13 +7027,11 @@ void AsyncPanZoomController::ScrollSnapNear(const CSSPoint& aDestination,
                                             ScrollSnapFlags aSnapFlags) {
   if (Maybe<CSSSnapDestination> snapDestination = FindSnapPointNear(
           aDestination, ScrollUnit::DEVICE_PIXELS, aSnapFlags)) {
-    if (snapDestination->mPosition != Metrics().GetVisualScrollOffset()) {
-      APZC_LOG("%p smooth scrolling to snap point %s\n", this,
-               ToString(snapDestination->mPosition).c_str());
-      SmoothScrollTo(std::move(*snapDestination), ScrollTriggeredByScript::No,
-                     ScrollAnimationKind::SmoothMsd, ViewportType::Visual,
-                     ScrollOrigin::NotSpecified, GetFrameTime().Time());
-    }
+    APZC_LOG("%p smooth scrolling to snap point %s\n", this,
+             ToString(snapDestination->mPosition).c_str());
+    SmoothScrollTo(std::move(*snapDestination), ScrollTriggeredByScript::No,
+                   ScrollAnimationKind::SmoothMsd, ViewportType::Visual,
+                   ScrollOrigin::NotSpecified, GetFrameTime().Time());
   }
 }
 
