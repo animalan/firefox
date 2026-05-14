@@ -10,7 +10,7 @@ support-files = [
   "tests/basic_quality.sys.mjs",
 ]
 
-["browser_eval_basic_quality_gemini25flashlite.js"]
+["browser_eval_basic_quality_gemini31flashlite.js"]
 
 ["browser_eval_basic_quality_gptoss120b.js"]
 
