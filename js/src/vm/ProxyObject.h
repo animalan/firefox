@@ -47,7 +47,7 @@ class ProxyObject : public JSObject {
   void init(const BaseProxyHandler* handler, HandleValue priv, JSContext* cx);
 
   const Value& private_() const { return GetProxyPrivate(this); }
-  const Value& expando() const { return GetProxyExpando(this); }
+  JSObject* expando() const { return GetProxyExpando(this); }
 
   void setExpando(JSObject* expando);
 
@@ -97,9 +97,9 @@ class ProxyObject : public JSObject {
         &detail::GetProxyDataLayout(this)->values()->privateSlot);
   }
 
-  GCPtr<Value>* slotOfExpando() {
-    return reinterpret_cast<GCPtr<Value>*>(
-        &detail::GetProxyDataLayout(this)->values()->expandoSlot);
+  GCPtr<JSObject*>* expandoPtr() {
+    return reinterpret_cast<GCPtr<JSObject*>*>(
+        &detail::GetProxyDataLayout(this)->expando);
   }
 
   void setPrivate(const Value& priv);

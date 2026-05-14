@@ -2578,10 +2578,9 @@ void JSObject::dumpFields(js::JSONPrinter& json) const {
       json.endStringProperty();
     }
 
-    Value expando = GetProxyExpando(this);
-    if (!expando.isNull()) {
+    if (JSObject* expando = GetProxyExpando(this)) {
       js::GenericPrinter& out = json.beginStringProperty("expando");
-      expando.dumpStringContent(out);
+      JS::ObjectValue(*expando).dumpStringContent(out);
       json.endStringProperty();
     }
 

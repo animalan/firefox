@@ -196,10 +196,9 @@ bool CheckObject(HandleObject obj, uint32_t id) {
 
   CHECK(GetProxyPrivate(obj) == Int32Value(id++));
 
-  Value expandoValue = GetProxyExpando(obj);
-  CHECK(expandoValue.isObject());
+  RootedObject expando(cx, GetProxyExpando(obj));
+  CHECK(expando);
 
-  RootedObject expando(cx, &expandoValue.toObject());
   RootedValue expandoId(cx);
   JS_GetProperty(cx, expando, "id", &expandoId);
   CHECK(expandoId == Int32Value(id++));

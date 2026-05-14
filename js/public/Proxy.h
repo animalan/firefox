@@ -407,20 +407,16 @@ namespace detail {
 //
 // Every proxy has a ProxyValueArray that contains the following Values:
 //
-// - The expando slot. This is used to hold private fields should they be
-//   stamped into a non-forwarding proxy type.
 // - The private slot.
 // - The reserved slots. The number of slots is determined by the proxy's Class.
 //
 // The ProxyValueArray is allocated inline immediately after the ProxyObject
 // header (containing the object's shape and ProxyDataLayout).
 struct ProxyValueArray {
-  JS::Value expandoSlot;
   JS::Value privateSlot;
   JS::Value reservedSlots[1];
 
   void init(size_t nreserved) {
-    expandoSlot = JS::ObjectOrNullValue(nullptr);
     privateSlot = JS::UndefinedValue();
     for (size_t i = 0; i < nreserved; i++) {
       reservedSlots[i] = JS::UndefinedValue();
@@ -440,15 +436,25 @@ struct ProxyValueArray {
 };
 
 // All proxies share the same data layout. Following the object's shape, the
-// proxy has a ProxyDataLayout structure with the proxy's handler. The
-// ProxyValueArray is stored inline immediately after the ProxyDataLayout.
+// proxy has a ProxyDataLayout structure with the proxy's handler and expando
+// object pointer. The ProxyValueArray is stored inline immediately after the
+// ProxyDataLayout.
 struct ProxyDataLayout {
-  uintptr_t padding_;
   const BaseProxyHandler* handler;
+
+  // The expando object holds private fields should they be stamped into a
+  // non-forwarding proxy. This is nullptr when the proxy has no expando.
+  JSObject* expando;
 
   MOZ_ALWAYS_INLINE ProxyValueArray* values() const {
     return reinterpret_cast<ProxyValueArray*>(
         reinterpret_cast<uintptr_t>(this) + sizeof(ProxyDataLayout));
+  }
+
+  void init(const BaseProxyHandler* handlerArg, size_t nreserved) {
+    handler = handlerArg;
+    expando = nullptr;
+    values()->init(nreserved);
   }
 };
 
@@ -496,8 +502,8 @@ inline const JS::Value& GetProxyPrivate(const JSObject* obj) {
   return detail::GetProxyDataLayout(obj)->values()->privateSlot;
 }
 
-inline const JS::Value& GetProxyExpando(const JSObject* obj) {
-  return detail::GetProxyDataLayout(obj)->values()->expandoSlot;
+inline JSObject* GetProxyExpando(const JSObject* obj) {
+  return detail::GetProxyDataLayout(obj)->expando;
 }
 
 inline JSObject* GetProxyTargetObject(const JSObject* obj) {
