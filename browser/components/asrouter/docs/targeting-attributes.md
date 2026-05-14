@@ -635,6 +635,16 @@ Returns whether the current tab has a matching Web App (Taskbar Tab) installed.
 declare const currentTabInstalledAsWebApp: Promise<boolean>;
 ```
 
+### `installedWebAppsCount`
+
+Returns the number of Web Apps (Taskbar Tabs) the user has installed.
+
+#### Definition
+
+```ts
+declare const installedWebAppsCount: Promise<number>;
+```
+
 ### `currentTabGroups`
 
 Returns the number of currently open tab groups.

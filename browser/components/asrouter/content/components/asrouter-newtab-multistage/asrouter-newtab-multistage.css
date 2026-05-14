@@ -1177,6 +1177,14 @@ html {
   min-height: 100vh;
 }
 
+.onboardingContainer:has(.pinnable-sites-list) .screen[pos=split] .section-main .main-content {
+  padding-block: 40px 0;
+}
+.onboardingContainer:has(.pinnable-sites-list) .screen[pos=split] .section-main .main-content .action-buttons .primary {
+  min-width: 96px;
+  padding-block: 8px;
+}
+
 .onboardingContainer:has(.embedded-backup-restore-container) .screen[pos=split][fullscreen] .section-main .main-content {
   text-align: start;
 }
@@ -3427,6 +3435,67 @@ html {
 .onboardingContainer #content-tiles-container .content-tile .multi-select-container .checkbox-container p {
   margin-block: 0.5em 0;
 }
+.onboardingContainer .pinnable-sites-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: var(--space-medium);
+  max-width: 300px;
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-medium);
+  gap: 14px;
+  min-height: 45px;
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-item:hover .pinnable-sites-pin-button:not(:disabled), .onboardingContainer .pinnable-sites-list .pinnable-sites-item:focus-within .pinnable-sites-pin-button:not(:disabled) {
+  opacity: 1;
+  pointer-events: auto;
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-text {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  text-align: start;
+  overflow: hidden;
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-name {
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-description {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-pin-button {
+  flex-shrink: 0;
+  opacity: 0;
+  pointer-events: none;
+  min-width: 62px;
+  padding-block: 8px;
+  transition: opacity 100ms;
+}
+@starting-style {
+  .onboardingContainer .pinnable-sites-list .pinnable-sites-pin-button {
+    opacity: 0;
+  }
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-pin-button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
 .onboardingContainer .tile-title-container {
   margin-inline: 0;
   margin-block: 10px var(--space-xlarge);
@@ -3795,6 +3864,9 @@ html {
 .onboardingContainer .screen:not(.dialog-initial) .legal-paragraph,
 .onboardingContainer .screen:not(.dialog-initial) .steps[above-button]:not(.progress-bar) {
   transition-delay: 0.4s;
+}
+.onboardingContainer .pinnable-sites-list .pinnable-sites-item .pinnable-sites-pin-button {
+  transition-delay: 0s;
 }
 .onboardingContainer .screen-2 .section-main {
   z-index: 1;

@@ -743,9 +743,11 @@ export class WelcomeScreen extends React.PureComponent {
     let action =
       providedAction || this.resolveActionFromContent(value, event, props);
 
+    let actionResult;
+
     if (!action) {
       console.error("Failed to resolve action");
-      return;
+      return actionResult;
     }
 
     // Send telemetry before waiting on actions
@@ -760,8 +762,6 @@ export class WelcomeScreen extends React.PureComponent {
     if (action.collectTextInput && Object.values(props.textInputs).length) {
       this.setTextInputActions(action);
     }
-
-    let actionResult;
     if (["OPEN_URL", "SHOW_FIREFOX_ACCOUNTS"].includes(action.type)) {
       this.handleOpenURL(action, props.flowParams, props.UTMTerm);
     } else if (action.type === "INSTALL_ADDON_FROM_URL") {
@@ -834,6 +834,8 @@ export class WelcomeScreen extends React.PureComponent {
     if (shouldDoBehavior(action.dismiss)) {
       window.AWFinish();
     }
+
+    return actionResult;
   }
 
   setMultiSelectActions(action) {

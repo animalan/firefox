@@ -4111,6 +4111,113 @@ const MESSAGES = () => [
     },
     targeting: "isAIWindow",
   },
+  {
+    id: "TASKBAR_TABS_PINNING_SPOTLIGHT_TEST",
+    groups: ["panel-test-provider"],
+    template: "spotlight",
+    content: {
+      id: "TASKBAR_TABS_PINNING_SPOTLIGHT_TEST",
+      template: "multistage",
+      modal: "tab",
+      transitions: false,
+      screens: [
+        {
+          id: "TASKBAR_TABS_PINNING_SCREEN",
+          force_hide_steps_indicator: true,
+          content: {
+            position: "split",
+            background:
+              "center / contain no-repeat url('https://firefox-settings-attachments.cdn.mozilla.net/main-workspace/ms-images/59bfe927-5d21-45ca-84eb-7fe14627cfd8.svg')",
+            hero_text: {
+              title: {
+                raw: "Open your favorite sites like an app",
+                fontSize: "24px",
+              },
+              subtitle: {
+                raw: "One click launches your most used sites in a streamlined window with all of Firefox’s protections.",
+                marginBlockEnd: "300px",
+                textAlign: "initial",
+                marginInline: "40px",
+                marginInlineEnd: "6px",
+                fontSize: "13px",
+              },
+            },
+            tiles: {
+              type: "pinnable_sites",
+              title: {
+                raw: "Select sites to pin to your taskbar",
+                fontSize: "18px",
+              },
+              pinButtonLabel: { raw: "Add" },
+              data: [
+                {
+                  id: "gmail",
+                  name: "Gmail",
+                  description: "mail.google.com",
+                  iconUrl:
+                    "https://firefox-settings-attachments.cdn.mozilla.net/main-workspace/ms-images/fb6b6899-82bc-40bc-91c3-e73e768ed855.png",
+                  url: "https://mail.google.com/",
+                },
+                {
+                  id: "youtube",
+                  name: "YouTube",
+                  description: "youtube.com",
+                  iconUrl:
+                    "https://firefox-settings-attachments.cdn.mozilla.net/main-workspace/ms-images/fb6b6899-82bc-40bc-91c3-e73e768ed855.png",
+                  url: "https://www.youtube.com/",
+                },
+                {
+                  id: "spotify",
+                  name: "Spotify",
+                  description: "open.spotify.com",
+                  iconUrl:
+                    "https://firefox-settings-attachments.cdn.mozilla.net/main-workspace/ms-images/fb6b6899-82bc-40bc-91c3-e73e768ed855.png",
+                  url: "https://open.spotify.com/",
+                },
+                {
+                  id: "whatsapp",
+                  name: "WhatsApp",
+                  description: "web.whatsapp.com",
+                  iconUrl:
+                    "https://firefox-settings-attachments.cdn.mozilla.net/main-workspace/ms-images/fb6b6899-82bc-40bc-91c3-e73e768ed855.png",
+                  url: "https://web.whatsapp.com/",
+                },
+                {
+                  id: "instagram",
+                  name: "Instagram",
+                  description: "instagram.com",
+                  iconUrl:
+                    "https://firefox-settings-attachments.cdn.mozilla.net/main-workspace/ms-images/fb6b6899-82bc-40bc-91c3-e73e768ed855.png",
+                  url: "https://www.instagram.com/",
+                },
+                {
+                  id: "tiktok",
+                  name: "TikTok",
+                  description: "tiktok.com",
+                  iconUrl:
+                    "https://firefox-settings-attachments.cdn.mozilla.net/main-workspace/ms-images/fb6b6899-82bc-40bc-91c3-e73e768ed855.png",
+                  url: "https://www.tiktok.com/",
+                },
+              ],
+            },
+            primary_button: {
+              label: { raw: "Done" },
+              action: { dismiss: true },
+            },
+            dismiss_button: {
+              action: {
+                dismiss: true,
+              },
+            },
+          },
+        },
+      ],
+    },
+    frequency: {
+      lifetime: 100,
+    },
+    targeting: "true",
+  },
 ];
 
 export const PanelTestProvider = {

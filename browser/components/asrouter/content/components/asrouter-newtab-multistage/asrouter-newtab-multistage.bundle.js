@@ -2105,11 +2105,101 @@ const EmbeddedBackupRestore = ({
     onClick: handleAction
   })))) : null);
 };
+;// ./content-src/components/PinnableSitesList.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+
+
+
+// Per-item button states.
+const IDLE = "idle";
+const PENDING = "pending";
+const PINNED = "pinned";
+const PinnableSitesList = ({
+  tile,
+  messageId,
+  handleAction
+}) => {
+  const items = tile?.data;
+  const pinButtonLabel = tile?.pinButtonLabel;
+  const [itemStates, setItemStates] = (0,external_React_namespaceObject.useState)(() => Object.fromEntries((items ?? []).map(item => [item.id, IDLE])));
+  if (!items?.length) {
+    return null;
+  }
+  const setItemState = (id, state) => setItemStates(prev => ({
+    ...prev,
+    [id]: state
+  }));
+  const handlePin = async (event, item) => {
+    setItemState(item.id, PENDING);
+    MultiStageUtils.sendActionTelemetry(messageId, item.id, "CLICK_BUTTON");
+    const result = await handleAction(event, {
+      type: "PIN_TASKBAR_TAB",
+      needsAwait: true,
+      data: {
+        url: item.url,
+        name: item.name,
+        iconUrl: item.iconUrl
+      }
+    });
+    let pinResultLabel;
+    if (result === true) {
+      pinResultLabel = "success";
+    } else if (result === null) {
+      pinResultLabel = "already_pinned";
+    } else {
+      pinResultLabel = "failure";
+    }
+    MultiStageUtils.sendActionTelemetry(messageId, item.id, "PIN_SITE", {
+      result: pinResultLabel
+    });
+
+    // Re-enable the button only on explicit failure so the user can retry.
+    setItemState(item.id, result === false ? IDLE : PINNED);
+  };
+  return /*#__PURE__*/external_React_default().createElement("ul", {
+    className: "pinnable-sites-list"
+  }, items.map(item => {
+    const nameId = `pinnable-site-name-${item.id}`;
+    const state = itemStates[item.id] ?? IDLE;
+    const isPendingOrPinned = state === PENDING || state === PINNED;
+    return /*#__PURE__*/external_React_default().createElement("li", {
+      key: item.id,
+      className: "pinnable-sites-item"
+    }, /*#__PURE__*/external_React_default().createElement("img", {
+      className: "pinnable-sites-icon",
+      src: item.iconUrl,
+      alt: ""
+    }), /*#__PURE__*/external_React_default().createElement("div", {
+      className: "pinnable-sites-text"
+    }, /*#__PURE__*/external_React_default().createElement(Localized, {
+      text: item.title ?? item.name
+    }, /*#__PURE__*/external_React_default().createElement("span", {
+      id: nameId,
+      className: "pinnable-sites-name"
+    })), item.description && /*#__PURE__*/external_React_default().createElement(Localized, {
+      text: item.description
+    }, /*#__PURE__*/external_React_default().createElement("span", {
+      className: "pinnable-sites-description"
+    }))), /*#__PURE__*/external_React_default().createElement("button", {
+      className: "pinnable-sites-pin-button primary",
+      disabled: isPendingOrPinned,
+      onClick: e => handlePin(e, item),
+      "aria-describedby": nameId
+    }, pinButtonLabel && /*#__PURE__*/external_React_default().createElement(Localized, {
+      text: pinButtonLabel
+    }, /*#__PURE__*/external_React_default().createElement("span", null))));
+  }));
+};
 ;// ./content-src/components/ContentTiles.jsx
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 
 
 
@@ -2395,6 +2485,10 @@ const ContentTiles = props => {
       options: tile.options
     }), tile.type === "confirmation-checklist" && tile.data && /*#__PURE__*/external_React_default().createElement(ConfirmationChecklist, {
       content: tile.data,
+      handleAction: props.handleAction
+    }), tile.type === "pinnable_sites" && tile.data && /*#__PURE__*/external_React_default().createElement(PinnableSitesList, {
+      tile: tile,
+      messageId: props.messageId,
       handleAction: props.handleAction
     })) : null);
   };
@@ -3800,9 +3894,10 @@ class WelcomeScreen extends (external_React_default()).PureComponent {
     const value = event.currentTarget.value ?? event.currentTarget.getAttribute("value");
     const source = event.source || value;
     let action = providedAction || this.resolveActionFromContent(value, event, props);
+    let actionResult;
     if (!action) {
       console.error("Failed to resolve action");
-      return;
+      return actionResult;
     }
 
     // Send telemetry before waiting on actions
@@ -3819,7 +3914,6 @@ class WelcomeScreen extends (external_React_default()).PureComponent {
     if (action.collectTextInput && Object.values(props.textInputs).length) {
       this.setTextInputActions(action);
     }
-    let actionResult;
     if (["OPEN_URL", "SHOW_FIREFOX_ACCOUNTS"].includes(action.type)) {
       this.handleOpenURL(action, props.flowParams, props.UTMTerm);
     } else if (action.type === "INSTALL_ADDON_FROM_URL") {
@@ -3884,6 +3978,7 @@ class WelcomeScreen extends (external_React_default()).PureComponent {
     if (shouldDoBehavior(action.dismiss)) {
       window.AWFinish();
     }
+    return actionResult;
   }
   setMultiSelectActions(action) {
     let {

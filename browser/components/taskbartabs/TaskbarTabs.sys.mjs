@@ -127,6 +127,11 @@ export const TaskbarTabs = new (class {
     return this.#registry.findTaskbarTab(...args);
   }
 
+  async countTaskbarTabs() {
+    await this.#ready;
+    return this.#registry.countTaskbarTabs();
+  }
+
   /**
    * Moves an existing tab into a new Taskbar Tab window.
    *

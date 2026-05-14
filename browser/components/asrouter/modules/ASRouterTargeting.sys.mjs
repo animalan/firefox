@@ -869,6 +869,9 @@ const TargetingGetters = {
     let totalTabGroups = win.gBrowser.getAllTabGroups().length;
     return totalTabGroups;
   },
+  get installedWebAppsCount() {
+    return lazy.TaskbarTabs.countTaskbarTabs();
+  },
   get currentTabInstalledAsWebApp() {
     let win = lazy.BrowserWindowTracker.getTopWindow({
       allowFromInactiveWorkspace: true,
