@@ -65,6 +65,7 @@ import org.mozilla.fenix.tabstray.ui.tabitems.TabsTrayItemClickHandler
 import org.mozilla.fenix.tabstray.ui.tabitems.TabsTrayItemSelectionState
 import org.mozilla.fenix.tabstray.ui.tabitems.ThumbnailShape
 import org.mozilla.fenix.tabstray.ui.tabitems.gridItemAspectRatio
+import org.mozilla.fenix.tabstray.ui.tabitems.tabGridItemContainerColor
 import org.mozilla.fenix.tabstray.ui.tabitems.tabItemClickable
 import org.mozilla.fenix.tabstray.ui.tabitems.tabItemConditionalBorder
 import org.mozilla.fenix.tabstray.ui.tabitems.tabItemInteractionAnimation
@@ -97,6 +98,8 @@ fun TabGroupCard(
     onEditTabGroupClick: () -> Unit,
     onCloseTabGroupClick: () -> Unit,
 ) {
+    val containerColor = tabGridItemContainerColor(selectionState)
+
     Box(
         modifier = modifier
             .wrapContentSize()
@@ -114,7 +117,7 @@ fun TabGroupCard(
             shape = TabContentCardShape,
             border = tabItemConditionalBorder(selectionState),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                containerColor = containerColor,
             ),
         ) {
             Column(modifier = Modifier.aspectRatio(gridItemAspectRatio)) {
@@ -127,10 +130,7 @@ fun TabGroupCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     CompositionLocalProvider(LocalContentColor provides group.theme.onPrimary) {
-                        Spacer(
-                            modifier = Modifier
-                                .width(FirefoxTheme.layout.space.static100),
-                        )
+                        Spacer(modifier = Modifier.width(FirefoxTheme.layout.space.static100))
 
                         Text(
                             text = group.title.take(MAX_URI_LENGTH),
@@ -153,10 +153,7 @@ fun TabGroupCard(
                     }
                 }
 
-                Spacer(
-                    modifier = Modifier
-                        .height(FirefoxTheme.layout.space.static25),
-                )
+                Spacer(modifier = Modifier.height(FirefoxTheme.layout.space.static25))
 
                 // 4x4 Thumbnail Grid
                 Card(
@@ -170,6 +167,7 @@ fun TabGroupCard(
                 ) {
                     ThumbnailsGridView(
                         thumbnails = group.thumbnails,
+                        containerColor = containerColor,
                     )
                 }
 
@@ -237,11 +235,13 @@ private val BoxWithConstraintsScope.groupThumbnailSizePx: Int
  * size themselves to fit the available space.
  * @param thumbnails: List of thumbnails.  May be empty, or up to size 4.
  * @param modifier: Modifier parameter
+ * @param containerColor: Background Color of the thumbnails grid.
  */
 @Composable
 fun ThumbnailsGridView(
     thumbnails: List<TabThumbnailImageData>,
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
 ) {
     BoxWithConstraints {
         val groupThumbnailDimens = groupThumbnailDimens
@@ -249,7 +249,7 @@ fun ThumbnailsGridView(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .background(color = MaterialTheme.colorScheme.surfaceContainerHighest),
+                .background(color = containerColor),
             verticalArrangement = Arrangement.spacedBy(FirefoxTheme.layout.space.static25),
         ) {
             Row(

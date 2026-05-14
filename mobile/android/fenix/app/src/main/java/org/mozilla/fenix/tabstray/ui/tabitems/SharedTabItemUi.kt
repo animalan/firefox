@@ -321,6 +321,18 @@ fun Modifier.tabListItemShapeStyling(
 }
 
 /**
+ * Returns the container color used by tab grid items.
+ */
+@Composable
+fun tabGridItemContainerColor(selectionState: TabsTrayItemSelectionState): Color {
+    return if (selectionState.isSelected) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHighest
+    }
+}
+
+/**
  * Animates the tab item's alpha value to be slightly transparent when it is dragged.
  */
 @Composable

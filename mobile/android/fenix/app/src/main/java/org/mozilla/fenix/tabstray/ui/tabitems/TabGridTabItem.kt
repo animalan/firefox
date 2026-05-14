@@ -157,11 +157,7 @@ private fun TabContent(
             shape = TabContentCardShape,
             border = tabItemConditionalBorder(selectionState),
             colors = CardDefaults.cardColors(
-                containerColor = if (selectionState.isSelected) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHighest
-                },
+                containerColor = tabGridItemContainerColor(selectionState),
             ),
         ) {
             Column(modifier = Modifier.aspectRatio(gridItemAspectRatio)) {
