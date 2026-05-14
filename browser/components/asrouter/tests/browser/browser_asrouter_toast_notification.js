@@ -24,6 +24,7 @@ function getMessage(id) {
 const showAlertStub = sinon.stub();
 const AlertsServiceStub = sinon.stub(ToastNotification, "AlertsService").value({
   showAlert: showAlertStub,
+  isFullscreen: () => false,
 });
 
 registerCleanupFunction(() => {
