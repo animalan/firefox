@@ -322,8 +322,12 @@ var StarUI = {
       return;
     }
 
-    // If we're changing where a bookmark gets saved, persist that location.
-    if (didChangeFolder) {
+    // If we're changing where a bookmark gets saved, persist that location,
+    // unless it is the mobile root.
+    if (
+      didChangeFolder &&
+      selectedFolderGuid !== PlacesUtils.bookmarks.mobileGuid
+    ) {
       Services.prefs.setCharPref(
         "browser.bookmarks.defaultLocation",
         selectedFolderGuid
