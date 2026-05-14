@@ -28,6 +28,7 @@
 #include "mozilla/dom/MIDIPlatformService.h"
 #include "mozilla/dom/MIDIPortParent.h"
 #include "mozilla/dom/MLSTransactionParent.h"
+#include "mozilla/dom/ProcessIsolation.h"
 #include "mozilla/dom/MessagePortParent.h"
 #include "mozilla/dom/PGamepadEventChannelParent.h"
 #include "mozilla/dom/PGamepadTestChannelParent.h"
@@ -1201,6 +1202,15 @@ mozilla::ipc::IPCResult BackgroundParentImpl::RecvCreateMLSTransaction(
 
   if (!aEndpoint.IsValid()) {
     return IPC_FAIL(this, "invalid endpoint for MLSTransaction");
+  }
+
+  RefPtr<ThreadsafeContentParentHandle> parent =
+      BackgroundParent::GetContentParentHandle(this);
+  if (parent && !dom::ValidatePrincipalCouldPotentiallyBeLoadedBy(
+                    aPrincipal, parent->GetRemoteType(), {})) {
+    dom::ContentParent::LogAndAssertFailedPrincipalValidationInfo(aPrincipal,
+                                                                  __func__);
+    return IPC_FAIL(this, "Principal validation failed");
   }
 
   if (!sMLSTaskQueue) {
