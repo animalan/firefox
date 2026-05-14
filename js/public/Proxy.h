@@ -550,10 +550,6 @@ inline const JS::Value& GetProxyReservedSlot(const JSObject* obj, size_t n) {
   return detail::GetProxyDataLayout(obj)->reservedSlots->slots[n];
 }
 
-inline void SetProxyHandler(JSObject* obj, const BaseProxyHandler* handler) {
-  detail::GetProxyDataLayout(obj)->handler = handler;
-}
-
 inline void SetProxyReservedSlot(JSObject* obj, size_t n,
                                  const JS::Value& extra) {
 #ifdef DEBUG

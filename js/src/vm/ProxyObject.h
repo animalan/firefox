@@ -66,7 +66,7 @@ class ProxyObject : public JSObject {
   const BaseProxyHandler* handler() const { return GetProxyHandler(this); }
 
   void setHandler(const BaseProxyHandler* handler) {
-    SetProxyHandler(this, handler);
+    detail::GetProxyDataLayout(this)->handler = handler;
   }
 
   static size_t offsetOfReservedSlots() {
