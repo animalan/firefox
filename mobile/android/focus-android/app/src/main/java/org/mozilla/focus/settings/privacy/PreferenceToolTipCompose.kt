@@ -39,6 +39,7 @@ import org.mozilla.focus.databinding.FocusPreferenceComposeLayoutBinding
 import org.mozilla.focus.ext.settings
 import org.mozilla.focus.ui.theme.FocusTheme
 import org.mozilla.focus.ui.theme.focusColors
+import org.mozilla.focus.ui.theme.focusDimensions
 
 /**
  * A custom [Preference] that displays a tooltip using Compose.
@@ -84,7 +85,7 @@ fun ToolTipContent(onDismissButton: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(16.dp)
+                    .padding(focusDimensions.paddingDefault)
                     .clip(RoundedCornerShape(10.dp))
                     .background(
                         shape = RoundedCornerShape(10.dp),
@@ -102,7 +103,7 @@ fun ToolTipContent(onDismissButton: () -> Unit) {
                 Column(
                     modifier = Modifier
                         .wrapContentHeight()
-                        .padding(16.dp),
+                        .padding(focusDimensions.paddingDefault),
                     verticalArrangement = Arrangement.spacedBy(
                         10.dp,
                     ),
