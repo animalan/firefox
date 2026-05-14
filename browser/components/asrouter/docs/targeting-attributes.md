@@ -495,13 +495,16 @@ declare const sync: {
 
 Information about the browser's top 25 frecent sites.
 
-**Please note this is a restricted targeting property that influences what telemetry is allowed to be collected may not be used without review**
+**Please note this is a restricted targeting property that influences what telemetry is allowed to be collected and may not be used without data review. This attribute has received legal approval for use in message targeting.**
 
+**When using this attribute, targeting must not allow inference that a user visited a single specific website. Avoid checking for a single domain; instead, use a broad list or bucket of domains.**
 
 #### Examples
-* Is `mozilla.com` in the user's top frecent sites and with a last visit date greater than April 4th, 2018(UNIX Epoch timestamp 1522843725924)?
+* Is any of a broad set of shopping-related domains in the user's top frecent sites with a last visit date greater than April 4th, 2018 (UNIX Epoch timestamp 1522843725924)?
 ```java
-"mozilla.com" in topFrecentSites[.lastVisitDate > 1522843725924]|mapToProperty("host")
+(["amazon.com", "ebay.com", "etsy.com", "walmart.com", "target.com",
+  "bestbuy.com", "newegg.com", "costco.com", "homedepot.com", "wayfair.com"
+  ] intersect topFrecentSites[.lastVisitDate > 1522843725924]|mapToProperty('host'))|length > 1
 ```
 
 #### Definition
