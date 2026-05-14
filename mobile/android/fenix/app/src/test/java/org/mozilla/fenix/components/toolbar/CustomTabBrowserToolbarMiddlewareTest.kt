@@ -58,7 +58,6 @@ import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.utils.ClipboardHandler
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -84,6 +83,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
+import kotlin.test.assertNotNull
 import mozilla.components.browser.toolbar.R as toolbarR
 import mozilla.components.feature.customtabs.R as customtabsR
 import mozilla.components.ui.icons.R as iconsR
@@ -725,10 +725,10 @@ class CustomTabBrowserToolbarMiddlewareTest {
 
         val telemetry = Toolbar.buttonTapped.testGetValue()?.get(0)
         assertNotNull(telemetry)
-        assertEquals("toolbar", telemetry?.category)
-        assertEquals("button_tapped", telemetry?.name)
-        assertEquals(SOURCE_CUSTOM_BAR, telemetry?.extra?.get("source"))
-        assertEquals(ACTION_SECURITY_INDICATOR_CLICKED, telemetry?.extra?.get("item"))
+        assertEquals("toolbar", telemetry.category)
+        assertEquals("button_tapped", telemetry.name)
+        assertEquals(SOURCE_CUSTOM_BAR, telemetry.extra?.get("source"))
+        assertEquals(ACTION_SECURITY_INDICATOR_CLICKED, telemetry.extra?.get("item"))
     }
 
     @Test
@@ -741,10 +741,10 @@ class CustomTabBrowserToolbarMiddlewareTest {
 
         val telemetry = Toolbar.buttonTapped.testGetValue()?.get(0)
         assertNotNull(telemetry)
-        assertEquals("toolbar", telemetry?.category)
-        assertEquals("button_tapped", telemetry?.name)
-        assertEquals(SOURCE_CUSTOM_BAR, telemetry?.extra?.get("source"))
-        assertEquals(ACTION_SECURITY_INDICATOR_CLICKED, telemetry?.extra?.get("item"))
+        assertEquals("toolbar", telemetry.category)
+        assertEquals("button_tapped", telemetry.name)
+        assertEquals(SOURCE_CUSTOM_BAR, telemetry.extra?.get("source"))
+        assertEquals(ACTION_SECURITY_INDICATOR_CLICKED, telemetry.extra?.get("item"))
     }
 
     @Test

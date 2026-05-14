@@ -41,7 +41,6 @@ import mozilla.components.support.test.whenever
 import mozilla.components.support.utils.FakeDownloadFileUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -59,6 +58,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class DownloadsFeatureTest {
@@ -772,10 +772,10 @@ class DownloadsFeatureTest {
         assertEquals("file.txt", delegateFilename)
         assertEquals(0L, delegateContentSize)
         assertNotNull(delegatePositiveActionCallback)
-        delegatePositiveActionCallback?.invoke(download)
+        delegatePositiveActionCallback.invoke(download)
         verify(consumeDownloadUseCase).invoke(tab.id, download.id)
         assertNotNull(delegateNegativeActionCallback)
-        delegateNegativeActionCallback?.invoke()
+        delegateNegativeActionCallback.invoke()
         verify(cancelDownloadUseCase).invoke(tab.id, download.id)
     }
 
@@ -854,13 +854,13 @@ class DownloadsFeatureTest {
         assertEquals(0L, delegateContentSize)
         assertEquals("original.txt", delegateFileNameIsAlreadyDownloaded)
         assertNotNull(delegatePositiveActionCallback)
-        delegatePositiveActionCallback?.invoke(download)
+        delegatePositiveActionCallback.invoke(download)
         verify(consumeDownloadUseCase).invoke(tab.id, download.id)
         assertNotNull(delegateNegativeActionCallback)
-        delegateNegativeActionCallback?.invoke()
+        delegateNegativeActionCallback.invoke()
         verify(cancelDownloadUseCase).invoke(tab.id, download.id)
         assertNotNull(delegateOpenFileCallback)
-        delegateOpenFileCallback?.invoke()
+        delegateOpenFileCallback.invoke()
         verify(openAlreadyDownloadedFileUseCase).invoke(eq(tab.id), eq(download), eq("/downloads/original.txt"))
     }
 
@@ -956,10 +956,10 @@ class DownloadsFeatureTest {
 
         assertEquals(listOf(ourApp, anotherApp), delegateDownloaderApps)
         assertNotNull(delegateChosenAppCallback)
-        delegateChosenAppCallback?.invoke(anotherApp)
+        delegateChosenAppCallback.invoke(anotherApp)
         verify(feature).onDownloaderAppSelected(anotherApp, tab, download)
         assertNotNull(delegateNegativeActionCallback)
-        delegateNegativeActionCallback?.invoke()
+        delegateNegativeActionCallback.invoke()
         verify(cancelDownloadUseCase).invoke(tab.id, download.id)
     }
 

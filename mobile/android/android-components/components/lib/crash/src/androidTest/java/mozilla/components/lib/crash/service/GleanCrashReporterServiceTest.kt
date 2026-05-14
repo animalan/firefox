@@ -18,7 +18,6 @@ import mozilla.components.lib.crash.Crash
 import mozilla.components.lib.crash.NativeCrashTools
 import mozilla.components.lib.crash.RuntimeTag
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -30,6 +29,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import java.io.IOException
 import java.util.Date
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class GleanCrashReporterServiceTest {
@@ -378,9 +378,9 @@ class GleanCrashReporterServiceTest {
             assertEquals("142.0.0", get("crash.app_display_version")?.jsonPrimitive?.content)
             val exc = get("crash.java_exception")
             assertNotNull(exc)
-            val throwables = exc?.jsonObject?.get("throwables")
+            val throwables = exc.jsonObject.get("throwables")
             assertNotNull(throwables)
-            throwables?.jsonArray?.let { arr ->
+            throwables.jsonArray.let { arr ->
                 assertEquals(2, arr.size)
                 val first = arr.get(0).jsonObject.toMutableMap()
                 val second = arr.get(1).jsonObject.toMutableMap()

@@ -29,7 +29,6 @@ import mozilla.components.support.ktx.android.content.appVersionName
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -42,6 +41,7 @@ import org.mozilla.fenix.addons.DownloadAddonDialogFragment
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.utils.LinkTextView
 import org.robolectric.RobolectricTestRunner
+import kotlin.test.assertNotNull
 import mozilla.components.feature.addons.R as addonsR
 
 @RunWith(RobolectricTestRunner::class)
@@ -518,7 +518,7 @@ class WebExtensionPromptFeatureTest {
             addonInstallationSource = InstallationMethod.RTAMO,
         )
         assertNotNull(downloadDialog)
-        assertNotNull(downloadDialog?.onCancelled)
+        assertNotNull(downloadDialog.onCancelled)
 
         store.dispatch(
             UpdatePromptRequestWebExtensionAction(
@@ -532,7 +532,7 @@ class WebExtensionPromptFeatureTest {
         )
         testDispatcher.scheduler.runCurrent()
 
-        downloadDialog?.onCancelled?.invoke()
+        downloadDialog.onCancelled?.invoke()
         testDispatcher.scheduler.advanceUntilIdle()
 
         verify(exactly = 0) { webExtensionPromptFeature.handleAfterInstallationRequest(any()) }
@@ -552,7 +552,7 @@ class WebExtensionPromptFeatureTest {
             addonInstallationSource = InstallationMethod.RTAMO,
         )
         assertNotNull(downloadDialog)
-        assertNotNull(downloadDialog?.onCancelled)
+        assertNotNull(downloadDialog.onCancelled)
 
         store.dispatch(
             UpdatePromptRequestWebExtensionAction(
@@ -561,7 +561,7 @@ class WebExtensionPromptFeatureTest {
         )
         testDispatcher.scheduler.runCurrent()
 
-        downloadDialog?.onCancelled?.invoke()
+        downloadDialog.onCancelled?.invoke()
         testDispatcher.scheduler.advanceUntilIdle()
 
         verify(exactly = 0) { webExtensionPromptFeature.handleInstallationFailedRequest(any()) }
@@ -581,8 +581,8 @@ class WebExtensionPromptFeatureTest {
             addonInstallationSource = InstallationMethod.RTAMO,
         )
         assertNotNull(downloadDialog)
-        assertNotNull(downloadDialog?.onCancelled)
-        downloadDialog?.onCancelled?.invoke()
+        assertNotNull(downloadDialog.onCancelled)
+        downloadDialog.onCancelled?.invoke()
         testDispatcher.scheduler.advanceUntilIdle()
 
         store.dispatch(
