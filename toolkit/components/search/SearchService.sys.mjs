@@ -758,7 +758,7 @@ export const SearchService = new (class SearchService {
    * @param {object} extension
    *   An Extension object containing data about the extension.
    */
-  async addEnginesFromExtension(extension) {
+  async addEngineFromExtension(extension) {
     // Treat add-on upgrade and downgrades the same - either way, the search
     // engine gets updated, not added. Generally, we don't expect a downgrade,
     // but just in case...
@@ -778,12 +778,12 @@ export const SearchService = new (class SearchService {
     if (extension.isAppProvided) {
       this.#extensionsToRemove.add(extension.id);
       lazy.logConsole.debug(
-        "addEnginesFromExtension: Queuing old app provided WebExtension for uninstall",
+        "addEngineFromExtension: Queuing old app provided WebExtension for uninstall",
         extension.id
       );
       return;
     }
-    lazy.logConsole.debug("addEnginesFromExtension:", extension.id);
+    lazy.logConsole.debug("addEngineFromExtension:", extension.id);
 
     // If we haven't started the SearchService yet, store this extension
     // to install in SearchService.init().
@@ -3018,7 +3018,7 @@ export const SearchService = new (class SearchService {
    * engines are no longer web extensions. This method iterates over the IDs
    * in `#extensionsToRemove` and uninstalls extensions ending with
    * `@search.mozilla.org`. Although the list should contain only app-provided
-   * engines (as per addEnginesFromExtension), the `@search.mozilla.org` is an
+   * engines (as per addEngineFromExtension), the `@search.mozilla.org` is an
    * additional safety check to ensure only the expected add-ons are removed.
    */
   async #removeAppProvidedExtensions() {
