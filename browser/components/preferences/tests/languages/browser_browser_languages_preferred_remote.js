@@ -76,7 +76,10 @@ add_task(async function testRemoteLocalesNotFetchedUntilLanguagesPaneShown() {
   // remote language fetching has had a chance to run. If it always loads we
   // should have hit the API at that point.
   await paneInitialized;
-  let preferredLanguage = getSettingControl("browserLanguagePreferred", win);
+  let preferredLanguage = await settingControlRenders(
+    "browserLanguagePreferred",
+    win
+  );
   await BrowserTestUtils.waitForMutationCondition(
     preferredLanguage,
     { childList: true, subtree: true },

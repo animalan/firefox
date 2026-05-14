@@ -420,10 +420,12 @@ var gSearchResultsPane = {
     } else {
       noResultsEl.hidden = true;
       document.getElementById("sorry-message-query").textContent = "";
-      // Going back to General when cleared. visually-hidden cleanup
-      // for setting-panes/setting-groups is handled in preferences.js
-      // `search()`.
-      await gotoPref("paneGeneral");
+      // Going back to Account and sync or General when cleared
+      let redesignEnabled = Services.prefs.getBoolPref(
+        "browser.settings-redesign.enabled"
+      );
+      let defaultPane = redesignEnabled ? "paneSync" : "paneGeneral";
+      await gotoPref(defaultPane);
       srHeader.hidden = true;
 
       // Hide some special second level headers in normal view
