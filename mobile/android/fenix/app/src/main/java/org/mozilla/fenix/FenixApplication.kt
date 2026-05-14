@@ -236,6 +236,11 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
         // Note: The A-C / Fenix crash service processes are responsible for their own setup and
         //       should minimize their dependencies to avoid also crashing.
         runOnlyInMainProcess {
+            // Start loading the SharedPreferences file from disk on a background thread immediately.
+            applicationScope.launch(IO) {
+                applicationContext.getSharedPreferences(Settings.FENIX_PREFERENCES, MODE_PRIVATE)
+            }
+
             // Initialization is split into two phases based on if libmegazord is fully initialized.
             setupEarlyMain()
             setupPostMegazord()
