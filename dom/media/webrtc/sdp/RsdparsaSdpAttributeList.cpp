@@ -26,13 +26,13 @@ RsdparsaSdpAttributeList::~RsdparsaSdpAttributeList() {
   }
 }
 
-bool RsdparsaSdpAttributeList::HasAttribute(AttributeType type,
-                                            bool sessionFallback) const {
+bool RsdparsaSdpAttributeList::HasAttribute(const AttributeType type,
+                                            const bool sessionFallback) const {
   return !!GetAttribute(type, sessionFallback);
 }
 
 const SdpAttribute* RsdparsaSdpAttributeList::GetAttribute(
-    AttributeType type, bool sessionFallback) const {
+    const AttributeType type, const bool sessionFallback) const {
   const SdpAttribute* value = mAttributes[static_cast<size_t>(type)];
   // Only do fallback when the attribute can appear at both the media and
   // session level
@@ -44,7 +44,7 @@ const SdpAttribute* RsdparsaSdpAttributeList::GetAttribute(
   return value;
 }
 
-void RsdparsaSdpAttributeList::RemoveAttribute(AttributeType type) {
+void RsdparsaSdpAttributeList::RemoveAttribute(const AttributeType type) {
   delete mAttributes[static_cast<size_t>(type)];
   mAttributes[static_cast<size_t>(type)] = nullptr;
 }
@@ -338,7 +338,7 @@ const SdpSsrcGroupAttributeList& RsdparsaSdpAttributeList::GetSsrcGroup()
 }
 
 void RsdparsaSdpAttributeList::LoadAttribute(RustAttributeList* attributeList,
-                                             AttributeType type) {
+                                             const AttributeType type) {
   if (!mAttributes[type]) {
     switch (type) {
       case SdpAttribute::kIceUfragAttribute:
@@ -1245,7 +1245,8 @@ void RsdparsaSdpAttributeList::LoadCandidate(RustAttributeList* attributeList) {
   SetAttribute(candidates.release());
 }
 
-bool RsdparsaSdpAttributeList::IsAllowedHere(SdpAttribute::AttributeType type) {
+bool RsdparsaSdpAttributeList::IsAllowedHere(
+    const SdpAttribute::AttributeType type) const {
   if (AtSessionLevel() && !SdpAttribute::IsAllowedAtSessionLevel(type)) {
     return false;
   }
