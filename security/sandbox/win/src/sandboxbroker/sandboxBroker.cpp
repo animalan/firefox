@@ -1345,17 +1345,13 @@ void SandboxBroker::SetSecurityLevelForGPUProcess(int32_t aSandboxLevel) {
   sandbox::MitigationFlags initialMitigations =
       sandbox::MITIGATION_BOTTOM_UP_ASLR | sandbox::MITIGATION_HEAP_TERMINATE |
       sandbox::MITIGATION_SEHOP | sandbox::MITIGATION_DEP_NO_ATL_THUNK |
+      sandbox::MITIGATION_EXTENSION_POINT_DISABLE |
       sandbox::MITIGATION_KTM_COMPONENT | sandbox::MITIGATION_FSCTL_DISABLED |
       sandbox::MITIGATION_IMAGE_LOAD_NO_REMOTE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL | sandbox::MITIGATION_DEP;
 
   if (StaticPrefs::security_sandbox_gpu_shadow_stack_enabled()) {
     initialMitigations |= sandbox::MITIGATION_CET_COMPAT_MODE;
-  }
-
-  // Bug 2008960 tracks removing the pref if we have seen no issues.
-  if (StaticPrefs::security_sandbox_gpu_extension_point_disable()) {
-    initialMitigations |= sandbox::MITIGATION_EXTENSION_POINT_DISABLE;
   }
 
   sandbox::MitigationFlags delayedMitigations =
