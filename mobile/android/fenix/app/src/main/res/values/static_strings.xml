@@ -411,4 +411,7 @@
     <string name="preferences_import_bookmarks">Import Bookmarks</string>
     <!-- Label for the secret settings preference to enable Import Bookmarks -->
     <string name="preferences_debug_settings_import_bookmarks">Enable Import Bookmarks</string>
+
+  <!-- Label for the secret settings preference to enable Import Passwords -->
+  <string name="preferences_debug_settings_import_passwords">Enable Import Passwords</string>
 </resources>

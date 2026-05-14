@@ -2850,6 +2850,14 @@ class Settings(
     )
 
     /**
+     * Feature flag that indicates if the Import Passwords feature is enabled.
+     */
+    var importPasswordsFeatureFlagEnabled by booleanPreference(
+        key = appContext.getPreferenceKey(R.string.pref_key_enable_import_passwords),
+        default = Config.channel.isDebug,
+    )
+
+    /**
      * Indicates if the Set as default Browser prompt should be displayed to the user.
      */
     fun shouldShowSetAsDefaultPrompt(
