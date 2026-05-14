@@ -6,14 +6,13 @@
       "matches": ["*://polymarket.com/*"]
     }
   },
-  "css": {
-    "hide_extra_scrollbars": "* { scrollbar-width: none; }"
-  },
   "interventions": [
     {
       "platforms": ["desktop"],
       "max_version": 150,
-      "css": ["hide_extra_scrollbars"]
+      "content_scripts": {
+        "css": ["1995452-polymarket.com-hide-scrollbars.css"]
+      }
     },
     {
       "platforms": ["desktop"],
@@ -21,7 +20,9 @@
       "pref_check": {
         "layout.css.fake-webkit-scrollbar.enabled": false
       },
-      "css": ["hide_extra_scrollbars"]
+      "content_scripts": {
+        "css": ["1995452-polymarket.com-hide-scrollbars.css"]
+      }
     }
   ]
 }

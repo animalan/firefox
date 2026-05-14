@@ -6,13 +6,12 @@
       "matches": ["*://*.calcoastcu.org/*"]
     }
   },
-  "css": {
-    "hide_browser_notice": ".kcell.slFbox:has(#frmLogin_BrowserCheckPopup_flxBrowserCheckHeader) { display: none !important; }"
-  },
   "interventions": [
     {
       "platforms": ["linux"],
-      "css": ["hide_browser_notice"]
+      "content_scripts": {
+        "css": ["bug1951055-calcoastcu.org-hide-browser-warning.css"]
+      }
     }
   ]
 }

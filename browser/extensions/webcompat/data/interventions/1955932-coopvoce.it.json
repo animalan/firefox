@@ -6,13 +6,12 @@
       "matches": ["*://www.coopvoce.it/portale/ricarica.html*"]
     }
   },
-  "css": {
-    "fix_broken_radio_buttons": "input[name=numRicarica] { appearance: none; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_broken_radio_buttons"]
+      "content_scripts": {
+        "css": ["bug1955932-coopvoce.it-fix-broken-radiobuttons.css"]
+      }
     }
   ]
 }

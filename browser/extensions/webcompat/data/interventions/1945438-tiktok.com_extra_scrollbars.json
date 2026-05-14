@@ -6,14 +6,13 @@
       "matches": ["*://www.tiktok.com/*"]
     }
   },
-  "css": {
-    "hide-extra-scrollbars": "#category-list-container [class*=DivCategoryList] { scrollbar-width: none; }"
-  },
   "interventions": [
     {
       "platforms": ["desktop"],
       "max_version": 150,
-      "css": ["hide-extra-scrollbars"]
+      "content_scripts": {
+        "css": ["bug1945438-www.tiktok.com-hide-extra-scrollbars.css"]
+      }
     },
     {
       "platforms": ["desktop"],
@@ -21,7 +20,9 @@
       "pref_check": {
         "layout.css.fake-webkit-scrollbar.enabled": false
       },
-      "css": ["hide-extra-scrollbars"]
+      "content_scripts": {
+        "css": ["bug1945438-www.tiktok.com-hide-extra-scrollbars.css"]
+      }
     }
   ]
 }

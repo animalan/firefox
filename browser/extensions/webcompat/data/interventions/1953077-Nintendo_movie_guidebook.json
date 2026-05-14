@@ -6,13 +6,12 @@
       "matches": ["*://*.nintendo.com/*"]
     }
   },
-  "css": {
-    "fix_blank_movie_guidebook": ".movie-guidebook .slider .slider__container img { flex-shrink: 0; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_blank_movie_guidebook"]
+      "content_scripts": {
+        "css": ["bug1953077-nintendo.com-fix-blank-movie-guidebook.css"]
+      }
     }
   ]
 }

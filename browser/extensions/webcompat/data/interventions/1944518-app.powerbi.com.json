@@ -10,16 +10,13 @@
       "matches": ["*://app.powerbi.com/view*"]
     }
   },
-  "css": {
-    "hide_extra_scrollbars": ".scrollbar-inner.scroll-content { scrollbar-width: none; }"
-  },
   "interventions": [
     {
       "platforms": ["mac"],
       "ua_string": ["add_Chrome"],
-      "css": {
+      "content_scripts": {
         "all_frames": true,
-        "which": ["hide_extra_scrollbars"]
+        "css": ["bug1944518-app.powerbi.com-webkit-scrollbar-css-fixes.css"]
       }
     },
     {

@@ -6,13 +6,12 @@
       "matches": ["*://clinic.platomedical.com/login*"]
     }
   },
-  "css": {
-    "hide_browser_notice": ".alert.chrome { display: none !important; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["hide_browser_notice"]
+      "content_scripts": {
+        "css": ["bug1902388-clinic.platomedical.com-hide-recommendation.css"]
+      }
     }
   ]
 }

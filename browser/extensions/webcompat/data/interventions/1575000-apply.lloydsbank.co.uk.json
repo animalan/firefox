@@ -6,13 +6,12 @@
       "matches": ["*://apply.lloydsbank.co.uk/*"]
     }
   },
-  "css": {
-    "fix_misaligned_radio_buttons": ".radio-content-field .radio.inline label span.text { position: relative; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_misaligned_radio_buttons"]
+      "content_scripts": {
+        "css": ["bug1575000-apply.lloydsbank.co.uk-radio-buttons-fix.css"]
+      }
     }
   ]
 }

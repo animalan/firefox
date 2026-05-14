@@ -67,12 +67,14 @@ GeneratedFile(
     inputs=["!/toolkit/crashreporter/annotations/validated.yaml"],
 )
 
-include("/browser/extensions/webcompat/generate_files.mozbuild")
-include("/browser/extensions/webcompat/preprocessed_intervention_files.mozbuild")
-GenerateWebCompatAddonFiles(
-    preprocessed_intervention_files,
-    "/browser/extensions/webcompat/",
-    "webcompat_addon_generated_files/",
+GeneratedFile(
+    "webcompat_addon_run.js",
+    script="/browser/extensions/webcompat/codegen.py",
+    entry_point="generate_run_js",
+    inputs=[
+        "/browser/extensions/webcompat/run.js",
+        "/browser/extensions/webcompat/data/interventions",
+    ],
 )
 
 CONFIGURE_SUBST_FILES += ["installer/Makefile"]

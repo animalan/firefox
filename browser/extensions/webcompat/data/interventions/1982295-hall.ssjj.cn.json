@@ -6,13 +6,12 @@
       "matches": ["*://hall.ssjj.cn/*"]
     }
   },
-  "css": {
-    "fix_layout": "#app > .wrap-scale { height: auto !important; overflow: visible; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_layout"]
+      "content_scripts": {
+        "css": ["bug1982295-hall.ssjj.cn-fix-layout.css"]
+      }
     }
   ]
 }

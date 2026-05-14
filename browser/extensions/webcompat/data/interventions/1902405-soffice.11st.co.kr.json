@@ -6,13 +6,12 @@
       "matches": ["*://soffice.11st.co.kr/*"]
     }
   },
-  "css": {
-    "hide_browser_notice": "#app > .c-browser { display: none !important; }"
-  },
   "interventions": [
     {
       "platforms": ["desktop"],
-      "css": ["hide_browser_notice"]
+      "content_scripts": {
+        "css": ["bug1902405-soffice.11st.co.kr-hide-browser-warning.css"]
+      }
     }
   ]
 }

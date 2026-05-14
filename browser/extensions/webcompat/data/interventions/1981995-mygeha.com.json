@@ -6,13 +6,12 @@
       "matches": ["*://www.mygeha.com/tpa-ap-web/*"]
     }
   },
-  "css": {
-    "fix_location_section_layout": ".allign_location { display: flex; }"
-  },
   "interventions": [
     {
       "platforms": ["desktop"],
-      "css": ["fix_location_section_layout"]
+      "content_scripts": {
+        "css": ["1981995_www.mygeha.com-fix-location-layout.css"]
+      }
     }
   ]
 }

@@ -6,13 +6,12 @@
       "matches": ["*://store.renishaw.com/*"]
     }
   },
-  "css": {
-    "fix_range_sliders": "input[type=range].range-selector, input[type=range].range-selector + div, input[type=range].range-selector::-moz-range-track, input[type=range].range-selector::-moz-range-progress { pointer-events: none; } input[type=range].range-selector::-moz-range-thumb { pointer-events: all; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_range_sliders"]
+      "content_scripts": {
+        "css": ["bug1978572-store.renishaw.com-fix-range-sliders.css"]
+      }
     }
   ]
 }

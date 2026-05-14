@@ -6,13 +6,12 @@
       "matches": ["https://*.usps.com/*"]
     }
   },
-  "css": {
-    "fix_terms_and_conditions_checkboxes": ".mrc-custom-checkbox-container input { margin-left: -3rem; }"
-  },
   "interventions": [
     {
       "platforms": ["desktop"],
-      "css": ["fix_terms_and_conditions_checkboxes"]
+      "content_scripts": {
+        "css": ["bug1644830-missingmail.usps.com-checkboxes-not-visible.css"]
+      }
     }
   ]
 }

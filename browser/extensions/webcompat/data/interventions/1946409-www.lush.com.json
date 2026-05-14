@@ -6,13 +6,12 @@
       "matches": ["*://www.lush.com/*"]
     }
   },
-  "css": {
-    "fix_cookie_banner": "#portal-cookie-banner__wrapper { height: 100vh; } #portal-cookie-banner__content { position: absolute; /* ensure address bar does not cover bottom button */ padding-bottom: 40px; }"
-  },
   "interventions": [
     {
       "platforms": ["android"],
-      "css": ["fix_cookie_banner"]
+      "content_scripts": {
+        "css": ["bug1946409-www.lush.com-fix-cookie-banner.css"]
+      }
     }
   ]
 }

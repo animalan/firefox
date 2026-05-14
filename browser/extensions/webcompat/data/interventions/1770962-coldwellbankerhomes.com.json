@@ -6,13 +6,12 @@
       "matches": ["*://*.coldwellbankerhomes.com/*"]
     }
   },
-  "css": {
-    "fix_stretched_property_images": ".property-snapshot-psr-panel .prop-pix .photo-carousel.owl .owl-stage-outer .owl-item img { height: -moz-available; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_stretched_property_images"]
+      "content_scripts": {
+        "css": ["bug1770962-coldwellbankerhomes.com-image-height.css"]
+      }
     }
   ]
 }

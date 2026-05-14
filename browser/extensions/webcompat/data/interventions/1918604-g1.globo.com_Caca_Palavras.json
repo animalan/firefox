@@ -6,13 +6,12 @@
       "matches": ["*://g1.globo.com/jogos/caca-palavras/*"]
     }
   },
-  "css": {
-    "fix_clipped_buttons": "g#insert_chart > g, g#more_vert > g { mask: none; } svg [dominant-baseline='middle'] { dominant-baseline: auto; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_clipped_buttons"]
+      "content_scripts": {
+        "css": ["bug1918604-g1.globo.com-fix-clipped-buttons.css"]
+      }
     }
   ]
 }

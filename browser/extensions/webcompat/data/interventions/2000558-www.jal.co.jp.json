@@ -6,13 +6,12 @@
       "matches": ["*://www.jal.co.jp/*"]
     }
   },
-  "css": {
-    "fix_table_rendering": ".fixed_th1st table { min-width: unset; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_table_rendering"]
+      "content_scripts": {
+        "css": ["2000558-www.jal.co.jp-hide-app-recommendation.css"]
+      }
     }
   ]
 }

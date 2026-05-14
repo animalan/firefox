@@ -6,13 +6,12 @@
       "matches": ["*://www.firstenergycorp.com/*"]
     }
   },
-  "css": {
-    "hide_browser_notice": "#userAgentMessageDiv { display: none !important; }"
-  },
   "interventions": [
     {
       "platforms": ["android"],
-      "css": ["hide_browser_notice"]
+      "content_scripts": {
+        "css": ["bug1960294-firstenergycorp.com-hide-unsupported.css"]
+      }
     }
   ]
 }

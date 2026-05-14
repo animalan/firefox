@@ -205,7 +205,7 @@ class SpecialContentScriptMetadataServer {
   }
 
   #serve(port) {
-    const { tab, frameId, url } = port.sender;
+    const { url } = port.sender;
     if (url.startsWith("about:")) {
       return;
     }
@@ -221,24 +221,6 @@ class SpecialContentScriptMetadataServer {
     const dataToSend = Object.assign({}, metadata);
     delete dataToSend.bugsByMatchPattern;
 
-    const { cssToInject } = dataToSend;
-    if (cssToInject) {
-      browser.scripting
-        .insertCSS({
-          css: cssToInject,
-          target: {
-            tabId: tab.id,
-            frameIds: [frameId],
-          },
-        })
-        .catch(err =>
-          console.error(
-            `webcompat addon failed to insert CSS on tab ${tab.id} frame ${frameId}: ${err}`
-          )
-        );
-      delete dataToSend.cssToInject;
-    }
-
     // If we have bug-number metadata, provide the correct bug-number
     // for the URL for which the content script has been loaded.
     const { bugsByMatchPattern } = metadata;
@@ -249,9 +231,7 @@ class SpecialContentScriptMetadataServer {
       }
     }
 
-    if (Object.keys(dataToSend).length) {
-      port.postMessage(dataToSend);
-    }
+    port.postMessage(dataToSend);
     port.disconnect();
   }
 

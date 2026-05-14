@@ -6,13 +6,12 @@
       "matches": ["*://*.animeflv.net/*"]
     }
   },
-  "css": {
-    "fix-premiere-labels": ".Anime > a { display: block; }"
-  },
   "interventions": [
     {
       "platforms": ["desktop"],
-      "css": ["fix-premiere-labels"]
+      "content_scripts": {
+        "css": ["bug1899829-animeflv.net-fix-premiere-labels.css"]
+      }
     }
   ]
 }

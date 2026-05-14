@@ -6,14 +6,13 @@
       "matches": ["*://www.ogcrush.ogcrush.com/*"]
     }
   },
-  "css": {
-    "fix_slick_slide_height": ".slick-slide { height: fit-content; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
       "max_version": 150,
-      "css": ["fix_slick_slide_height"]
+      "content_scripts": {
+        "css": ["bug2011819-ogcrush.com-fix-slick-slide-height.css"]
+      }
     }
   ]
 }

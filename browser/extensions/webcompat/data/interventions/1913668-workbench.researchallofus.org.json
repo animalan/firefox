@@ -6,13 +6,14 @@
       "matches": ["*://workbench.researchallofus.org/*"]
     }
   },
-  "css": {
-    "hide-browser-notice": "#outdated:has(#buttonUpdateBrowser) { display: none !important; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["hide-browser-notice"]
+      "content_scripts": {
+        "css": [
+          "bug1913668-workbench.researchallofus.org-hide-browser-warning.css"
+        ]
+      }
     }
   ]
 }

@@ -6,13 +6,12 @@
       "matches": ["*://onlinestep.pgc.edu/*"]
     }
   },
-  "css": {
-    "hide_browser_notice": "div:has(> div > a[href='https://google.com/chrome']) { display: none; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["hide_browser_notice"]
+      "content_scripts": {
+        "css": ["bug1899063-onlinestep.pgc.edu-hide-unsupported-message.css"]
+      }
     }
   ]
 }

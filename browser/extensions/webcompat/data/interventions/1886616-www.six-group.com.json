@@ -6,14 +6,13 @@
       "matches": ["*://www.six-group.com/*/market-data/etf/etf-explorer.html*"]
     }
   },
-  "css": {
-    "unhide_selected_inputs": "select { content: normal; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
       "max_version": 142,
-      "css": ["unhide_selected_inputs"]
+      "content_scripts": {
+        "css": ["bug1886616-www.six-group.com-select-fix.css"]
+      }
     }
   ]
 }

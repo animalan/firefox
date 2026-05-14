@@ -6,13 +6,12 @@
       "matches": ["*://www.jw.org/*/library/*"]
     }
   },
-  "css": {
-    "fix_ruby_text_linebreaks": "ruby::after { content: \"\\200B\"; /* Zero-width space (line break opportunity) */ }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["fix_ruby_text_linebreaks"]
+      "content_scripts": {
+        "css": ["bug2003019-www.jw.org-fix-ruby-text-linebreaks.css"]
+      }
     }
   ]
 }

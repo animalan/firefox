@@ -6,13 +6,12 @@
       "matches": ["*://myordbok.com/*"]
     }
   },
-  "css": {
-    "fix_layout": "div.ptl > div > div.define.result > div.promote { min-width: revert; }"
-  },
   "interventions": [
     {
       "platforms": ["desktop"],
-      "css": ["fix_layout"]
+      "content_scripts": {
+        "css": ["bug2012708-myordbok.com-fix-layout.css"]
+      }
     }
   ]
 }

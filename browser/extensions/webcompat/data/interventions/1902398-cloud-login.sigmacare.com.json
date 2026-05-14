@@ -6,13 +6,14 @@
       "matches": ["*://cloud-login.sigmacare.com/*"]
     }
   },
-  "css": {
-    "hide_browser_notice": "#unsupportedBrowser { display: none !important; }"
-  },
   "interventions": [
     {
       "platforms": ["all"],
-      "css": ["hide_browser_notice"]
+      "content_scripts": {
+        "css": [
+          "bug1902398-cloud-login.sigmacare.com-hide-unsupported-message.css"
+        ]
+      }
     }
   ]
 }
