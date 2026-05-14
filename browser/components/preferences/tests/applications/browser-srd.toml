@@ -12,6 +12,8 @@ tags = "os_integration"
 
 ["browser_applications_filter.js"]
 
+["browser_applications_search_results.js"]
+
 ["browser_applications_selection.js"]
 
 ["browser_change_app_handler.js"]

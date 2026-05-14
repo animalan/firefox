@@ -344,7 +344,10 @@ Preferences.addSetting({
      * @param {CustomEvent} event
      */
     async function appInitializer(event) {
-      if (event.detail.category != "paneDownloads") {
+      if (
+        event.detail.category != "paneDownloads" &&
+        event.detail.category != "paneSearchResults"
+      ) {
         return;
       }
       await ApplicationsHandler.preInitApplications();
@@ -359,6 +362,9 @@ Preferences.addSetting({
     // pane after page is shown to ensure it doesn't delay painting
     // of the preferences page.
     window.addEventListener("paneshown", appInitializer);
+    return () => {
+      window.removeEventListener("paneshown", appInitializer);
+    };
   },
 });
 
