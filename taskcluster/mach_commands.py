@@ -288,6 +288,14 @@ def taskgraph_decision(command_context, **options):
             t_params_start = time.monotonic()
             graph_config = load_graph_config(options.get("root") or "taskcluster")
             register_gecko_taskgraph(graph_config)
+            # Honor the graph_config's own register hook (e.g.
+            # comm_taskgraph:register for Thunderbird) before parameters
+            # resolve. GraphConfig.register() inserts root_dir into sys.path
+            # and then calls the hook, which extends sys.path further and
+            # registers comm-specific parameters with the schema.
+            register_path = graph_config["taskgraph"].get("register")
+            if register_path and register_path != "gecko_taskgraph:register":
+                graph_config.register()
             parameters = get_decision_parameters(graph_config, options)
             t_params_end = time.monotonic()
 
