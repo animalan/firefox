@@ -1,4 +1,5 @@
 [DEFAULT]
+subsuite = "media-bc"
 support-files = [
   "test-mock-wrapper.html",
   "test-mock-wrapper.js",
