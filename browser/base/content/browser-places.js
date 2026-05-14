@@ -32,6 +32,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
 );
 
 ChromeUtils.defineESModuleGetters(this, {
+  FaviconUtils: "moz-src:///toolkit/modules/FaviconUtils.sys.mjs",
   PanelMultiView:
     "moz-src:///browser/components/customizableui/PanelMultiView.sys.mjs",
   RecentlyClosedTabsAndWindowsMenuUtils:
@@ -1253,6 +1254,9 @@ var PlacesToolbarHelper = {
     popup.appendChild(fragment);
   },
 
+  // Schemes accepted for the ManagedBookmarks `favicon` policy property.
+  MANAGED_BOOKMARK_FAVICON_SCHEMES: ["data:", "http:", "https:"],
+
   async addManagedBookmarks(menu, children) {
     for (let i = 0; i < children.length; i++) {
       let entry = children[i];
@@ -1275,9 +1279,27 @@ var PlacesToolbarHelper = {
         let { preferredURI } = Services.uriFixup.getFixupURIInfo(entry.url);
         let menuitem = document.createXULElement("menuitem");
         menuitem.setAttribute("label", entry.name);
+        let imageURL;
+        if (entry.favicon) {
+          let iconURL = URL.parse(entry.favicon);
+          if (
+            iconURL &&
+            this.MANAGED_BOOKMARK_FAVICON_SCHEMES.includes(iconURL.protocol)
+          ) {
+            imageURL = FaviconUtils.getMozRemoteImageURL(entry.favicon, {
+              size: 16,
+            });
+          } else {
+            console.error(
+              `ManagedBookmarks: ignoring favicon "${entry.favicon}", ` +
+                `expected one of: ${this.MANAGED_BOOKMARK_FAVICON_SCHEMES.join(", ")}`
+            );
+          }
+        }
         menuitem.setAttribute(
           "image",
-          "page-icon:" + ChromeUtils.encodeURIForSrcset(preferredURI.spec)
+          imageURL ||
+            "page-icon:" + ChromeUtils.encodeURIForSrcset(preferredURI.spec)
         );
         menuitem.classList.add(
           "menuitem-iconic",
