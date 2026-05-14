@@ -16666,7 +16666,7 @@ const getClockFormDerivedState = ({
       (isEditingClock || canAddClock) && !!resolvedClockTimeZone,
     filteredTimeZones,
     resolvedClockTimeZone,
-    showLocationDropdown: !!(query && !resolvedClockTimeZone),
+    showLocationDropdown: !!(query && !clockSelectedTimeZone),
   };
 };
 

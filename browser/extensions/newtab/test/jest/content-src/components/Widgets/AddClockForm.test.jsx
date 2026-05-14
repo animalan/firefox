@@ -134,13 +134,25 @@ describe("<AddClockForm>", () => {
 
     it("renders results as div role='option' (not buttons) per ARIA combobox pattern", () => {
       const { container } = renderForm();
-      // Use a partial query so the dropdown stays open. An exact match
-      // resolves the timezone and hides the listbox.
-      setSearchValue(container, "Berl");
+      setSearchValue(container, "Berlin");
       const result = container.querySelector(".clocks-search-result");
       expect(result.tagName).toBe("DIV");
       expect(result.getAttribute("role")).toBe("option");
       expect(result.getAttribute("tabIndex")).toBe("0");
+    });
+
+    it("keeps the results list open on a full city name and closes it only after a row is clicked", () => {
+      const { container } = renderForm();
+      setSearchValue(container, "Berlin");
+      expect(
+        container.querySelector("#clocks-search-results")
+      ).toBeInTheDocument();
+      const result = container.querySelector(".clocks-search-result");
+      expect(result).toBeInTheDocument();
+      fireEvent.click(result);
+      expect(
+        container.querySelector("#clocks-search-results")
+      ).not.toBeInTheDocument();
     });
 
     it("selects a timezone when a result is clicked, replacing the search value with the city", () => {

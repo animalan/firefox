@@ -219,7 +219,7 @@ describe("getClockFormDerivedState", () => {
     ).toMatchObject({
       canAddSelectedClock: true,
       resolvedClockTimeZone: "America/New_York",
-      showLocationDropdown: false,
+      showLocationDropdown: true,
     });
   });
 
