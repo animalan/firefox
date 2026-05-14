@@ -170,11 +170,9 @@ class CompositorBridgeChild final : public PCompositorBridgeChild,
   bool AllocShmem(size_t aSize, mozilla::ipc::Shmem* aShmem) override;
   bool DeallocShmem(mozilla::ipc::Shmem& aShmem) override;
 
-  PAPZCTreeManagerChild* AllocPAPZCTreeManagerChild(const LayersId& aLayersId);
-  bool DeallocPAPZCTreeManagerChild(PAPZCTreeManagerChild* aActor);
-
-  PAPZChild* AllocPAPZChild(const LayersId& aLayersId);
-  bool DeallocPAPZChild(PAPZChild* aActor);
+  already_AddRefed<PAPZCTreeManagerChild> AllocPAPZCTreeManagerChild(
+      const LayersId& aLayersId);
+  already_AddRefed<PAPZChild> AllocPAPZChild(const LayersId& aLayersId);
 
   wr::MaybeExternalImageId GetNextExternalImageId() override;
 

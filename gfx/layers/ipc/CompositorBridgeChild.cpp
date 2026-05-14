@@ -550,30 +550,16 @@ bool CompositorBridgeChild::DeallocShmem(ipc::Shmem& aShmem) {
   return PCompositorBridgeChild::DeallocShmem(aShmem);
 }
 
-PAPZCTreeManagerChild* CompositorBridgeChild::AllocPAPZCTreeManagerChild(
-    const LayersId& aLayersId) {
-  APZCTreeManagerChild* child = new APZCTreeManagerChild();
-  child->AddIPDLReference();
-
-  return child;
+already_AddRefed<PAPZCTreeManagerChild>
+CompositorBridgeChild::AllocPAPZCTreeManagerChild(const LayersId& aLayersId) {
+  return MakeAndAddRef<APZCTreeManagerChild>();
 }
 
-PAPZChild* CompositorBridgeChild::AllocPAPZChild(const LayersId& aLayersId) {
+already_AddRefed<PAPZChild> CompositorBridgeChild::AllocPAPZChild(
+    const LayersId& aLayersId) {
   // We send the constructor manually.
   MOZ_CRASH("Should not be called");
   return nullptr;
-}
-
-bool CompositorBridgeChild::DeallocPAPZChild(PAPZChild* aActor) {
-  delete aActor;
-  return true;
-}
-
-bool CompositorBridgeChild::DeallocPAPZCTreeManagerChild(
-    PAPZCTreeManagerChild* aActor) {
-  APZCTreeManagerChild* child = static_cast<APZCTreeManagerChild*>(aActor);
-  child->ReleaseIPDLReference();
-  return true;
 }
 
 // -

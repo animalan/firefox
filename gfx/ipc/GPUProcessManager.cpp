@@ -1345,12 +1345,10 @@ RefPtr<CompositorSession> GPUProcessManager::CreateRemoteSession(
 
   RefPtr<APZCTreeManagerChild> apz = nullptr;
   if (aOptions.UseAPZ()) {
-    PAPZCTreeManagerChild* papz =
-        child->SendPAPZCTreeManagerConstructor(LayersId{0});
-    if (!papz) {
+    apz = MakeRefPtr<APZCTreeManagerChild>();
+    if (!child->SendPAPZCTreeManagerConstructor(apz, LayersId{0})) {
       return nullptr;
     }
-    apz = static_cast<APZCTreeManagerChild*>(papz);
 
     ipc::Endpoint<PAPZInputBridgeParent> parentPipe;
     ipc::Endpoint<PAPZInputBridgeChild> childPipe;
@@ -1368,11 +1366,11 @@ RefPtr<CompositorSession> GPUProcessManager::CreateRemoteSession(
       return nullptr;
     }
 
-    apz->SetInputBridge(inputBridge);
+    apz->SetInputBridge(std::move(inputBridge));
   }
 
-  return new RemoteCompositorSession(aWidget, child, widget, apz,
-                                     aRootLayerTreeId);
+  return MakeRefPtr<RemoteCompositorSession>(aWidget, child, widget,
+                                             std::move(apz), aRootLayerTreeId);
 #else
   gfxCriticalNote << "Platform does not support out-of-process compositing";
   return nullptr;

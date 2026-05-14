@@ -45,7 +45,7 @@ void ContentCompositorBridgeParent::ActorDestroy(ActorDestroyReason aWhy) {
       &ContentCompositorBridgeParent::DeferredDestroy));
 }
 
-PAPZCTreeManagerParent*
+already_AddRefed<PAPZCTreeManagerParent>
 ContentCompositorBridgeParent::AllocPAPZCTreeManagerParent(
     const LayersId& aLayersId) {
   // Check to see if this child process has access to this layer tree.
@@ -71,7 +71,7 @@ ContentCompositorBridgeParent::AllocPAPZCTreeManagerParent(
     RefPtr<APZCTreeManager> temp = APZCTreeManager::Create(dummyId);
     RefPtr<APZUpdater> tempUpdater = new APZUpdater(temp, connectedToWebRender);
     tempUpdater->ClearTree(dummyId);
-    return new APZCTreeManagerParent(aLayersId, temp, tempUpdater);
+    return MakeAndAddRef<APZCTreeManagerParent>(aLayersId, temp, tempUpdater);
   }
 
   // If we do not have APZ enabled, we should gracefully fail.
@@ -79,29 +79,10 @@ ContentCompositorBridgeParent::AllocPAPZCTreeManagerParent(
     return nullptr;
   }
 
-  state.mParent->AllocateAPZCTreeManagerParent(lock, aLayersId, state);
-  return state.mApzcTreeManagerParent;
+  return state.mParent->AllocateAPZCTreeManagerParent(lock, aLayersId, state);
 }
 
-bool ContentCompositorBridgeParent::DeallocPAPZCTreeManagerParent(
-    PAPZCTreeManagerParent* aActor) {
-  APZCTreeManagerParent* parent = static_cast<APZCTreeManagerParent*>(aActor);
-
-  StaticMonitorAutoLock lock(CompositorBridgeParent::sIndirectLayerTreesLock);
-  auto iter =
-      CompositorBridgeParent::sIndirectLayerTrees.find(parent->GetLayersId());
-  if (iter != CompositorBridgeParent::sIndirectLayerTrees.end()) {
-    CompositorBridgeParent::LayerTreeState& state = iter->second;
-    MOZ_ASSERT(state.mApzcTreeManagerParent == parent);
-    state.mApzcTreeManagerParent = nullptr;
-  }
-
-  delete parent;
-
-  return true;
-}
-
-PAPZParent* ContentCompositorBridgeParent::AllocPAPZParent(
+already_AddRefed<PAPZParent> ContentCompositorBridgeParent::AllocPAPZParent(
     const LayersId& aLayersId) {
   // Check to see if this child process has access to this layer tree.
   if (!LayerTreeOwnerTracker::Get()->IsMapped(aLayersId, OtherPid())) {
@@ -109,11 +90,7 @@ PAPZParent* ContentCompositorBridgeParent::AllocPAPZParent(
     return nullptr;
   }
 
-  RemoteContentController* controller = new RemoteContentController();
-
-  // Increment the controller's refcount before we return it. This will keep the
-  // controller alive until it is released by IPDL in DeallocPAPZParent.
-  controller->AddRef();
+  auto controller = MakeRefPtr<RemoteContentController>();
 
   StaticMonitorAutoLock lock(CompositorBridgeParent::sIndirectLayerTreesLock);
   CompositorBridgeParent::LayerTreeState& state =
@@ -121,14 +98,7 @@ PAPZParent* ContentCompositorBridgeParent::AllocPAPZParent(
   MOZ_ASSERT(!state.mController);
   state.mController = controller;
 
-  return controller;
-}
-
-bool ContentCompositorBridgeParent::DeallocPAPZParent(PAPZParent* aActor) {
-  RemoteContentController* controller =
-      static_cast<RemoteContentController*>(aActor);
-  controller->Release();
-  return true;
+  return controller.forget();
 }
 
 already_AddRefed<PWebRenderBridgeParent>

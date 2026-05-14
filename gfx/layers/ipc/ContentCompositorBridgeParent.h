@@ -142,12 +142,11 @@ class ContentCompositorBridgeParent final : public CompositorBridgeParentBase {
     return nullptr;
   }
 
-  PAPZCTreeManagerParent* AllocPAPZCTreeManagerParent(
+  already_AddRefed<PAPZCTreeManagerParent> AllocPAPZCTreeManagerParent(
       const LayersId& aLayersId) override;
-  bool DeallocPAPZCTreeManagerParent(PAPZCTreeManagerParent* aActor) override;
 
-  PAPZParent* AllocPAPZParent(const LayersId& aLayersId) override;
-  bool DeallocPAPZParent(PAPZParent* aActor) override;
+  already_AddRefed<PAPZParent> AllocPAPZParent(
+      const LayersId& aLayersId) override;
 
   already_AddRefed<PWebRenderBridgeParent> AllocPWebRenderBridgeParent(
       const wr::PipelineId& aPipelineId, const LayoutDeviceIntSize& aSize,

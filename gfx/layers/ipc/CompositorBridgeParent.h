@@ -153,13 +153,11 @@ class CompositorBridgeParentBase : public PCompositorBridgeParent,
  protected:
   virtual ~CompositorBridgeParentBase();
 
-  virtual PAPZParent* AllocPAPZParent(const LayersId& layersId) = 0;
-  virtual bool DeallocPAPZParent(PAPZParent* aActor) = 0;
-
-  virtual PAPZCTreeManagerParent* AllocPAPZCTreeManagerParent(
+  virtual already_AddRefed<PAPZParent> AllocPAPZParent(
       const LayersId& layersId) = 0;
-  virtual bool DeallocPAPZCTreeManagerParent(
-      PAPZCTreeManagerParent* aActor) = 0;
+
+  virtual already_AddRefed<PAPZCTreeManagerParent> AllocPAPZCTreeManagerParent(
+      const LayersId& layersId) = 0;
 
   virtual already_AddRefed<PTextureParent> AllocPTextureParent(
       const SurfaceDescriptor& aSharedData, ReadLockDescriptor& aReadLock,
@@ -374,6 +372,8 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase {
 
   static void DisconnectWrBridge(WebRenderBridgeParent* aWrBridge);
 
+  static void DisconnectApzcTreeManager(APZCTreeManagerParent* aTreeManager);
+
   /**
    * Returns the unique layer tree identifier that corresponds to the root
    * tree of this compositor.
@@ -403,11 +403,11 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase {
     LayerTreeState();
     ~LayerTreeState();
     RefPtr<GeckoContentController> mController;
-    APZCTreeManagerParent* mApzcTreeManagerParent;
+    RefPtr<APZCTreeManagerParent> mApzcTreeManagerParent;
     // The mApzInputBridgeParent is only populated for LayerTreeState
     // objects corresponding to root LayerIds (one for each top-level
     // window).
-    APZInputBridgeParent* mApzInputBridgeParent;
+    RefPtr<APZInputBridgeParent> mApzInputBridgeParent;
     RefPtr<CompositorBridgeParent> mParent;
     RefPtr<WebRenderBridgeParent> mWrBridge;
     // The mWebRenderAPI is only populated for LayerTreeState objects
@@ -451,7 +451,7 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase {
    * living in the gecko parent process then there is no APZCTreeManagerParent
    * for the parent process.
    */
-  static APZCTreeManagerParent* GetApzcTreeManagerParentForRoot(
+  static RefPtr<APZCTreeManagerParent> GetApzcTreeManagerParentForRoot(
       LayersId aContentLayersId);
   /**
    * Same as the GetApzcTreeManagerParentForRoot function, but returns
@@ -464,7 +464,7 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase {
    * Same as the GetApzcTreeManagerParentForRoot function, but returns
    * the APZInputBridge for the parent process.
    */
-  static APZInputBridgeParent* GetApzInputBridgeParentForRoot(
+  static RefPtr<APZInputBridgeParent> GetApzInputBridgeParentForRoot(
       LayersId aContentLayersId);
 
   /**
@@ -474,21 +474,21 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase {
 
   widget::CompositorWidget* GetWidget() { return mWidget; }
 
-  PAPZCTreeManagerParent* AllocPAPZCTreeManagerParent(
+  already_AddRefed<PAPZCTreeManagerParent> AllocPAPZCTreeManagerParent(
       const LayersId& aLayersId) override;
-  bool DeallocPAPZCTreeManagerParent(PAPZCTreeManagerParent* aActor) override;
 
   // Helper method so that we don't have to expose mApzcTreeManager to
   // ContentCompositorBridgeParent.
-  void AllocateAPZCTreeManagerParent(
+  already_AddRefed<APZCTreeManagerParent> AllocateAPZCTreeManagerParent(
       const StaticMonitorAutoLock& aProofOfLayerTreeStateLock,
       const LayersId& aLayersId, LayerTreeState& aLayerTreeStateToUpdate);
 
-  static void SetAPZInputBridgeParent(const LayersId& aLayersId,
-                                      APZInputBridgeParent* aInputBridgeParent);
+  static void SetAPZInputBridgeParent(
+      const LayersId& aLayersId,
+      RefPtr<APZInputBridgeParent>&& aInputBridgeParent);
 
-  PAPZParent* AllocPAPZParent(const LayersId& aLayersId) override;
-  bool DeallocPAPZParent(PAPZParent* aActor) override;
+  already_AddRefed<PAPZParent> AllocPAPZParent(
+      const LayersId& aLayersId) override;
 
   RefPtr<APZSampler> GetAPZSampler() const;
   RefPtr<APZUpdater> GetAPZUpdater() const;
