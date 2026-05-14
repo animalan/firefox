@@ -874,6 +874,50 @@ add_task(async function test_featureIds_is_stored() {
   await cleanup();
 });
 
+add_task(async function testForceEnrollmentWithCoenrollment() {
+  const { manager, cleanup } = await setupTest();
+
+  const recipes = [
+    NimbusTestUtils.factories.recipe.withFeatureConfig("foo", {
+      featureId: "no-feature-firefox-desktop",
+    }),
+    NimbusTestUtils.factories.recipe.withFeatureConfig(
+      "bar",
+      { featureId: "no-feature-firefox-desktop" },
+      { isRollout: true }
+    ),
+    NimbusTestUtils.factories.recipe.withFeatureConfig("baz", {
+      featureId: "no-feature-firefox-desktop",
+    }),
+    NimbusTestUtils.factories.recipe.withFeatureConfig(
+      "qux",
+      { featureId: "no-feature-firefox-desktop" },
+      { isRollout: true }
+    ),
+  ];
+
+  for (const recipe of recipes) {
+    await manager.forceEnroll(recipe, recipe.branches[0].slug);
+  }
+
+  for (const recipe of recipes) {
+    const optInSlug = `optin-${recipe.slug}`;
+    const enrollment = manager.store.get(optInSlug);
+
+    Assert.ok(enrollment, `Enrollment for ${optInSlug} exists`);
+    Assert.ok(enrollment.active, `Enrollment for ${optInSlug} is active`);
+  }
+
+  NimbusTestUtils.cleanupManager([
+    "optin-foo",
+    "optin-bar",
+    "optin-baz",
+    "optin-qux",
+  ]);
+
+  await cleanup();
+});
+
 add_task(async function experiment_and_rollout_enroll_and_cleanup() {
   const { manager, cleanup } = await setupTest();
 

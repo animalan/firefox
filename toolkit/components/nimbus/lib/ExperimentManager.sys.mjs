@@ -64,7 +64,11 @@ const CannotEnrollFeatureReason = Object.freeze({
 /**
  * @typedef {object} _CannotEnrollResult
  * @property {false} ok Whether or not enrollment is possible.
- * @property {string} featureId The feature that makes enrollment not possible.
+ * @property {string| undefined} featureId If reason = DOES_NOT_EXIST, the
+ * feature that does not exist.
+ * @property {string[]| undefined} conflictingEnrollments
+ * If reason = ENROLLED_IN_FEATURE, an array of slugs that conflict based on
+ * feature ID.
  * @property {CannotEnrollFeatureReason} reason Why enrollment is not possible.
  * @property {string | undefined} slug Optionally, a slug of a conflicting
  * enrollment.
@@ -598,6 +602,8 @@ export class ExperimentManager {
       };
     }
 
+    const conflictingEnrollments = [];
+
     for (const featureId of recipe.featureIds) {
       const feature = lazy.NimbusFeatures[featureId];
 
@@ -615,13 +621,16 @@ export class ExperimentManager {
 
       const enrollment = storeLookupByFeature(featureId);
       if (enrollment) {
-        return {
-          ok: false,
-          reason: CannotEnrollFeatureReason.ENROLLED_IN_FEATURE,
-          featureId,
-          slug: enrollment.slug,
-        };
+        conflictingEnrollments.push(enrollment.slug);
       }
+    }
+
+    if (conflictingEnrollments.length) {
+      return {
+        ok: false,
+        reason: CannotEnrollFeatureReason.ENROLLED_IN_FEATURE,
+        conflictingEnrollments,
+      };
     }
 
     return { ok: true };
@@ -731,7 +740,7 @@ export class ExperimentManager {
             status: lazy.NimbusTelemetry.EnrollmentStatus.NOT_ENROLLED,
             reason:
               lazy.NimbusTelemetry.EnrollmentStatusReason.FEATURE_CONFLICT,
-            conflict_slug: result.slug,
+            conflict_slug: result.conflictingEnrollments.join(","),
           });
           return null;
       }
@@ -832,29 +841,32 @@ export class ExperimentManager {
       );
     }
 
-    // If we happen to be enrolled in an experiment for the same feature we need
-    // to unenroll from that experiment.
-    //
-    // If the experiment has the same slug after unenrollment adding it to the
-    // store will overwrite the initial experiment.
-    for (let feature of branch.features) {
-      const isRollout = recipe.isRollout ?? false;
-      let enrollment = isRollout
-        ? this.store.getRolloutForFeature(feature?.featureId)
-        : this.store.getExperimentForFeature(feature?.featureId);
-      if (enrollment) {
-        lazy.log.debug(
-          `Existing ${
-            isRollout ? "rollout" : "experiment"
-          } found for the same feature ${feature.featureId}, unenrolling.`
-        );
+    const result = this.canEnroll(recipe);
+    if (!result.ok) {
+      switch (result.reason) {
+        case CannotEnrollFeatureReason.ENROLLMENT_PAUSED:
+          // Ignore this reason.
+          break;
 
-        this._unenroll(
-          enrollment,
-          UnenrollmentCause.fromReason(
-            lazy.NimbusTelemetry.UnenrollReason.FORCE_ENROLLMENT
-          )
-        );
+        case CannotEnrollFeatureReason.DOES_NOT_EXIST:
+          throw new Error(
+            `Cannot enroll in recipe ${recipe.slug}: feature ${result.featureId} does not exist`
+          );
+
+        case CannotEnrollFeatureReason.ENROLLED_IN_FEATURE:
+          for (const conflictingSlug of result.conflictingEnrollments) {
+            lazy.log.debug(
+              `Existing ${
+                recipe.isRollout ? "rollout" : "experiment"
+              } ${conflictingSlug} found for the same feature, unenrolling.`
+            );
+            this.unenroll(
+              conflictingSlug,
+              UnenrollmentCause.fromReason(
+                lazy.NimbusTelemetry.UnenrollReason.FORCE_ENROLLMENT
+              )
+            );
+          }
       }
     }
 
