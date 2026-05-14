@@ -644,7 +644,10 @@ static std::pair<Maybe<nscoord>, Maybe<nscoord>> GetCandidateInLastTargets(
           blockSet.AppendElement(&aTarget);
         }
         if (aLastSnapTargetIds->Contains(aTarget.mTargetId)) {
-          if (aTarget.mTargetId == targetIdForFocusedContent) {
+          if (aTarget.mTargetId == targetIdForFocusedContent ||
+              (targetIdForFocusedContent != ScrollSnapTargetId::None &&
+               SnapTargetIsFlattenedTreeDescendantOf(targetIdForFocusedContent,
+                                                     aTarget.mTargetId))) {
             focusedTarget = &aTarget;
           }
           if (aTarget.mTargetId == targetIdForTargetContent) {
