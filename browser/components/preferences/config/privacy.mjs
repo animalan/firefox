@@ -672,7 +672,6 @@ SettingGroupManager.registerGroups({
     items: [
       {
         id: "warningCard",
-        subcategory: "security-warning-card",
         l10nId: "security-privacy-issue-card",
         control: "moz-card",
         controlAttrs: {
@@ -1151,7 +1150,6 @@ SettingGroupManager.registerGroups({
           },
           {
             id: "etpLevelStrict",
-            subcategory: "etp-strict-control",
             value: "strict",
             l10nId: "preferences-etp-level-strict",
             items: [
@@ -1172,7 +1170,6 @@ SettingGroupManager.registerGroups({
           },
           {
             id: "etpLevelCustom",
-            subcategory: "etp-custom-control",
             value: "custom",
             l10nId: "preferences-etp-level-custom",
             items: [
@@ -1238,18 +1235,6 @@ SettingGroupManager.registerGroups({
             id: "etpResetStrictButton",
             control: "moz-button",
             l10nId: "preferences-etp-reset-strict-button",
-          },
-        ],
-      },
-      {
-        id: "reloadTabsHint",
-        control: "moz-message-bar",
-        l10nId: "preferences-etp-reload-tabs-hint",
-        options: [
-          {
-            control: "moz-button",
-            l10nId: "preferences-etp-reload-tabs-hint-button",
-            slot: "actions",
           },
         ],
       },
@@ -3466,9 +3451,6 @@ Preferences.addSetting({
 
     return config;
   },
-  onUserChange() {
-    PrivacySettingHelpers.maybeNotifyUserToReload();
-  },
 });
 
 Preferences.addSetting({
@@ -3609,7 +3591,6 @@ Preferences.addSetting({
   deps: ["contentBlockingCategory"],
   onUserClick(_, { contentBlockingCategory }) {
     contentBlockingCategory.value = "standard";
-    PrivacySettingHelpers.maybeNotifyUserToReload();
   },
   disabled({ contentBlockingCategory }) {
     return (
@@ -3624,7 +3605,6 @@ Preferences.addSetting({
   deps: ["contentBlockingCategory"],
   onUserClick(_, { contentBlockingCategory }) {
     contentBlockingCategory.value = "strict";
-    PrivacySettingHelpers.maybeNotifyUserToReload();
   },
   disabled({ contentBlockingCategory }) {
     return (
