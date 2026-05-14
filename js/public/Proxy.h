@@ -14,7 +14,6 @@
 #include "js/Class.h"
 #include "js/HeapAPI.h"        // for ObjectIsMarkedBlack
 #include "js/Id.h"             // for jsid
-#include "js/Object.h"         // JS::GetClass
 #include "js/RootingAPI.h"     // for Handle, MutableHandle (ptr only)
 #include "js/shadow/Object.h"  // JS::shadow::Object
 #include "js/TypeDecls.h"  // for HandleObject, HandleId, HandleValue, MutableHandleIdVector, MutableHandleValue, MutableHand...

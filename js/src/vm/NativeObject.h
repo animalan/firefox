@@ -682,19 +682,19 @@ class NativeObject : public JSObject {
   static void staticAsserts() {
     static_assert(sizeof(NativeObject) == sizeof(JSObject_Slots0),
                   "native object size must match GC thing size");
-    static_assert(sizeof(NativeObject) == sizeof(JS::shadow::Object),
+    static_assert(sizeof(NativeObject) == sizeof(JS::shadow::NativeObject),
                   "shadow interface must match actual implementation");
     static_assert(sizeof(NativeObject) % sizeof(Value) == 0,
                   "fixed slots after an object must be aligned");
 
     static_assert(offsetOfShape() == offsetof(JS::shadow::Object, shape),
                   "shadow type must match actual type");
-    static_assert(
-        offsetof(NativeObject, slots_) == offsetof(JS::shadow::Object, slots),
-        "shadow slots must match actual slots");
-    static_assert(
-        offsetof(NativeObject, elements_) == offsetof(JS::shadow::Object, _1),
-        "shadow placeholder must match actual elements");
+    static_assert(offsetof(NativeObject, slots_) ==
+                      offsetof(JS::shadow::NativeObject, slots),
+                  "shadow slots must match actual slots");
+    static_assert(offsetof(NativeObject, elements_) ==
+                      offsetof(JS::shadow::NativeObject, _1),
+                  "shadow placeholder must match actual elements");
 
     static_assert(MAX_FIXED_SLOTS <= Shape::FIXED_SLOTS_MAX,
                   "verify numFixedSlots() bitfield is big enough");
@@ -1303,7 +1303,7 @@ class NativeObject : public JSObject {
   // MAX_FIXED_SLOTS is the biggest number of fixed slots our GC
   // size classes will give an object.
   static constexpr uint32_t MAX_FIXED_SLOTS =
-      JS::shadow::Object::MAX_FIXED_SLOTS;
+      JS::shadow::NativeObject::MAX_FIXED_SLOTS;
 
  private:
   void prepareElementRangeForOverwrite(size_t start, size_t end) {

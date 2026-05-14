@@ -478,15 +478,12 @@ JS_PUBLIC_API bool js::GetRealmOriginalEval(JSContext* cx,
   return true;
 }
 
-void JS::detail::SetReservedSlotWithBarrier(JSObject* obj, size_t slot,
-                                            const Value& value) {
-  if (obj->is<ProxyObject>()) {
-    obj->as<ProxyObject>().setReservedSlot(slot, value);
-  } else {
-    // Note: We do not currently support watching reserved object slots for
-    // property modification.
-    obj->as<NativeObject>().setReservedSlot(slot, value);
-  }
+void JS::detail::SetNativeObjectReservedSlotWithBarrier(JSObject* obj,
+                                                        size_t slot,
+                                                        const Value& value) {
+  // Note: We do not currently support watching reserved object slots for
+  // property modification.
+  obj->as<NativeObject>().setReservedSlot(slot, value);
 }
 
 bool JS::NativeObjectHasOwnProperties(const JSObject* obj) {

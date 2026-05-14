@@ -32,7 +32,7 @@ class ProxyObject : public JSObject {
     static_assert(offsetof(ProxyObject, data) == detail::ProxyDataOffset,
                   "proxy object layout must match shadow interface");
     static_assert(offsetof(ProxyObject, data.reservedSlots) ==
-                      offsetof(JS::shadow::Object, slots),
+                      offsetof(JS::shadow::NativeObject, slots),
                   "Proxy reservedSlots must overlay native object slots field");
   }
 
