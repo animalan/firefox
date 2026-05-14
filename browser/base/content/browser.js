@@ -4614,7 +4614,7 @@ var gDialogBox = {
       template,
       parentElement,
       id: "window-modal-dialog-subdialog",
-      options: {
+      dialogOptions: {
         consumeOutsideClicks: false,
       },
     });
