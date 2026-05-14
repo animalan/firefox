@@ -29,7 +29,6 @@ import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.utils.BrowsersCache
 import mozilla.components.support.utils.ext.packageManagerWrapper
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -58,6 +57,7 @@ import org.mozilla.fenix.utils.Settings
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class FenixApplicationTest {
@@ -258,10 +258,10 @@ class FenixApplicationTest {
         assertEquals(true, Preferences.globalPrivacyControlEnabled.testGetValue())
         assertEquals(true, TabStrip.enabled.testGetValue())
 
-        val contextId = TopSites.contextId.testGetValue()!!.toString()
+        val contextId = TopSites.contextId.testGetValue()
 
-        assertNotNull(TopSites.contextId.testGetValue())
-        assertEquals(contextId, settings.contileContextId)
+        assertNotNull(contextId)
+        assertEquals(contextId.toString(), settings.contileContextId)
 
         // Verify that search engine defaults are NOT set. This test does
         // not mock most of the objects telemetry is collected from.
@@ -275,8 +275,8 @@ class FenixApplicationTest {
             mozillaProductDetector = mozillaProductDetector,
         )
 
-        assertEquals(contextId, TopSites.contextId.testGetValue()!!.toString())
-        assertEquals(contextId, settings.contileContextId)
+        assertEquals(contextId, TopSites.contextId.testGetValue())
+        assertEquals(contextId.toString(), settings.contileContextId)
     }
 
     @Test
