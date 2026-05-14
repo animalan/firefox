@@ -169,6 +169,7 @@ import org.mozilla.fenix.utils.Settings
 import org.mozilla.fenix.utils.Stories.markAsOpenedFromHomeScreen
 import org.mozilla.fenix.utils.Stories.markAsOpenedFromStoriesScreen
 import org.robolectric.annotation.Config
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import mozilla.components.browser.toolbar.R as toolbarR
 import mozilla.components.ui.icons.R as iconsR
@@ -2389,7 +2390,7 @@ class BrowserToolbarMiddlewareTest {
 
         val toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
         assertEquals(1, toolbarPageActions.size)
-        assertTrue(toolbarPageActions[0] is ActionButtonRes)
+        assertIs<ActionButtonRes>(toolbarPageActions[0])
     }
 
     @Test
@@ -2461,7 +2462,7 @@ class BrowserToolbarMiddlewareTest {
 
             var toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
             assertEquals(1, toolbarPageActions.size)
-            assertTrue(toolbarPageActions[0] is ActionButtonRes)
+            assertIs<ActionButtonRes>(toolbarPageActions[0])
 
             ipProtectionStore.dispatch(
                 IPProtectionAction.EngineStateChanged(
@@ -2475,7 +2476,7 @@ class BrowserToolbarMiddlewareTest {
 
             toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
             assertEquals(1, toolbarPageActions.size)
-            assertTrue(toolbarPageActions[0] is AnimatedPillActionRes)
+            assertIs<AnimatedPillActionRes>(toolbarPageActions[0])
         }
 
     @OptIn(ExperimentalAndroidComponentsApi::class)
@@ -2508,7 +2509,7 @@ class BrowserToolbarMiddlewareTest {
 
             var toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
             assertEquals(1, toolbarPageActions.size)
-            assertTrue(toolbarPageActions[0] is AnimatedPillActionRes)
+            assertIs<AnimatedPillActionRes>(toolbarPageActions[0])
 
             ipProtectionStore.dispatch(
                 IPProtectionAction.EngineStateChanged(
@@ -2522,7 +2523,7 @@ class BrowserToolbarMiddlewareTest {
 
             toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
             assertEquals(1, toolbarPageActions.size)
-            assertTrue(toolbarPageActions[0] is ActionButtonRes)
+            assertIs<ActionButtonRes>(toolbarPageActions[0])
         }
 
     @Test

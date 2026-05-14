@@ -83,6 +83,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import mozilla.components.browser.toolbar.R as toolbarR
 import mozilla.components.feature.customtabs.R as customtabsR
@@ -535,7 +536,7 @@ class CustomTabBrowserToolbarMiddlewareTest {
 
         var toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
         assertEquals(1, toolbarPageActions.size)
-        assertTrue(toolbarPageActions[0] is ActionButtonRes)
+        assertIs<ActionButtonRes>(toolbarPageActions[0])
 
         ipProtectionStore.dispatch(
             IPProtectionAction.EngineStateChanged(
@@ -549,7 +550,7 @@ class CustomTabBrowserToolbarMiddlewareTest {
 
         toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
         assertEquals(1, toolbarPageActions.size)
-        assertTrue(toolbarPageActions[0] is AnimatedPillActionRes)
+        assertIs<AnimatedPillActionRes>(toolbarPageActions[0])
     }
 
     @OptIn(ExperimentalAndroidComponentsApi::class)
@@ -579,7 +580,7 @@ class CustomTabBrowserToolbarMiddlewareTest {
 
         var toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
         assertEquals(1, toolbarPageActions.size)
-        assertTrue(toolbarPageActions[0] is AnimatedPillActionRes)
+        assertIs<AnimatedPillActionRes>(toolbarPageActions[0])
 
         ipProtectionStore.dispatch(
             IPProtectionAction.EngineStateChanged(
@@ -593,7 +594,7 @@ class CustomTabBrowserToolbarMiddlewareTest {
 
         toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
         assertEquals(1, toolbarPageActions.size)
-        assertTrue(toolbarPageActions[0] is ActionButtonRes)
+        assertIs<ActionButtonRes>(toolbarPageActions[0])
     }
 
     @Test
@@ -669,7 +670,7 @@ class CustomTabBrowserToolbarMiddlewareTest {
 
         val toolbarPageActions = toolbarStore.state.displayState.pageActionsStart
         assertEquals(1, toolbarPageActions.size)
-        assertTrue(toolbarPageActions[0] is ActionButtonRes)
+        assertIs<ActionButtonRes>(toolbarPageActions[0])
     }
 
     @Test
