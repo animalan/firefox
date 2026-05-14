@@ -1204,8 +1204,7 @@ static MOZ_ALWAYS_INLINE bool PreserveAnyUnpreservedWrapper(
     return true;
   }
 
-  JS::Value objectWrapperSlot =
-      JS::GetReservedSlot(obj, JS_OBJECT_WRAPPER_SLOT);
+  JS::Value objectWrapperSlot = obj->getReservedSlot(JS_OBJECT_WRAPPER_SLOT);
   if (objectWrapperSlot.isUndefined() || !objectWrapperSlot.toPrivate()) {
     return true;
   }

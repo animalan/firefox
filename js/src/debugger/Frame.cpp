@@ -1862,7 +1862,7 @@ DebuggerArguments* DebuggerArguments::create(JSContext* cx, HandleObject proto,
     return nullptr;
   }
 
-  JS::SetReservedSlot(obj, FRAME_SLOT, ObjectValue(*frame));
+  obj->setReservedSlot(FRAME_SLOT, ObjectValue(*frame));
 
   MOZ_ASSERT(referent.numActualArgs() <= 0x7fffffff);
   unsigned fargc = referent.numActualArgs();

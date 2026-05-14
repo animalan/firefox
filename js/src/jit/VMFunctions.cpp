@@ -1651,7 +1651,7 @@ bool CallDOMGetter(JSContext* cx, const JSJitInfo* info, HandleObject obj,
 #endif
 
   // Loading DOM_OBJECT_SLOT, which must be the first slot.
-  JS::Value val = JS::GetReservedSlot(obj, 0);
+  JS::Value val = obj->as<NativeObject>().getReservedSlot(0);
   JSJitGetterOp getter = info->getter;
   return getter(cx, obj, val.toPrivate(), JSJitGetterCallArgs(result));
 }
@@ -1685,7 +1685,7 @@ bool CallDOMSetter(JSContext* cx, const JSJitInfo* info, HandleObject obj,
 #endif
 
   // Loading DOM_OBJECT_SLOT, which must be the first slot.
-  JS::Value val = JS::GetReservedSlot(obj, 0);
+  JS::Value val = obj->as<NativeObject>().getReservedSlot(0);
   JSJitSetterOp setter = info->setter;
 
   RootedValue v(cx, value);

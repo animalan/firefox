@@ -485,7 +485,7 @@ void JS::detail::SetReservedSlotWithBarrier(JSObject* obj, size_t slot,
   } else {
     // Note: We do not currently support watching reserved object slots for
     // property modification.
-    obj->as<NativeObject>().setSlot(slot, value);
+    obj->as<NativeObject>().setReservedSlot(slot, value);
   }
 }
 
