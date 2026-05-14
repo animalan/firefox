@@ -361,6 +361,95 @@ mod recprot {
             write!(f, "[NULL AEAD]")
         }
     }
+
+    #[cfg(test)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
+    mod tests {
+        use super::{AEAD_NULL_TAG, RecordProtection};
+
+        fn aead() -> RecordProtection {
+            RecordProtection {}
+        }
+
+        #[test]
+        fn expansion() {
+            assert_eq!(aead().expansion(), AEAD_NULL_TAG.len());
+        }
+
+        #[test]
+        fn debug() {
+            assert_eq!(format!("{:?}", aead()), "[NULL AEAD]");
+        }
+
+        #[test]
+        fn encrypt_decrypt_roundtrip() {
+            let a = aead();
+            let plaintext = b"hello world";
+            let mut out = vec![0u8; plaintext.len() + a.expansion()];
+            let encrypted = a.encrypt(0, b"aad", plaintext, &mut out).unwrap();
+            assert_eq!(encrypted.len(), plaintext.len() + a.expansion());
+            assert_eq!(&encrypted[..plaintext.len()], plaintext);
+            assert_eq!(&encrypted[plaintext.len()..], AEAD_NULL_TAG);
+
+            let mut dec_out = vec![0u8; plaintext.len()];
+            let decrypted = a.decrypt(0, b"aad", encrypted, &mut dec_out).unwrap();
+            assert_eq!(decrypted, plaintext);
+        }
+
+        #[test]
+        fn encrypt_in_place_roundtrip() {
+            let a = aead();
+            let plaintext = b"hello";
+            let mut buf = plaintext.to_vec();
+            buf.resize(plaintext.len() + a.expansion(), 0);
+            let len = a.encrypt_in_place(0, b"", &mut buf).unwrap();
+            assert_eq!(len, buf.len());
+            assert_eq!(&buf[plaintext.len()..], AEAD_NULL_TAG);
+
+            let dec_len = a.decrypt_in_place(0, b"", &mut buf).unwrap();
+            assert_eq!(dec_len, plaintext.len());
+            assert_eq!(&buf[..dec_len], plaintext);
+        }
+
+        #[test]
+        fn decrypt_empty_plaintext() {
+            // Zero-length plaintext (just the tag) is valid.
+            let a = aead();
+            let mut out = vec![0u8; a.expansion()];
+            a.encrypt(0, b"", b"", &mut out).unwrap();
+            let mut dec = vec![];
+            let res = a.decrypt(0, b"", &out, &mut dec).unwrap();
+            assert_eq!(res, b"");
+        }
+
+        #[test]
+        fn decrypt_fails_too_short() {
+            let a = aead();
+            let short = &AEAD_NULL_TAG[..a.expansion() - 1];
+            assert!(a.decrypt(0, b"", short, &mut []).is_err());
+        }
+
+        #[test]
+        fn decrypt_fails_bad_tag() {
+            let a = aead();
+            let plaintext = b"test";
+            let mut buf = vec![0u8; plaintext.len() + a.expansion()];
+            a.encrypt(0, b"", plaintext, &mut buf).unwrap();
+            // Corrupt the tag.
+            let tag_start = plaintext.len();
+            buf[tag_start] ^= 0xff;
+            assert!(a.decrypt(0, b"", &buf, &mut []).is_err());
+        }
+
+        #[test]
+        fn decrypt_rejects_all_zero_data_bytes() {
+            // All-zero plaintext with correct tag should fail (looks like padding).
+            let a = aead();
+            let mut buf = vec![0u8; 4 + a.expansion()];
+            buf[4..].copy_from_slice(AEAD_NULL_TAG);
+            assert!(a.decrypt(0, b"", &buf, &mut []).is_err());
+        }
+    }
 }
 
 /// All the nonces are the same length.  Exploit that.
@@ -421,6 +510,15 @@ impl Aead {
             AeadAlgorithms::Aes128Gcm | AeadAlgorithms::Aes256Gcm => CKM_AES_GCM,
             AeadAlgorithms::ChaCha20Poly1305 => CKM_CHACHA20_POLY1305,
         })
+    }
+
+    fn make_nonce(nonce: &mut [u8; NONCE_LEN], seq: SequenceNumber) {
+        for (n, &s) in nonce[NONCE_LEN - COUNTER_LEN..]
+            .iter_mut()
+            .zip(&seq.to_be_bytes())
+        {
+            *n ^= s;
+        }
     }
 
     pub fn import_key(algorithm: AeadAlgorithms, key: &[u8]) -> Result<SymKey, Error> {
@@ -501,6 +599,49 @@ impl Aead {
         Ok(ct)
     }
 
+    /// Encrypt with an explicit sequence number. Mirrors `decrypt`'s nonce
+    /// construction: the final nonce is `nonce_base XOR encode_be(seq)` over
+    /// the trailing 8 bytes. The NSS PKCS#11 context's internal counter is
+    /// not used (`CKG_NO_GENERATE`). The caller must never reuse
+    /// `(nonce_base, seq)` with the same key.
+    pub fn encrypt_with_seq(
+        &mut self,
+        aad: &[u8],
+        seq: SequenceNumber,
+        pt: &[u8],
+    ) -> Result<Vec<u8>, Error> {
+        crate::init()?;
+
+        assert_eq!(self.mode, Mode::Encrypt);
+        let mut nonce = self.nonce_base;
+        Self::make_nonce(&mut nonce, seq);
+        let mut ct = vec![0; pt.len() + TAG_LEN];
+        let mut ct_len: c_int = 0;
+        let mut tag = vec![0; TAG_LEN];
+        secstatus_to_res(unsafe {
+            PK11_AEADOp(
+                *self.ctx,
+                CK_GENERATOR_FUNCTION::from(CKG_NO_GENERATE),
+                c_int_len(NONCE_LEN - COUNTER_LEN)?,
+                nonce.as_mut_ptr(),
+                c_int_len(nonce.len())?,
+                aad.as_ptr(),
+                c_int_len(aad.len())?,
+                ct.as_mut_ptr(),
+                &raw mut ct_len,
+                c_int_len(ct.len())?,
+                tag.as_mut_ptr(),
+                c_int_len(tag.len())?,
+                pt.as_ptr(),
+                c_int_len(pt.len())?,
+            )
+        })?;
+        ct.truncate(usize::try_from(ct_len).map_err(|_| Error::IntegerOverflow)?);
+        debug_assert_eq!(ct.len(), pt.len());
+        ct.append(&mut tag);
+        Ok(ct)
+    }
+
     pub fn decrypt(
         &mut self,
         aad: &[u8],
@@ -511,9 +652,7 @@ impl Aead {
 
         assert_eq!(self.mode, Mode::Decrypt);
         let mut nonce = self.nonce_base;
-        for (i, n) in nonce.iter_mut().rev().take(COUNTER_LEN).enumerate() {
-            *n ^= u8::try_from((seq >> (8 * i)) & 0xff).map_err(|_| Error::IntegerOverflow)?;
-        }
+        Self::make_nonce(&mut nonce, seq);
         let mut pt = vec![0; ct.len()]; // NSS needs more space than it uses for plaintext.
         let mut pt_len: c_int = 0;
         let pt_expected = ct.len().checked_sub(TAG_LEN).ok_or(Error::AeadTruncated)?;
@@ -677,5 +816,40 @@ mod test {
         check0(ALG, KEY, NONCE, AAD, PT, CT);
         // Now use the real nonce and sequence number from the example.
         decrypt(ALG, KEY, NONCE_BASE, 654_360_564, AAD, PT, CT);
+    }
+
+    fn roundtrip_encrypt_with_seq(algorithm: AeadAlgorithms, key: &[u8]) {
+        const NONCE_BASE: [u8; NONCE_LEN] = [0; NONCE_LEN];
+        const AAD: &[u8] = b"associated";
+        const PT: &[u8] = b"hello sframe";
+        const SEQ: SequenceNumber = 0x0123_4567_89ab;
+
+        fixture_init();
+
+        let k = Aead::import_key(algorithm, key).unwrap();
+        let mut enc = Aead::new(Mode::Encrypt, algorithm, &k, NONCE_BASE).unwrap();
+        let ct = enc.encrypt_with_seq(AAD, SEQ, PT).unwrap();
+
+        let mut dec = Aead::new(Mode::Decrypt, algorithm, &k, NONCE_BASE).unwrap();
+        let pt = dec.decrypt(AAD, SEQ, &ct).unwrap();
+        assert_eq!(&pt[..], PT);
+    }
+
+    #[test]
+    fn encrypt_with_seq_aes128gcm() {
+        const KEY: &[u8] = &[0x42; 16];
+        roundtrip_encrypt_with_seq(AeadAlgorithms::Aes128Gcm, KEY);
+    }
+
+    #[test]
+    fn encrypt_with_seq_aes256gcm() {
+        const KEY: &[u8] = &[0x42; 32];
+        roundtrip_encrypt_with_seq(AeadAlgorithms::Aes256Gcm, KEY);
+    }
+
+    #[test]
+    fn encrypt_with_seq_chacha20poly1305() {
+        const KEY: &[u8] = &[0x42; 32];
+        roundtrip_encrypt_with_seq(AeadAlgorithms::ChaCha20Poly1305, KEY);
     }
 }

@@ -1,7 +1,6 @@
 name: CI
 on:
   pull_request:
-    branches: ["main"]
   merge_group:
   workflow_dispatch:
 
@@ -11,6 +10,8 @@ env:
   RUST_TEST_TIME_UNIT: 10,30
   RUST_TEST_TIME_INTEGRATION: 10,30
   RUST_TEST_TIME_DOCTEST: 10,30
+  CARGO_PROFILE_RELEASE_LTO: true
+  CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -35,11 +36,13 @@ jobs:
           persist-credentials: false
 
       - id: toolchains
-        uses: ./.github/actions/toolchains
+        uses: mozilla/actions/toolchains@25cb84d060946c0ad6d2c3f79da479b16d180d71 # v1.1.0
 
   check:
     name: Run checks
     needs: toolchains
+    # TODO: Restore `environment: codecov` once GitHub supports filtering deployment messages.
+    # environment: codecov
     strategy:
       fail-fast: false
       matrix:
@@ -76,19 +79,17 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: ./.github/actions/rust
+      - uses: mozilla/actions/rust@25cb84d060946c0ad6d2c3f79da479b16d180d71 # v1.1.0
         with:
           version: ${{ matrix.rust-toolchain }}
           components: ${{ matrix.rust-toolchain == 'stable' && 'llvm-tools' || '' }} ${{ matrix.rust-toolchain == 'nightly' && startsWith(matrix.os, 'ubuntu') && !endsWith(matrix.os, 'arm') && 'rust-src ' || '' }}
           tools: ${{ matrix.rust-toolchain == 'stable' && 'cargo-llvm-cov' || '' }} ${{ matrix.rust-toolchain == 'nightly' && startsWith(matrix.os, 'ubuntu') && !endsWith(matrix.os, 'arm') && 'cargo-careful ' || '' }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - id: nss-version
-        run: echo "minimum=$(cat min_version.txt)" >> "$GITHUB_OUTPUT"
-
-      - uses: ./.github/actions/nss
+      - uses: mozilla/actions/nss@25cb84d060946c0ad6d2c3f79da479b16d180d71 # v1.1.0
         with:
-          minimum-version: ${{ steps.nss-version.outputs.minimum }}
+          version-file: min_version.txt
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check
         run: |
@@ -125,20 +126,20 @@ jobs:
           mkdir -p C:/msys64/home/runneradmin/
           touch C:/msys64/home/runneradmin/.gitconfig
 
-      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+      - uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
           files: codecov.json
           fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }} # zizmor: ignore[secrets-outside-env]
           verbose: true
           flags: ${{ startsWith(matrix.os, 'ubuntu') && 'linux' || startsWith(matrix.os, 'macos') && 'macos' || 'windows' }}
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }} # zizmor: ignore[secrets-outside-env]
         if: matrix.type == 'debug' && matrix.rust-toolchain == 'stable'
 
       - name: Save simulation seeds artifact
         if: ${{ always() }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: simulation-seeds-${{ matrix.os }}-${{ matrix.rust-toolchain }}-${{ matrix.type }}
           path: simulation-seeds
@@ -151,7 +152,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: ./.github/actions/rust
+      - uses: mozilla/actions/rust@25cb84d060946c0ad6d2c3f79da479b16d180d71 # v1.1.0
         with:
           version: stable
           tools: cargo-hack
@@ -165,7 +166,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        target: ['x86_64-linux-android', 'i686-linux-android'] # 'aarch64-linux-android' not currently working
+        target: ["x86_64-linux-android", "aarch64-linux-android"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -181,10 +182,17 @@ jobs:
   check-vm:
     name: Run checks for VM-only platforms
     runs-on: ubuntu-24.04
+    # TODO: Restore `environment: codecov` once GitHub supports filtering deployment messages.
+    # environment: codecov
+    # OpenBSD, NetBSD and Solaris often have NSS packages that are too old.
+    # Allow them to fail without aborting the merge queue.
+    continue-on-error: ${{ github.event_name == 'merge_group' && matrix.os != 'freebsd' }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ freebsd, openbsd, netbsd ] # NSS package on 'solaris' is too old.
+        # TODO: Re-enable openbsd once OpenBSD > 7.8 ships; nss-3.101 (the version in 7.8) is too old.
+        # TODO: Re-enable NetBSD once NetBSD > 10.1 ships with NSS >= 3.121.
+        os: [freebsd] # NSS package on 'solaris' is too old.
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -192,5 +200,5 @@ jobs:
       - uses: ./.github/actions/check-vm
         with:
           platform: ${{ matrix.os }}
-          codecov-token: ${{ secrets.CODECOV_TOKEN }}
+          codecov-token: ${{ secrets.CODECOV_TOKEN }} # zizmor: ignore[secrets-outside-env]
 

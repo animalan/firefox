@@ -4640,9 +4640,14 @@ criteria = "safe-to-deploy"
 delta = "0.2.6 -> 0.2.9"
 
 [[audits.mtu]]
-who = "Max Leonard Inden <mail@max-inden.de>"
+who = "Oskar Mansfeld <git@omansfeld.net>"
 criteria = "safe-to-deploy"
-delta = "0.3.0 -> 0.3.0@git:0eb6238fd899d2bf9e73c4847e14adc9565a4c81"
+delta = "0.3.0 -> 0.4.1"
+
+[[audits.mtu]]
+who = "Oskar Mansfeld <git@omansfeld.net>"
+criteria = "safe-to-deploy"
+delta = "0.4.1 -> 0.4.1@git:cca436bc84a8f6606cb66cf68add1a5a15a440ad"
 importable = false
 
 [[audits.naga]]

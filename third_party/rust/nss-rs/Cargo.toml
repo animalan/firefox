@@ -13,7 +13,7 @@
 edition = "2024"
 rust-version = "1.90.0"
 name = "nss-rs"
-version = "0.3.0"
+version = "0.9.0"
 authors = [
     "Martin Thomson <mt@lowentropy.net>",
     "Andy Leiserson <aleiserson@mozilla.com>",

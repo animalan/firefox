@@ -28,6 +28,7 @@ pub mod ec;
 pub mod hash;
 pub mod hmac;
 pub mod p11;
+pub mod pbkdf2;
 pub mod pk11_utils;
 mod prio;
 mod replay;

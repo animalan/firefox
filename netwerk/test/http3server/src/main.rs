@@ -8,7 +8,7 @@ use base64::prelude::*;
 use neqo_bin::server::{HttpServer, Runner};
 use neqo_common::Bytes;
 use neqo_common::{event::Provider, qdebug, qerror, qinfo, qtrace, Datagram, Header};
-use neqo_crypto::{generate_ech_keys, init_db, AllowZeroRtt, AntiReplay};
+use nss_rs::{generate_ech_keys, init_db, AllowZeroRtt, AntiReplay};
 use neqo_http3::{
     ConnectUdpRequest, ConnectUdpServerEvent, Error, Http3OrWebTransportStream, Http3Parameters,
     Http3Server, Http3ServerEvent, SessionAcceptAction, StreamId, WebTransportRequest,
