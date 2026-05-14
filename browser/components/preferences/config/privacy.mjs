@@ -16,12 +16,16 @@ const PrivateBrowsingUtils = ChromeUtils.importESModule(
 ).PrivateBrowsingUtils;
 
 const lazy = XPCOMUtils.declareLazy({
+  AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   AppConstants: "resource://gre/modules/AppConstants.sys.mjs",
   AppUpdater: "resource://gre/modules/AppUpdater.sys.mjs",
   BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
   DoHConfigController: "moz-src:///toolkit/components/doh/DoHConfig.sys.mjs",
   DownloadUtils: "resource://gre/modules/DownloadUtils.sys.mjs",
+  ExtensionSettingsStore:
+    "resource://gre/modules/ExtensionSettingsStore.sys.mjs",
   FirefoxRelay: "resource://gre/modules/FirefoxRelay.sys.mjs",
+  Management: "resource://gre/modules/Extension.sys.mjs",
   Sanitizer: "resource:///modules/Sanitizer.sys.mjs",
   SiteDataManager: "resource:///modules/SiteDataManager.sys.mjs",
   IPProtection:
@@ -478,10 +482,6 @@ if (SECURITY_PRIVACY_STATUS_CARD_ENABLED) {
     },
     {
       id: "browser.preferences.config_warning.warningProxyAutodetection.dismissed",
-      type: "bool",
-    },
-    {
-      id: "services.passwordSavingEnabled",
       type: "bool",
     },
     {
@@ -1500,8 +1500,10 @@ class WarningSettingConfig {
    * setting initially
    * @param {boolean} isDismissable - A boolean indicating whether or not we should support dismissing
    * this setting
+   * @param {string} [extensionStoreId] - The ExtensionSettingsStore "prefs" key to watch. When an
+   * installed extension is controlling this setting, the warning is suppressed.
    */
-  constructor(id, prefMapping, problematic, isDismissable) {
+  constructor(id, prefMapping, problematic, isDismissable, extensionStoreId) {
     this.id = id;
     this.prefMapping = prefMapping;
     if (isDismissable) {
@@ -1511,6 +1513,8 @@ class WarningSettingConfig {
       this.prefMapping.dismissAll = this.dismissAllPrefId;
     }
     this.problematic = problematic;
+    this.extensionStoreId = extensionStoreId;
+    this.extensionControlled = false;
   }
 
   /**
@@ -1523,6 +1527,7 @@ class WarningSettingConfig {
     return (
       !this.dismissAll?.value &&
       !this.dismissed?.value &&
+      !this.extensionControlled &&
       this.problematic(this)
     );
   }
@@ -1561,10 +1566,39 @@ class WarningSettingConfig {
       this[getter] = Preferences.get(prefId);
       this[getter].on("change", emitChange);
     }
+
+    let extensionListenerCleanup;
+    if (this.extensionStoreId) {
+      let updateExtensionControlled = async () => {
+        await lazy.Management.asyncLoadSettingsModules();
+        await lazy.ExtensionSettingsStore.initialize();
+        let info = lazy.ExtensionSettingsStore.getSetting(
+          "prefs",
+          this.extensionStoreId
+        );
+        let controlled = false;
+        if (info?.id) {
+          let addon = await lazy.AddonManager.getAddonByID(info.id);
+          controlled = !!addon;
+        }
+        if (this.extensionControlled !== controlled) {
+          this.extensionControlled = controlled;
+          emitChange();
+        }
+      };
+      let topic = `extension-setting-changed:${this.extensionStoreId}`;
+      lazy.Management.on(topic, updateExtensionControlled);
+      updateExtensionControlled();
+      extensionListenerCleanup = () => {
+        lazy.Management.off(topic, updateExtensionControlled);
+      };
+    }
+
     return () => {
       for (let getter of Object.keys(this.prefMapping)) {
         this[getter].off(emitChange);
       }
+      extensionListenerCleanup?.();
     };
   }
 
@@ -1636,11 +1670,10 @@ if (SECURITY_PRIVACY_STATUS_CARD_ENABLED) {
       "warningPasswordManager",
       {
         enabled: "signon.rememberSignons",
-        extentionAllows: "services.passwordSavingEnabled",
       },
-      ({ enabled, extentionAllows }) =>
-        !enabled.value && !enabled.locked && !extentionAllows.value,
-      true
+      ({ enabled }) => !enabled.value && !enabled.locked,
+      true,
+      "services.passwordSavingEnabled"
     )
   );
 
