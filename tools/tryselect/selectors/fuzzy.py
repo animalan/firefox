@@ -8,7 +8,12 @@ from pathlib import PurePath
 
 from ..cli import BaseTryParser
 from ..push import check_working_directory, generate_try_task_config, push_to_try
-from ..tasks import filter_tasks_by_paths, filter_tasks_by_worker_type, generate_tasks
+from ..tasks import (
+    filter_tasks_by_native_profiling,
+    filter_tasks_by_paths,
+    filter_tasks_by_worker_type,
+    generate_tasks,
+)
 from ..util.fzf import (
     FZF_NOT_FOUND,
     PREVIEW_SCRIPT,
@@ -176,6 +181,12 @@ def run(
 
     if try_config_params.get("try_task_config", {}).get("worker-types", []):
         all_tasks = filter_tasks_by_worker_type(all_tasks, try_config_params)
+        if not all_tasks:
+            metrics.mach_try.task_filtering_duration.stop()
+            return 1
+
+    if try_config_params.get("try_task_config", {}).get("native-profiling", False):
+        all_tasks = filter_tasks_by_native_profiling(all_tasks, try_config_params)
         if not all_tasks:
             metrics.mach_try.task_filtering_duration.stop()
             return 1

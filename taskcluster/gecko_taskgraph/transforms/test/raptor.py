@@ -683,6 +683,10 @@ def add_simpleperf(config, tests):
             # On autoland, run a copy of the Speedometer 3 a55 Fenix task
             # with native (Simpleperf) profiling
 
+            # Set the native_profiling task attribute to ensure
+            # the test is filtered for when using --native-profiling
+            test.setdefault("attributes", {})["native_profiling"] = True
+
             is_autoland_job = (
                 config.params["project"] == "autoland"
                 and app == "fenix"
