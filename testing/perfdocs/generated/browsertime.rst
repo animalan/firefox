@@ -305,7 +305,9 @@ To use native profiling in CI, first run ``./mach try`` with the ``--native-prof
 
 ::
 
-  ./mach try fuzzy --native-profiling
+  ./mach try fuzzy --full --native-profiling
+  # OR
+  ./mach try perf --native-profiling # With ./mach try perf, --full is implied. Only supported tasks will be displayed.
 
 Then, select any test configured for native profiling. Currently, the following tests support native profiling:
 

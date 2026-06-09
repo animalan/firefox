@@ -18,7 +18,8 @@ from mozbuild.base import MozbuildObject
 from mozversioncontrol import get_repository_object
 
 from ..lando import get_lando_instance_id
-from ..push import generate_try_task_config, push_to_try
+from ..push import check_working_directory, generate_try_task_config, push_to_try
+from ..tasks import generate_tasks
 from ..util.fzf import (
     FZF_NOT_FOUND,
     build_base_cmd,
@@ -1503,12 +1504,36 @@ class PerfParser(CompareParser):
             print(f"Removing cached {cache_file} file")
             cache_file.unlink(missing_ok=True)
 
-        all_tasks, cache_dir = setup_tasks_for_fzf(
-            not dry_run,
-            parameters,
-            full=True,
-            disable_target_task_filter=False,
-        )
+        # When using --native-profiling only show supported tasks. --native-profiling implies --full.
+        if try_config_params and try_config_params.get("try_task_config", {}).get(
+            "native-profiling", False
+        ):
+            show_all = True
+            check_working_directory(not dry_run)
+            tg = generate_tasks(
+                parameters,
+                full=True,
+                disable_target_task_filter=False,
+            )
+            all_tasks = {
+                task_name: task
+                for task_name, task in tg.tasks.items()
+                if task.attributes.get("native_profiling", False)
+            }
+            all_tasks = sorted(all_tasks.keys())
+            cache_dir = str(
+                pathlib.Path(get_state_dir(specific_to_topsrcdir=True))
+                / "cache"
+                / "taskgraph"
+            )
+        else:
+            all_tasks, cache_dir = setup_tasks_for_fzf(
+                not dry_run,
+                parameters,
+                full=True,
+                disable_target_task_filter=False,
+            )
+
         base_cmd = build_base_cmd(
             fzf,
             preview_script=PREVIEW_SCRIPT,

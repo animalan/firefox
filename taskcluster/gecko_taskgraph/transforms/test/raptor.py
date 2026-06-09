@@ -663,6 +663,11 @@ def add_simpleperf(config, tests):
             # On autoland, run a copy of the Speedometer 3 a55 Fenix task
             # with native (Simpleperf) profiling
 
+            # Set the native_profiling task attribute to ensure
+            # the test is filtered for when using ./mach try perf
+            # --native-profiling
+            test.setdefault("attributes", {})["native_profiling"] = True
+
             is_autoland_job = (
                 config.params["project"] == "autoland"
                 and app == "fenix"
@@ -749,6 +754,8 @@ def add_etw_profile(config, tests):
         if "win" in test.get("test-platform", "") and "speedometer3" in test.get(
             "test-name", None
         ):
+            test.setdefault("attributes", {})["native_profiling"] = True
+
             # On Autoland, run duplicates of the following Windows tasks with native profiling:
             # - Sp3 on Firefox Windows 11 24H2 Shippable (trunk)
             # - Sp3 on Firefox Windows 11 24H2 Ref HW Shippable (trunk)

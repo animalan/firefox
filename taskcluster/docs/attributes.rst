@@ -614,3 +614,7 @@ msi_display_name
 The human-readable product name for the MSI installer (e.g. ``Firefox Nightly``,
 ``Firefox Beta``, ``Firefox``). Used by downstream signing tasks to construct
 the Authenticode comment embedded in the installer signature.
+
+native_profiling
+================
+If set to true, the task is configured to be profiled with a native (OS-specific) profiler (e.g., Simpleperf, Xperf).
