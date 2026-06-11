@@ -244,8 +244,14 @@ def create_parser(mach_interface=False):
         action="store_true",
         dest="etw_profile",
         default=False,
-        help="Enable system-wide ETW profiling on Windows (captures all system activity). "
-        "Profile will be saved to $MOZ_UPLOAD_DIR and automatically symbolicated.",
+        help="Enable system-wide ETW profiling via Xperf (Windows only). ",
+    )
+    add_arg(
+        "--samply-profile",
+        action="store_true",
+        dest="samply_profile",
+        default=False,
+        help="Enable system-wide profiling via Samply (macOS only).",
     )
     add_arg(
         "--symbolsPath",

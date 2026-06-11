@@ -23,7 +23,7 @@ from logger.logger import RaptorLogger
 from manifestparser.util import evaluate_list_from_string
 from perftest import GECKO_PROFILER_APPS, TRACE_APPS, Perftest
 from results import BrowsertimeResultsHandler
-from utils import bool_from_str
+from utils import bool_from_str, view_gecko_profile_from_raptor
 
 LOG = RaptorLogger(component="raptor-browsertime")
 
@@ -860,6 +860,10 @@ class Browsertime(Perftest, metaclass=ABCMeta):
         if self.config.get("etw_profile") and self.etw_profiler:
             bt_timeout += 5 * 60
 
+        # if samply profiling enabled and instantiated, give browser more time for profiling
+        if self.config.get("samply_profile") and self.samply_profiler:
+            bt_timeout += 5 * 60
+
         # if simpleperf enabled, give browser more time for profiling
         if self.config["simpleperf"] is True:
             bt_timeout += 5 * 60
@@ -993,6 +997,18 @@ class Browsertime(Perftest, metaclass=ABCMeta):
                 self._init_etw_profiling(test)
             else:
                 raise Exception("ETW profiling is not supported in local runs")
+
+        if self.config.get("samply_profile"):
+            self._init_samply_profiling(test)
+
+        samply_started = False
+        if self.config.get("samply_profile") and self.samply_profiler:
+            try:
+                samply_started = self.samply_profiler.start()
+                LOG.info("Samply profiling started")
+            except Exception as e:
+                LOG.warning(f"Failed to start Samply profiling: {e}")
+                self.samply_profiler = None
 
         if self.config.get("simpleperf"):
             self._init_simpleperf_profiling(test)
@@ -1258,6 +1274,9 @@ class Browsertime(Perftest, metaclass=ABCMeta):
                     browsertime_log_fp.close()
                 except Exception:
                     pass
+
+            profile_archive_path = None
+
             if etw_started and self.etw_profiler:
                 try:
                     # Additionally upload kernel and user ETL files
@@ -1271,3 +1290,32 @@ class Browsertime(Perftest, metaclass=ABCMeta):
                     LOG.info("ETW profiling has completed successfully")
                 except Exception as e:
                     LOG.error(f"Failed to finalize ETW profiling: {e}")
+
+            if samply_started and self.samply_profiler:
+                try:
+                    self.samply_profiler.stop()
+                    profile_archive_path = self.samply_profiler.archive()
+                    self.samply_profiler.clean()
+                    LOG.info("Samply profiling stopped")
+                except Exception as e:
+                    LOG.error(f"Failed to stop Samply profiling: {e}")
+
+            is_local = self.config.get("run_local")
+            if is_local and profile_archive_path and profile_archive_path.exists():
+                # Enable profile viewing (view_gecko_profile_from_raptor())
+                os.environ["RAPTOR_LATEST_PROFILE_ARCHIVE"] = str(profile_archive_path)
+
+            # Serve profile before propagating the exception
+            if (
+                browsertime_test_failed
+                and is_local
+                and os.environ.get("DISABLE_PROFILE_LAUNCH", "0") != "1"
+            ):
+                try:
+                    LOG.info("Viewing failure profile")
+                    os.environ["RAPTOR_LATEST_PROFILE_ARCHIVE"] = str(
+                        profile_archive_path
+                    )
+                    view_gecko_profile_from_raptor()
+                except Exception as e:
+                    LOG.error(f"Failed to view {profile_archive_path}: {e}")
