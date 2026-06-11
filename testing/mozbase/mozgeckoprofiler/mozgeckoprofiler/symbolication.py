@@ -298,7 +298,7 @@ class ProfileSymbolicator:
     def symbolicate_profile(self, profile_json):
 
         # Check if running in CI
-        if "MOZ_AUTOMATION" in os.environ:
+        if True:
             moz_fetch = os.environ["MOZ_FETCHES_DIR"]
             profiler_edit_path = Path(
                 moz_fetch, "profiler-node-tools", "profiler-edit.js"
@@ -311,7 +311,6 @@ class ProfileSymbolicator:
                 node_path = Path(moz_fetch, "node", "bin", "node")
 
             # Check if symbolication dependencies are available
-
             if not self._validate_symbolication_deps([
                 profiler_edit_path,
                 samply_path,
@@ -320,13 +319,21 @@ class ProfileSymbolicator:
                 LOG.info(
                     "Symbolication dependencies not available, using fallback symbolication."
                 )
-                self._symbolicate_profile_fallback(profile_json)
                 return
 
             try:
-                breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
-
                 with tempfile.TemporaryDirectory() as work_dir:
+                    # Extract symbols to a temp directory within work_dir
+                    breakpad_symbol_dir = Path(work_dir) / "breakpad_symbols"
+                    breakpad_symbol_dir.mkdir()
+
+                    if True:  # Always extract symbols
+                        moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
+                        symbol_zip = moz_fetch / "target.crashreporter-symbols.zip"
+                        if symbol_zip.exists():
+                            with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                                zipf.extractall(breakpad_symbol_dir)
+
                     unsym_profile = Path(work_dir, "unsym_profile.json")
                     unsym_profile.write_text(
                         json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"
@@ -381,7 +388,6 @@ class ProfileSymbolicator:
                         text=True,
                         bufsize=1,
                     ) as profiler_edit_process:
-                        # Stream and forward to self.info()
                         for line in profiler_edit_process.stdout:
                             LOG.info(f"profiler-edit {line.strip()}")
 
@@ -394,6 +400,8 @@ class ProfileSymbolicator:
                     samply_process.wait(timeout=SAMPLY_WAIT_TIMEOUT)
 
                     # Load profile json into memory and mutate profile
+                    if not sym_profile.exists():
+                        LOG.error(f"sym_profile does not exist: {sym_profile}")
                     with sym_profile.open("r", encoding="utf-8") as f:
                         sym = json.load(f)
 
@@ -402,13 +410,6 @@ class ProfileSymbolicator:
 
             except Exception:
                 LOG.critical("Profile symbolication failed.", exc_info=True)
-                LOG.info("Attempting fallback symbolication.")
-                self._symbolicate_profile_fallback(profile_json)
-
-        # Local symbolication using fallback symbolication
-        else:
-            LOG.info("Running locally - using fallback symbolication.")
-            self._symbolicate_profile_fallback(profile_json)
 
     def _find_addresses(self, profile_json):
         addresses = set()

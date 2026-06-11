@@ -24,6 +24,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from functools import partial
 from multiprocessing import cpu_count
+from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen
 from tempfile import gettempdir, mkdtemp
 from threading import Event, Lock, Thread, Timer, current_thread
@@ -32,7 +33,6 @@ import mozdebug
 import six
 from mozgeckoprofiler import (
     symbolicate_profile_json,
-    view_gecko_profile,
 )
 from mozserve import Http3Server, MozHttp2Server
 
@@ -1188,9 +1188,6 @@ class XPCShellTestThread(Thread):
 
         finally:
             self.postCheck(proc)
-            if self.profiler and self.singleFile:
-                symbolicate_profile_json(profile_path, self.symbolsPath)
-                view_gecko_profile(profile_path)
             self.clean_temp_dirs(path)
 
         if gotSIGINT:
@@ -2592,6 +2589,90 @@ class XPCShellTests:
         # restore default SIGINT behaviour
         if self.sequential:
             signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+        # Symbolicate all profiles once after tests complete (serially, no race conditions)
+        if os.environ.get("MOZ_UPLOAD_DIR"):
+            upload_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
+            if upload_dir.exists():
+                # List all uploaded files before symbolication
+                all_files = list(upload_dir.iterdir())
+                self.log.info(f"MOZ_UPLOAD_DIR contents ({len(all_files)} files):")
+                # Log each file with its size for visibility
+                for file_path in sorted(all_files):
+                    if file_path.is_file():
+                        size = file_path.stat().st_size
+                        self.log.info(f"  - {file_path.name} ({size} bytes)")
+                    else:
+                        self.log.info(f"  - {file_path.name}/ (directory)")
+
+                # Symbolicate all profiles
+                self.log.info("Symbolicating profiles from MOZ_UPLOAD_DIR...")
+                # Find all profile_*.json files except resource-usage (those can't be symbolicated)
+                profile_files = sorted(
+                    f
+                    for f in upload_dir.glob("profile_*.json")
+                    if "resource-usage" not in f.name
+                )
+                for profile_file in profile_files:
+                    # Check if a symbolicated version already exists
+                    symbolicated_path = profile_file.parent / profile_file.name.replace(
+                        ".json", "_symbolicated.json"
+                    )
+                    if symbolicated_path.exists():
+                        self.log.info(
+                            f"Profile {profile_file.name} already symbolicated, skipping"
+                        )
+                        continue
+
+                    # Get original file size before symbolication
+                    unsym_size = profile_file.stat().st_size
+                    self.log.info(
+                        f"Symbolicating {profile_file.name} ({unsym_size} bytes)..."
+                    )
+                    try:
+                        import shutil
+
+                        # Create a unique copy to symbolicate (avoid overwriting original)
+                        symbolicated_path = (
+                            profile_file.parent
+                            / profile_file.name.replace(".json", "_symbolicated.json")
+                        )
+                        # Copy original profile to new file
+                        shutil.copy(profile_file, symbolicated_path)
+
+                        # Symbolicate the copy in-place
+                        symbolicate_profile_json(
+                            str(symbolicated_path), self.symbolsPath
+                        )
+
+                        # Get symbolicated file size and log the result
+                        symbol_size = symbolicated_path.stat().st_size
+                        self.log.info(
+                            f"Successfully symbolicated {profile_file.name}: "
+                            f"{unsym_size} bytes → {symbol_size} bytes"
+                        )
+                        # Delete original unsymbolicated profile
+                        profile_file.unlink()
+                    except Exception as e:
+                        # Log error but continue with next profile
+                        self.log.error(
+                            f"Failed to symbolicate {profile_file.name}: {e}",
+                            exc_info=True,
+                        )
+                        # Clean up incomplete symbolicated file
+                        if symbolicated_path.exists():
+                            symbolicated_path.unlink()
+
+                # List final artifacts after symbolication
+                self.log.info("MOZ_UPLOAD_DIR contents after symbolication:")
+                final_files = list(upload_dir.iterdir())
+                # Log final state showing both original and symbolicated versions
+                for file_path in sorted(final_files):
+                    if file_path.is_file():
+                        size = file_path.stat().st_size
+                        self.log.info(f"  - {file_path.name} ({size} bytes)")
+                    else:
+                        self.log.info(f"  - {file_path.name}/ (directory)")
 
         # Clean up any slacker directories that might be lying around
         # Some might fail because of windows taking too long to unlock them.

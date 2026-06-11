@@ -1,6 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import gzip
 import os
 import shutil
 import tempfile
@@ -31,7 +32,7 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
     Symbolicate a single JSON profile.
     """
     temp_dir = tempfile.mkdtemp()
-    missing_symbols_zip = os.path.join(temp_dir, "missingsymbols.zip")
+    # missing_symbols_zip = os.path.join(temp_dir, "missingsymbols.zip")
 
     windows_symbol_path = os.path.join(temp_dir, "windows")
     os.mkdir(windows_symbol_path)
@@ -62,18 +63,18 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
         # to all-uppercase internally
         "symbolPaths": symbol_paths,
     })
-
-    LOG.info(
-        "Symbolicating the performance profile... This could take a couple of minutes."
-    )
-
+    LOG.info("Symbolicating the performance profile...")
     try:
         with open(profile_path, "rb") as profile_file:
+            data = profile_file.read()
+            try:
+                data = gzip.decompress(data)
+            except Exception:
+                LOG.error("gzip decompress failed")
             if orjson is not None:
-                profile = orjson.loads(profile_file.read())
+                profile = orjson.loads(data)
             else:
-                profile = json.load(profile_file)
-        symbolicator.dump_and_integrate_missing_symbols(profile, missing_symbols_zip)
+                profile = json.loads(data)
         symbolicator.symbolicate_profile(profile)
         # Overwrite the profile in place.
         save_gecko_profile(profile, profile_path)
