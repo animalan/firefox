@@ -30,8 +30,14 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
     """
     Symbolicate a single JSON profile.
     """
+    print(
+        f">>> symbolicate_profile_json called with profile_path={profile_path}, firefox_symbols_path={firefox_symbols_path}"
+    )
+    import sys
+
+    sys.stdout.flush()
     temp_dir = tempfile.mkdtemp()
-    missing_symbols_zip = os.path.join(temp_dir, "missingsymbols.zip")
+    # missing_symbols_zip = os.path.join(temp_dir, "missingsymbols.zip")
 
     windows_symbol_path = os.path.join(temp_dir, "windows")
     os.mkdir(windows_symbol_path)
@@ -66,17 +72,29 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
     LOG.info(
         "Symbolicating the performance profile... This could take a couple of minutes."
     )
+    print(f"DEBUG: profile_path={profile_path}")
+    print(f"DEBUG: firefox_symbols_path={firefox_symbols_path}")
 
     try:
+        print("DEBUG: Opening profile file...")
         with open(profile_path, "rb") as profile_file:
             if orjson is not None:
                 profile = orjson.loads(profile_file.read())
             else:
                 profile = json.load(profile_file)
-        symbolicator.dump_and_integrate_missing_symbols(profile, missing_symbols_zip)
+        print(f"DEBUG: Profile loaded, has {len(profile.get('libs', []))} libraries")
+
+        # print("DEBUG: Dumping and integrating missing symbols...")
+        # symbolicator.dump_and_integrate_missing_symbols(profile, missing_symbols_zip)
+
+        print("DEBUG: Starting symbolication...")
         symbolicator.symbolicate_profile(profile)
+        print("DEBUG: Symbolication complete")
+
         # Overwrite the profile in place.
+        print(f"DEBUG: Saving symbolicated profile to {profile_path}...")
         save_gecko_profile(profile, profile_path)
+        print("DEBUG: Profile saved successfully")
     except MemoryError:
         LOG.error(
             f"Ran out of memory while trying to symbolicate profile {profile_path}"

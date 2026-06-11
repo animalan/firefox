@@ -688,3 +688,66 @@ def normpath(path):
 def get_firefox_version():
     with open("browser/config/version.txt") as f:
         return f.readline().strip()
+
+
+@transforms.add
+def add_xpcshell_crashreporter_symbols(_config, tests):
+    for test in tests:
+        name = test.get("name", "")
+        if "xpcshell" in name.lower():
+            fetches = test.setdefault("fetches", {})
+
+            fetches.setdefault("build", []).append({
+                "artifact": "target.crashreporter-symbols.zip",
+                "extract": False,
+            })
+
+            fetch_toolchains = fetches.setdefault("toolchain", [])
+
+            if "profiler-node-tools" not in fetch_toolchains:
+                fetch_toolchains.append("profiler-node-tools")
+
+            if "macosx" in name and "aarch64" in name:
+                samply_toolchain = "macosx64-aarch64-samply"
+                node_toolchain = "macosx64-aarch64-node"
+            elif "macosx" in name:
+                samply_toolchain = "macosx64-samply"
+                node_toolchain = "macosx64-node"
+            elif "win" in name:
+                samply_toolchain = "win64-samply"
+                node_toolchain = "win64-node"
+            else:
+                samply_toolchain = "linux64-samply"
+                node_toolchain = "linux64-node"
+
+            if samply_toolchain not in fetch_toolchains:
+                fetch_toolchains.append(samply_toolchain)
+
+            if not any("win32-node" in toolchain for toolchain in fetch_toolchains):
+                if node_toolchain not in fetch_toolchains:
+                    fetch_toolchains.append(node_toolchain)
+
+            # if "run" in test and "test" in test["run"]:
+            #     run_test = test["run"]["test"]
+            #     if "mozharness" in run_test:
+            #         extra_options = run_test["mozharness"].setdefault(
+            #             "extra-options", []
+            #         )
+            #         if "--profiler" not in extra_options:
+            #             extra_options.append("--profiler")
+
+        yield test
+
+
+# @transforms.add
+# def filter_and_print_xpcshell_tests(_config, tests):
+#     import pprint
+#     for test in tests:
+#         name = test.get("name", "")
+
+#         if "xpcshell" in name.lower():
+#             print(f"\n{'='*80}")
+#             print(f"XPCShell Test: {name}")
+#             print(f"{'='*80}")
+#             pprint.pprint(test)
+#         yield test

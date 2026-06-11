@@ -296,10 +296,13 @@ class ProfileSymbolicator:
         return True
 
     def symbolicate_profile(self, profile_json):
+        print("DEBUG: symbolicate_profile() called")
 
         # Check if running in CI
         if "MOZ_AUTOMATION" in os.environ:
+            print("DEBUG: Running in CI (MOZ_AUTOMATION detected)")
             moz_fetch = os.environ["MOZ_FETCHES_DIR"]
+            print(f"DEBUG: MOZ_FETCHES_DIR={moz_fetch}")
             profiler_edit_path = Path(
                 moz_fetch, "profiler-node-tools", "profiler-edit.js"
             )
@@ -312,28 +315,59 @@ class ProfileSymbolicator:
 
             # Check if symbolication dependencies are available
 
-            if not self._validate_symbolication_deps([
-                profiler_edit_path,
-                samply_path,
-                node_path,
-            ]):
-                LOG.info(
-                    "Symbolication dependencies not available, using fallback symbolication."
-                )
-                self._symbolicate_profile_fallback(profile_json)
-                return
+            # if not self._validate_symbolication_deps([
+            #     profiler_edit_path,
+            #     samply_path,
+            #     node_path,
+            # ]):
+            #     LOG.info(
+            #         "Symbolication dependencies not available, using fallback symbolication."
+            #     )
+            #     self._symbolicate_profile_fallback(profile_json)
+            #     return
 
             try:
-                breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
+                if "MOZ_AUTOMATION" in os.environ:
+                    moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
+                    breakpad_symbol_dir = moz_fetch / "target.crashreporter-symbols"
+                    symbol_zip = moz_fetch / "target.crashreporter-symbols.zip"
+                    print(
+                        f"DEBUG: symbol_zip={symbol_zip}, exists={symbol_zip.exists()}"
+                    )
+                    if symbol_zip.exists():
+                        print(f"DEBUG: Extracting symbols from {symbol_zip}")
+                        with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                            file_list = zipf.namelist()
+                            print(f"DEBUG: Zip contains {len(file_list)} files")
+                            print(f"DEBUG: First few files: {file_list[:10]}")
+                            zipf.extractall(breakpad_symbol_dir)
+                        print(f"DEBUG: Extracted to {breakpad_symbol_dir}")
+                        # Check what was extracted
+                        if breakpad_symbol_dir.exists():
+                            extracted_files = list(breakpad_symbol_dir.rglob("*"))
+                            print(
+                                f"DEBUG: Extracted directory contains {len(extracted_files)} items"
+                            )
+                        else:
+                            print(
+                                f"DEBUG: ERROR - Extracted directory does not exist: {breakpad_symbol_dir}"
+                            )
+                    else:
+                        print(f"DEBUG: symbol_zip does not exist: {symbol_zip}")
 
                 with tempfile.TemporaryDirectory() as work_dir:
+                    print(f"DEBUG: Using work directory: {work_dir}")
                     unsym_profile = Path(work_dir, "unsym_profile.json")
                     unsym_profile.write_text(
                         json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"
                     )
+                    print(f"DEBUG: Wrote unsymbolicated profile to {unsym_profile}")
                     sym_profile = Path(work_dir) / "sym_profile.json"
 
                     # Load unsymbolicated profile with samply
+                    print(
+                        f"DEBUG: Starting samply with breakpad_symbol_dir={breakpad_symbol_dir}"
+                    )
                     samply_process = subprocess.Popen(
                         [
                             samply_path,
@@ -353,11 +387,14 @@ class ProfileSymbolicator:
                     # Tail output for timeout seconds to obtain symbol server url
                     server_url = ""
                     start = time.time()
+                    print("DEBUG: Reading samply output...")
                     with samply_process.stdout:
                         for line in iter(samply_process.stdout.readline, ""):
+                            print(f"DEBUG: samply output: {line.strip()}")
                             if line.startswith("http"):
                                 url = unquote(line)
                                 server_url = str(url.split("symbolServer=", 1)[-1])
+                                print(f"DEBUG: Found server URL: {server_url}")
                                 break
                             timeout = time.time() - start
                             if timeout > SYMBOL_SERVER_TIMEOUT:
@@ -365,6 +402,7 @@ class ProfileSymbolicator:
                                     f"Server timed out after exceeding {SYMBOL_SERVER_TIMEOUT} seconds. Time elapsed : {timeout} seconds."
                                 )
 
+                    print(f"DEBUG: Starting profiler-edit with server_url={server_url}")
                     with subprocess.Popen(
                         [
                             node_path,
@@ -381,24 +419,34 @@ class ProfileSymbolicator:
                         text=True,
                         bufsize=1,
                     ) as profiler_edit_process:
-                        # Stream and forward to self.info()
+                        # Stream and forward to stdout
                         for line in profiler_edit_process.stdout:
-                            LOG.info(f"profiler-edit {line.strip()}")
+                            print(f"profiler-edit: {line.strip()}")
+                    print("DEBUG: profiler-edit completed")
 
                     # Terminate samply server
+                    print("DEBUG: Terminating samply server...")
                     if platform.system() == "Windows":
                         samply_process.terminate()
                     else:
                         samply_process.send_signal(signal.SIGINT)  # ctrl-c shutdown
 
                     samply_process.wait(timeout=SAMPLY_WAIT_TIMEOUT)
+                    print("DEBUG: samply server terminated")
 
                     # Load profile json into memory and mutate profile
+                    print(f"DEBUG: Loading symbolicated profile from {sym_profile}")
+                    if not sym_profile.exists():
+                        print(
+                            f"DEBUG: ERROR - sym_profile does not exist: {sym_profile}"
+                        )
                     with sym_profile.open("r", encoding="utf-8") as f:
                         sym = json.load(f)
 
+                    print("DEBUG: Loaded symbolicated profile, updating original")
                     profile_json.clear()
                     profile_json.update(sym)
+                    print("DEBUG: Profile symbolication complete")
 
             except Exception:
                 LOG.critical("Profile symbolication failed.", exc_info=True)

@@ -24,6 +24,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from functools import partial
 from multiprocessing import cpu_count
+from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen
 from tempfile import gettempdir, mkdtemp
 from threading import Event, Lock, Thread, Timer, current_thread
@@ -1180,6 +1181,59 @@ class XPCShellTestThread(Thread):
 
         finally:
             self.postCheck(proc)
+            self.log.info(f"profiler={self.profiler}")
+            self.log.info(f"singleFile={self.singleFile}")
+            self.log.info(f"symbolsPath={self.symbolsPath}")
+            if self.profiler and self.singleFile:
+                self.log.info(f"profile_path={profile_path}")
+            upload_dir = self.env.get("MOZ_UPLOAD_DIR")
+            if upload_dir:
+                upload_dir_path = Path(upload_dir)
+                if upload_dir_path.exists():
+                    all_files = list(upload_dir_path.iterdir())
+                    self.log.info(f"MOZ_UPLOAD_DIR contents ({len(all_files)} files):")
+                    for file_path in all_files:
+                        if file_path.is_file():
+                            size = file_path.stat().st_size
+                            self.log.info(f"  - {file_path.name} ({size} bytes)")
+                        else:
+                            self.log.info(f"  - {file_path.name}/ (directory)")
+
+                # Symbolicate profiles uploaded by head.js
+                symbols_path = self.symbolsPath if self.symbolsPath else "/bogus/path"
+                for file_path in all_files:
+                    if file_path.name.startswith(
+                        "profile_test_"
+                    ) and file_path.name.endswith(".json"):
+                        # Skip if already symbolicated
+                        if "_symbolicated" in file_path.name:
+                            continue
+
+                        unsymbol_size = file_path.stat().st_size
+                        self.log.info(
+                            f"Symbolicating {file_path.name} ({unsymbol_size} bytes)..."
+                        )
+                        try:
+                            symbolicate_profile_json(str(file_path), symbols_path)
+
+                            # Rename to indicate it's been symbolicated
+                            new_name = file_path.name.replace(
+                                ".json", "_symbolicated.json"
+                            )
+                            new_path = file_path.parent / new_name
+                            file_path.rename(new_path)
+
+                            symbol_size = new_path.stat().st_size
+                            self.log.info(
+                                f"Successfully symbolicated {file_path.name}: "
+                                f"{unsymbol_size} bytes → {symbol_size} bytes"
+                            )
+                        except Exception as e:
+                            self.log.error(
+                                f"Failed to symbolicate {file_path.name}: {e}",
+                                exc_info=True,
+                            )
+
             if self.profiler and self.singleFile:
                 symbolicate_profile_json(profile_path, self.symbolsPath)
                 view_gecko_profile(profile_path)
