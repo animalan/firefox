@@ -55,6 +55,7 @@ from manifestparser.filters import (
 from manifestparser.util import normsep
 from mozgeckoprofiler import (
     symbolicate_profile_json,
+    symbolicate_profiles,
     view_gecko_profile,
 )
 from mozserve import DoHServer, Http2Server, Http3Server, MozHttp2Server
@@ -3876,6 +3877,8 @@ toolbar#nav-bar {
                 out_path = upload_dir / f"perfherder-data-mochitest-{i}.json"
                 with out_path.open("w", encoding="utf-8") as f:
                     f.write(json.dumps(data))
+
+        symbolicate_profiles()
 
         self.handleShutdownProfile(options)
 

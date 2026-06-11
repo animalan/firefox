@@ -1,9 +1,11 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import gzip
 import os
 import shutil
 import tempfile
+from pathlib import Path
 
 try:
     import orjson
@@ -26,13 +28,11 @@ def save_gecko_profile(profile, filename):
             f.write(json.dumps(profile).encode("utf-8"))
 
 
-def symbolicate_profile_json(profile_path, firefox_symbols_path):
+def symbolicate_profile_json(profile_path, firefox_symbols_path=None):
     """
     Symbolicate a single JSON profile.
     """
     temp_dir = tempfile.mkdtemp()
-    missing_symbols_zip = os.path.join(temp_dir, "missingsymbols.zip")
-
     windows_symbol_path = os.path.join(temp_dir, "windows")
     os.mkdir(windows_symbol_path)
 
@@ -62,18 +62,21 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
         # to all-uppercase internally
         "symbolPaths": symbol_paths,
     })
-
-    LOG.info(
-        "Symbolicating the performance profile... This could take a couple of minutes."
-    )
-
+    LOG.info("Symbolicating the performance profile...")
     try:
         with open(profile_path, "rb") as profile_file:
+            # Some profile.json files may be compressed with gzip
+            # (ex. Mochitest / XPCshell profiles)
+            data = profile_file.read()
+            try:
+                data = gzip.decompress(data)
+            except Exception:
+                LOG.debug("Profile was not gzipped, treating as regular JSON")
+
             if orjson is not None:
-                profile = orjson.loads(profile_file.read())
+                profile = orjson.loads(data)
             else:
-                profile = json.load(profile_file)
-        symbolicator.dump_and_integrate_missing_symbols(profile, missing_symbols_zip)
+                profile = json.loads(data)
         symbolicator.symbolicate_profile(profile)
         # Overwrite the profile in place.
         save_gecko_profile(profile, profile_path)
@@ -86,3 +89,54 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
         LOG.error(e)
 
     shutil.rmtree(temp_dir)
+
+
+def symbolicate_profiles(profile_dir=None):
+    # Symbolicate all profiles.json in a directory
+
+    if profile_dir is None and os.environ.get("MOZ_UPLOAD_DIR"):
+        profile_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
+    else:
+        LOG.error("Profile directory not specified")
+        return
+
+    profile_files = sorted(
+        profile
+        for profile in profile_dir.glob("profile_*.json")
+        if "resource-usage" not in profile.name
+    )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        for profile_file in profile_files:
+            stat = profile_file.stat()
+            unsym_size = stat.st_size
+            unsym_mod_time = stat.st_mtime
+            unsym_access_time = stat.st_atime
+            LOG.info(f"Symbolicating {profile_file.name} ({unsym_size} bytes)...")
+
+            try:
+                temp_path = Path(temp_dir) / profile_file.name
+                shutil.copy(profile_file, temp_path)
+
+                symbolicate_profile_json(str(temp_path))
+
+                if temp_path.is_file():
+                    symbol_size = temp_path.stat().st_size
+                    LOG.info(
+                        f"Successfully symbolicated {profile_file.name}: "
+                        f"{unsym_size} bytes -> {symbol_size} bytes"
+                    )
+                    profile_file.unlink()
+                    shutil.move(str(temp_path), str(profile_file))
+
+                    # To ensure the artifact markers in resource usage profiles are accurate,
+                    # the symbolicate profile's mod and access time should reflect
+                    # when the artifact was created rather than when the profile
+                    # was symbolicated
+                    os.utime(profile_file, (unsym_access_time, unsym_mod_time))
+
+            except Exception as e:
+                LOG.warning(
+                    f"Failed to symbolicate {profile_file.name}: {e}",
+                    exc_info=True,
+                )

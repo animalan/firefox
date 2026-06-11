@@ -87,6 +87,8 @@ aab:
                         - linux64-fix-stacks
                         - linux64-jdk
                         - linux64-hostutils
+                        - linux64-samply
+                        - profiler-node-tools
     replace:
         target: "geckoview-test_runner.aab"
 

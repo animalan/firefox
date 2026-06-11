@@ -1124,7 +1124,6 @@ def add_gecko_profile_symbolication_deps(config, tasks):
 
     try_task_config = config.params.get("try_task_config", {})
     gecko_profile_from_try = try_task_config.get("gecko-profile", False)
-    startup_profile = try_task_config.get("env", {}).get("MOZ_PROFILER_STARTUP") == "1"
 
     for task in tasks:
         extra_options = task.get("mozharness", {}).get("extra-options", [])
@@ -1133,9 +1132,7 @@ def add_gecko_profile_symbolication_deps(config, tasks):
         )
         gecko_profile = gecko_profile_from_try or has_gecko_profile_option
 
-        if (gecko_profile and task["suite"] in ["talos", "raptor"]) or (
-            startup_profile and "mochitest" in task["suite"]
-        ):
+        if gecko_profile and task["suite"] in ["talos", "raptor"]:
             fetches = task.setdefault("fetches", {})
             fetch_toolchains = fetches.setdefault("toolchain", [])
 

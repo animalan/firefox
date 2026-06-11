@@ -324,9 +324,22 @@ class ProfileSymbolicator:
                 return
 
             try:
-                breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
-
                 with tempfile.TemporaryDirectory() as work_dir:
+                    # Extract symbols to a temp directory within work_dir
+                    breakpad_symbol_dir = Path(work_dir) / "breakpad_symbols"
+                    breakpad_symbol_dir.mkdir()
+
+                    symbol_zip = (
+                        Path(os.environ["MOZ_FETCHES_DIR"])
+                        / "target.crashreporter-symbols.zip"
+                    )
+
+                    if symbol_zip.exists():
+                        with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                            zipf.extractall(breakpad_symbol_dir)
+                    else:
+                        breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
+
                     unsym_profile = Path(work_dir, "unsym_profile.json")
                     unsym_profile.write_text(
                         json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"
