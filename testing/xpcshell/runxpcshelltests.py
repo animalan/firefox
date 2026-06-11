@@ -32,6 +32,7 @@ import mozdebug
 import six
 from mozgeckoprofiler import (
     symbolicate_profile_json,
+    symbolicate_profiles,
     view_gecko_profile,
 )
 from mozserve import Http3Server, MozHttp2Server
@@ -2771,6 +2772,9 @@ class XPCShellTests:
         # restore default SIGINT behaviour
         if self.sequential:
             signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+        # Symbolicate all profiles
+        symbolicate_profiles()
 
         # Clean up any slacker directories that might be lying around
         # Some might fail because of windows taking too long to unlock them.

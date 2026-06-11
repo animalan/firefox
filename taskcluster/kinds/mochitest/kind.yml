@@ -44,6 +44,9 @@ task-defaults:
     docker-image:
         in-tree: ubuntu2404-test
     fetches:
+        build:
+            - artifact: target.crashreporter-symbols.zip
+              extract: false
         fetch:
             by-test-platform:
                 win.*:
@@ -51,18 +54,30 @@ task-defaults:
                 default: []
         toolchain:
             by-test-platform:
-                win.*:
+                win.*-64.*:
                     - win64-node
                     - win32-minidump-stackwalk
                     - win32-fix-stacks
+                    - win64-samply
+                    - profiler-node-tools
+                win.*32.*:
+                    - win32-node
+                    - win32-minidump-stackwalk
+                    - win32-fix-stacks
+                    - win32-samply
+                    - profiler-node-tools
                 macosx.*-64.*:
                     - macosx64-node
                     - macosx64-minidump-stackwalk
                     - macosx64-fix-stacks
+                    - macosx64-samply
+                    - profiler-node-tools
                 macosx.*-aarch64.*:
                     - macosx64-aarch64-node
                     - macosx64-aarch64-minidump-stackwalk
                     - macosx64-aarch64-fix-stacks
+                    - macosx64-aarch64-samply
+                    - profiler-node-tools
                 android-em-14.*:
                     - android34-system-image-x86_64-linux
                     - android34-avd-x86_64-linux
@@ -70,14 +85,22 @@ task-defaults:
                     - linux64-minidump-stackwalk
                     - linux64-fix-stacks
                     - linux64-hostutils
+                    - linux64-node
+                    - linux64-samply
+                    - profiler-node-tools
                 android-hw.*:
                     - linux64-minidump-stackwalk
                     - linux64-fix-stacks
                     - linux64-hostutils
+                    - linux64-node
+                    - linux64-samply
+                    - profiler-node-tools
                 default:
                     - linux64-node
                     - linux64-minidump-stackwalk
                     - linux64-fix-stacks
+                    - linux64-samply
+                    - profiler-node-tools
     suite:
         category: mochitest
     target:
@@ -268,22 +291,32 @@ tasks:
                         - linux64-node
                         - linux64-minidump-stackwalk
                         - linux64-fix-stacks
+                        - linux64-samply
+                        - profiler-node-tools
                     macosx.*-64.*:
                         - macosx64-node
                         - macosx64-minidump-stackwalk
                         - macosx64-fix-stacks
+                        - macosx64-samply
+                        - profiler-node-tools
                     macosx.*-aarch64.*:
                         - macosx64-aarch64-node
                         - macosx64-aarch64-minidump-stackwalk
                         - macosx64-aarch64-fix-stacks
+                        - macosx64-aarch64-samply
+                        - profiler-node-tools
                     win.*-64.*:
                         - win64-node
                         - win32-minidump-stackwalk
                         - win32-fix-stacks
+                        - win64-samply
+                        - profiler-node-tools
                     win.*32.*:
                         - win32-node
                         - win32-minidump-stackwalk
                         - win32-fix-stacks
+                        - win32-samply
+                        - profiler-node-tools
                     android-em-14.*:
                         - android34-system-image-x86_64-linux
                         - android34-avd-x86_64-linux
@@ -291,6 +324,8 @@ tasks:
                         - linux64-node
                         - linux64-minidump-stackwalk
                         - linux64-hostutils
+                        - linux64-samply
+                        - profiler-node-tools
 
     mochitest-a11y:
         description: "Mochitest a11y run"
@@ -806,22 +841,32 @@ tasks:
                         - linux64-node
                         - linux64-minidump-stackwalk
                         - linux64-fix-stacks
+                        - linux64-samply
+                        - profiler-node-tools
                     macosx.*-64.*:
                         - macosx64-node
                         - macosx64-minidump-stackwalk
                         - macosx64-fix-stacks
+                        - macosx64-samply
+                        - profiler-node-tools
                     macosx.*-aarch64.*:
                         - macosx64-aarch64-node
                         - macosx64-aarch64-minidump-stackwalk
                         - macosx64-aarch64-fix-stacks
+                        - macosx64-aarch64-samply
+                        - profiler-node-tools
                     win.*-64.*:
                         - win64-node
                         - win32-minidump-stackwalk
                         - win32-fix-stacks
+                        - win64-samply
+                        - profiler-node-tools
                     win.*32.*:
                         - win32-node
                         - win32-minidump-stackwalk
                         - win32-fix-stacks
+                        - win32-samply
+                        - profiler-node-tools
                     android-em-14.*:
                         - android34-system-image-x86_64-linux
                         - android34-avd-x86_64-linux
@@ -829,6 +874,8 @@ tasks:
                         - linux64-node
                         - linux64-minidump-stackwalk
                         - linux64-hostutils
+                        - linux64-samply
+                        - profiler-node-tools
 
 
     mochitest-devtools-chrome-failures:
