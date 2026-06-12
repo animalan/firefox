@@ -1221,7 +1221,7 @@ class XPCShellTestThread(Thread):
                                 ".json", "_symbolicated.json"
                             )
                             new_path = file_path.parent / new_name
-                            file_path.rename(new_path)
+                            file_path.replace(new_path)
 
                             symbol_size = new_path.stat().st_size
                             self.log.info(
@@ -1234,9 +1234,9 @@ class XPCShellTestThread(Thread):
                                 exc_info=True,
                             )
 
-            if self.profiler and self.singleFile:
-                symbolicate_profile_json(profile_path, self.symbolsPath)
-                view_gecko_profile(profile_path)
+            # if self.profiler and self.singleFile:
+            #     symbolicate_profile_json(profile_path, self.symbolsPath)
+            #     view_gecko_profile(profile_path)
             self.clean_temp_dirs(path)
 
         if gotSIGINT:

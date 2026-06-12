@@ -1,6 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import gzip
 import os
 import shutil
 import tempfile
@@ -30,12 +31,21 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
     """
     Symbolicate a single JSON profile.
     """
-    print(
+    debug_log_path = os.path.join(
+        os.environ.get("MOZ_UPLOAD_DIR", "/tmp"), "profiling_debug.log"
+    )
+
+    def debug_log(msg):
+        print(msg)
+        with open(debug_log_path, "a") as f:
+            f.write(msg + "\n")
+        import sys
+
+        sys.stdout.flush()
+
+    debug_log(
         f">>> symbolicate_profile_json called with profile_path={profile_path}, firefox_symbols_path={firefox_symbols_path}"
     )
-    import sys
-
-    sys.stdout.flush()
     temp_dir = tempfile.mkdtemp()
     # missing_symbols_zip = os.path.join(temp_dir, "missingsymbols.zip")
 
@@ -72,34 +82,44 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
     LOG.info(
         "Symbolicating the performance profile... This could take a couple of minutes."
     )
-    print(f"DEBUG: profile_path={profile_path}")
-    print(f"DEBUG: firefox_symbols_path={firefox_symbols_path}")
+    debug_log(f"DEBUG: profile_path={profile_path}")
+    debug_log(f"DEBUG: firefox_symbols_path={firefox_symbols_path}")
 
     try:
-        print("DEBUG: Opening profile file...")
+        debug_log("DEBUG: Opening profile file...")
         with open(profile_path, "rb") as profile_file:
+            data = profile_file.read()
+            try:
+                data = gzip.decompress(data)
+                debug_log("DEBUG: Profile was gzipped, decompressed successfully")
+            except Exception as e:
+                debug_log(f"DEBUG: Profile is not gzipped, using as-is ({e})")
             if orjson is not None:
-                profile = orjson.loads(profile_file.read())
+                profile = orjson.loads(data)
             else:
-                profile = json.load(profile_file)
-        print(f"DEBUG: Profile loaded, has {len(profile.get('libs', []))} libraries")
+                profile = json.loads(data)
+        debug_log(
+            f"DEBUG: Profile loaded, has {len(profile.get('libs', []))} libraries"
+        )
 
-        # print("DEBUG: Dumping and integrating missing symbols...")
+        # debug_log("DEBUG: Dumping and integrating missing symbols...")
         # symbolicator.dump_and_integrate_missing_symbols(profile, missing_symbols_zip)
 
-        print("DEBUG: Starting symbolication...")
+        debug_log("DEBUG: Starting symbolication...")
         symbolicator.symbolicate_profile(profile)
-        print("DEBUG: Symbolication complete")
+        debug_log("DEBUG: Symbolication complete")
 
         # Overwrite the profile in place.
-        print(f"DEBUG: Saving symbolicated profile to {profile_path}...")
+        debug_log(f"DEBUG: Saving symbolicated profile to {profile_path}...")
         save_gecko_profile(profile, profile_path)
-        print("DEBUG: Profile saved successfully")
-    except MemoryError:
+        debug_log("DEBUG: Profile saved successfully")
+    except MemoryError as e:
+        debug_log(f"ERROR: Out of memory: {e}")
         LOG.error(
             f"Ran out of memory while trying to symbolicate profile {profile_path}"
         )
     except Exception as e:
+        debug_log(f"ERROR: Exception during symbolication: {e}")
         LOG.error("Encountered an exception during profile symbolication")
         LOG.error(e)
 
