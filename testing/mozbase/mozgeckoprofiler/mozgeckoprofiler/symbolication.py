@@ -339,43 +339,29 @@ class ProfileSymbolicator:
             #     return
 
             try:
-                if True:  # Always extract symbols
-                    moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
-                    breakpad_symbol_dir = moz_fetch / "target.crashreporter-symbols"
-                    symbol_zip = moz_fetch / "target.crashreporter-symbols.zip"
-                    dlog(
-                        f"DEBUG: symbol_zip={symbol_zip}, exists={symbol_zip.exists()}"
-                    )
-                    if symbol_zip.exists():
-                        dlog(f"DEBUG: Extracting symbols from {symbol_zip}")
-                        if breakpad_symbol_dir.exists():
-                            dlog(
-                                f"DEBUG: Removing existing symbol directory {breakpad_symbol_dir}"
-                            )
-                            import shutil
-
-                            shutil.rmtree(breakpad_symbol_dir)
-                        with zipfile.ZipFile(symbol_zip, "r") as zipf:
-                            file_list = zipf.namelist()
-                            dlog(f"DEBUG: Zip contains {len(file_list)} files")
-                            dlog(f"DEBUG: First few files: {file_list[:10]}")
-                            zipf.extractall(breakpad_symbol_dir)
-                        dlog(f"DEBUG: Extracted to {breakpad_symbol_dir}")
-                        # Check what was extracted
-                        if breakpad_symbol_dir.exists():
-                            extracted_files = list(breakpad_symbol_dir.rglob("*"))
-                            dlog(
-                                f"DEBUG: Extracted directory contains {len(extracted_files)} items"
-                            )
-                        else:
-                            dlog(
-                                f"DEBUG: ERROR - Extracted directory does not exist: {breakpad_symbol_dir}"
-                            )
-                    else:
-                        dlog(f"DEBUG: symbol_zip does not exist: {symbol_zip}")
-
                 with tempfile.TemporaryDirectory() as work_dir:
                     dlog(f"DEBUG: Using work directory: {work_dir}")
+
+                    # Extract symbols to a temp directory within work_dir
+                    breakpad_symbol_dir = Path(work_dir) / "breakpad_symbols"
+                    breakpad_symbol_dir.mkdir()
+
+                    if True:  # Always extract symbols
+                        moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
+                        symbol_zip = moz_fetch / "target.crashreporter-symbols.zip"
+                        dlog(
+                            f"DEBUG: symbol_zip={symbol_zip}, exists={symbol_zip.exists()}"
+                        )
+                        if symbol_zip.exists():
+                            dlog(f"DEBUG: Extracting symbols from {symbol_zip}")
+                            with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                                file_list = zipf.namelist()
+                                dlog(f"DEBUG: Zip contains {len(file_list)} files")
+                                dlog(f"DEBUG: First few files: {file_list[:10]}")
+                                zipf.extractall(breakpad_symbol_dir)
+                            dlog(f"DEBUG: Extracted to {breakpad_symbol_dir}")
+                        else:
+                            dlog(f"DEBUG: symbol_zip does not exist: {symbol_zip}")
                     unsym_profile = Path(work_dir, "unsym_profile.json")
                     unsym_profile.write_text(
                         json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"

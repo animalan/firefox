@@ -33,7 +33,6 @@ import mozdebug
 import six
 from mozgeckoprofiler import (
     symbolicate_profile_json,
-    view_gecko_profile,
 )
 from mozserve import Http3Server, MozHttp2Server
 
@@ -1213,17 +1212,20 @@ class XPCShellTestThread(Thread):
                         self.log.info(
                             f"Symbolicating {file_path.name} ({unsymbol_size} bytes)..."
                         )
+                        # xpcshell tests run concurrently, so multiple threads may attempt
+                        # to symbolicate the same profile. Wrap in try-except to handle
+                        # concurrent access gracefully.
                         try:
                             symbolicate_profile_json(str(file_path), symbols_path)
 
                             # Rename to indicate it's been symbolicated
-                            new_name = file_path.name.replace(
-                                ".json", "_symbolicated.json"
-                            )
-                            new_path = file_path.parent / new_name
-                            file_path.replace(new_path)
+                            # new_name = file_path.name.replace(
+                            #     ".json", "_symbolicated.json"
+                            # )
+                            # new_path = file_path.parent / new_name
+                            # file_path.replace(new_path)
 
-                            symbol_size = new_path.stat().st_size
+                            symbol_size = file_path.stat().st_size
                             self.log.info(
                                 f"Successfully symbolicated {file_path.name}: "
                                 f"{unsymbol_size} bytes → {symbol_size} bytes"
