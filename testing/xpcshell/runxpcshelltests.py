@@ -1180,88 +1180,6 @@ class XPCShellTestThread(Thread):
 
         finally:
             self.postCheck(proc)
-            self.log.info(f"profiler={self.profiler}")
-            self.log.info(f"singleFile={self.singleFile}")
-            self.log.info(f"symbolsPath={self.symbolsPath}")
-            if self.profiler and self.singleFile:
-                self.log.info(f"profile_path={profile_path}")
-            upload_dir = self.env.get("MOZ_UPLOAD_DIR")
-            if upload_dir:
-                upload_dir_path = Path(upload_dir)
-                if upload_dir_path.exists():
-                    all_files = list(upload_dir_path.iterdir())
-                    self.log.info(f"MOZ_UPLOAD_DIR contents ({len(all_files)} files):")
-                    for file_path in all_files:
-                        if file_path.is_file():
-                            size = file_path.stat().st_size
-                            self.log.info(f"  - {file_path.name} ({size} bytes)")
-                        else:
-                            self.log.info(f"  - {file_path.name}/ (directory)")
-
-                # Symbolicate profiles uploaded by head.js
-                symbols_path = self.symbolsPath if self.symbolsPath else "/bogus/path"
-                for file_path in all_files:
-                    if file_path.name.startswith(
-                        "profile_test_"
-                    ) and file_path.name.endswith(".json"):
-                        # Skip if already symbolicated
-                        if "_symbolicated" in file_path.name:
-                            continue
-
-                        # Check if already symbolicated
-                        symbolicated_files = list(
-                            file_path.parent.glob(
-                                f"{file_path.stem}_symbolicated_*.json"
-                            )
-                        )
-                        if symbolicated_files:
-                            self.log.info(
-                                f"{file_path.name} already symbolicated, skipping"
-                            )
-                            continue
-
-                        unsymbol_size = file_path.stat().st_size
-                        self.log.info(
-                            f"Symbolicating {file_path.name} ({unsymbol_size} bytes)..."
-                        )
-                        # xpcshell tests run concurrently, so multiple threads may attempt
-                        # to symbolicate the same profile. Copy to a unique file first to
-                        # avoid race conditions, then symbolicate the copy.
-                        try:
-                            import shutil
-                            import uuid
-
-                            symbolicated_name = file_path.name.replace(
-                                ".json", f"_symbolicated_{uuid.uuid4().hex[:8]}.json"
-                            )
-                            symbolicated_path = file_path.parent / symbolicated_name
-                            shutil.copy(file_path, symbolicated_path)
-
-                            symbolicate_profile_json(
-                                str(symbolicated_path), symbols_path
-                            )
-
-                            # Rename to indicate it's been symbolicated
-                            # new_name = file_path.name.replace(
-                            #     ".json", "_symbolicated.json"
-                            # )
-                            # new_path = file_path.parent / new_name
-                            # file_path.replace(new_path)
-
-                            symbol_size = symbolicated_path.stat().st_size
-                            self.log.info(
-                                f"Successfully symbolicated {file_path.name}: "
-                                f"{unsymbol_size} bytes → {symbol_size} bytes"
-                            )
-                        except Exception as e:
-                            self.log.error(
-                                f"Failed to symbolicate {file_path.name}: {e}",
-                                exc_info=True,
-                            )
-
-            # if self.profiler and self.singleFile:
-            #     symbolicate_profile_json(profile_path, self.symbolsPath)
-            #     view_gecko_profile(profile_path)
             self.clean_temp_dirs(path)
 
         if gotSIGINT:
@@ -2636,6 +2554,85 @@ class XPCShellTests:
         # restore default SIGINT behaviour
         if self.sequential:
             signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+        # Symbolicate all profiles once after tests complete (serially, no race conditions)
+        if os.environ.get("MOZ_UPLOAD_DIR"):
+            upload_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
+            if upload_dir.exists():
+                # List all uploaded files before symbolication
+                all_files = list(upload_dir.iterdir())
+                self.log.info(f"MOZ_UPLOAD_DIR contents ({len(all_files)} files):")
+                # Log each file with its size for visibility
+                for file_path in sorted(all_files):
+                    if file_path.is_file():
+                        size = file_path.stat().st_size
+                        self.log.info(f"  - {file_path.name} ({size} bytes)")
+                    else:
+                        self.log.info(f"  - {file_path.name}/ (directory)")
+
+                # Symbolicate all profiles
+                self.log.info("Symbolicating profiles from MOZ_UPLOAD_DIR...")
+                # Find all profile_test_*.json files (unsymbolicated profiles from head.js)
+                profile_files = sorted(upload_dir.glob("profile_test_*.json"))
+                for profile_file in profile_files:
+                    # Check if a symbolicated version already exists
+                    symbolicated_files = list(
+                        profile_file.parent.glob(
+                            f"{profile_file.stem}_symbolicated_*.json"
+                        )
+                    )
+                    # Skip if already symbolicated (avoid redundant work)
+                    if symbolicated_files:
+                        self.log.info(
+                            f"Profile {profile_file.name} already symbolicated, skipping"
+                        )
+                        continue
+
+                    # Get original file size before symbolication
+                    unsym_size = profile_file.stat().st_size
+                    self.log.info(
+                        f"Symbolicating {profile_file.name} ({unsym_size} bytes)..."
+                    )
+                    try:
+                        import shutil
+                        import uuid
+
+                        # Create a unique copy to symbolicate (avoid overwriting original)
+                        symbolicated_name = profile_file.name.replace(
+                            ".json", f"_symbolicated_{uuid.uuid4().hex[:8]}.json"
+                        )
+                        symbolicated_path = profile_file.parent / symbolicated_name
+                        # Copy original profile to new file
+                        shutil.copy(profile_file, symbolicated_path)
+
+                        # Symbolicate the copy in-place
+                        symbolicate_profile_json(
+                            str(symbolicated_path), self.symbolsPath
+                        )
+
+                        # Get symbolicated file size and log the result
+                        symbol_size = symbolicated_path.stat().st_size
+                        self.log.info(
+                            f"Successfully symbolicated {profile_file.name}: "
+                            f"{unsym_size} bytes → {symbol_size} bytes"
+                        )
+                    except Exception as e:
+                        # Log error but continue with next profile
+                        self.log.error(
+                            f"Failed to symbolicate {profile_file.name}: {e}",
+                            exc_info=True,
+                        )
+
+                # List final artifacts after symbolication
+                self.log.info("MOZ_UPLOAD_DIR contents after symbolication:")
+                final_files = list(upload_dir.iterdir())
+                # Log final state showing both original and symbolicated versions
+                for file_path in sorted(final_files):
+                    if file_path.is_file():
+                        size = file_path.stat().st_size
+                        self.log.info(f"  - {file_path.name} ({size} bytes)")
+                    else:
+                        self.log.info(f"  - {file_path.name}/ (directory)")
 
         # Clean up any slacker directories that might be lying around
         # Some might fail because of windows taking too long to unlock them.
