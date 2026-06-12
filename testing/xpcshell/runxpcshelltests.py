@@ -1208,15 +1208,38 @@ class XPCShellTestThread(Thread):
                         if "_symbolicated" in file_path.name:
                             continue
 
+                        # Check if already symbolicated
+                        symbolicated_files = list(
+                            file_path.parent.glob(
+                                f"{file_path.stem}_symbolicated_*.json"
+                            )
+                        )
+                        if symbolicated_files:
+                            self.log.info(
+                                f"{file_path.name} already symbolicated, skipping"
+                            )
+                            continue
+
                         unsymbol_size = file_path.stat().st_size
                         self.log.info(
                             f"Symbolicating {file_path.name} ({unsymbol_size} bytes)..."
                         )
                         # xpcshell tests run concurrently, so multiple threads may attempt
-                        # to symbolicate the same profile. Wrap in try-except to handle
-                        # concurrent access gracefully.
+                        # to symbolicate the same profile. Copy to a unique file first to
+                        # avoid race conditions, then symbolicate the copy.
                         try:
-                            symbolicate_profile_json(str(file_path), symbols_path)
+                            import shutil
+                            import uuid
+
+                            symbolicated_name = file_path.name.replace(
+                                ".json", f"_symbolicated_{uuid.uuid4().hex[:8]}.json"
+                            )
+                            symbolicated_path = file_path.parent / symbolicated_name
+                            shutil.copy(file_path, symbolicated_path)
+
+                            symbolicate_profile_json(
+                                str(symbolicated_path), symbols_path
+                            )
 
                             # Rename to indicate it's been symbolicated
                             # new_name = file_path.name.replace(
@@ -1225,7 +1248,7 @@ class XPCShellTestThread(Thread):
                             # new_path = file_path.parent / new_name
                             # file_path.replace(new_path)
 
-                            symbol_size = file_path.stat().st_size
+                            symbol_size = symbolicated_path.stat().st_size
                             self.log.info(
                                 f"Successfully symbolicated {file_path.name}: "
                                 f"{unsymbol_size} bytes → {symbol_size} bytes"
