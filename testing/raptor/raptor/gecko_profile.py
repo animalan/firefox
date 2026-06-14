@@ -95,9 +95,10 @@ class GeckoProfile(RaptorProfiling):
                 "Ran out of memory while trying to symbolicate profile.", exc_info=True
             )
             raise
-        except Exception:
+        except Exception as e:
             LOG.critical(
-                "Encountered an exception during profile symbolication.", exc_info=True
+                f"Encountered an exception during profile symbolication: {type(e).__name__}: {e}",
+                exc_info=True
             )
             # Do not raise an exception and return the profile so we won't block
             # the profile capturing pipeline if symbolication fails.
