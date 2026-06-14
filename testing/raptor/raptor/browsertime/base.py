@@ -864,6 +864,10 @@ class Browsertime(Perftest, metaclass=ABCMeta):
         if self.config.get("samply_profile") and self.samply_profiler:
             bt_timeout += 5 * 60
 
+        # if perf profiling enabled and instantiated, give browser more time for profiling
+        if self.config.get("perf_profile") and self.perf_profiler:
+            bt_timeout += 5 * 60
+
         # if simpleperf enabled, give browser more time for profiling
         if self.config["simpleperf"] is True:
             bt_timeout += 5 * 60
@@ -1013,6 +1017,9 @@ class Browsertime(Perftest, metaclass=ABCMeta):
         if self.config.get("simpleperf"):
             self._init_simpleperf_profiling(test)
 
+        if self.config.get("perf_profile"):
+            self._init_perf_profiling(test)
+
         # timeout is a single page-load timeout value (ms) from the test INI
         # this will be used for btime --timeouts.pageLoad
         cmd = self._compose_cmd(test, timeout)
@@ -1093,6 +1100,14 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             except Exception as e:
                 LOG.warning(f"Failed to start ETW profiling: {e}")
                 self.etw_profiler = None  # Disable profiler to skip stop() later
+
+        perf_started = False
+        if self.config.get("perf_profile") and self.perf_profiler:
+            try:
+                perf_started = self.perf_profiler.start()
+            except Exception as e:
+                LOG.warning(f"Failed to start perf profiling: {e}")
+                self.perf_profiler = None
 
         browsertime_test_failed = False
         try:
@@ -1299,6 +1314,17 @@ class Browsertime(Perftest, metaclass=ABCMeta):
                     LOG.info("Samply profiling has completed successfully")
                 except Exception as e:
                     LOG.error(f"Failed to finalize Samply profiling: {e}")
+
+            if perf_started and self.perf_profiler:
+                try:
+                    self.perf_profiler.stop()
+                    self.perf_profiler.symbolicate()
+                    profile_archive_path = self.perf_profiler.archive()
+                    self.perf_profiler.clean()
+                    perf_started = False
+                    LOG.info("Perf profiling has completed successfully")
+                except Exception as e:
+                    LOG.error(f"Failed to stop perf profiling: {e}")
 
             is_local = self.config.get("run_local")
             if is_local and profile_archive_path and profile_archive_path.exists():

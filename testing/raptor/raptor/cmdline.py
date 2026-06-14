@@ -254,6 +254,14 @@ def create_parser(mach_interface=False):
         help="Enable system-wide profiling via Samply (macOS only).",
     )
     add_arg(
+        "--perf-profile",
+        action="store_true",
+        dest="perf_profile",
+        default=False,
+        help="Enable system-wide perf profiling. Profile will be saved to "
+        "$MOZ_UPLOAD_DIR and converted to Firefox Profiler format with samply.",
+    )
+    add_arg(
         "--symbolsPath",
         dest="symbols_path",
         help="Path to the symbols for the build we are testing",

@@ -43,6 +43,7 @@ from condprof.util import get_current_platform
 from etw_profile import ETWProfile
 from gecko_profile import GeckoProfile
 from logger.logger import RaptorLogger
+from perf_profile import PerfProfile
 from results import RaptorResultsHandler
 from samply_profile import SamplyProfile
 from simpleperf import SimpleperfProfile
@@ -88,6 +89,7 @@ class Perftest(metaclass=ABCMeta):
         etw_profile=False,
         samply_profile=False,
         simpleperf=False,
+        perf_profile=False,
         symbols_path=None,
         host=None,
         cold=False,
@@ -144,6 +146,7 @@ class Perftest(metaclass=ABCMeta):
             "etw_profile": etw_profile,
             "samply_profile": samply_profile,
             "simpleperf": simpleperf,
+            "perf_profile": perf_profile,
             "symbols_path": symbols_path,
             "host": host,
             "cold": cold,
@@ -207,6 +210,7 @@ class Perftest(metaclass=ABCMeta):
         self.etw_profiler = None
         self.samply_profiler = None
         self.simpleperf_profiler = None
+        self.perf_profiler = None
         self.device = None
         self.runtime_error = None
         self.profile_class = profile_class or app
@@ -689,6 +693,14 @@ class Perftest(metaclass=ABCMeta):
             self.simpleperf_profiler = None
         else:
             self.simpleperf_profiler = SimpleperfProfile(upload_dir, self.config, test)
+
+    def _init_perf_profiling(self, test):
+        LOG.info("Initializing perf profiler")
+        upload_dir = os.getenv("MOZ_UPLOAD_DIR")
+        if not upload_dir:
+            LOG.critical("Perf profiling ignored because MOZ_UPLOAD_DIR was not set")
+        else:
+            self.perf_profiler = PerfProfile(upload_dir, self.config, test)
 
     def disable_non_local_connections(self):
         # For Firefox we need to set MOZ_DISABLE_NONLOCAL_CONNECTIONS=1 env var before startup
