@@ -635,11 +635,11 @@ def add_simpleperf(config, tests):
             f"/storage/emulated/0/Android/data/{app_packages[test.get('app')]}/files"
         )
         extra_options.extend([
-            "--setenv MOZ_USE_PERFORMANCE_MARKER_FILE=1",
-            f"--setenv MOZ_PERFORMANCE_MARKER_DIR={app_data_dir}",
-            f"--setenv PERF_SPEW_DIR={app_data_dir}",
-            "--setenv IONPERF=func",
-            "--setenv JIT_OPTION_onlyInlineSelfHosted=true",
+            "--setenv=MOZ_USE_PERFORMANCE_MARKER_FILE=1",
+            f"--setenv=MOZ_PERFORMANCE_MARKER_DIR={app_data_dir}",
+            f"--setenv=PERF_SPEW_DIR={app_data_dir}",
+            "--setenv=IONPERF=func",
+            "--setenv=JIT_OPTION_onlyInlineSelfHosted=true",
         ])
 
         fetches = test.setdefault("fetches", {})
@@ -694,17 +694,16 @@ def add_etw_profile(config, tests):
     )
 
     def _setup_etw_profiling(test):
-
         extra_options = test.setdefault("mozharness", {}).setdefault(
             "extra-options", []
         )
 
         extra_options.extend([
             "--etw-profile",
-            "--setenv ETW_ENABLED=1",
-            "--setenv JIT_OPTION_enableICFramePointers=true",
-            "--setenv JIT_OPTION_onlyInlineSelfHosted=true",
-            "--setenv JIT_OPTION_emitInterpreterEntryTrampoline=true",
+            "--setenv=ETW_ENABLED=1",
+            "--setenv=JIT_OPTION_enableICFramePointers=true",
+            "--setenv=JIT_OPTION_onlyInlineSelfHosted=true",
+            "--setenv=JIT_OPTION_emitInterpreterEntryTrampoline=true",
         ])
 
         if test.get("app") in ["chrome", "custom-car"]:
@@ -771,6 +770,86 @@ def add_etw_profile(config, tests):
 
 
 @transforms.add
+def add_samply_profile(config, tests):
+    is_native_profiling = config.params.get("try_task_config", {}).get(
+        "native-profiling", False
+    )
+
+    def _setup_samply_profiling(test):
+        extra_options = test.setdefault("mozharness", {}).setdefault(
+            "extra-options", []
+        )
+
+        if "speedometer3" in test.get("test-name", None):
+            # For profiling 50 browser cycles, max-run-time should be ~3x the default (2100s)
+            test["max-run-time"] = 6300  # seconds
+            if "--extra-profiler-run" in extra_options:
+                extra_options.remove("--extra-profiler-run")
+
+        extra_options.extend([
+            "--samply-profile",
+        ])
+
+        fetches = test.setdefault("fetches", {})
+        by_apps = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
+        for by_app in by_apps.values():
+            test_platforms = by_app.get("by-test-platform")
+
+            if not test_platforms:
+                continue
+
+            for test_platform, test_platform_config in test_platforms.items():
+                if "macos" in test_platform:
+                    if "aarch64" in test_platform:
+                        toolchains = [
+                            "macosx64-aarch64-clang",
+                            "macosx64-sdk-toolchain",
+                            "macosx64-aarch64-samply",
+                        ]
+                    else:
+                        toolchains = [
+                            "macosx64-clang",
+                            "macosx64-sdk-toolchain",
+                            "macosx64-samply",
+                        ]
+                    for toolchain in toolchains:
+                        if toolchain not in test_platform_config:
+                            test_platform_config.append(toolchain)
+
+        fetches.setdefault("build", []).append({
+            "artifact": "target.crashreporter-symbols.zip",
+            "extract": False,
+        })
+
+    for test in tests:
+        if (
+            "speedometer3" in test.get("test-name", None)
+            and "macos" in test.get("test-platform", "")
+            and test.get("app") in ["firefox"]
+        ):
+            # On Autoland, run duplicates of the following macOS tasks with native profiling:
+            # - Sp3 on Firefox macOS x86_64 Shippable base variant (trunk)
+            # - Sp3 on Firefox macOS AArch64 Shippable  base variant (trunk)
+            # - Sp3 on Firefox macOS x86_64 NightlyAsRelease base variant (autoland)
+
+            run_on_projects = test.get("run-on-projects", [])
+            if (
+                config.params["project"] == "autoland"
+                and ("autoland" in run_on_projects or "trunk" in run_on_projects)
+                and test["attributes"].get("unittest_variant") is None
+            ):
+                autoland_test = deepcopy(test)
+                autoland_test["run-on-projects"] = ["autoland-only"]
+                autoland_test["test-name"] += "-native-profiling"
+                autoland_test["try-name"] += "-native-profiling"
+                _setup_samply_profiling(autoland_test)
+                yield autoland_test
+            elif is_native_profiling:
+                _setup_samply_profiling(test)
+        yield test
+
+
+@transforms.add
 def handle_native_profiling_symbol(config, tests):
     for test in tests:
         extra_options = test.get("mozharness", {}).get("extra-options", [])
@@ -778,6 +857,7 @@ def handle_native_profiling_symbol(config, tests):
         native_profiling_args = [
             "--simpleperf",
             "--etw-profile",
+            "--samply-profile",
         ]
 
         if any(arg in extra_options for arg in native_profiling_args):
