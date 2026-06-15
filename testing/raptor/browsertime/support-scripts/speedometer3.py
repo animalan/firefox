@@ -35,6 +35,13 @@ class Speedometer3Support(BasePythonSupport):
                 f"{test.get('browsertime_args', '')} --browsertime.post_startup_delay=2000".strip()
             )
 
+        if args.perf_profile:
+            test["perf_profile"] = True
+            test["browser_cycles"] = 20
+            test["browsertime_args"] = (
+                f"{test.get('browsertime_args', '')} --browsertime.post_startup_delay=2000".strip()
+            )
+
         if args.simpleperf:
             # Each test suite runs in its own browser cycle.
             # There's 20 test suites, so 20 cycles are needed.
@@ -162,6 +169,7 @@ class Speedometer3Support(BasePythonSupport):
             "simpleperf",
             "etw_profile",
             "samply_profile",
+            "perf_profile",
         ]
         if any(test.get(flag) for flag in native_profiling_flags):
             suite["shouldAlert"] = False

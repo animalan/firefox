@@ -850,6 +850,52 @@ def add_samply_profile(config, tests):
 
 
 @transforms.add
+def add_perf_profile(config, tests):
+    def _setup_perf_profiling(test):
+        extra_options = test.setdefault("mozharness", {}).setdefault(
+            "extra-options", []
+        )
+
+        if "speedometer3" in test.get("test-name", None):
+            test["max-run-time"] = 6300  # seconds
+            if "--extra-profiler-run" in extra_options:
+                extra_options.remove("--extra-profiler-run")
+
+        extra_options.extend([
+            "--perf-profile",
+        ])
+
+        fetches = test.setdefault("fetches", {})
+        by_apps = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
+        for by_app in by_apps.values():
+            test_platforms = by_app.get("by-test-platform")
+
+            if not test_platforms:
+                continue
+
+            for test_platform, test_platform_config in test_platforms.items():
+                if "linux" in test_platform:
+                    toolchains = ["linux64-samply"]
+                    for toolchain in toolchains:
+                        if toolchain not in test_platform_config:
+                            test_platform_config.append(toolchain)
+
+        fetches.setdefault("build", []).append({
+            "artifact": "target.crashreporter-symbols.zip",
+            "extract": False,
+        })
+
+    for test in tests:
+        if (
+            "speedometer3" in test.get("test-name", None)
+            and "linux" in test.get("test-platform", "")
+            and test.get("app") in ["firefox"]
+        ):
+            _setup_perf_profiling(test)
+        yield test
+
+
+@transforms.add
 def handle_native_profiling_symbol(config, tests):
     for test in tests:
         extra_options = test.get("mozharness", {}).get("extra-options", [])
@@ -858,6 +904,7 @@ def handle_native_profiling_symbol(config, tests):
             "--simpleperf",
             "--etw-profile",
             "--samply-profile",
+            "--perf-profile",
         ]
 
         if any(arg in extra_options for arg in native_profiling_args):
