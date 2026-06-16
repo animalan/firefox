@@ -296,6 +296,15 @@ class ProfileSymbolicator:
         return True
 
     def symbolicate_profile(self, profile_json):
+        symbolicate_start = time.time()
+        # Initialize timing variables
+        write_time = 0
+        samply_startup_time = 0
+        tail_time = 0
+        profiler_edit_time = 0
+        terminate_time = 0
+        load_time = 0
+        update_time = 0
         in_ci = "MOZ_AUTOMATION" in os.environ
         if in_ci:
             installation_dir = os.environ["MOZ_FETCHES_DIR"]
@@ -333,18 +342,30 @@ class ProfileSymbolicator:
                     f"Symbol directory does not exist: {breakpad_symbol_dir}\n"
                     f"Please run './mach build' and './mach buildsymbols' to generate the build symbols."
                 )
-                LOG.critical("Skipping symbolication.")
+                # self._symbolicate_profile_fallback(profile_json)
                 return
 
             LOG.info(f"Using symbol directory: {breakpad_symbol_dir}")
             with tempfile.TemporaryDirectory() as work_dir:
+                write_start = time.time()
                 unsym_profile = Path(work_dir, "unsym_profile.json")
                 unsym_profile.write_text(
                     json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"
                 )
+                # Debug: save unsymbolicated profile to home directory
+                debug_profile_path = Path.home() / "firefox" / "profly.json"
+                debug_profile_path.write_text(
+                    json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"
+                )
+                write_time = time.time() - write_start
+                unsym_file_size_mb = unsym_profile.stat().st_size / (1024 * 1024)
+                LOG.info(f"Debug: Unsymbolicated profile saved to {debug_profile_path}")
+                LOG.info(f"Writing unsymbolicated profiles took {write_time:.2f}s")
+                LOG.info(f"Unsymbolicated profile file size: {unsym_file_size_mb:.2f} MB")
                 sym_profile = Path(work_dir) / "sym_profile.json"
 
                 # Load unsymbolicated profile with samply
+                samply_load_start = time.time()
                 samply_process = subprocess.Popen(
                     [
                         samply_path,
@@ -363,19 +384,24 @@ class ProfileSymbolicator:
 
                 # Tail output for timeout seconds to obtain symbol server url
                 server_url = ""
-                start = time.time()
+                tail_start = time.time()
                 with samply_process.stdout:
                     for line in iter(samply_process.stdout.readline, ""):
                         if line.startswith("http"):
                             url = unquote(line)
                             server_url = str(url.split("symbolServer=", 1)[-1])
+                            tail_time = time.time() - tail_start
+                            samply_startup_time = time.time() - samply_load_start
+                            LOG.info(f"Samply load operation took {samply_startup_time:.2f}s")
+                            LOG.info(f"Tailing samply output for URL took {tail_time:.2f}s")
                             break
-                        timeout = time.time() - start
+                        timeout = time.time() - tail_start
                         if timeout > SYMBOL_SERVER_TIMEOUT:
                             raise TimeoutError(
                                 f"Server timed out after exceeding {SYMBOL_SERVER_TIMEOUT} seconds. Time elapsed : {timeout} seconds."
                             )
 
+                profiler_edit_start = time.time()
                 with subprocess.Popen(
                     [
                         node_path,
@@ -395,24 +421,52 @@ class ProfileSymbolicator:
                     # Stream and forward to self.info()
                     for line in profiler_edit_process.stdout:
                         LOG.info(f"profiler-edit {line.strip()}")
+                profiler_edit_time = time.time() - profiler_edit_start
+                LOG.info(f"Profiler-edit execution took {profiler_edit_time:.2f}s")
 
                 # Terminate samply server
+                terminate_start = time.time()
                 if platform.system() == "Windows":
                     samply_process.terminate()
                 else:
                     samply_process.send_signal(signal.SIGINT)  # ctrl-c shutdown
 
                 samply_process.wait(timeout=SAMPLY_WAIT_TIMEOUT)
+                terminate_time = time.time() - terminate_start
+                LOG.info(f"Samply server termination took {terminate_time:.2f}s")
 
                 # Load profile json into memory and mutate profile
+                load_start = time.time()
+                sym_file_size_mb = sym_profile.stat().st_size / (1024 * 1024)
+                LOG.info(f"Symbolicated profile file size: {sym_file_size_mb:.2f} MB")
                 with sym_profile.open("r", encoding="utf-8") as f:
                     sym = json.load(f)
+                load_time = time.time() - load_start
+                LOG.info(f"Loading symbolicated profile took {load_time:.2f}s")
 
+                update_start = time.time()
                 profile_json.clear()
                 profile_json.update(sym)
+                update_time = time.time() - update_start
+                LOG.info(f"Updating profile_json took {update_time:.2f}s")
 
         except Exception:
             LOG.critical("Profile symbolication failed.", exc_info=True)
+            # LOG.info("Attempting fallback symbolication.")
+            # self._symbolicate_profile_fallback(profile_json)
+        finally:
+            total_time = time.time() - symbolicate_start
+            LOG.info("=== Symbolication Timing Summary ===")
+            LOG.info(f"1. Writing unsymbolicated profiles:  {write_time:.2f}s")
+            LOG.info(f"2. Samply load operation:            {samply_startup_time:.2f}s")
+            LOG.info(f"   - Tailing output for URL:         {tail_time:.2f}s")
+            LOG.info(f"3. Profiler-edit execution:          {profiler_edit_time:.2f}s")
+            LOG.info(f"4. Samply server termination:        {terminate_time:.2f}s")
+            LOG.info(f"5. Loading symbolicated profile:     {load_time:.2f}s")
+            LOG.info(f"6. Updating profile_json:            {update_time:.2f}s")
+            LOG.info(f"   ---")
+            LOG.info(f"   TOTAL symbolicate_profile time:    {total_time:.2f}s")
+            LOG.info("====================================")
 
     def _find_addresses(self, profile_json):
         addresses = set()
