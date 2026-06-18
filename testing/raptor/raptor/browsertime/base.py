@@ -1284,7 +1284,7 @@ class Browsertime(Perftest, metaclass=ABCMeta):
                     # for debugging if test fails
                     self.etw_profiler.upload_etl(debug=browsertime_test_failed)
                     self.etw_profiler.symbolicate()
-                    self.etw_profiler.archive()
+                    self.etw_profiler.upload_processed_profiles()
                     self.etw_profiler.clean()
                     etw_started = False
                     LOG.info("ETW profiling has completed successfully")

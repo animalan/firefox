@@ -30,7 +30,8 @@ SAMPLY_TIMEOUT = 900
 class ETWProfile(RaptorProfiling):
     """Record kernel ETW traces (.etl) using xperf (via pre-configured
     scheduled tasks), then use Samply to convert and symbolicate them
-    into Firefox Profiler JSON profiles.
+    into profiles in the Firefox Profiler JSON format. Profiler-edit
+    filters and adds labelling to the profiles afterwards.
 
     On the Windows pool, scheduled tasks allow an
     unprivileged user to start/stop xperf kernel tracing/profiling:
@@ -60,7 +61,9 @@ class ETWProfile(RaptorProfiling):
             Path(os.environ["USERPROFILE"]) / XPERF_ETL_USER_SESSION_RELATIVE
         )
         self.upload_dir = Path(self.upload_dir)
-        self.profile = self.upload_dir / f"etw-{self.test_name}.json.gz"
+        self.profile = (
+            self.upload_dir / f"profile_etw_{self.test_name}_unprocessed.json.gz"
+        )
 
         # Temporary working directory for intermediate files
         self.temp_dir = Path(tempfile.mkdtemp())
@@ -70,6 +73,10 @@ class ETWProfile(RaptorProfiling):
         if not self.raptor_config.get("run_local"):
             moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
             self.samply_path = moz_fetch / "samply" / "samply.exe"
+            self.profiler_edit_path = (
+                moz_fetch / "profiler-node-tools" / "profiler-edit.js"
+            )
+            self.node_path = moz_fetch / "node" / "node.exe"
 
         LOG.info(f"ETW profiling initialized: etl_source={self.etl_source}")
         for key, value in self.__dict__.items():
@@ -159,23 +166,126 @@ class ETWProfile(RaptorProfiling):
             shutil.move(self.etl_source, etl_dest)
             LOG.info(f"Combined ETL archived to: {etl_dest}")
 
-    def archive(self):
+    def _edit_profile(
+        self,
+        input_profile=None,
+        output_profile=None,
+        name=None,
+        labels=False,
+        compact=False,
+        profiler_edit_args=None,
+    ):
+        if input_profile is None:
+            input_profile = self.profile
+
+        if output_profile is None:
+            LOG.error("No output profile path specified.")
+            return None
+
+        input_profile = Path(input_profile)
+        output_profile = Path(output_profile)
+
+        profiler_edit_cmd = [
+            str(self.node_path),
+            str(self.profiler_edit_path),
+            "-i",
+            str(input_profile),
+            "-o",
+            str(output_profile),
+        ]
+
+        if profiler_edit_args is None:
+            profiler_edit_args = []
+
+        if labels:
+            browser_labels_toml = (
+                Path(__file__).resolve().parent / "browser_function_labels.toml"
+            )
+            profiler_edit_args.extend([
+                "--insert-label-frames",
+                str(browser_labels_toml),
+            ])
+
+        if compact:
+            profiler_edit_args.append(
+                "--only-keep-threads-with-markers-matching=-async,-sync"
+            )
+            profiler_edit_args.append("--merge-non-overlapping-threads-by-name")
+
+        if name:
+            profiler_edit_args.extend(["--set-name", name])
+
+        profiler_edit_cmd.extend(profiler_edit_args)
+
+        LOG.info(f"Running: {' '.join(profiler_edit_cmd)}")
+        result = subprocess.run(
+            profiler_edit_cmd,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        for line in result.stdout.splitlines():
+            LOG.info(f"profiler-edit stdout: {line}")
+        for line in result.stderr.splitlines():
+            LOG.info(f"profiler-edit stderr: {line}")
+        if result.returncode != 0:
+            LOG.error(f"profiler-edit exited with code {result.returncode}")
+            return None
+        if not output_profile.exists():
+            LOG.error(f"profiler-edit did not produce a profile at {output_profile}")
+            return None
+
+        return output_profile
+
+    def upload_processed_profiles(self):
         if self.profile.exists():
-            profile_archive = Path(self.upload_dir, f"profile_{self.test_name}.zip")
-
-            try:
-                mode = zipfile.ZIP_DEFLATED
-            except NameError:
-                mode = zipfile.ZIP_STORED
-
-            with zipfile.ZipFile(profile_archive, "a", mode) as zipf:
-                path_in_zip = f"etw/{self.profile.name}"
+            cycles = self.test_config.get("browser_cycles", "")
+            browser_cycles = f"{cycles}x" if cycles else ""
+            output_profile_path = (
+                self.upload_dir
+                / f"profile_{self.test_name}_etw_raw_all_processes.jslb.gz"
+            )
+            raw_profile = self._edit_profile(
+                output_profile=output_profile_path,
+                name=f"{self.test_name.capitalize()} {browser_cycles} (all processes)",
+            )
+            if raw_profile is None:
+                LOG.error(f"Failed to create {output_profile_path.name}")
+            else:
                 LOG.info(
-                    f"Adding {self.profile.name} to {profile_archive} as {path_in_zip}"
+                    f"Created {output_profile_path.name} ({output_profile_path.stat().st_size} bytes)"
                 )
-                zipf.write(self.profile, arcname=path_in_zip)
-                self.profile.unlink(missing_ok=True)
-                return profile_archive
+
+            output_profile_path = (
+                self.upload_dir / f"profile_{self.test_name}_etw_all_processes.jslb.gz"
+            )
+            labelled_profile = self._edit_profile(
+                output_profile=output_profile_path,
+                name=f"{self.test_name.capitalize()} {browser_cycles} (with labels, all processes)",
+                labels=True,
+            )
+            if labelled_profile is None:
+                LOG.error(f"Failed to create {output_profile_path.name}")
+            else:
+                LOG.info(
+                    f"Created {output_profile_path.name} ({output_profile_path.stat().st_size} bytes)"
+                )
+
+            output_profile_path = (
+                self.upload_dir / f"profile_{self.test_name}_etw_compact.jslb.gz"
+            )
+            compact_profile = self._edit_profile(
+                output_profile=output_profile_path,
+                name=f"{self.test_name.capitalize()} {browser_cycles} (with labels, combined main threads)",
+                labels=True,
+                compact=True,
+            )
+            if compact_profile is None:
+                LOG.error(f"Failed to create {output_profile_path.name}")
+            else:
+                LOG.info(
+                    f"Created {output_profile_path.name} ({output_profile_path.stat().st_size} bytes)"
+                )
 
     def symbolicate(self):
         if not self.etl_kernel_session_path.exists():
@@ -192,6 +302,7 @@ class ETWProfile(RaptorProfiling):
             str(self.etl_kernel_session_path),
             str(self.etl_user_session_path),
             "--save-only",
+            "--main-thread-only",
             "-o",
             str(self.profile),
             "--presymbolicate",
