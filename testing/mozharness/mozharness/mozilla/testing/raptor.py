@@ -1445,8 +1445,14 @@ class Raptor(
         run_tests = os.path.join(self.raptor_path, "raptor", "raptor.py")
 
         # Dynamically set the log level based on the raptor config for consistency
-        # throughout the test
-        mozlog_opts = [f"--log-tbpl-level={self.config['log_level']}"]
+        # throughout the test. Don't override if user explicitly specified one.
+        mozlog_opts = []
+        if not any(
+            arg
+            for arg in self.config.get("raptor_cmd_line_args", [])
+            if "--log-tbpl-level" in arg
+        ):
+            mozlog_opts = [f"--log-tbpl-level={self.config['log_level']}"]
 
         if not self.run_local and "suite" in self.config:
             fname_pattern = f"{self.config['test']}_%s.log"
