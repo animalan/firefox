@@ -1319,7 +1319,7 @@ class Browsertime(Perftest, metaclass=ABCMeta):
                 try:
                     self.perf_profiler.stop()
                     self.perf_profiler.symbolicate()
-                    profile_archive_path = self.perf_profiler.archive()
+                    profile_archive_path = self.perf_profiler.profile
                     self.perf_profiler.clean()
                     perf_started = False
                     LOG.info("Perf profiling has completed successfully")
