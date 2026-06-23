@@ -598,7 +598,7 @@ browsertime-benchmark:
                 by-test-platform:
                     macosx1400.*shippable.*: 4200
                     macosx1500.*shippable.*: 4200
-                    default: 4200
+                    default: 2100
             speedometer2: 2100
             default: 900
     mozharness:
@@ -611,19 +611,6 @@ browsertime-benchmark:
                         macosx1500.*shippable.*:
                             - --page-timeout=900000
                         default: []
-                speedometer3:
-                    by-test-platform:
-                        linux.*shippable.*:
-                            - --extra-profiler-run
-                            - --add-option=--perf-profile
-                        macosx1400.*shippable.*:
-                            - --extra-profiler-run
-                            - --page-timeout=900000
-                        macosx1500.*shippable.*:
-                            - --extra-profiler-run
-                            - --page-timeout=900000
-                        default:
-                            - --extra-profiler-run
                 default:
                     by-test-platform:
                         macosx1400.*shippable.*:
