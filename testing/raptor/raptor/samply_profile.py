@@ -5,6 +5,7 @@
 import os
 import shutil
 import subprocess
+import tempfile
 import time
 import zipfile
 from pathlib import Path
@@ -12,7 +13,7 @@ from pathlib import Path
 from logger.logger import RaptorLogger
 from raptor_profiling import RaptorProfiling
 
-LOG = RaptorLogger(component="raptor-samply-profile")
+LOG = RaptorLogger(component="raptor-samply")
 
 
 class SamplyProfile(RaptorProfiling):
@@ -62,16 +63,14 @@ class SamplyProfile(RaptorProfiling):
 
         self.test_name = test_config.get("name", "test")
         self.upload_dir = Path(self.upload_dir)
-        self.profile = self.upload_dir / f"profile_{self.test_name}.json"
-        self.temp_dir = Path(self.temp_profile_dir)
+        self.local = self.raptor_config.get("run_local")
+        self.profile = self.upload_dir / f"profile_samply_{self.test_name}.json.gz"
+        self.temp_dir = Path(tempfile.mkdtemp())
         self.running = False
 
         self.original_binary_path = Path(self.raptor_config.get("binary"))
         self.wrapper_binary_path = None
-
         self.macosx_sdk = None
-
-        self.local = self.raptor_config.get("run_local")
 
         if self.local:
             toolchain_dir = Path(
@@ -104,23 +103,17 @@ class SamplyProfile(RaptorProfiling):
 
         if not self.samply_path.is_file():
             raise FileNotFoundError(
-                f"samply not found at {self.samply_path}. Run ./mach bootstrap to install."
+                f"samply not found at {self.samply_path}. {'Run ./mach bootstrap to install.' if self.local else ''}"
             )
 
         if not self.clang_path.is_file():
             raise FileNotFoundError(
-                f"clang++ not found at {self.clang_path}. Run ./mach bootstrap to install."
+                f"clang++ not found at {self.clang_path}. {'Run ./mach bootstrap to install.' if self.local else ''}"
             )
 
         self.symbol_dir = self._get_build_symbols()
 
         if self.symbol_dir and self.symbol_dir.exists():
-            LOG.info(f"Symbol directory: {self.symbol_dir}")
-            LOG.info("Symbol directory contents:")
-            for f in self.symbol_dir.rglob("*"):
-                if f.is_file():
-                    LOG.info(f"{f}")
-
             # Turn on crash reporter if we have symbols
             os.environ["MOZ_CRASHREPORTER_NO_REPORT"] = "1"
             if self.raptor_config.get("symbols_path"):
@@ -136,19 +129,20 @@ class SamplyProfile(RaptorProfiling):
         # Downstream they are passed to browsertime as --firefox.env.
         # Setting them here (instead of a transform) allows these
         # settings to be used in both CI runs and local runs
-        for key, val in {
-            "IONPERF": "func",
-            "MOZ_USE_PERFORMANCE_MARKER_FILE": "1",
-            # Disabling the content sandbox allows JIT dumps
-            # and marker files to be emitted
-            "MOZ_DISABLE_CONTENT_SANDBOX": "1",
-            "JIT_OPTION_enableICFramePointers": "true",
-            "JIT_OPTION_onlyInlineSelfHosted": "true",
-            "JIT_OPTION_emitInterpreterEntryTrampoline": "true",
-            "PERF_SPEW_DIR": f"{self.temp_dir}",
-            "MOZ_PERFORMANCE_MARKER_DIR": f"{self.temp_dir}",
-        }.items():
-            raptor_config.setdefault("environment", {}).setdefault(key, val)
+        if self.raptor_config.get("app", "") == "firefox":
+            for key, val in {
+                "IONPERF": "func",
+                "MOZ_USE_PERFORMANCE_MARKER_FILE": "1",
+                # Disabling the content sandbox allows JIT dumps
+                # and marker files to be emitted
+                "MOZ_DISABLE_CONTENT_SANDBOX": "1",
+                "JIT_OPTION_enableICFramePointers": "true",
+                "JIT_OPTION_onlyInlineSelfHosted": "true",
+                "JIT_OPTION_emitInterpreterEntryTrampoline": "true",
+                "PERF_SPEW_DIR": f"{self.temp_dir}",
+                "MOZ_PERFORMANCE_MARKER_DIR": f"{self.temp_dir}",
+            }.items():
+                raptor_config.setdefault("environment", {}).setdefault(key, val)
 
         LOG.info("Initialization successful.")
 
@@ -337,10 +331,11 @@ class SamplyProfile(RaptorProfiling):
             str(self.clang_path),
             str(code_file),
             "-o",
-            str(self.temp_dir / binary_name),
+            str(binary),
         ]
         if self.macosx_sdk:
             cmd.extend(["-isysroot", str(self.macosx_sdk)])
+
         LOG.info(f"Running clang++ command: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True, check=False)
         if result.stdout:
@@ -351,31 +346,16 @@ class SamplyProfile(RaptorProfiling):
         if result.returncode != 0:
             LOG.error(f"Binary compilation failed: {result.stderr}")
             return None
+
         if not binary.is_file():
             LOG.error(f"Binary {binary_name} not found after compilation: {binary}")
             return None
+        else:
+            LOG.info(
+                f"{binary_name} successfully compiled: {binary} ({binary.stat().st_size} bytes)"
+            )
 
         return binary
-
-    def archive(self):
-        if not self.profile.is_file():
-            LOG.error(f"Profile does not exist: {self.profile}")
-            return False
-
-        profile_archive = self.upload_dir / f"profile_{self.test_name}.zip"
-        LOG.info("Creating archive")
-        try:
-            with zipfile.ZipFile(profile_archive, "w", zipfile.ZIP_DEFLATED) as zipf:
-                LOG.info(f"Adding {self.profile} to archive")
-                zipf.write(self.profile, arcname=self.profile.name)
-            LOG.info(f"Archive created successfully: {profile_archive}")
-            LOG.info(f"Deleting original profile: {self.profile}")
-            self.profile.unlink()
-            self.profile = None
-            return profile_archive
-        except Exception as e:
-            LOG.error(f"Failed to create archive: {e}")
-            return None
 
     def stop(self):
         if not self.running:
@@ -444,3 +424,5 @@ class SamplyProfile(RaptorProfiling):
         if self.temp_dir.exists():
             LOG.info(f"Removing temp dir: {self.temp_dir}")
             shutil.rmtree(self.temp_dir)
+
+        super().clean()

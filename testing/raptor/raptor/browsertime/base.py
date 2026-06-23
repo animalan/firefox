@@ -1279,9 +1279,9 @@ class Browsertime(Perftest, metaclass=ABCMeta):
 
             if etw_started and self.etw_profiler:
                 try:
+                    self.etw_profiler.stop()
                     # Additionally upload kernel and user ETL files
                     # for debugging if test fails
-                    self.etw_profiler.stop()
                     self.etw_profiler.upload_etl(debug=browsertime_test_failed)
                     self.etw_profiler.symbolicate()
                     self.etw_profiler.archive()
@@ -1294,16 +1294,16 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             if samply_started and self.samply_profiler:
                 try:
                     self.samply_profiler.stop()
-                    profile_archive_path = self.samply_profiler.archive()
+                    profile_archive_path = self.samply_profiler.profile
                     self.samply_profiler.clean()
-                    LOG.info("Samply profiling stopped")
+                    LOG.info("Samply profiling has completed successfully")
                 except Exception as e:
-                    LOG.error(f"Failed to stop Samply profiling: {e}")
+                    LOG.error(f"Failed to finalize Samply profiling: {e}")
 
             is_local = self.config.get("run_local")
             if is_local and profile_archive_path and profile_archive_path.exists():
                 # Enable profile viewing (view_gecko_profile_from_raptor())
-                os.environ["RAPTOR_LATEST_PROFILE_ARCHIVE"] = str(profile_archive_path)
+                os.environ["RAPTOR_LATEST_PROFILE"] = str(profile_archive_path)
 
             # Serve profile before propagating the exception
             if (
@@ -1313,9 +1313,7 @@ class Browsertime(Perftest, metaclass=ABCMeta):
             ):
                 try:
                     LOG.info("Viewing failure profile")
-                    os.environ["RAPTOR_LATEST_PROFILE_ARCHIVE"] = str(
-                        profile_archive_path
-                    )
+                    os.environ["RAPTOR_LATEST_PROFILE"] = str(profile_archive_path)
                     view_gecko_profile_from_raptor()
                 except Exception as e:
                     LOG.error(f"Failed to view {profile_archive_path}: {e}")
