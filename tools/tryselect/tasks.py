@@ -183,6 +183,16 @@ def filter_tasks_by_worker_type(tasks, params):
     return tasks
 
 
+def filter_tasks_by_native_profiling(tasks, params):
+    if params.get("try_task_config", {}).get("native-profiling", False):
+        return {
+            task_name: task
+            for task_name, task in tasks.items()
+            if task.attributes.get("native_profiling", False)
+        }
+    return tasks
+
+
 def filter_tasks_by_paths(tasks, paths=[], tag=""):
     resolver = TestResolver.from_environment(cwd=here, loader_cls=TestManifestLoader)
 
