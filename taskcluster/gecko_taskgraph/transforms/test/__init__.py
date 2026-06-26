@@ -706,7 +706,6 @@ def add_xpcshell_crashreporter_symbols(_config, tests):
 
             if "profiler-node-tools" not in fetch_toolchains:
                 fetch_toolchains.append("profiler-node-tools")
-
             test_setting = (
                 test.get("extra", {}).get("test-setting", {}).get("platform", {})
             )
@@ -730,10 +729,13 @@ def add_xpcshell_crashreporter_symbols(_config, tests):
             elif os_name in ("linux", "android"):
                 sym_toolchains = ["linux64-samply", "linux64-node"]
 
-            # Don't add node toolchain if one already exists
+            # Don't add node or samply toolchain if one already exists
             has_node = any("node" in str(t) for t in fetch_toolchains)
+            has_samply = any("samply" in str(t) for t in fetch_toolchains)
             if has_node:
                 sym_toolchains = [t for t in sym_toolchains if "node" not in t]
+            if has_samply:
+                sym_toolchains = [t for t in sym_toolchains if "samply" not in t]
 
             for sym_toolchain in sym_toolchains:
                 if sym_toolchain not in fetch_toolchains:
@@ -787,10 +789,13 @@ def add_mochitest_crashreporter_symbols(_config, tests):
             elif os_name in ("linux", "android"):
                 sym_toolchains = ["linux64-samply", "linux64-node"]
 
-            # Don't add node toolchain if one already exists
+            # Don't add node or samply toolchain if one already exists
             has_node = any("node" in str(t) for t in fetch_toolchains)
+            has_samply = any("samply" in str(t) for t in fetch_toolchains)
             if has_node:
                 sym_toolchains = [t for t in sym_toolchains if "node" not in t]
+            if has_samply:
+                sym_toolchains = [t for t in sym_toolchains if "samply" not in t]
 
             for sym_toolchain in sym_toolchains:
                 if sym_toolchain not in fetch_toolchains:

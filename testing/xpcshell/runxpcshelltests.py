@@ -2649,10 +2649,10 @@ class XPCShellTests:
                         symbol_size = symbolicated_path.stat().st_size
                         self.log.info(
                             f"Successfully symbolicated {profile_file.name}: "
-                            f"{unsym_size} bytes → {symbol_size} bytes"
+                            f"{unsym_size} bytes -> {symbol_size} bytes"
                         )
                         # Delete original unsymbolicated profile
-                        profile_file.unlink()
+                        # profile_file.unlink()
                     except Exception as e:
                         # Log error but continue with next profile
                         self.log.error(

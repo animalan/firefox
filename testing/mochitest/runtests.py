@@ -3918,16 +3918,19 @@ toolbar#nav-bar {
                 )
                 try:
                     # Create a unique copy to symbolicate (avoid overwriting original)
-                    symbolicated_path = (
-                        profile_file.parent
-                        / profile_file.name.replace(".json", "_symbolicated.json")
+                    symbolicated_path = profile_file.parent / profile_file.name.replace(
+                        ".json", "_symbolicated.json"
                     )
                     # Copy original profile to new file
                     shutil.copy(profile_file, symbolicated_path)
 
                     # Symbolicate the copy in-place
                     symbolicate_profile_json(
-                        str(symbolicated_path), self.symbolsPath
+                        str(symbolicated_path),
+                        str(
+                            Path(os.environ["MOZ_FETCHES_DIR"])
+                            / "target.crashreporter-symbols"
+                        ),
                     )
 
                     # Get symbolicated file size and log the result
