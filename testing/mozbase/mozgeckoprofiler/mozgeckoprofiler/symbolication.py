@@ -297,118 +297,104 @@ class ProfileSymbolicator:
 
     def symbolicate_profile(self, profile_json):
 
-        # Check if running in CI
-        if "MOZ_AUTOMATION" in os.environ:
-            moz_fetch = os.environ["MOZ_FETCHES_DIR"]
-            profiler_edit_path = Path(
-                moz_fetch, "profiler-node-tools", "profiler-edit.js"
-            )
-            if platform.system() == "Windows":
-                samply_path = Path(moz_fetch, "samply", "samply.exe")
-                node_path = Path(moz_fetch, "node", "node.exe")
-            else:
-                samply_path = Path(moz_fetch, "samply", "samply")
-                node_path = Path(moz_fetch, "node", "bin", "node")
-
-            # Check if symbolication dependencies are available
-
-            if not self._validate_symbolication_deps([
-                profiler_edit_path,
-                samply_path,
-                node_path,
-            ]):
-                LOG.info(
-                    "Symbolication dependencies not available, using fallback symbolication."
-                )
-                self._symbolicate_profile_fallback(profile_json)
-                return
-
-            try:
-                breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
-
-                with tempfile.TemporaryDirectory() as work_dir:
-                    unsym_profile = Path(work_dir, "unsym_profile.json")
-                    unsym_profile.write_text(
-                        json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"
-                    )
-                    sym_profile = Path(work_dir) / "sym_profile.json"
-
-                    # Load unsymbolicated profile with samply
-                    samply_process = subprocess.Popen(
-                        [
-                            samply_path,
-                            "load",
-                            str(unsym_profile),
-                            "--no-open",
-                            "--breakpad-symbol-dir",
-                            str(breakpad_symbol_dir),
-                            "--breakpad-symbol-server",
-                            BREAKPAD_SYMBOL_SERVER,
-                        ],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
-                        text=True,
-                    )
-
-                    # Tail output for timeout seconds to obtain symbol server url
-                    server_url = ""
-                    start = time.time()
-                    with samply_process.stdout:
-                        for line in iter(samply_process.stdout.readline, ""):
-                            if line.startswith("http"):
-                                url = unquote(line)
-                                server_url = str(url.split("symbolServer=", 1)[-1])
-                                break
-                            timeout = time.time() - start
-                            if timeout > SYMBOL_SERVER_TIMEOUT:
-                                raise TimeoutError(
-                                    f"Server timed out after exceeding {SYMBOL_SERVER_TIMEOUT} seconds. Time elapsed : {timeout} seconds."
-                                )
-
-                    with subprocess.Popen(
-                        [
-                            node_path,
-                            str(profiler_edit_path),
-                            "-i",
-                            str(unsym_profile),
-                            "-o",
-                            str(sym_profile),
-                            "--symbolicate-with-server",
-                            server_url,
-                        ],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
-                        text=True,
-                        bufsize=1,
-                    ) as profiler_edit_process:
-                        # Stream and forward to self.info()
-                        for line in profiler_edit_process.stdout:
-                            LOG.info(f"profiler-edit {line.strip()}")
-
-                    # Terminate samply server
-                    if platform.system() == "Windows":
-                        samply_process.terminate()
-                    else:
-                        samply_process.send_signal(signal.SIGINT)  # ctrl-c shutdown
-
-                    samply_process.wait(timeout=SAMPLY_WAIT_TIMEOUT)
-
-                    # Load profile json into memory and mutate profile
-                    with sym_profile.open("r", encoding="utf-8") as f:
-                        sym = json.load(f)
-
-                    profile_json.clear()
-                    profile_json.update(sym)
-
-            except Exception:
-                LOG.critical("Profile symbolication failed.", exc_info=True)
-                LOG.info("Attempting fallback symbolication.")
-                self._symbolicate_profile_fallback(profile_json)
-
-        # Local symbolication using fallback symbolication
+        moz_fetch = os.environ["MOZ_FETCHES_DIR"]
+        profiler_edit_path = Path(moz_fetch, "profiler-node-tools", "profiler-edit.js")
+        if platform.system() == "Windows":
+            samply_path = Path(moz_fetch, "samply", "samply.exe")
+            node_path = Path(moz_fetch, "node", "node.exe")
         else:
-            LOG.info("Running locally - using fallback symbolication.")
-            self._symbolicate_profile_fallback(profile_json)
+            samply_path = Path(moz_fetch, "samply", "samply")
+            node_path = Path(moz_fetch, "node", "bin", "node")
+
+        # Check if symbolication dependencies are available
+
+        if not self._validate_symbolication_deps([
+            profiler_edit_path,
+            samply_path,
+            node_path,
+        ]):
+            LOG.info("Symbolication dependencies not available")
+            return
+
+        try:
+            breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
+
+            with tempfile.TemporaryDirectory() as work_dir:
+                unsym_profile = Path(work_dir, "unsym_profile.json")
+                unsym_profile.write_text(
+                    json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"
+                )
+                sym_profile = Path(work_dir) / "sym_profile.json"
+
+                # Load unsymbolicated profile with samply
+                samply_process = subprocess.Popen(
+                    [
+                        samply_path,
+                        "load",
+                        str(unsym_profile),
+                        "--no-open",
+                        "--breakpad-symbol-dir",
+                        str(breakpad_symbol_dir),
+                        "--breakpad-symbol-server",
+                        BREAKPAD_SYMBOL_SERVER,
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                )
+
+                # Tail output for timeout seconds to obtain symbol server url
+                server_url = ""
+                start = time.time()
+                with samply_process.stdout:
+                    for line in iter(samply_process.stdout.readline, ""):
+                        if line.startswith("http"):
+                            url = unquote(line)
+                            server_url = str(url.split("symbolServer=", 1)[-1])
+                            break
+                        timeout = time.time() - start
+                        if timeout > SYMBOL_SERVER_TIMEOUT:
+                            raise TimeoutError(
+                                f"Server timed out after exceeding {SYMBOL_SERVER_TIMEOUT} seconds. Time elapsed : {timeout} seconds."
+                            )
+
+                with subprocess.Popen(
+                    [
+                        node_path,
+                        str(profiler_edit_path),
+                        "-i",
+                        str(unsym_profile),
+                        "-o",
+                        str(sym_profile),
+                        "--symbolicate-with-server",
+                        server_url,
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                ) as profiler_edit_process:
+                    # Stream and forward to self.info()
+                    for line in profiler_edit_process.stdout:
+                        LOG.info(f"profiler-edit {line.strip()}")
+
+                # Terminate samply server
+                if platform.system() == "Windows":
+                    samply_process.terminate()
+                else:
+                    samply_process.send_signal(signal.SIGINT)  # ctrl-c shutdown
+
+                samply_process.wait(timeout=SAMPLY_WAIT_TIMEOUT)
+
+                # Load profile json into memory and mutate profile
+                with sym_profile.open("r", encoding="utf-8") as f:
+                    sym = json.load(f)
+
+                profile_json.clear()
+                profile_json.update(sym)
+
+        except Exception:
+            LOG.critical("Profile symbolication failed.", exc_info=True)
 
     def _find_addresses(self, profile_json):
         addresses = set()
