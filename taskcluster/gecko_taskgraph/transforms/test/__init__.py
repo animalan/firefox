@@ -730,6 +730,11 @@ def add_xpcshell_crashreporter_symbols(_config, tests):
             elif os_name in ("linux", "android"):
                 sym_toolchains = ["linux64-samply", "linux64-node"]
 
+            # Don't add node toolchain if one already exists
+            has_node = any("node" in str(t) for t in fetch_toolchains)
+            if has_node:
+                sym_toolchains = [t for t in sym_toolchains if "node" not in t]
+
             for sym_toolchain in sym_toolchains:
                 if sym_toolchain not in fetch_toolchains:
                     fetch_toolchains.append(sym_toolchain)
@@ -746,6 +751,54 @@ def add_xpcshell_crashreporter_symbols(_config, tests):
         yield test
 
 
+@transforms.add
+def add_mochitest_crashreporter_symbols(_config, tests):
+    for test in tests:
+        name = test.get("name", "")
+        if "mochitest" in name.lower():
+            fetches = test.setdefault("fetches", {})
+
+            fetches.setdefault("build", []).append({
+                "artifact": "target.crashreporter-symbols.zip",
+                "extract": False,
+            })
+
+            fetch_toolchains = fetches.setdefault("toolchain", [])
+
+            if "profiler-node-tools" not in fetch_toolchains:
+                fetch_toolchains.append("profiler-node-tools")
+
+            test_setting = (
+                test.get("extra", {}).get("test-setting", {}).get("platform", {})
+            )
+            os_name = test_setting.get("os", {}).get("name", "")
+            arch = test_setting.get("arch", "")
+            sym_toolchains = []
+
+            if os_name == "macosx" and arch == "aarch64":
+                sym_toolchains = ["macosx64-aarch64-samply", "macosx64-aarch64-node"]
+            elif os_name == "macosx":
+                sym_toolchains = ["macosx64-samply", "macosx64-node"]
+            elif os_name == "windows":
+                if arch == "32":
+                    sym_toolchains = ["win32-samply", "win32-node"]
+                else:
+                    sym_toolchains = ["win64-samply", "win64-node"]
+            elif os_name in ("linux", "android"):
+                sym_toolchains = ["linux64-samply", "linux64-node"]
+
+            # Don't add node toolchain if one already exists
+            has_node = any("node" in str(t) for t in fetch_toolchains)
+            if has_node:
+                sym_toolchains = [t for t in sym_toolchains if "node" not in t]
+
+            for sym_toolchain in sym_toolchains:
+                if sym_toolchain not in fetch_toolchains:
+                    fetch_toolchains.append(sym_toolchain)
+
+        yield test
+
+
 # @transforms.add
 # def filter_and_print_xpcshell_tests(_config, tests):
 #     import pprint
@@ -753,7 +806,7 @@ def add_xpcshell_crashreporter_symbols(_config, tests):
 #     for test in tests:
 #         name = test.get("name", "")
 
-#         if "xpcshell" in name.lower():
+#         if "mochitest" in name.lower():
 #             fetches = test.get("fetches", {})
 #             toolchains = fetches.get("toolchain", [])
 #             has_samply = any("samply" in str(t) for t in toolchains)
@@ -761,7 +814,7 @@ def add_xpcshell_crashreporter_symbols(_config, tests):
 #             if not has_samply:
 #                 print("1234567")
 #                 print(f"\n{'=' * 80}")
-#                 print(f"XPCShell Test: {name}")
+#                 print(f"mochitest Test: {name}")
 #                 print(f"{'=' * 80}")
 #                 pprint.pprint(test)
 #         yield test
