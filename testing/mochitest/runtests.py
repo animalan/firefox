@@ -3900,56 +3900,56 @@ toolbar#nav-bar {
                 for f in upload_dir.glob("profile_*.json")
                 if "resource-usage" not in f.name
             )
-            for profile_file in profile_files:
-                # Check if a symbolicated version already exists
-                symbolicated_path = profile_file.parent / profile_file.name.replace(
-                    ".json", "_symbolicated.json"
-                )
-                if symbolicated_path.exists():
+
+            # Create single temp directory for all profiles
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_dir_path = Path(temp_dir)
+                for profile_file in profile_files:
+                    # Get original file size before symbolication
+                    unsym_size = profile_file.stat().st_size
                     self.log.info(
-                        f"Profile {profile_file.name} already symbolicated, skipping"
+                        f"Symbolicating {profile_file.name} ({unsym_size} bytes)..."
                     )
-                    continue
+                    try:
+                        temp_path = temp_dir_path / profile_file.name
+                        # Copy original profile to temp location
+                        shutil.copy(profile_file, temp_path)
 
-                # Get original file size before symbolication
-                unsym_size = profile_file.stat().st_size
-                self.log.info(
-                    f"Symbolicating {profile_file.name} ({unsym_size} bytes)..."
-                )
-                try:
-                    # Create a unique copy to symbolicate (avoid overwriting original)
-                    symbolicated_path = profile_file.parent / profile_file.name.replace(
-                        ".json", "_symbolicated.json"
-                    )
-                    # Copy original profile to new file
-                    shutil.copy(profile_file, symbolicated_path)
+                        # Symbolicate the copy in-place
+                        symbolicate_profile_json(
+                            str(temp_path),
+                            str(
+                                Path(os.environ["MOZ_FETCHES_DIR"])
+                                / "target.crashreporter-symbols"
+                            ),
+                        )
 
-                    # Symbolicate the copy in-place
-                    symbolicate_profile_json(
-                        str(symbolicated_path),
-                        str(
-                            Path(os.environ["MOZ_FETCHES_DIR"])
-                            / "target.crashreporter-symbols"
-                        ),
-                    )
+                        # Only proceed if symbolication succeeded
+                        if temp_path.is_file():
+                            # Get symbolicated file size
+                            symbol_size = temp_path.stat().st_size
+                            self.log.info(
+                                f"Successfully symbolicated {profile_file.name}: "
+                                f"{unsym_size} bytes → {symbol_size} bytes"
+                            )
 
-                    # Get symbolicated file size and log the result
-                    symbol_size = symbolicated_path.stat().st_size
-                    self.log.info(
-                        f"Successfully symbolicated {profile_file.name}: "
-                        f"{unsym_size} bytes → {symbol_size} bytes"
-                    )
-                    # Delete original unsymbolicated profile
-                    profile_file.unlink()
-                except Exception as e:
-                    # Log error but continue with next profile
-                    self.log.error(
-                        f"Failed to symbolicate {profile_file.name}: {e}",
-                        exc_info=True,
-                    )
-                    # Clean up incomplete symbolicated file
-                    if symbolicated_path.exists():
-                        symbolicated_path.unlink()
+                            # Rename original to _unsymbolicated
+                            unsym_path = (
+                                profile_file.parent
+                                / profile_file.name.replace(
+                                    ".json", "_unsymbolicated.json"
+                                )
+                            )
+                            profile_file.rename(unsym_path)
+
+                            # Move symbolicated version to original location
+                            shutil.move(str(temp_path), str(profile_file))
+                    except Exception as e:
+                        # Log error but continue with next profile
+                        self.log.warning(
+                            f"Failed to symbolicate {profile_file.name}: {e}",
+                            exc_info=True,
+                        )
 
     def doTests(self, options, testsToFilter=None, manifestToFilter=None):
         # A call to initializeLooping method is required in case of --run-by-dir or --bisect-chunk

@@ -70,7 +70,7 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path):
             try:
                 data = gzip.decompress(data)
             except Exception:
-                LOG.error("gzip decompress failed")
+                LOG.debug("Profile was not gzipped, treating as raw JSON")
             if orjson is not None:
                 profile = orjson.loads(data)
             else:
