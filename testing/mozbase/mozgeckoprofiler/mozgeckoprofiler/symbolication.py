@@ -295,6 +295,36 @@ class ProfileSymbolicator:
                 return False
         return True
 
+    def _get_build_symbols(self):
+
+        if "MOZ_AUTOMATION" in os.environ:
+            symbol_extract_dir = self.temp_dir / "symbols"
+            symbol_zip = (
+                Path(os.environ["MOZ_FETCHES_DIR"]) / "target.crashreporter-symbols.zip"
+            )
+
+            if not symbol_zip.is_file():
+                LOG.warning(f"Symbol zip not found at {symbol_zip}")
+                return None
+
+            try:
+                with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                    zipf.extractall(symbol_extract_dir)
+            except Exception as e:
+                LOG.warning(f"Failed to extract {symbol_zip}: {e}")
+                return None
+            return symbol_extract_dir
+        else:
+            sym_dir = Path(
+                os.environ["MOZ_DEVELOPER_OBJ_DIR"], "dist", "crashreporter-symbols"
+            )
+            if sym_dir.is_dir():
+                return sym_dir
+            LOG.warning(
+                "No symbol directory found. Set MOZ_DEVELOPER_OBJ_DIR. Try running ./mach buildsymbols"
+            )
+            return None
+
     def symbolicate_profile(self, profile_json):
 
         moz_fetch = os.environ["MOZ_FETCHES_DIR"]
@@ -317,7 +347,7 @@ class ProfileSymbolicator:
             return
 
         try:
-            breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
+            breakpad_symbol_dir = self._get_build_symbols()
 
             with tempfile.TemporaryDirectory() as work_dir:
                 unsym_profile = Path(work_dir, "unsym_profile.json")
