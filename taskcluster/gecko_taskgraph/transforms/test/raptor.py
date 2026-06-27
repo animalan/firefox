@@ -746,24 +746,41 @@ def add_etw_profile(config, tests):
             })
 
     for test in tests:
-        if "win" in test.get("test-platform", "") and "speedometer3" in test.get(
-            "test-name", None
-        ):
-            # On Autoland, run duplicates of the following Windows tasks with native profiling:
-            # - Sp3 on Firefox Windows 11 24H2 Shippable (trunk)
-            # - Sp3 on Firefox Windows 11 24H2 Ref HW Shippable (trunk)
-            # - Sp3 on Firefox Windows 11 24H2 NightlyAsRelease (autoland)
-
+        test_platform = test.get("test-platform", "")
+        test_name = test.get("test-name", "")
+        try_name = test.get("try-name", "")
+        if "win" in test_platform and "speedometer3" in test_name:
             run_on_projects = test.get("run-on-projects", [])
             if config.params["project"] == "autoland" and (
                 "autoland" in run_on_projects or "trunk" in run_on_projects
             ):
+                # On Autoland, run duplicates of the following Windows tasks with native profiling:
+                # - Sp3 on Firefox Windows 11 24H2 Shippable (trunk)
+                # - Sp3 on Firefox Windows 11 24H2 Ref HW Shippable (trunk)
+                # - Sp3 on Firefox Windows 11 24H2 NightlyAsRelease (autoland)
                 autoland_test = deepcopy(test)
                 autoland_test["run-on-projects"] = ["autoland-only"]
                 autoland_test["test-name"] += "-native-profiling"
                 autoland_test["try-name"] += "-native-profiling"
                 _setup_etw_profiling(autoland_test)
                 yield autoland_test
+            elif (
+                config.params.get("tasks_for") == "cron"
+                and config.params.get("target_tasks_method")
+                == "custom-car_perf_testing"
+                and config.params.get("project") == "mozilla-central"
+                and "shippable" in test_platform
+                and "custom-car" in try_name
+            ):
+                # On Mozilla Central CI, run duplicates of the following Windows CaR tasks
+                # with native profiling once per day:
+                # - Sp3 on CaR Windows 11 Shippable
+                # - Sp3 on CaR Windows 11 HW Ref Shippable
+                car_test = deepcopy(test)
+                car_test["test-name"] += "-native-profiling"
+                car_test["try-name"] += "-native-profiling"
+                _setup_etw_profiling(car_test)
+                yield car_test
             elif is_native_profiling:
                 _setup_etw_profiling(test)
 
