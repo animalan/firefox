@@ -695,6 +695,9 @@ def add_etw_profile(config, tests):
 
     def _setup_etw_profiling(test):
 
+        # test["test-name"] += "-native-profiletest"
+        test["try-name"] += "-native-profiletry"
+
         extra_options = test.setdefault("mozharness", {}).setdefault(
             "extra-options", []
         )
@@ -747,9 +750,7 @@ def add_etw_profile(config, tests):
 
     for test in tests:
         test_platform = test.get("test-platform", "")
-        test_name = test.get("test-name", "")
-        try_name = test.get("try-name", "")
-        if "win" in test_platform and "speedometer3" in test_name:
+        if "win" in test_platform and "speedometer3" in test.get("test-name", ""):
             run_on_projects = test.get("run-on-projects", [])
             if config.params["project"] == "autoland" and (
                 "autoland" in run_on_projects or "trunk" in run_on_projects
@@ -760,8 +761,8 @@ def add_etw_profile(config, tests):
                 # - Sp3 on Firefox Windows 11 24H2 NightlyAsRelease (autoland)
                 autoland_test = deepcopy(test)
                 autoland_test["run-on-projects"] = ["autoland-only"]
-                autoland_test["test-name"] += "-native-profiling"
-                autoland_test["try-name"] += "-native-profiling"
+                # autoland_test["test-name"] += "-native-profiling"
+                # autoland_test["try-name"] += "-native-profiling"
                 _setup_etw_profiling(autoland_test)
                 yield autoland_test
             elif (
@@ -770,15 +771,15 @@ def add_etw_profile(config, tests):
                 == "custom-car_perf_testing"
                 and config.params.get("project") == "mozilla-central"
                 and "shippable" in test_platform
-                and "custom-car" in try_name
+                and "custom-car" in test.get("try-name", "")
             ):
                 # On Mozilla Central CI, run duplicates of the following Windows CaR tasks
                 # with native profiling once per day:
                 # - Sp3 on CaR Windows 11 Shippable
                 # - Sp3 on CaR Windows 11 HW Ref Shippable
                 car_test = deepcopy(test)
-                car_test["test-name"] += "-native-profiling"
-                car_test["try-name"] += "-native-profiling"
+                # car_test["test-name"] += "-native-profiling"
+                # car_test["try-name"] += "-native-profiling"
                 _setup_etw_profiling(car_test)
                 yield car_test
             elif is_native_profiling:
