@@ -24,19 +24,36 @@ class SamplyProfile(RaptorProfiling):
     def _get_build_symbols(self):
 
         if not self.local:
-            symbol_extract_dir = self.temp_dir / "symbols"
-            symbol_zip = (
-                Path(os.environ["MOZ_FETCHES_DIR"]) / "target.crashreporter-symbols.zip"
-            )
-            if not symbol_zip.is_file():
-                LOG.warning(f"Symbol zip not found at {symbol_zip}")
-                return None
-            try:
-                with zipfile.ZipFile(symbol_zip, "r") as zipf:
-                    zipf.extractall(symbol_extract_dir)
-            except Exception as e:
-                LOG.warning(f"Failed to extract {symbol_zip}: {e}")
-                return None
+            moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
+
+            if (
+                self.raptor_config.get("app", "") == "custom-car"
+                and (moz_fetch / "chromium" / "Default").exists()
+            ):
+                symbol_extract_dir = moz_fetch / "chromium" / "Default"
+                if symbol_extract_dir.exists():
+                    print(f"Recursive contents of {symbol_extract_dir}:\n")
+                    for item in symbol_extract_dir.rglob("*"):
+                        relative = item.relative_to(symbol_extract_dir)
+                        print(f"  {relative}")
+                else:
+                    print(f"Directory does not exist: {symbol_extract_dir}")
+            else:
+                symbol_extract_dir = self.temp_dir / "symbols"
+                symbol_zip = (
+                    Path(os.environ["MOZ_FETCHES_DIR"])
+                    / "target.crashreporter-symbols.zip"
+                )
+                if not symbol_zip.is_file():
+                    LOG.warning(f"Symbol zip not found at {symbol_zip}")
+                    return None
+                try:
+                    with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                        zipf.extractall(symbol_extract_dir)
+                except Exception as e:
+                    LOG.warning(f"Failed to extract {symbol_zip}: {e}")
+                    return None
+
             return symbol_extract_dir
 
         symbols_path = self.raptor_config.get("symbols_path")

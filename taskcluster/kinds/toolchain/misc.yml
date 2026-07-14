@@ -332,7 +332,7 @@ linux64-custom-car:
             is_component_build=false,
             is_debug=false,
             is_official_build=true,
-            symbol_level=0,
+            symbol_level=2,
             target_cpu="x64",
             use_v8_context_snapshot=false,
             v8_symbol_level=0

@@ -806,7 +806,7 @@ def add_samply_profile(config, tests):
         if (
             "speedometer3" in test.get("test-name", "")
             and "macos" in test.get("test-platform", "")
-            and test.get("app") in ["firefox"]
+            and test.get("app") in ["firefox", "custom-car"]
         ):
             np_test = deepcopy(test)
             np_test["test-name"] += "-native-profiling"
@@ -862,7 +862,7 @@ def add_perf_profile(config, tests):
         if (
             "speedometer3" in test.get("test-name", "")
             and "linux" in test.get("test-platform", "")
-            and test.get("app") == "firefox"
+            and test.get("app") in ["firefox", "custom-car"]
         ):
             np_test = deepcopy(test)
             np_test["test-name"] += "-native-profiling"
