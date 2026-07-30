@@ -619,6 +619,7 @@ def add_simpleperf(config, tests):
     app_packages = {
         "fenix": "org.mozilla.fenix",
         "geckoview": "org.mozilla.geckoview_example",
+        "cstm-car-m": "org.chromium.chrome",
     }
 
     def _setup_simpleperf_profiling(test):
@@ -660,8 +661,11 @@ def add_simpleperf(config, tests):
             app in app_packages
             and "speedometer3-mobile" in test.get("test-name", "")
             and (
-                "no-fission"
-                not in (test.get("attributes", {}).get("unittest_variant") or "")
+                app == "cstm-car-m"
+                or (
+                    "no-fission"
+                    not in (test.get("attributes", {}).get("unittest_variant") or "")
+                )
             )
         ):
             np_test = deepcopy(test)

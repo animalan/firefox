@@ -9,6 +9,8 @@ Module to handle Simpleperf profiling.
 import os
 import shutil
 import subprocess
+import sys
+import tarfile
 import zipfile
 from pathlib import Path
 
@@ -35,7 +37,11 @@ class SimpleperfProfile(RaptorProfiling):
 
         if "MOZ_AUTOMATION" in os.environ:
             moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
-            self.breakpad_symbol_dir = moz_fetch / "target.crashreporter-symbols"
+            app = raptor_config.get("app", "")
+            if app == "cstm-car-m":
+                self.breakpad_symbol_dir = moz_fetch / "lib.unstripped"
+            else:
+                self.breakpad_symbol_dir = moz_fetch / "target.crashreporter-symbols"
             self.samply_path = moz_fetch / "samply" / "samply"
 
         self.dest_dir = (
@@ -57,14 +63,46 @@ class SimpleperfProfile(RaptorProfiling):
             LOG.info("samply not found, skipping symbolication")
             return
 
-        symbol_zip = Path(f"{self.breakpad_symbol_dir}.zip")
-        if "MOZ_AUTOMATION" in os.environ and symbol_zip.exists():
-            with zipfile.ZipFile(symbol_zip, "r") as zipf:
-                zipf.extractall(self.breakpad_symbol_dir)
+        LOG.info(f"Python version: {sys.version}")
+
+        # Extract symbols based on app type
+        if "MOZ_AUTOMATION" in os.environ:
+            moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
+            LOG.info(f"MOZ_FETCHES_DIR contents: {list(moz_fetch.iterdir())}")
+            app = self.raptor_config.get("app", "")
+            if app == "cstm-car-m":
+                if self.breakpad_symbol_dir.exists():
+                    LOG.info(
+                        f"{self.breakpad_symbol_dir} already exists, skipping extraction"
+                    )
+                else:
+                    tar_zst = moz_fetch / "car_android_symbols.tar.zst"
+                    if tar_zst.exists():
+                        try:
+                            with tarfile.open(tar_zst, "r:zst") as tar:
+                                tar.extractall(moz_fetch)
+                            LOG.info(f"Extracted {tar_zst}")
+                        except Exception as e:
+                            LOG.error(f"Failed to extract {tar_zst}: {e}")
+            else:
+                symbol_zip = Path(f"{self.breakpad_symbol_dir}.zip")
+                if symbol_zip.exists():
+                    with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                        zipf.extractall(self.breakpad_symbol_dir)
+
+        if "MOZ_AUTOMATION" in os.environ:
+            moz_fetch = Path(os.environ["MOZ_FETCHES_DIR"])
+            LOG.info(
+                f"MOZ_FETCHES_DIR contents after extraction: {list(moz_fetch.iterdir())}"
+            )
 
         if not self.breakpad_symbol_dir.exists():
             LOG.info("symbols directory not found, skipping symbolication")
             return
+
+        LOG.info(
+            f"Symbol directory contents: {list(self.breakpad_symbol_dir.rglob('*'))[:20]}"
+        )
 
         # Find all perf.data files
         perf_files = list(self.dest_dir.rglob("perf.data"))
