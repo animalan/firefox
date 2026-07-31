@@ -642,10 +642,17 @@ def add_simpleperf(config, tests):
         ])
 
         fetches = test.setdefault("fetches", {})
-        fetches.setdefault("build", []).append({
-            "artifact": "target.crashreporter-symbols.zip",
-            "extract": False,
-        })
+        app = test.get("app")
+        if app == "cstm-car-m":
+            fetches.setdefault("build", []).append({
+                "artifact": "car_android_symbols.tar.zst",
+                "extract": False,
+            })
+        else:
+            fetches.setdefault("build", []).append({
+                "artifact": "target.crashreporter-symbols.zip",
+                "extract": False,
+            })
         toolchains = [
             "linux64-android-simpleperf-linux-repack",
             "linux64-samply",
