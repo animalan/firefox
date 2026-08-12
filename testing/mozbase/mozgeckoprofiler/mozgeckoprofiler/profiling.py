@@ -1,7 +1,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-import gzip
 import os
 import shutil
 import tempfile
@@ -64,22 +63,8 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path=None):
     })
     LOG.info("Symbolicating the performance profile...")
     try:
-        with open(profile_path, "rb") as profile_file:
-            # Some profile.json files may be compressed with gzip
-            # (ex. Mochitest / XPCshell profiles)
-            data = profile_file.read()
-            try:
-                data = gzip.decompress(data)
-            except Exception:
-                LOG.debug("Profile was not gzipped, treating as regular JSON")
+        symbolicator.symbolicate_profile(profile_path)
 
-            if orjson is not None:
-                profile = orjson.loads(data)
-            else:
-                profile = json.loads(data)
-        symbolicator.symbolicate_profile(profile)
-        # Overwrite the profile in place.
-        save_gecko_profile(profile, profile_path)
     except MemoryError:
         LOG.error(
             f"Ran out of memory while trying to symbolicate profile {profile_path}"
@@ -97,7 +82,9 @@ def symbolicate_profiles(profile_dir=None):
     if profile_dir is None and os.environ.get("MOZ_UPLOAD_DIR"):
         profile_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
     else:
-        LOG.error("Profile directory not specified")
+        # Only log error in CI context where we expect MOZ_UPLOAD_DIR
+        if os.environ.get("MOZ_AUTOMATION"):
+            LOG.error("Profile directory not specified")
         return
 
     profile_files = sorted(
