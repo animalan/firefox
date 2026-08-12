@@ -3878,7 +3878,14 @@ toolbar#nav-bar {
                 with out_path.open("w", encoding="utf-8") as f:
                     f.write(json.dumps(data))
 
-        symbolicate_profiles()
+        profile_dir = None
+        if self.browserEnv and "MOZ_PROFILER_SHUTDOWN" in self.browserEnv:
+            profile_dir = Path(self.browserEnv["MOZ_PROFILER_SHUTDOWN"]).parent
+        elif os.environ.get("MOZ_UPLOAD_DIR"):
+            profile_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
+
+        if profile_dir:
+            symbolicate_profiles(profile_dir)
 
         self.handleShutdownProfile(options)
 
@@ -3905,7 +3912,7 @@ toolbar#nav-bar {
                 # Only do the extra work of symbolicating and viewing the profile if
                 # officially requested through a command line flag. The MOZ_PROFILER_*
                 # flags can be set by a user.
-                symbolicate_profile_json(profile_path, options.symbolsPath)
+                # symbolicate_profile_json(profile_path, options.symbolsPath)
                 view_gecko_profile_from_mochitest(
                     profile_path, options, profiler_logger
                 )

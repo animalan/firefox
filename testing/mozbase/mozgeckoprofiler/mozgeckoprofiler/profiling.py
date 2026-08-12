@@ -14,7 +14,7 @@ except ImportError:
 
 from mozlog import get_proxy_logger
 
-from .symbolication import ProfileSymbolicator
+from .symbolication import ProfileSymbolicator, get_extracted_symbols
 
 LOG = get_proxy_logger("profiler")
 
@@ -27,10 +27,13 @@ def save_gecko_profile(profile, filename):
             f.write(json.dumps(profile).encode("utf-8"))
 
 
-def symbolicate_profile_json(profile_path, firefox_symbols_path=None):
+def symbolicate_profile_json(profile_path, firefox_symbols_path=None, symbol_dir=None):
     """
     Symbolicate a single JSON profile.
     """
+    if symbol_dir is None:
+        symbol_dir = get_extracted_symbols()
+
     temp_dir = tempfile.mkdtemp()
     windows_symbol_path = os.path.join(temp_dir, "windows")
     os.mkdir(windows_symbol_path)
@@ -63,7 +66,7 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path=None):
     })
     LOG.info("Symbolicating the performance profile...")
     try:
-        symbolicator.symbolicate_profile(profile_path)
+        symbolicator.symbolicate_profile(profile_path, symbol_dir=symbol_dir)
 
     except MemoryError:
         LOG.error(
@@ -76,16 +79,15 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path=None):
     shutil.rmtree(temp_dir)
 
 
-def symbolicate_profiles(profile_dir=None):
+def symbolicate_profiles(profile_dir=None, symbol_dir=None):
     # Symbolicate all profiles.json in a directory
 
-    if profile_dir is None and os.environ.get("MOZ_UPLOAD_DIR"):
-        profile_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
-    else:
-        # Only log error in CI context where we expect MOZ_UPLOAD_DIR
-        if os.environ.get("MOZ_AUTOMATION"):
+    if profile_dir is None:
+        if os.environ.get("MOZ_UPLOAD_DIR"):
+            profile_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
+        else:
             LOG.error("Profile directory not specified")
-        return
+            return
 
     profile_files = sorted(
         profile
@@ -94,6 +96,10 @@ def symbolicate_profiles(profile_dir=None):
     )
 
     with tempfile.TemporaryDirectory() as temp_dir:
+
+        if symbol_dir is None:
+            symbol_dir = get_extracted_symbols(work_dir=temp_dir)
+
         for profile_file in profile_files:
             stat = profile_file.stat()
             unsym_size = stat.st_size
@@ -105,7 +111,7 @@ def symbolicate_profiles(profile_dir=None):
                 temp_path = Path(temp_dir) / profile_file.name
                 shutil.copy(profile_file, temp_path)
 
-                symbolicate_profile_json(str(temp_path))
+                symbolicate_profile_json(str(temp_path), symbol_dir=symbol_dir)
 
                 if temp_path.is_file():
                     symbol_size = temp_path.stat().st_size

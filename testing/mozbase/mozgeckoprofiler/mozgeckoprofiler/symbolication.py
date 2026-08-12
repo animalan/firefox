@@ -33,6 +33,30 @@ class SymbolError(Exception):
     pass
 
 
+def get_extracted_symbols(work_dir=None):
+    if "MOZ_AUTOMATION" in os.environ:
+        base_path = os.environ["MOZ_FETCHES_DIR"]
+        symbol_zip = Path(base_path) / "target.crashreporter-symbols.zip"
+        if symbol_zip.exists():
+            if work_dir is None:
+                work_dir = tempfile.mkdtemp()
+            breakpad_symbol_dir = Path(work_dir) / "breakpad_symbols"
+            breakpad_symbol_dir.mkdir(exist_ok=True)
+            with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                zipf.extractall(breakpad_symbol_dir)
+            LOG.info(f"Extracted symbols to {breakpad_symbol_dir}")
+            return breakpad_symbol_dir
+    else:
+        if "MOZ_DEVELOPER_OBJ_DIR" in os.environ:
+            objdir_symbols = Path(os.environ["MOZ_DEVELOPER_OBJ_DIR"]) / "dist" / "crashreporter-symbols"
+            if objdir_symbols.is_dir():
+                return objdir_symbols
+            LOG.info("Symbol directory not found at objdir. Try running: ./mach build and ./mach buildsymbols")
+
+    LOG.warning("Unable to locate symbol directory")
+    return None
+
+
 class OSXSymbolDumper:
     def __init__(self):
         self.dump_syms_bin = os.path.join(os.path.dirname(__file__), "dump_syms_mac")
@@ -295,11 +319,10 @@ class ProfileSymbolicator:
                 return False
         return True
 
-    def symbolicate_profile(self, profile_path):
+    def symbolicate_profile(self, profile_path, symbol_dir=None):
         # Check if profile is gzip-compressed and rename if needed
-        with open(profile_path, "rb") as f:
-            if f.read(2) == b"\x1f\x8b":
-                # Only add .gz if it doesn't already have it
+        with open(profile_path, "rb") as profile_file:
+            if profile_file.read(2) == b"\x1f\x8b":
                 if not profile_path.endswith(".gz"):
                     gz_path = profile_path + ".gz"
                     os.rename(profile_path, gz_path)
@@ -340,29 +363,13 @@ class ProfileSymbolicator:
 
         try:
             with tempfile.TemporaryDirectory() as work_dir:
-                # Determine breakpad symbol directory
-                if "MOZ_AUTOMATION" not in os.environ and "MOZ_DEVELOPER_OBJ_DIR" in os.environ:
-                    # Local case: use objdir symbols
-                    breakpad_symbol_dir = Path(
-                        os.environ["MOZ_DEVELOPER_OBJ_DIR"]
-                    ) / "dist" / "crashreporter-symbols"
-                else:
-                    # CI case: extract from zip or use default
-                    breakpad_symbol_dir = Path(work_dir) / "breakpad_symbols"
-                    breakpad_symbol_dir.mkdir()
+                # Use provided symbol_dir or extract it
+                if symbol_dir is None:
+                    symbol_dir = get_extracted_symbols(work_dir)
+                    if symbol_dir is None:
+                        symbol_dir = self.options["symbolPaths"]["FIREFOX"]
 
-                    symbol_zip = (
-                        Path(base_path)
-                        / "target.crashreporter-symbols.zip"
-                    )
-
-                    if symbol_zip.exists():
-                        with zipfile.ZipFile(symbol_zip, "r") as zipf:
-                            zipf.extractall(breakpad_symbol_dir)
-                    else:
-                        breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
-
-                LOG.info(f"Using symbol directory: {breakpad_symbol_dir}")
+                LOG.info(f"Using symbol directory: {symbol_dir}")
 
                 sym_profile = Path(work_dir) / "sym_profile.json"
 
@@ -374,7 +381,7 @@ class ProfileSymbolicator:
                         str(profile_path),
                         "--no-open",
                         "--breakpad-symbol-dir",
-                        str(breakpad_symbol_dir),
+                        str(symbol_dir),
                         "--breakpad-symbol-server",
                         BREAKPAD_SYMBOL_SERVER,
                     ],
