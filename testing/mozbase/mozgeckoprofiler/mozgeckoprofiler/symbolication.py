@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 import hashlib
 import http.client
-import json
 import os
 import platform
 import shutil
@@ -16,6 +15,11 @@ from pathlib import Path
 from urllib.parse import unquote
 
 from mozlog import get_proxy_logger
+
+try:
+    from mozbuild.base import MozbuildObject
+except ImportError:
+    MozbuildObject = None
 
 from .symbolicationRequest import SymbolicationRequest
 from .symFileManager import SymFileManager
@@ -31,6 +35,38 @@ from urllib.request import urlopen
 
 class SymbolError(Exception):
     pass
+
+
+def get_extracted_symbols(work_dir=None):
+    if "MOZ_AUTOMATION" in os.environ:
+        base_path = os.environ["MOZ_FETCHES_DIR"]
+        symbol_zip = Path(base_path) / "target.crashreporter-symbols.zip"
+        if symbol_zip.exists():
+            if work_dir is None:
+                work_dir = tempfile.mkdtemp()
+            breakpad_symbol_dir = Path(work_dir) / "breakpad_symbols"
+            breakpad_symbol_dir.mkdir(exist_ok=True)
+            with zipfile.ZipFile(symbol_zip, "r") as zipf:
+                zipf.extractall(breakpad_symbol_dir)
+            LOG.info(f"Extracted symbols to {breakpad_symbol_dir}")
+            return breakpad_symbol_dir
+        LOG.warning("Symbol directory not found.")
+    else:
+
+        if "MOZ_DEVELOPER_OBJ_DIR" in os.environ:
+            objdir_symbols = Path(os.environ["MOZ_DEVELOPER_OBJ_DIR"]) / "dist" / "crashreporter-symbols"
+            if objdir_symbols.is_dir():
+                return objdir_symbols
+
+        if MozbuildObject is not None:
+            moz_obj = MozbuildObject.from_environment()
+            objdir_symbols = Path(moz_obj.distdir) / "crashreporter-symbols"
+            if objdir_symbols.is_dir():
+                return objdir_symbols
+
+        LOG.warning("Symbol directory not found. Try running: ./mach build and ./mach buildsymbols")
+
+    return None
 
 
 class OSXSymbolDumper:
@@ -295,97 +331,140 @@ class ProfileSymbolicator:
                 return False
         return True
 
-    def symbolicate_profile(self, profile_json):
+    def symbolicate_profile(self, profile_path, symbol_dir=None):
 
-        # Check if running in CI
+        # Check if profile is gzip-compressed
+        with open(profile_path, "rb") as profile_file:
+            is_gzipped = profile_file.read(2) == b"\x1f\x8b"
+
+        # Determine the base path for fetches/mozbuild
         if "MOZ_AUTOMATION" in os.environ:
-            moz_fetch = os.environ["MOZ_FETCHES_DIR"]
-            profiler_edit_path = Path(
-                moz_fetch, "profiler-node-tools", "profiler-edit.js"
-            )
-            if platform.system() == "Windows":
-                samply_path = Path(moz_fetch, "samply", "samply.exe")
-                node_path = Path(moz_fetch, "node", "node.exe")
-            else:
-                samply_path = Path(moz_fetch, "samply", "samply")
-                node_path = Path(moz_fetch, "node", "bin", "node")
+            base_path = os.environ["MOZ_FETCHES_DIR"]
+        else:
+            base_path = os.environ.get("MOZBUILD_STATE_PATH", str(Path.home() / ".mozbuild"))
 
-            # Check if symbolication dependencies are available
+        profiler_edit_path = Path(
+            base_path, "profiler-node-tools", "profiler-edit.js"
+        )
+        if platform.system() == "Windows":
+            samply_path = Path(base_path, "samply", "samply.exe")
+            node_path = Path(base_path, "node", "node.exe")
+        else:
+            samply_path = Path(base_path, "samply", "samply")
+            node_path = Path(base_path, "node", "bin", "node")
 
-            if not self._validate_symbolication_deps([
-                profiler_edit_path,
-                samply_path,
-                node_path,
-            ]):
-                LOG.info(
-                    "Symbolication dependencies not available, using fallback symbolication."
+        # Check if symbolication dependencies are available
+        if not self._validate_symbolication_deps([
+            profiler_edit_path,
+            samply_path,
+            node_path,
+        ]):
+            LOG.info("Symbolication dependencies not available, skipping symbolication.")
+            return
+
+        try:
+            with tempfile.TemporaryDirectory() as work_dir:
+
+                if is_gzipped:
+                    unsym_profile_path = Path(work_dir) / "unsym.json.gz"
+                    LOG.info(f"Profile is gzipped, copying to {unsym_profile_path}")
+                else:
+                    unsym_profile_path = Path(work_dir) / "unsym.json"
+                    LOG.info(f"Profile is uncompressed, copying to {unsym_profile_path}")
+
+                shutil.copy(profile_path, unsym_profile_path)
+
+                # Use provided symbol_dir or extract it
+                if symbol_dir is None:
+                    symbol_dir = get_extracted_symbols(work_dir)
+                    if symbol_dir is None:
+                        symbol_dir = self.options["symbolPaths"]["FIREFOX"]
+
+                LOG.info(f"Using symbol directory: {symbol_dir}")
+
+                # Load unsymbolicated profile with samply
+                samply_process = subprocess.Popen(
+                    [
+                        samply_path,
+                        "load",
+                        str(unsym_profile_path),
+                        "--no-open",
+                        "--breakpad-symbol-dir",
+                        str(symbol_dir),
+                        "--breakpad-symbol-server",
+                        BREAKPAD_SYMBOL_SERVER,
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
                 )
-                self._symbolicate_profile_fallback(profile_json)
-                return
 
-            try:
-                with tempfile.TemporaryDirectory() as work_dir:
-                    # Extract symbols to a temp directory within work_dir
-                    breakpad_symbol_dir = Path(work_dir) / "breakpad_symbols"
-                    breakpad_symbol_dir.mkdir()
+                # Tail output for timeout seconds to obtain symbol server url
+                server_url = ""
+                start = time.time()
+                with samply_process.stdout:
+                    for line in iter(samply_process.stdout.readline, ""):
+                        if line.startswith("http"):
+                            url = unquote(line)
+                            server_url = str(url.split("symbolServer=", 1)[-1])
+                            break
+                        timeout = time.time() - start
+                        if timeout > SYMBOL_SERVER_TIMEOUT:
+                            raise TimeoutError(
+                                f"Server timed out after exceeding {SYMBOL_SERVER_TIMEOUT} seconds. Time elapsed : {timeout} seconds."
+                            )
 
-                    symbol_zip = (
-                        Path(os.environ["MOZ_FETCHES_DIR"])
-                        / "target.crashreporter-symbols.zip"
-                    )
+                if is_gzipped:
+                    sym_profile_path = Path(work_dir) / "sym_profile.json.gz"
+                else:
+                    sym_profile_path = Path(work_dir) / "sym_profile.json"
 
-                    if symbol_zip.exists():
-                        with zipfile.ZipFile(symbol_zip, "r") as zipf:
-                            zipf.extractall(breakpad_symbol_dir)
-                    else:
-                        breakpad_symbol_dir = self.options["symbolPaths"]["FIREFOX"]
+                with subprocess.Popen(
+                    [
+                        node_path,
+                        "--max-old-space-size=8192",
+                        str(profiler_edit_path),
+                        "-i",
+                        str(unsym_profile_path),
+                        "-o",
+                        str(sym_profile_path),
+                        "--symbolicate-with-server",
+                        server_url,
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                ) as profiler_edit_process:
+                    # Stream and forward to self.info()
+                    for line in profiler_edit_process.stdout:
+                        LOG.info(f"profiler-edit {line.strip()}")
 
-                    unsym_profile = Path(work_dir, "unsym_profile.json")
-                    unsym_profile.write_text(
-                        json.dumps(profile_json, ensure_ascii=False), encoding="utf-8"
-                    )
-                    sym_profile = Path(work_dir) / "sym_profile.json"
+                # Terminate samply server
+                if platform.system() == "Windows":
+                    samply_process.terminate()
+                else:
+                    samply_process.send_signal(signal.SIGINT)  # ctrl-c shutdown
 
-                    # Load unsymbolicated profile with samply
-                    samply_process = subprocess.Popen(
-                        [
-                            samply_path,
-                            "load",
-                            str(unsym_profile),
-                            "--no-open",
-                            "--breakpad-symbol-dir",
-                            str(breakpad_symbol_dir),
-                            "--breakpad-symbol-server",
-                            BREAKPAD_SYMBOL_SERVER,
-                        ],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
-                        text=True,
-                    )
+                samply_process.wait(timeout=SAMPLY_WAIT_TIMEOUT)
 
-                    # Tail output for timeout seconds to obtain symbol server url
-                    server_url = ""
-                    start = time.time()
-                    with samply_process.stdout:
-                        for line in iter(samply_process.stdout.readline, ""):
-                            if line.startswith("http"):
-                                url = unquote(line)
-                                server_url = str(url.split("symbolServer=", 1)[-1])
-                                break
-                            timeout = time.time() - start
-                            if timeout > SYMBOL_SERVER_TIMEOUT:
-                                raise TimeoutError(
-                                    f"Server timed out after exceeding {SYMBOL_SERVER_TIMEOUT} seconds. Time elapsed : {timeout} seconds."
-                                )
-
+                if sym_profile_path.exists():
+                    # debug_path = Path(__file__).parent / sym_profile_path.name
+                    # shutil.copy(str(sym_profile_path), str(debug_path))
+                    # LOG.info(f"Copied symbolicated profile to {debug_path}")
+                    os.replace(str(sym_profile_path), profile_path)
+                    return profile_path
+                else:
+                    sym_profile_path = Path(work_dir) / "sym_profile.jslb.gz"
                     with subprocess.Popen(
                         [
                             node_path,
+                            "--max-old-space-size=8192",
                             str(profiler_edit_path),
                             "-i",
-                            str(unsym_profile),
+                            str(unsym_profile_path),
                             "-o",
-                            str(sym_profile),
+                            str(sym_profile_path),
                             "--symbolicate-with-server",
                             server_url,
                         ],
@@ -398,30 +477,51 @@ class ProfileSymbolicator:
                         for line in profiler_edit_process.stdout:
                             LOG.info(f"profiler-edit {line.strip()}")
 
-                    # Terminate samply server
-                    if platform.system() == "Windows":
-                        samply_process.terminate()
-                    else:
-                        samply_process.send_signal(signal.SIGINT)  # ctrl-c shutdown
+                    if sym_profile_path.exists():
+                        # debug_path = Path(__file__).parent / sym_profile_path.name
+                        # shutil.copy(str(sym_profile_path), str(debug_path))
+                        # LOG.info(f"Copied symbolicated profile to {debug_path}")
+                        os.replace(str(sym_profile_path), profile_path)
+                        return profile_path
 
-                    samply_process.wait(timeout=SAMPLY_WAIT_TIMEOUT)
+                    # raise FileNotFoundError(f"Symbolicated profile not created at {sym_profile}")
 
-                    # Load profile json into memory and mutate profile
-                    with sym_profile.open("r", encoding="utf-8") as f:
-                        sym = json.load(f)
+        except Exception as e:
+            LOG.critical(f"Profile symbolication failed: {e}", exc_info=True)
 
-                    profile_json.clear()
-                    profile_json.update(sym)
+            # # If the profile is gzipped, try decompressing and retrying
+            # is_gzipped = False
+            # with open(profile_path, "rb") as f:
+            #     if f.read(2) == b"\x1f\x8b":
+            #         is_gzipped = True
 
-            except Exception:
-                LOG.critical("Profile symbolication failed.", exc_info=True)
-                LOG.info("Attempting fallback symbolication.")
-                self._symbolicate_profile_fallback(profile_json)
+            # if is_gzipped:
+            #     LOG.info("Retrying symbolication with decompressed profile...")
+            #     try:
+            #         import gzip
+            #         uncompressed_profile_path = profile_path.replace(".gz", "")
+            #         with gzip.open(profile_path, "rt") as f_in:
+            #             with open(uncompressed_profile_path, "w") as f_out:
+            #                 f_out.write(f_in.read())
 
-        # Local symbolication using fallback symbolication
-        else:
-            LOG.info("Running locally - using fallback symbolication.")
-            self._symbolicate_profile_fallback(profile_json)
+            #         # Retry symbolication with uncompressed profile
+            #         result = self.symbolicate_profile(uncompressed_profile_path, symbol_dir=symbol_dir)
+            #         if result:
+            #             os.replace(uncompressed_profile_path, profile_path)
+            #         else:
+            #             try:
+            #                 os.remove(uncompressed_profile_path)
+            #             except:
+            #                 pass
+            #         return result
+            #     except Exception as retry_error:
+            #         LOG.error(f"Retry with decompressed profile failed: {retry_error}")
+            #         try:
+            #             os.remove(uncompressed_profile_path)
+            #         except:
+            #             pass
+
+        return None
 
     def _find_addresses(self, profile_json):
         addresses = set()

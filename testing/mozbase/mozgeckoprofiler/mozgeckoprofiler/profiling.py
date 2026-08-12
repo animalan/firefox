@@ -1,7 +1,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-import gzip
 import os
 import shutil
 import tempfile
@@ -15,7 +14,7 @@ except ImportError:
 
 from mozlog import get_proxy_logger
 
-from .symbolication import ProfileSymbolicator
+from .symbolication import ProfileSymbolicator, get_extracted_symbols
 
 LOG = get_proxy_logger("profiler")
 
@@ -28,10 +27,17 @@ def save_gecko_profile(profile, filename):
             f.write(json.dumps(profile).encode("utf-8"))
 
 
-def symbolicate_profile_json(profile_path, firefox_symbols_path=None):
+def symbolicate_profile_json(profile_path, firefox_symbols_path=None, symbol_dir=None):
     """
     Symbolicate a single JSON profile.
     """
+    if symbol_dir is None:
+        symbol_dir = get_extracted_symbols()
+
+    if symbol_dir is None:
+        LOG.info("Skipping symbolication: symbol directory not available")
+        return
+
     temp_dir = tempfile.mkdtemp()
     windows_symbol_path = os.path.join(temp_dir, "windows")
     os.mkdir(windows_symbol_path)
@@ -64,22 +70,8 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path=None):
     })
     LOG.info("Symbolicating the performance profile...")
     try:
-        with open(profile_path, "rb") as profile_file:
-            # Some profile.json files may be compressed with gzip
-            # (ex. Mochitest / XPCshell profiles)
-            data = profile_file.read()
-            try:
-                data = gzip.decompress(data)
-            except Exception:
-                LOG.debug("Profile was not gzipped, treating as regular JSON")
+        symbolicator.symbolicate_profile(profile_path, symbol_dir=symbol_dir)
 
-            if orjson is not None:
-                profile = orjson.loads(data)
-            else:
-                profile = json.loads(data)
-        symbolicator.symbolicate_profile(profile)
-        # Overwrite the profile in place.
-        save_gecko_profile(profile, profile_path)
     except MemoryError:
         LOG.error(
             f"Ran out of memory while trying to symbolicate profile {profile_path}"
@@ -91,14 +83,15 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path=None):
     shutil.rmtree(temp_dir)
 
 
-def symbolicate_profiles(profile_dir=None):
+def symbolicate_profiles(profile_dir=None, symbol_dir=None):
     # Symbolicate all profiles.json in a directory
 
-    if profile_dir is None and os.environ.get("MOZ_UPLOAD_DIR"):
-        profile_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
-    else:
-        LOG.error("Profile directory not specified")
-        return
+    if profile_dir is None:
+        if os.environ.get("MOZ_UPLOAD_DIR"):
+            profile_dir = Path(os.environ.get("MOZ_UPLOAD_DIR"))
+        else:
+            LOG.error("Profile directory not specified")
+            return
 
     profile_files = sorted(
         profile
@@ -107,6 +100,14 @@ def symbolicate_profiles(profile_dir=None):
     )
 
     with tempfile.TemporaryDirectory() as temp_dir:
+
+        if symbol_dir is None:
+            symbol_dir = get_extracted_symbols(work_dir=temp_dir)
+
+        if symbol_dir is None:
+            LOG.info("Skipping symbolication: symbol directory not available")
+            return
+
         for profile_file in profile_files:
             stat = profile_file.stat()
             unsym_size = stat.st_size
@@ -118,7 +119,7 @@ def symbolicate_profiles(profile_dir=None):
                 temp_path = Path(temp_dir) / profile_file.name
                 shutil.copy(profile_file, temp_path)
 
-                symbolicate_profile_json(str(temp_path))
+                symbolicate_profile_json(str(temp_path), symbol_dir=symbol_dir)
 
                 if temp_path.is_file():
                     symbol_size = temp_path.stat().st_size
@@ -127,7 +128,7 @@ def symbolicate_profiles(profile_dir=None):
                         f"{unsym_size} bytes -> {symbol_size} bytes"
                     )
                     profile_file.unlink()
-                    shutil.move(str(temp_path), str(profile_file))
+                    os.replace(str(temp_path), str(profile_file))
 
                     # To ensure the artifact markers in resource usage profiles are accurate,
                     # the symbolicate profile's mod and access time should reflect
