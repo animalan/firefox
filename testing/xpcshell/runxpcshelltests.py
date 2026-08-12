@@ -1366,7 +1366,7 @@ class XPCShellTestThread(Thread):
         finally:
             self.postCheck(proc)
             if self.profiler and self.singleFile:
-                symbolicate_profile_json(profile_path, self.symbolsPath)
+                symbolicate_profile_json(profile_path)
                 view_gecko_profile(profile_path)
             self.clean_temp_dirs(path)
 
@@ -2773,9 +2773,6 @@ class XPCShellTests:
         if self.sequential:
             signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-        # Symbolicate all profiles
-        symbolicate_profiles()
-
         # Clean up any slacker directories that might be lying around
         # Some might fail because of windows taking too long to unlock them.
         # We don't do anything if this fails because the test machines will have
@@ -2816,6 +2813,9 @@ class XPCShellTests:
                 "killing one with SIGINT)"
             )
             return False
+
+        if "MOZ_AUTOMATION" in os.environ:
+            symbolicate_profiles()
 
         self.log.suite_end()
         return self.runFailures or self.failCount == 0

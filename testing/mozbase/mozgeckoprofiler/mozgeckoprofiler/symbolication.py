@@ -17,6 +17,8 @@ from urllib.parse import unquote
 
 from mozlog import get_proxy_logger
 
+from mozbuild.base import MozbuildObject
+
 from .symbolicationRequest import SymbolicationRequest
 from .symFileManager import SymFileManager
 
@@ -46,14 +48,21 @@ def get_extracted_symbols(work_dir=None):
                 zipf.extractall(breakpad_symbol_dir)
             LOG.info(f"Extracted symbols to {breakpad_symbol_dir}")
             return breakpad_symbol_dir
+        LOG.warning("Symbol directory not found.")
     else:
+
         if "MOZ_DEVELOPER_OBJ_DIR" in os.environ:
             objdir_symbols = Path(os.environ["MOZ_DEVELOPER_OBJ_DIR"]) / "dist" / "crashreporter-symbols"
             if objdir_symbols.is_dir():
                 return objdir_symbols
-            LOG.info("Symbol directory not found at objdir. Try running: ./mach build and ./mach buildsymbols")
 
-    LOG.warning("Unable to locate symbol directory")
+        moz_obj = MozbuildObject.from_environment()
+        objdir_symbols = Path(moz_obj.distdir) / "crashreporter-symbols"
+        if objdir_symbols.is_dir():
+            return objdir_symbols
+
+        LOG.warning("Symbol directory not found. Try running: ./mach build and ./mach buildsymbols")
+
     return None
 
 

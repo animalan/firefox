@@ -34,6 +34,10 @@ def symbolicate_profile_json(profile_path, firefox_symbols_path=None, symbol_dir
     if symbol_dir is None:
         symbol_dir = get_extracted_symbols()
 
+    if symbol_dir is None:
+        LOG.info("Skipping symbolication: symbol directory not available")
+        return
+
     temp_dir = tempfile.mkdtemp()
     windows_symbol_path = os.path.join(temp_dir, "windows")
     os.mkdir(windows_symbol_path)
@@ -100,6 +104,10 @@ def symbolicate_profiles(profile_dir=None, symbol_dir=None):
         if symbol_dir is None:
             symbol_dir = get_extracted_symbols(work_dir=temp_dir)
 
+        if symbol_dir is None:
+            LOG.info("Skipping symbolication: symbol directory not available")
+            return
+
         for profile_file in profile_files:
             stat = profile_file.stat()
             unsym_size = stat.st_size
@@ -120,7 +128,7 @@ def symbolicate_profiles(profile_dir=None, symbol_dir=None):
                         f"{unsym_size} bytes -> {symbol_size} bytes"
                     )
                     profile_file.unlink()
-                    shutil.move(str(temp_path), str(profile_file))
+                    os.replace(str(temp_path), str(profile_file))
 
                     # To ensure the artifact markers in resource usage profiles are accurate,
                     # the symbolicate profile's mod and access time should reflect
