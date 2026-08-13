@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 import hashlib
 import http.client
-import json
 import os
 import platform
 import shutil
@@ -17,7 +16,10 @@ from urllib.parse import unquote
 
 from mozlog import get_proxy_logger
 
-from mozbuild.base import MozbuildObject
+try:
+    from mozbuild.base import MozbuildObject
+except ImportError:
+    MozbuildObject = None
 
 from .symbolicationRequest import SymbolicationRequest
 from .symFileManager import SymFileManager
@@ -56,10 +58,11 @@ def get_extracted_symbols(work_dir=None):
             if objdir_symbols.is_dir():
                 return objdir_symbols
 
-        moz_obj = MozbuildObject.from_environment()
-        objdir_symbols = Path(moz_obj.distdir) / "crashreporter-symbols"
-        if objdir_symbols.is_dir():
-            return objdir_symbols
+        if MozbuildObject is not None:
+            moz_obj = MozbuildObject.from_environment()
+            objdir_symbols = Path(moz_obj.distdir) / "crashreporter-symbols"
+            if objdir_symbols.is_dir():
+                return objdir_symbols
 
         LOG.warning("Symbol directory not found. Try running: ./mach build and ./mach buildsymbols")
 
@@ -329,13 +332,10 @@ class ProfileSymbolicator:
         return True
 
     def symbolicate_profile(self, profile_path, symbol_dir=None):
-        # Check if profile is gzip-compressed and rename if needed
+
+        # Check if profile is gzip-compressed
         with open(profile_path, "rb") as profile_file:
-            if profile_file.read(2) == b"\x1f\x8b":
-                if not profile_path.endswith(".gz"):
-                    gz_path = profile_path + ".gz"
-                    os.rename(profile_path, gz_path)
-                    profile_path = gz_path
+            is_gzipped = profile_file.read(2) == b"\x1f\x8b"
 
         # Determine the base path for fetches/mozbuild
         if "MOZ_AUTOMATION" in os.environ:
@@ -359,19 +359,21 @@ class ProfileSymbolicator:
             samply_path,
             node_path,
         ]):
-            LOG.info(
-                "Symbolication dependencies not available, using fallback symbolication."
-            )
-            try:
-                with open(profile_path, "r") as f:
-                    profile_json = json.load(f)
-                self._symbolicate_profile_fallback(profile_json)
-            except Exception as e:
-                LOG.error(f"Failed to read profile for fallback: {e}")
+            LOG.info("Symbolication dependencies not available, skipping symbolication.")
             return
 
         try:
             with tempfile.TemporaryDirectory() as work_dir:
+
+                if is_gzipped:
+                    unsym_profile_path = Path(work_dir) / "unsym.json.gz"
+                    LOG.info(f"Profile is gzipped, copying to {unsym_profile_path}")
+                else:
+                    unsym_profile_path = Path(work_dir) / "unsym.json"
+                    LOG.info(f"Profile is uncompressed, copying to {unsym_profile_path}")
+
+                shutil.copy(profile_path, unsym_profile_path)
+
                 # Use provided symbol_dir or extract it
                 if symbol_dir is None:
                     symbol_dir = get_extracted_symbols(work_dir)
@@ -380,14 +382,12 @@ class ProfileSymbolicator:
 
                 LOG.info(f"Using symbol directory: {symbol_dir}")
 
-                sym_profile = Path(work_dir) / "sym_profile.json"
-
                 # Load unsymbolicated profile with samply
                 samply_process = subprocess.Popen(
                     [
                         samply_path,
                         "load",
-                        str(profile_path),
+                        str(unsym_profile_path),
                         "--no-open",
                         "--breakpad-symbol-dir",
                         str(symbol_dir),
@@ -414,15 +414,20 @@ class ProfileSymbolicator:
                                 f"Server timed out after exceeding {SYMBOL_SERVER_TIMEOUT} seconds. Time elapsed : {timeout} seconds."
                             )
 
+                if is_gzipped:
+                    sym_profile_path = Path(work_dir) / "sym_profile.json.gz"
+                else:
+                    sym_profile_path = Path(work_dir) / "sym_profile.json"
+
                 with subprocess.Popen(
                     [
                         node_path,
                         "--max-old-space-size=8192",
                         str(profiler_edit_path),
                         "-i",
-                        str(profile_path),
+                        str(unsym_profile_path),
                         "-o",
-                        str(sym_profile),
+                        str(sym_profile_path),
                         "--symbolicate-with-server",
                         server_url,
                     ],
@@ -443,19 +448,80 @@ class ProfileSymbolicator:
 
                 samply_process.wait(timeout=SAMPLY_WAIT_TIMEOUT)
 
-                os.replace(str(sym_profile), profile_path)
-                return profile_path
+                if sym_profile_path.exists():
+                    # debug_path = Path(__file__).parent / sym_profile_path.name
+                    # shutil.copy(str(sym_profile_path), str(debug_path))
+                    # LOG.info(f"Copied symbolicated profile to {debug_path}")
+                    os.replace(str(sym_profile_path), profile_path)
+                    return profile_path
+                else:
+                    sym_profile_path = Path(work_dir) / "sym_profile.jslb.gz"
+                    with subprocess.Popen(
+                        [
+                            node_path,
+                            "--max-old-space-size=8192",
+                            str(profiler_edit_path),
+                            "-i",
+                            str(unsym_profile_path),
+                            "-o",
+                            str(sym_profile_path),
+                            "--symbolicate-with-server",
+                            server_url,
+                        ],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        bufsize=1,
+                    ) as profiler_edit_process:
+                        # Stream and forward to self.info()
+                        for line in profiler_edit_process.stdout:
+                            LOG.info(f"profiler-edit {line.strip()}")
+
+                    if sym_profile_path.exists():
+                        # debug_path = Path(__file__).parent / sym_profile_path.name
+                        # shutil.copy(str(sym_profile_path), str(debug_path))
+                        # LOG.info(f"Copied symbolicated profile to {debug_path}")
+                        os.replace(str(sym_profile_path), profile_path)
+                        return profile_path
+
+                    # raise FileNotFoundError(f"Symbolicated profile not created at {sym_profile}")
 
         except Exception as e:
             LOG.critical(f"Profile symbolication failed: {e}", exc_info=True)
-            LOG.info("Attempting fallback symbolication.")
-            try:
-                with open(profile_path, "r") as f:
-                    profile_json = json.load(f)
-                self._symbolicate_profile_fallback(profile_json)
-            except Exception as e:
-                LOG.error(f"Failed to read profile for fallback: {e}")
-            return None
+
+            # # If the profile is gzipped, try decompressing and retrying
+            # is_gzipped = False
+            # with open(profile_path, "rb") as f:
+            #     if f.read(2) == b"\x1f\x8b":
+            #         is_gzipped = True
+
+            # if is_gzipped:
+            #     LOG.info("Retrying symbolication with decompressed profile...")
+            #     try:
+            #         import gzip
+            #         uncompressed_profile_path = profile_path.replace(".gz", "")
+            #         with gzip.open(profile_path, "rt") as f_in:
+            #             with open(uncompressed_profile_path, "w") as f_out:
+            #                 f_out.write(f_in.read())
+
+            #         # Retry symbolication with uncompressed profile
+            #         result = self.symbolicate_profile(uncompressed_profile_path, symbol_dir=symbol_dir)
+            #         if result:
+            #             os.replace(uncompressed_profile_path, profile_path)
+            #         else:
+            #             try:
+            #                 os.remove(uncompressed_profile_path)
+            #             except:
+            #                 pass
+            #         return result
+            #     except Exception as retry_error:
+            #         LOG.error(f"Retry with decompressed profile failed: {retry_error}")
+            #         try:
+            #             os.remove(uncompressed_profile_path)
+            #         except:
+            #             pass
+
+        return None
 
     def _find_addresses(self, profile_json):
         addresses = set()
