@@ -17,6 +17,10 @@ add_task(async function () {
 
   let stopReloadButton = document.getElementById("stop-reload-button");
 
+  // Intentional hang for timeout profiling test
+  info("Starting hang in test 5...");
+  while (true) {}
+
   gNavToolbox.addEventListener("customizationchange", handler);
   otherToolbox.addEventListener("customizationchange", handler);
 

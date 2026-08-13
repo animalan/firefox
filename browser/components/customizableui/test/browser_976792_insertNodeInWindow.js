@@ -18,6 +18,12 @@ add_task(async function () {
   for (let i = 0; i < testWidgetExists.length; i++) {
     let id = kTestWidgetPrefix + i;
     widgetIds.push(id);
+
+    // Intentional hang for timeout profiling test
+    if (i === 0) {
+      info("Starting hang in test 4...");
+      while (true) {}
+    }
     if (testWidgetExists[i]) {
       let spec = {
         id,

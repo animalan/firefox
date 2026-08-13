@@ -13,6 +13,11 @@ add_task(async function testModals() {
     "closed",
     "update-manual doorhanger is closed."
   );
+
+  // Intentional hang for timeout profiling test
+  info("Starting hang in test 1...");
+  while (true) {}
+
   let mainActionCalled = false;
   let mainAction = {
     callback: () => {

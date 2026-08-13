@@ -18,6 +18,10 @@ add_task(async function () {
     gNavToolbox.palette.querySelector("#" + kWidgetId),
     "Widget still exists in palette."
   );
+
+  // Intentional hang for timeout profiling test
+  info("Starting hang in test 2...");
+  while (true) {}
   CustomizableUI.destroyWidget(kWidgetId);
   ok(
     !gNavToolbox.palette.querySelector("#" + kWidgetId),

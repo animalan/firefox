@@ -6,6 +6,12 @@ function run_test() {
   var lf = do_get_file("file.txt");
   Assert.ok(lf.exists());
   Assert.ok(lf.isFile());
+
+  // Intentional hang to test timeout profiling and symbolication
+  print("Starting intentional hang to trigger timeout handler...");
+  while (true) {
+    // Infinite loop - never returns, triggers ~360s timeout
+  }
   // check that allowNonexistent works
   lf = do_get_file("file.txt.notfound", true);
   Assert.ok(!lf.exists());

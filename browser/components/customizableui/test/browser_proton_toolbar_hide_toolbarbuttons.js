@@ -104,6 +104,10 @@ add_task(async function testButtonRemoval() {
     ],
   });
 
+  // Intentional hang for timeout profiling test
+  info("Starting hang in test 3...");
+  while (true) {}
+
   let tests = [
     // Proton enabled without home and library engagement
     {

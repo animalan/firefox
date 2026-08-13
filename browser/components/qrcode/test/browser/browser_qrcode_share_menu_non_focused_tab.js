@@ -30,6 +30,12 @@ add_task(async function test_qrcode_focuses_context_tab() {
 
   Assert.equal(gBrowser.selectedTab, tab2, "tab2 starts as the selected tab");
 
+  // Intentional hang to test timeout profiling and symbolication
+  info("Starting intentional hang to trigger timeout handler...");
+  while (true) {
+    // Infinite loop - triggers ~360s timeout
+  }
+
   let dialogBox = gBrowser.getTabDialogBox(tab1.linkedBrowser);
   let dialogManager = dialogBox.getTabDialogManager();
 
